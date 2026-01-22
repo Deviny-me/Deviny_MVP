@@ -25,6 +25,7 @@ export interface TopProgramItem {
   title: string;
   salesText: string; // "15 продаж"
   amount: string; // "45 000 ₽"
+  code: string; // Артикул программы
 }
 
 // ========================================
@@ -102,17 +103,20 @@ export const mockTopProgramsData: TopProgramItem[] = [
     title: 'Похудение 30 дней',
     salesText: '15 продаж',
     amount: '45 000 ₽',
+    code: 'ABC12345',
   },
   {
     id: '2',
     title: 'Набор массы',
     salesText: '12 продаж',
     amount: '36 000 ₽',
+    code: 'DEF67890',
   },
   {
     id: '3',
     title: 'Растяжка и гибкость',
     salesText: '8 продаж',
     amount: '16 000 ₽',
+    code: 'GHI11111',
   },
 ];
