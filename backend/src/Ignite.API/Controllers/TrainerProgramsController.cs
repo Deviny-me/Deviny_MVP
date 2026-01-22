@@ -1,0 +1,144 @@
+using Ignite.Application.Features.Programs.Commands;
+using Ignite.Application.Features.Programs.DTOs;
+using Ignite.Application.Features.Programs.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Ignite.API.Controllers;
+
+[ApiController]
+[Route("api/trainer/me/programs")]
+[Authorize]
+public class TrainerProgramsController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public TrainerProgramsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<ProgramDto>>> GetMyPrograms()
+    {
+        var trainerId = GetTrainerId();
+        if (trainerId == null)
+            return Unauthorized();
+
+        var query = new GetMyProgramsQuery { TrainerId = trainerId.Value };
+        var programs = await _mediator.Send(query);
+
+        return Ok(programs);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<ProgramDto>> CreateProgram([FromForm] CreateProgramRequest request)
+    {
+        var trainerId = GetTrainerId();
+        if (trainerId == null)
+            return Unauthorized();
+
+        try
+        {
+            var command = new CreateProgramCommand
+            {
+                TrainerId = trainerId.Value,
+                Title = request.Title,
+                Description = request.Description,
+                Price = request.Price,
+                CoverImage = request.CoverImage,
+                TrainingVideos = request.TrainingVideos
+            };
+
+            var program = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetMyPrograms), new { id = program.Id }, program);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ProgramDto>> UpdateProgram(Guid id, [FromForm] UpdateProgramRequest request)
+    {
+        var trainerId = GetTrainerId();
+        if (trainerId == null)
+            return Unauthorized();
+
+        try
+        {
+            var command = new UpdateProgramCommand
+            {
+                Id = id,
+                TrainerId = trainerId.Value,
+                Title = request.Title,
+                Description = request.Description,
+                Price = request.Price,
+                CoverImage = request.CoverImage,
+                TrainingVideos = request.TrainingVideos
+            };
+
+            var program = await _mediator.Send(command);
+            return Ok(program);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteProgram(Guid id)
+    {
+        var trainerId = GetTrainerId();
+        if (trainerId == null)
+            return Unauthorized();
+
+        try
+        {
+            var command = new DeleteProgramCommand
+            {
+                Id = id,
+                TrainerId = trainerId.Value
+            };
+
+            await _mediator.Send(command);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
+    private Guid? GetTrainerId()
+    {
+        var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+            ?? User.FindFirst("email")?.Value;
+
+        if (string.IsNullOrEmpty(emailClaim))
+            return null;
+
+        var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? User.FindFirst("sub")?.Value;
+
+        if (Guid.TryParse(idClaim, out var trainerId))
+            return trainerId;
+
+        return null;
+    }
+}

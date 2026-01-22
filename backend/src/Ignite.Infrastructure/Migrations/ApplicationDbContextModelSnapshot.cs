@@ -68,6 +68,75 @@ namespace Ignite.Infrastructure.Migrations
                     b.ToTable("CallSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.ProgramPurchase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProgramId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ProgramPurchases");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.ProgramReview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProgramId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ProgramId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ProgramReviews");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -356,6 +425,66 @@ namespace Ignite.Infrastructure.Migrations
                     b.ToTable("TrainerSpecializations");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.TrainingProgram", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CoverImagePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TrainingVideosPath")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("TrainerId");
+
+                    b.ToTable("TrainingPrograms");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -481,6 +610,44 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.ProgramPurchase", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.TrainingProgram", "Program")
+                        .WithMany("Purchases")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Program");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.ProgramReview", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.TrainingProgram", "Program")
+                        .WithMany("Reviews")
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Program");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Ignite.Domain.Entities.User", "User")
@@ -569,6 +736,17 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.TrainingProgram", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.User", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Trainer");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.UserSettings", b =>
                 {
                     b.HasOne("Ignite.Domain.Entities.User", "User")
@@ -597,6 +775,13 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Certificates");
 
                     b.Navigation("Specializations");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.TrainingProgram", b =>
+                {
+                    b.Navigation("Purchases");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("Ignite.Domain.Entities.User", b =>

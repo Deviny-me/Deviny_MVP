@@ -109,6 +109,41 @@ interface Translations {
   noProgramsYet: string
   createFirstProgram: string
   noProgramsDescription: string
+  myPrograms: string
+  manageProgramsDescription: string
+  searchPrograms: string
+  noSearchResults: string
+  programCreated: string
+  programUpdated: string
+  programDeleted: string
+  programsLoadError: string
+  programCreateError: string
+  programUpdateError: string
+  programDeleteError: string
+  codeCopied: string
+  copyCode: string
+  editProgram: string
+  deleteProgram: string
+  title: string
+  description: string
+  price: string
+  mediaType: string
+  image: string
+  video: string
+  media: string
+  uploadMedia: string
+  uploadNewMedia: string
+  currentMedia: string
+  replaceMedia: string
+  titlePlaceholder: string
+  descriptionPlaceholder: string
+  mediaRequired: string
+  invalidImageType: string
+  invalidVideoType: string
+  imageTooLarge: string
+  videoTooLarge: string
+  deleteConfirmMessage: string
+  deleteWarning: string
   
   // Schedule
   manageSchedule: string
@@ -167,6 +202,22 @@ interface Translations {
   copyLink: string
   linkCopied: string
   specializations: string
+  back: string
+  purchases: string
+  programCode: string
+  copy: string
+  coverImage: string
+  trainingVideos: string
+  uploadCover: string
+  uploadVideos: string
+  videosSelected: string
+  coverImageRequired: string
+  trainingVideosRequired: string
+  currentCoverImage: string
+  replaceCoverImage: string
+  uploadNewCover: string
+  replaceTrainingVideos: string
+  uploadNewVideos: string
 }
 
 const translations: Record<Language, Translations> = {
@@ -274,8 +325,60 @@ const translations: Record<Language, Translations> = {
     avgRating: 'Средний рейтинг',
     activePrograms: 'Активных программ',
     noProgramsYet: 'У вас пока нет программ',
+    createProgram: 'Создать программу',
     createFirstProgram: 'Создать первую программу',
     noProgramsDescription: 'Создайте свою первую тренировочную программу и начните продавать её клиентам',
+    myPrograms: 'Мои программы',
+    manageProgramsDescription: 'Создавайте и управляйте тренировочными программами',
+    searchPrograms: 'Поиск программ...',
+    noSearchResults: 'Ничего не найдено',
+    programCreated: 'Программа создана успешно',
+    programUpdated: 'Программа обновлена успешно',
+    programDeleted: 'Программа удалена успешно',
+    programsLoadError: 'Ошибка загрузки программ',
+    programCreateError: 'Ошибка создания программы',
+    programUpdateError: 'Ошибка обновления программы',
+    programDeleteError: 'Ошибка удаления программы',
+    codeCopied: 'Код скопирован',
+    copyCode: 'Скопировать код',
+    editProgram: 'Редактировать программу',
+    deleteProgram: 'Удалить программу',
+    title: 'Название',
+    description: 'Описание',
+    price: 'Цена',
+    mediaType: 'Тип медиа',
+    image: 'Изображение',
+    video: 'Видео',
+    media: 'Медиа',
+    uploadMedia: 'Загрузить медиа',
+    uploadNewMedia: 'Загрузить новое медиа',
+    currentMedia: 'Текущее медиа',
+    replaceMedia: 'Заменить медиа',
+    titlePlaceholder: 'Введите название программы',
+    descriptionPlaceholder: 'Опишите вашу программу',
+    mediaRequired: 'Необходимо загрузить медиафайл',
+    invalidImageType: 'Неверный формат изображения',
+    invalidVideoType: 'Неверный формат видео',
+    imageTooLarge: 'Изображение слишком большое (макс. 5MB)',
+    videoTooLarge: 'Видео слишком большое (макс. 50MB)',
+    deleteConfirmMessage: 'Вы уверены, что хотите удалить программу?',
+    deleteWarning: 'Это действие нельзя отменить',
+    back: 'Назад',
+    purchases: 'покупок',
+    programCode: 'Код программы',
+    copy: 'Копировать',
+    coverImage: 'Обложка',
+    trainingVideos: 'Видео тренировок',
+    uploadCover: 'Загрузить обложку',
+    uploadVideos: 'Загрузить видео',
+    videosSelected: 'видео выбрано',
+    coverImageRequired: 'Обложка обязательна',
+    trainingVideosRequired: 'Необходимо загрузить хотя бы одно видео',
+    currentCoverImage: 'Текущая обложка',
+    replaceCoverImage: 'Заменить обложку (необязательно)',
+    uploadNewCover: 'Загрузить новую обложку',
+    replaceTrainingVideos: 'Добавить/заменить видео (необязательно)',
+    uploadNewVideos: 'Загрузить новые видео',
     
     // Schedule
     manageSchedule: 'Управляйте своими занятиями и встречами',
@@ -438,8 +541,60 @@ const translations: Record<Language, Translations> = {
     avgRating: 'Average rating',
     activePrograms: 'Active programs',
     noProgramsYet: 'You don\'t have any programs yet',
+    createProgram: 'Create program',
     createFirstProgram: 'Create first program',
     noProgramsDescription: 'Create your first training program and start selling it to clients',
+    myPrograms: 'My Programs',
+    manageProgramsDescription: 'Create and manage training programs',
+    searchPrograms: 'Search programs...',
+    noSearchResults: 'No results found',
+    programCreated: 'Program created successfully',
+    programUpdated: 'Program updated successfully',
+    programDeleted: 'Program deleted successfully',
+    programsLoadError: 'Failed to load programs',
+    programCreateError: 'Failed to create program',
+    programUpdateError: 'Failed to update program',
+    programDeleteError: 'Failed to delete program',
+    codeCopied: 'Code copied to clipboard',
+    copyCode: 'Copy code',
+    editProgram: 'Edit Program',
+    deleteProgram: 'Delete Program',
+    title: 'Title',
+    description: 'Description',
+    price: 'Price',
+    mediaType: 'Media type',
+    image: 'Image',
+    video: 'Video',
+    media: 'Media',
+    uploadMedia: 'Upload media',
+    uploadNewMedia: 'Upload new media',
+    currentMedia: 'Current media',
+    replaceMedia: 'Replace media',
+    titlePlaceholder: 'Enter program title',
+    descriptionPlaceholder: 'Describe your program',
+    mediaRequired: 'Media file is required',
+    invalidImageType: 'Invalid image format',
+    invalidVideoType: 'Invalid video format',
+    imageTooLarge: 'Image too large (max 5MB)',
+    videoTooLarge: 'Video too large (max 50MB)',
+    deleteConfirmMessage: 'Are you sure you want to delete this program?',
+    deleteWarning: 'This action cannot be undone',
+    back: 'Back',
+    purchases: 'purchases',
+    programCode: 'Program Code',
+    copy: 'Copy',
+    coverImage: 'Cover Image',
+    trainingVideos: 'Training Videos',
+    uploadCover: 'Upload Cover',
+    uploadVideos: 'Upload Videos',
+    videosSelected: 'videos selected',
+    coverImageRequired: 'Cover image is required',
+    trainingVideosRequired: 'At least one training video is required',
+    currentCoverImage: 'Current Cover Image',
+    replaceCoverImage: 'Replace Cover Image (optional)',
+    uploadNewCover: 'Upload New Cover',
+    replaceTrainingVideos: 'Add/Replace Training Videos (optional)',
+    uploadNewVideos: 'Upload New Videos',
     
     // Schedule
     manageSchedule: 'Manage your sessions and meetings',

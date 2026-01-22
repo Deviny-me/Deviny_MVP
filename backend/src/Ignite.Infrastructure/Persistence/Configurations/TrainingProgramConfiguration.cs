@@ -1,0 +1,57 @@
+using Ignite.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Ignite.Infrastructure.Persistence.Configurations;
+
+public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingProgram>
+{
+    public void Configure(EntityTypeBuilder<TrainingProgram> builder)
+    {
+        builder.HasKey(p => p.Id);
+
+        builder.Property(p => p.Title)
+            .IsRequired()
+            .HasMaxLength(200);
+
+        builder.Property(p => p.Description)
+            .IsRequired()
+            .HasMaxLength(2000);
+
+        builder.Property(p => p.Price)
+            .HasPrecision(18, 2);
+
+        builder.Property(p => p.Code)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.HasIndex(p => p.Code)
+            .IsUnique();
+
+        builder.HasIndex(p => p.TrainerId);
+
+        builder.Property(p => p.CoverImagePath)
+            .IsRequired()
+            .HasMaxLength(500);
+
+        builder.Property(p => p.TrainingVideosPath)
+            .HasMaxLength(4000); // JSON array
+
+        builder.HasOne(p => p.Trainer)
+            .WithMany()
+            .HasForeignKey(p => p.TrainerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(p => p.Purchases)
+            .WithOne(pu => pu.Program)
+            .HasForeignKey(pu => pu.ProgramId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(p => p.Reviews)
+            .WithOne(r => r.Program)
+            .HasForeignKey(r => r.ProgramId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(p => !p.IsDeleted);
+    }
+}

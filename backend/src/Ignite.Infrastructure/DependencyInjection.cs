@@ -21,6 +21,7 @@ public static class DependencyInjection
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITrainerProfileRepository, TrainerProfileRepository>();
+        services.AddScoped<IProgramRepository, ProgramRepository>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddSingleton<SlugGenerator>();

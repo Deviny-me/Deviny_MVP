@@ -20,6 +20,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<TrainerSpecialization> TrainerSpecializations { get; set; } = null!;
     public DbSet<ScheduleEvent> ScheduleEvents { get; set; } = null!;
     public DbSet<CallSession> CallSessions { get; set; } = null!;
+    public DbSet<TrainingProgram> TrainingPrograms { get; set; } = null!;
+    public DbSet<ProgramPurchase> ProgramPurchases { get; set; } = null!;
+    public DbSet<ProgramReview> ProgramReviews { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
