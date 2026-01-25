@@ -506,13 +506,3 @@ public class TrainerProfileController : ControllerBase
         }
     }
 }
-
-public class UpdateAboutRequest
-{
-    public string? Text { get; set; }
-}
-
-public class AddSpecializationRequest
-{
-    public required string Name { get; set; }
-}

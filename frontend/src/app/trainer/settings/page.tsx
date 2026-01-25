@@ -371,10 +371,9 @@ export default function TrainerSettingsPage() {
             </div>
 
             {/* Theme Toggle Row - Clickable */}
-            <button
-              onClick={handleThemeToggle}
-              disabled={themeLoading}
-              className="w-full flex items-center justify-between py-4 hover:bg-gray-50 dark:hover:bg-neutral-800 -mx-2 px-2 rounded-lg transition-colors"
+            <div
+              onClick={!themeLoading ? handleThemeToggle : undefined}
+              className="w-full flex items-center justify-between py-4 hover:bg-gray-50 dark:hover:bg-neutral-800 -mx-2 px-2 rounded-lg transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 {theme === 'dark' ? (
@@ -390,7 +389,7 @@ export default function TrainerSettingsPage() {
                 </div>
               </div>
               <Toggle enabled={theme === 'dark'} onChange={() => {}} disabled={themeLoading} />
-            </button>
+            </div>
           </Card>
 
           {/* Notifications Section */}

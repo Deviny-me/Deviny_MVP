@@ -1,3 +1,4 @@
+using Ignite.API.DTOs;
 using Ignite.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -54,8 +55,8 @@ public class UserController : ControllerBase
                 name = user.Name,
                 email = user.Email,
                 phone = user.Phone ?? "",
-                avatarUrl = user.AvatarUrl,
-                theme = user.Theme,
+                avatarUrl = user.AvatarUrl ?? "",
+                theme = user.Theme ?? "light",
                 pushNotificationsEnabled = user.PushNotificationsEnabled,
                 role = user.Role
             });
@@ -306,19 +307,4 @@ public class UserController : ControllerBase
             return StatusCode(500, new { message = "Ошибка при удалении аватара", error = ex.Message });
         }
     }
-}
-
-public class UpdateProfileRequest
-{
-    public string? Name { get; set; }
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
-    public string? Theme { get; set; }
-    public bool? PushNotificationsEnabled { get; set; }
-}
-
-public class ChangePasswordRequest
-{
-    public required string CurrentPassword { get; set; }
-    public required string NewPassword { get; set; }
 }

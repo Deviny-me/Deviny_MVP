@@ -1,3 +1,4 @@
+using Ignite.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -58,13 +59,4 @@ public class StudentsController : ControllerBase
             return StatusCode(500, new { message = "Error fetching students", error = ex.Message });
         }
     }
-}
-
-public class StudentDto
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string? Phone { get; set; }
-    public string? AvatarUrl { get; set; }
 }

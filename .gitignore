@@ -1,0 +1,41 @@
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.sql.bak
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (user content)
+uploads/
+**/uploads/
+
+# Secrets
+*.pfx
+*.key
+*.pem
+secrets/

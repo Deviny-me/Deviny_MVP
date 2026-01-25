@@ -2,7 +2,7 @@
 
 public enum CallSessionStatus
 {
-    Active = 0,
-    Ended = 1,
-    Missed = 2
+    Active,
+    Ended,
+    Missed
 }

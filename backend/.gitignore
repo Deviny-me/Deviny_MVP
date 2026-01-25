@@ -5,6 +5,35 @@ obj/
 .vs/
 .vscode/
 *.log
+
+# Config (keep templates)
 appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads (user generated content)
+uploads/
+wwwroot/uploads/
+
+# Publish output
+publish/
+
+# User secrets
+secrets.json
+
+# NuGet
+*.nupkg
+.nuget/
+
+# Test results
+TestResults/
+coverage/

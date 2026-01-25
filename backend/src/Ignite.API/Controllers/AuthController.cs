@@ -1,3 +1,4 @@
+using Ignite.API.DTOs;
 using Ignite.Application.Common.Interfaces;
 using Ignite.Application.Features.Auth.Commands;
 using Ignite.Application.Features.Auth.DTOs;
@@ -171,10 +172,10 @@ public class AuthController : ControllerBase
                 AccessToken = newAccessToken,
                 User = new UserDto
                 {
-                    Id = user.Id.ToString(),
+                    Id = user.Id,
                     Email = user.Email,
                     Name = user.Name,
-                    Role = user.Role.ToString()
+                    Role = user.Role
                 }
             });
         }
@@ -198,18 +199,4 @@ public class AuthController : ControllerBase
         
         return Ok(new { message = "Logged out successfully" });
     }
-}
-
-public class RefreshTokenResponse
-{
-    public string AccessToken { get; set; } = string.Empty;
-    public UserDto User { get; set; } = new();
-}
-
-public class UserDto
-{
-    public string Id { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
 }
