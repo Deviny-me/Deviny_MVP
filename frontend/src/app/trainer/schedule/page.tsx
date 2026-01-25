@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { ChevronLeft, ChevronRight, Plus, Calendar, Clock, MapPin, Video, Trash2, Edit } from 'lucide-react'
 import { useLanguage } from '@/components/language/LanguageProvider'
+import { useLevel } from '@/components/level/LevelProvider'
 import { scheduleApi } from '@/lib/api/scheduleApi'
 import type { ScheduleEvent, ScheduleStats } from '@/types/schedule'
 import { AddEventModal } from '@/components/trainer/schedule/AddEventModal'
@@ -13,6 +14,7 @@ const weekDays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС']
 
 export default function TrainerSchedulePage() {
   const { t } = useLanguage()
+  const { refreshLevel } = useLevel()
   const [selectedDay, setSelectedDay] = useState(0)
   const [events, setEvents] = useState<ScheduleEvent[]>([])
   const [stats, setStats] = useState<ScheduleStats | null>(null)
@@ -248,8 +250,10 @@ export default function TrainerSchedulePage() {
           setShowAddModal(false)
           setEditingEvent(null)
         }} 
-        onSuccess={() => {
-          loadData()
+        onSuccess={async () => {
+          await loadData()
+          // Обновляем уровень после создания/обновления события
+          await refreshLevel()
           setEditingEvent(null)
         }}
         initialDate={weekDates[selectedDay]}

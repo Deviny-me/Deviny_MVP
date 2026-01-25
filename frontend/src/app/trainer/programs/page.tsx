@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Search, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/components/language/LanguageProvider';
+import { useLevel } from '@/components/level/LevelProvider';
 import { ProgramDto, CreateProgramRequest, UpdateProgramRequest } from '@/types/program';
 import { programsApi } from '@/lib/api/programsApi';
 import ProgramCard from '@/components/trainer/programs/ProgramCard';
@@ -14,6 +15,7 @@ import ProgramDetailsModal from '@/components/trainer/programs/ProgramDetailsMod
 
 export default function TrainerProgramsPage() {
   const { t } = useLanguage();
+  const { refreshLevel } = useLevel();
   const router = useRouter();
   const [programs, setPrograms] = useState<ProgramDto[]>([]);
   const [filteredPrograms, setFilteredPrograms] = useState<ProgramDto[]>([]);
@@ -67,6 +69,8 @@ export default function TrainerProgramsPage() {
       const newProgram = await programsApi.createProgram(request);
       setPrograms([newProgram, ...programs]);
       showToast(t.programCreated || 'Program created successfully');
+      // Обновляем уровень после создания программы
+      await refreshLevel();
     } catch (error) {
       console.error('Error creating program:', error);
       showToast(t.programCreateError || 'Failed to create program');
@@ -78,6 +82,8 @@ export default function TrainerProgramsPage() {
     try {
       const updatedProgram = await programsApi.updateProgram(id, request);
       setPrograms(programs.map((p) => (p.id === id ? updatedProgram : p)));
+      // Обновляем уровень после обновления программы
+      await refreshLevel();
       showToast(t.programUpdated || 'Program updated successfully');
     } catch (error) {
       console.error('Error updating program:', error);

@@ -23,6 +23,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<TrainingProgram> TrainingPrograms { get; set; } = null!;
     public DbSet<ProgramPurchase> ProgramPurchases { get; set; } = null!;
     public DbSet<ProgramReview> ProgramReviews { get; set; } = null!;
+    
+    // Level System
+    public DbSet<UserLevel> UserLevels { get; set; } = null!;
+    public DbSet<LevelDefinition> LevelDefinitions { get; set; } = null!;
+    public DbSet<XpTransaction> XpTransactions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,6 +1,7 @@
 using Ignite.Application.Common.Interfaces;
 using Ignite.Application.Features.Programs.DTOs;
 using Ignite.Domain.Entities;
+using Ignite.Domain.Enums;
 using MediatR;
 using System.Text.Json;
 
@@ -9,11 +10,13 @@ namespace Ignite.Application.Features.Programs.Commands;
 public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand, ProgramDto>
 {
     private readonly IProgramRepository _programRepository;
+    private readonly ILevelService _levelService;
     private readonly string _uploadsPath;
 
-    public CreateProgramCommandHandler(IProgramRepository programRepository)
+    public CreateProgramCommandHandler(IProgramRepository programRepository, ILevelService levelService)
     {
         _programRepository = programRepository;
+        _levelService = levelService;
         _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "programs");
         
         if (!Directory.Exists(_uploadsPath))
@@ -103,6 +106,15 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         };
 
         var created = await _programRepository.CreateAsync(program);
+
+        // Award XP to trainer for creating a program
+        await _levelService.AddXpAsync(
+            request.TrainerId,
+            XpEventType.TrainerCreatedProgram,
+            50, // 50 XP for creating a program
+            $"TrainerCreatedProgram:{created.Id}",
+            created.Id
+        );
 
         var videoPaths = string.IsNullOrEmpty(created.TrainingVideosPath) 
             ? new List<string>() 

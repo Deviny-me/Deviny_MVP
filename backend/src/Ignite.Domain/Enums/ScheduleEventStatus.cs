@@ -3,5 +3,7 @@
 public enum ScheduleEventStatus
 {
     Pending,
-    Confirmed
+    Confirmed,
+    Completed,
+    Cancelled
 }

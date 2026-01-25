@@ -9,11 +9,13 @@ namespace Ignite.Application.Features.Programs.Commands;
 public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand, ProgramDto>
 {
     private readonly IProgramRepository _programRepository;
+    private readonly ILevelService _levelService;
     private readonly string _uploadsPath;
 
-    public UpdateProgramCommandHandler(IProgramRepository programRepository)
+    public UpdateProgramCommandHandler(IProgramRepository programRepository, ILevelService levelService)
     {
         _programRepository = programRepository;
+        _levelService = levelService;
         _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "programs");
     }
 
@@ -122,6 +124,15 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
         }
 
         await _programRepository.UpdateAsync(program);
+
+        // Award XP to trainer for updating a program
+        await _levelService.AddXpAsync(
+            request.TrainerId,
+            XpEventType.TrainerUpdatedProgram,
+            25, // 25 XP for updating a program
+            $"TrainerUpdatedProgram:{program.Id}:{DateTime.UtcNow.Ticks}",
+            program.Id
+        );
 
         // Calculate stats
         var avgRating = program.Reviews.Any() ? program.Reviews.Average(r => r.Rating) : 0;

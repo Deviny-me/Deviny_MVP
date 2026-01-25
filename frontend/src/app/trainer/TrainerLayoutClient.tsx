@@ -6,6 +6,7 @@ import { TrainerSidebar } from '@/components/trainer/TrainerSidebar'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { UserProvider } from '@/components/user/UserProvider'
 import { LanguageProvider } from '@/components/language/LanguageProvider'
+import { LevelProvider } from '@/components/level/LevelProvider'
 
 type Theme = 'light' | 'dark'
 type Language = 'ru' | 'en'
@@ -62,12 +63,14 @@ export function TrainerLayoutClient({ children, initialTheme }: TrainerLayoutCli
     <UserProvider>
       <LanguageProvider>
         <ThemeProvider initialTheme={initialTheme}>
-          <div className="flex min-h-screen bg-white dark:bg-neutral-950">
-            <TrainerSidebar />
-            <main className="flex-1 ml-[272px] p-8">
-              {children}
-            </main>
-          </div>
+          <LevelProvider>
+            <div className="flex min-h-screen bg-white dark:bg-neutral-950">
+              <TrainerSidebar />
+              <main className="flex-1 ml-[272px] p-8">
+                {children}
+              </main>
+            </div>
+          </LevelProvider>
         </ThemeProvider>
       </LanguageProvider>
     </UserProvider>

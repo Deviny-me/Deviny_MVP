@@ -1,4 +1,5 @@
 ﻿using Ignite.API.DTOs;
+using Ignite.Application.Common.Interfaces;
 using Ignite.Domain.Entities;
 using Ignite.Domain.Enums;
 using Ignite.Infrastructure.Persistence;
@@ -15,10 +16,12 @@ namespace Ignite.API.Controllers;
 public class TrainerScheduleController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILevelService _levelService;
 
-    public TrainerScheduleController(ApplicationDbContext context)
+    public TrainerScheduleController(ApplicationDbContext context, ILevelService levelService)
     {
         _context = context;
+        _levelService = levelService;
     }
 
     private Guid GetTrainerId()
@@ -177,6 +180,15 @@ public class TrainerScheduleController : ControllerBase
             _context.ScheduleEvents.Add(evt);
             await _context.SaveChangesAsync();
 
+            // Award XP to trainer for scheduling a session
+            await _levelService.AddXpAsync(
+                trainerId,
+                XpEventType.TrainerScheduledSession,
+                20, // 20 XP for scheduling
+                $"TrainerScheduledSession:{evt.Id}",
+                evt.Id
+            );
+
             return CreatedAtAction(nameof(GetEvent), new { id = evt.Id }, new ScheduleEventDto
             {
                 Id = evt.Id,
@@ -284,6 +296,10 @@ public class TrainerScheduleController : ControllerBase
             if (hasOverlap)
                 return Conflict(new { message = "Event overlaps with existing event" });
 
+            // Check if status changed to Completed to award XP
+            var wasCompleted = evt.Status == ScheduleEventStatus.Completed;
+            var isNowCompleted = status == ScheduleEventStatus.Completed;
+
             evt.StudentId = request.StudentId;
             evt.StartAt = request.StartAt;
             evt.DurationMinutes = request.DurationMinutes;
@@ -296,6 +312,18 @@ public class TrainerScheduleController : ControllerBase
             evt.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            // Award XP if session was just completed
+            if (!wasCompleted && isNowCompleted)
+            {
+                await _levelService.AddXpAsync(
+                    trainerId,
+                    XpEventType.TrainerCompletedCallSession,
+                    30, // 30 XP for completing a session
+                    $"TrainerCompletedCallSession:{evt.Id}",
+                    evt.Id
+                );
+            }
 
             return Ok(new ScheduleEventDto
             {

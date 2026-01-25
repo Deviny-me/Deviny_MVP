@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { LogOut, LayoutGrid, Users, Dumbbell, Calendar, MessageSquare, DollarSign, User, Settings, LucideIcon } from 'lucide-react'
 import { useUser } from '@/components/user/UserProvider'
 import { useLanguage } from '@/components/language/LanguageProvider'
+import { LevelBadge } from '@/components/ui/LevelBadge'
 import Link from 'next/link'
 
 interface NavItemData {
@@ -48,8 +49,10 @@ export function TrainerSidebar() {
     <aside className="fixed left-0 top-0 h-full w-[272px] bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-neutral-800 flex flex-col">
       {/* Branding */}
       <div className="p-6 border-b border-gray-200 dark:border-neutral-800">
-        <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">CoachOS</h1>
-        <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">{t.trainerPlatform}</p>
+        <div>
+          <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">CoachOS</h1>
+          <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">{t.trainerPlatform}</p>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -76,22 +79,35 @@ export function TrainerSidebar() {
 
       {/* Profile Card */}
       <div className="p-4 border-t border-gray-200 dark:border-neutral-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white font-semibold">
+        {/* Profile Info - Clickable */}
+        <Link 
+          href="/trainer/profile" 
+          className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-neutral-800/50 rounded-lg p-2 -mx-2 transition-colors cursor-pointer group"
+        >
+          <div className="w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 flex items-center justify-center text-white font-semibold group-hover:ring-2 group-hover:ring-blue-400 dark:group-hover:ring-blue-500 transition-all">
             {initials}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-neutral-50 truncate">{user?.name || t.trainer}</p>
+          <div className="flex-1 min-w-0 relative">
+            <div className="flex items-start gap-1">
+              <p className="font-semibold text-gray-900 dark:text-neutral-50 truncate">{user?.name || t.trainer}</p>
+              {/* Level Badge as superscript */}
+              <div className="scale-[0.67] origin-top-left -ml-1 -mt-1">
+                <LevelBadge showTitle={false} />
+              </div>
+            </div>
             <p className="text-sm text-gray-500 dark:text-neutral-400">{t.trainer}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-            title={t.logout}
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
+          <User className="w-4 h-4 text-gray-400 dark:text-neutral-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </Link>
+        
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-gray-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>{t.logout}</span>
+        </button>
       </div>
     </aside>
   )

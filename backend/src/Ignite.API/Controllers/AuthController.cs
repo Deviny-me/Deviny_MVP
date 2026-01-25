@@ -38,8 +38,8 @@ public class AuthController : ControllerBase
             Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // Set to true in production
-                SameSite = SameSiteMode.Lax, // For cross-origin in development
+                Secure = true, // Always use HTTPS in production
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(request.RememberMe ? 30 : 7),
                 Path = "/"
             });
