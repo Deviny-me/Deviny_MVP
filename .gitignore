@@ -39,3 +39,7 @@ uploads/
 *.key
 *.pem
 secrets/
+
+# SQL scripts with credentials
+create_sql_user.sql
+**/create_sql_user.sql
