@@ -28,32 +28,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserLevel> UserLevels { get; set; } = null!;
     public DbSet<LevelDefinition> LevelDefinitions { get; set; } = null!;
     public DbSet<XpTransaction> XpTransactions { get; set; } = null!;
+    
+    // Verification
+    public DbSet<VerificationDocument> VerificationDocuments { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-        
-        // UserSettings configuration
-        modelBuilder.Entity<UserSettings>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            
-            entity.HasIndex(e => e.UserId).IsUnique();
-            
-            entity.Property(e => e.Theme)
-                .IsRequired()
-                .HasMaxLength(10)
-                .HasDefaultValue("light");
-                
-            entity.Property(e => e.Language)
-                .HasMaxLength(10);
-                
-            entity.HasOne(e => e.User)
-                .WithOne(u => u.Settings)
-                .HasForeignKey<UserSettings>(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
     }
 }

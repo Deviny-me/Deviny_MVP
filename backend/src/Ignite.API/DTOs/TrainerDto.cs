@@ -9,6 +9,9 @@ public class TrainerDto
     public string? PrimaryTitle { get; set; }
     public string? SecondaryTitle { get; set; }
     public string? Location { get; set; }
+    public string? Gender { get; set; }
+    public string? Country { get; set; }
+    public string? City { get; set; }
     public int? ExperienceYears { get; set; }
     public required int ProgramsCount { get; set; }
     public required int StudentsCount { get; set; }

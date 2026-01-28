@@ -14,9 +14,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(256);
         
-        builder.Property(u => u.Name)
+        builder.Property(u => u.FirstName)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(100);
+        
+        builder.Property(u => u.LastName)
+            .IsRequired()
+            .HasMaxLength(100);
         
         builder.Property(u => u.PasswordHash)
             .IsRequired();
@@ -26,6 +30,19 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.Property(u => u.Slug)
             .HasMaxLength(100);
+        
+        builder.Property(u => u.Gender)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+        
+        builder.Property(u => u.Country)
+            .HasMaxLength(100);
+        
+        builder.Property(u => u.City)
+            .HasMaxLength(100);
+        
+        // Ignore computed property
+        builder.Ignore(u => u.FullName);
         
         builder.HasIndex(u => u.Email)
             .IsUnique();

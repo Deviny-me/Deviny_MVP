@@ -25,7 +25,8 @@ public static class DependencyInjection
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ILevelService, LevelService>();
-        services.AddSingleton<SlugGenerator>();
+        services.AddScoped<IVerificationDocumentService, VerificationDocumentService>();
+        services.AddSingleton<ISlugGenerator, SlugGenerator>();
         
         return services;
     }

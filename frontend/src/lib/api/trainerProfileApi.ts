@@ -1,18 +1,17 @@
 import { TrainerProfileResponse } from '@/types/trainerProfile'
-
-const API_URL = 'http://localhost:5000/api'
+import { API_URL, getAuthHeader } from '@/lib/config'
 
 export async function fetchTrainerProfile(): Promise<TrainerProfileResponse> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/trainer/me/profile`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...authHeader,
       'Content-Type': 'application/json',
     },
     credentials: 'include',
@@ -41,9 +40,9 @@ export async function uploadCertificate(
   year: number,
   file: File
 ): Promise<void> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
@@ -55,9 +54,7 @@ export async function uploadCertificate(
 
   const response = await fetch(`${API_URL}/trainer/me/certificates`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeader,
     credentials: 'include',
     body: formData,
   })
@@ -77,17 +74,15 @@ export async function uploadCertificate(
 }
 
 export async function deleteCertificate(certificateId: string): Promise<void> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/trainer/me/certificates/${certificateId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeader,
     credentials: 'include',
   })
 
@@ -106,16 +101,16 @@ export async function deleteCertificate(certificateId: string): Promise<void> {
 }
 
 export async function updateAbout(text: string): Promise<void> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/trainer/me/about`, {
     method: 'PUT',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...authHeader,
       'Content-Type': 'application/json',
     },
     credentials: 'include',
@@ -133,16 +128,16 @@ export async function updateAbout(text: string): Promise<void> {
 }
 
 export async function addSpecialization(name: string): Promise<any> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/trainer/me/specializations`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...authHeader,
       'Content-Type': 'application/json',
     },
     credentials: 'include',
@@ -162,17 +157,15 @@ export async function addSpecialization(name: string): Promise<any> {
 }
 
 export async function deleteSpecialization(specializationId: string): Promise<void> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/trainer/me/specializations/${specializationId}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeader,
     credentials: 'include',
   })
 

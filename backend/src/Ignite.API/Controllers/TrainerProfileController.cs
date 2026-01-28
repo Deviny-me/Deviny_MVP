@@ -2,7 +2,6 @@ using Ignite.API.DTOs;
 using Ignite.Application.Common.Interfaces;
 using Ignite.Domain.Entities;
 using Ignite.Infrastructure.Persistence;
-using Ignite.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,14 +16,14 @@ public class TrainerProfileController : ControllerBase
 {
     private readonly ITrainerProfileRepository _trainerProfileRepository;
     private readonly IUserRepository _userRepository;
-    private readonly SlugGenerator _slugGenerator;
+    private readonly ISlugGenerator _slugGenerator;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
 
     public TrainerProfileController(
         ITrainerProfileRepository trainerProfileRepository,
         IUserRepository userRepository,
-        SlugGenerator slugGenerator,
+        ISlugGenerator slugGenerator,
         IConfiguration configuration,
         ApplicationDbContext context)
     {
@@ -65,13 +64,13 @@ public class TrainerProfileController : ControllerBase
             if (profile == null)
             {
                 // Create a new profile with auto-generated slug
-                var baseSlug = _slugGenerator.GenerateSlug(user.Name);
+                var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
                 var slug = baseSlug;
                 var suffix = 1;
                 
                 while (!await _trainerProfileRepository.IsSlugUniqueAsync(slug))
                 {
-                    slug = _slugGenerator.GenerateSlug(user.Name, suffix);
+                    slug = _slugGenerator.GenerateSlug(user.FullName, suffix);
                     suffix++;
                 }
 
@@ -103,7 +102,7 @@ public class TrainerProfileController : ControllerBase
             }
 
             // Calculate initials
-            var initials = GetInitials(user.Name);
+            var initials = GetInitials(user.FullName);
 
             // Build profile public URL
             var clientAppUrl = _configuration["ClientAppUrl"] ?? "http://localhost:3000";
@@ -115,12 +114,15 @@ public class TrainerProfileController : ControllerBase
                 Trainer = new TrainerDto
                 {
                     Id = user.Id,
-                    FullName = user.Name,
+                    FullName = user.FullName,
                     AvatarUrl = user.AvatarUrl,
                     Initials = initials,
                     PrimaryTitle = profile.PrimaryTitle,
                     SecondaryTitle = profile.SecondaryTitle,
                     Location = profile.Location,
+                    Gender = user.Gender?.ToString().ToLower(),
+                    Country = user.Country,
+                    City = user.City,
                     ExperienceYears = profile.ExperienceYears,
                     ProgramsCount = profile.ProgramsCount,
                     StudentsCount = 0, // Placeholder - will be calculated from client relationships

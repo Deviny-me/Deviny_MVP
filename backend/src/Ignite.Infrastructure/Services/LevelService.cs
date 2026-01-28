@@ -1,4 +1,5 @@
 using Ignite.Application.Common.Interfaces;
+using Ignite.Application.Features.Levels.DTOs;
 using Ignite.Domain.Entities;
 using Ignite.Domain.Enums;
 using Ignite.Infrastructure.Persistence;

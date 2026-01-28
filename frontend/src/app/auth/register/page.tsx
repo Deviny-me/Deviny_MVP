@@ -1,26 +1,136 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
-import { useRegister } from '@/features/auth/hooks/useRegister'
-import { Eye, EyeOff } from 'lucide-react'
+import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
+import { Eye, EyeOff, Upload, X, FileText, Image } from 'lucide-react'
 
-export default function RegisterPage() {
+// 20 popular countries with their major cities
+const COUNTRIES_WITH_CITIES: Record<string, { name: string; cities: string[] }> = {
+  'RU': {
+    name: 'Россия',
+    cities: ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Челябинск', 'Самара', 'Омск', 'Ростов-на-Дону', 'Уфа', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград']
+  },
+  'KZ': {
+    name: 'Казахстан',
+    cities: ['Алматы', 'Астана', 'Шымкент', 'Караганда', 'Актобе', 'Тараз', 'Павлодар', 'Усть-Каменогорск', 'Семей', 'Атырау']
+  },
+  'UA': {
+    name: 'Украина',
+    cities: ['Киев', 'Харьков', 'Одесса', 'Днепр', 'Донецк', 'Запорожье', 'Львов', 'Кривой Рог', 'Николаев', 'Мариуполь']
+  },
+  'BY': {
+    name: 'Беларусь',
+    cities: ['Минск', 'Гомель', 'Могилёв', 'Витебск', 'Гродно', 'Брест', 'Бобруйск', 'Барановичи', 'Борисов', 'Пинск']
+  },
+  'US': {
+    name: 'США',
+    cities: ['Нью-Йорк', 'Лос-Анджелес', 'Чикаго', 'Хьюстон', 'Финикс', 'Филадельфия', 'Сан-Антонио', 'Сан-Диего', 'Даллас', 'Сан-Хосе', 'Остин', 'Майами', 'Бостон', 'Сиэтл', 'Денвер']
+  },
+  'DE': {
+    name: 'Германия',
+    cities: ['Берлин', 'Гамбург', 'Мюнхен', 'Кёльн', 'Франкфурт', 'Штутгарт', 'Дюссельдорф', 'Дортмунд', 'Эссен', 'Лейпциг', 'Бремен', 'Дрезден', 'Ганновер', 'Нюрнберг']
+  },
+  'GB': {
+    name: 'Великобритания',
+    cities: ['Лондон', 'Бирмингем', 'Манчестер', 'Глазго', 'Ливерпуль', 'Бристоль', 'Шеффилд', 'Лидс', 'Эдинбург', 'Лестер', 'Кардифф', 'Белфаст', 'Ноттингем', 'Ньюкасл']
+  },
+  'FR': {
+    name: 'Франция',
+    cities: ['Париж', 'Марсель', 'Лион', 'Тулуза', 'Ницца', 'Нант', 'Страсбург', 'Монпелье', 'Бордо', 'Лилль', 'Ренн', 'Реймс', 'Гавр', 'Тулон']
+  },
+  'IT': {
+    name: 'Италия',
+    cities: ['Рим', 'Милан', 'Неаполь', 'Турин', 'Палермо', 'Генуя', 'Болонья', 'Флоренция', 'Бари', 'Катания', 'Венеция', 'Верона', 'Мессина', 'Падуя']
+  },
+  'ES': {
+    name: 'Испания',
+    cities: ['Мадрид', 'Барселона', 'Валенсия', 'Севилья', 'Сарагоса', 'Малага', 'Мурсия', 'Пальма', 'Бильбао', 'Аликанте', 'Кордова', 'Вальядолид', 'Виго', 'Хихон']
+  },
+  'PL': {
+    name: 'Польша',
+    cities: ['Варшава', 'Краков', 'Лодзь', 'Вроцлав', 'Познань', 'Гданьск', 'Щецин', 'Быдгощ', 'Люблин', 'Катовице', 'Белосток', 'Гдыня', 'Ченстохова', 'Радом']
+  },
+  'TR': {
+    name: 'Турция',
+    cities: ['Стамбул', 'Анкара', 'Измир', 'Бурса', 'Анталья', 'Адана', 'Конья', 'Газиантеп', 'Мерсин', 'Диярбакыр', 'Кайсери', 'Эскишехир', 'Самсун', 'Денизли']
+  },
+  'AE': {
+    name: 'ОАЭ',
+    cities: ['Дубай', 'Абу-Даби', 'Шарджа', 'Аджман', 'Рас-эль-Хайма', 'Фуджейра', 'Умм-эль-Кайвайн', 'Аль-Айн']
+  },
+  'CA': {
+    name: 'Канада',
+    cities: ['Торонто', 'Монреаль', 'Ванкувер', 'Калгари', 'Эдмонтон', 'Оттава', 'Виннипег', 'Квебек', 'Гамильтон', 'Китченер', 'Лондон', 'Виктория', 'Галифакс', 'Ошава']
+  },
+  'AU': {
+    name: 'Австралия',
+    cities: ['Сидней', 'Мельбурн', 'Брисбен', 'Перт', 'Аделаида', 'Голд-Кост', 'Ньюкасл', 'Канберра', 'Саншайн-Кост', 'Вуллонгонг', 'Хобарт', 'Джилонг', 'Таунсвилл', 'Кэрнс']
+  },
+  'BR': {
+    name: 'Бразилия',
+    cities: ['Сан-Паулу', 'Рио-де-Жанейро', 'Бразилиа', 'Салвадор', 'Форталеза', 'Белу-Оризонти', 'Манаус', 'Куритиба', 'Ресифи', 'Порту-Алегри', 'Гояния', 'Белен', 'Гуарульюс', 'Кампинас']
+  },
+  'CN': {
+    name: 'Китай',
+    cities: ['Шанхай', 'Пекин', 'Гуанчжоу', 'Шэньчжэнь', 'Чэнду', 'Тяньцзинь', 'Ухань', 'Дунгуань', 'Чунцин', 'Нанкин', 'Шэньян', 'Ханчжоу', 'Сиань', 'Харбин']
+  },
+  'JP': {
+    name: 'Япония',
+    cities: ['Токио', 'Йокогама', 'Осака', 'Нагоя', 'Саппоро', 'Фукуока', 'Кобе', 'Киото', 'Кавасаки', 'Сайтама', 'Хиросима', 'Сендай', 'Китакюсю', 'Тиба']
+  },
+  'KR': {
+    name: 'Южная Корея',
+    cities: ['Сеул', 'Пусан', 'Инчхон', 'Тэгу', 'Тэджон', 'Кванджу', 'Сувон', 'Ульсан', 'Чханвон', 'Соннам', 'Коян', 'Йонгин', 'Пучхон', 'Аньян']
+  },
+  'IN': {
+    name: 'Индия',
+    cities: ['Мумбаи', 'Дели', 'Бангалор', 'Хайдарабад', 'Ахмадабад', 'Ченнаи', 'Калькутта', 'Сурат', 'Пуна', 'Джайпур', 'Лакхнау', 'Канпур', 'Нагпур', 'Индор']
+  },
+}
+
+// Get list of countries for dropdown
+const COUNTRIES = Object.entries(COUNTRIES_WITH_CITIES).map(([code, data]) => ({
+  code,
+  name: data.name
+}))
+
+const GENDERS: { value: GenderType; label: string }[] = [
+  { value: 'Male', label: 'Мужской' },
+  { value: 'Female', label: 'Женский' },
+  { value: 'Other', label: 'Другой' },
+]
+
+function RegisterPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   const [role, setRole] = useState<RoleType | null>(null)
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // Extended fields for trainer
+  const [gender, setGender] = useState<GenderType | undefined>()
+  const [countryCode, setCountryCode] = useState<string>('')
+  const [city, setCity] = useState('')
+  const [verificationDocument, setVerificationDocument] = useState<File | null>(null)
+  const [dragActive, setDragActive] = useState(false)
+
+  // Get available cities based on selected country
+  const availableCities = countryCode ? COUNTRIES_WITH_CITIES[countryCode]?.cities || [] : []
+  const selectedCountryName = countryCode ? COUNTRIES_WITH_CITIES[countryCode]?.name || '' : ''
 
   const { loading, errors, register, clearErrors } = useRegister()
 
@@ -45,16 +155,81 @@ export default function RegisterPage() {
 
     clearErrors()
     
-    await register(
-      {
-        fullName,
-        email,
-        password,
-        confirmPassword,
-        termsAccepted,
-      },
-      role
-    )
+    const formData: RegisterFormData = {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      termsAccepted,
+      gender,
+      country: selectedCountryName,
+      city,
+    }
+
+    // Add trainer-specific fields
+    if (role === 'trainer') {
+      formData.verificationDocument = verificationDocument || undefined
+    }
+    
+    await register(formData, role)
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0])
+    }
+  }
+
+  const handleFileSelect = (file: File) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+    if (!allowedTypes.includes(file.type)) {
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      return
+    }
+    setVerificationDocument(file)
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0])
+    }
+  }
+
+  const removeFile = () => {
+    setVerificationDocument(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const getFileIcon = (file: File) => {
+    if (file.type === 'application/pdf') {
+      return <FileText className="w-8 h-8 text-red-500" />
+    }
+    return <Image className="w-8 h-8 text-blue-500" />
+  }
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B'
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
   }
 
   if (!role) {
@@ -89,25 +264,47 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Имя и фамилия
-            </label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                errors.fullName ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Иван Иванов"
-              disabled={loading}
-            />
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-            )}
+          {/* First Name and Last Name */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Имя
+              </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                  errors.firstName ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Иван"
+                disabled={loading}
+              />
+              {errors.firstName && (
+                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Фамилия
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                  errors.lastName ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Иванов"
+                disabled={loading}
+              />
+              {errors.lastName && (
+                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+              )}
+            </div>
           </div>
 
+          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email
@@ -127,6 +324,7 @@ export default function RegisterPage() {
             )}
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Пароль
@@ -155,6 +353,7 @@ export default function RegisterPage() {
             )}
           </div>
 
+          {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Повторите пароль
@@ -183,6 +382,161 @@ export default function RegisterPage() {
             )}
           </div>
 
+          {/* Gender */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Пол
+            </label>
+            <select
+              value={gender || ''}
+              onChange={(e) => setGender(e.target.value as GenderType || undefined)}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                errors.gender ? 'border-red-500' : 'border-gray-300'
+              }`}
+              disabled={loading}
+            >
+              <option value="">Выберите пол</option>
+              {GENDERS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+            {errors.gender && (
+              <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
+            )}
+          </div>
+
+          {/* Country and City */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Страна
+              </label>
+              <select
+                value={countryCode}
+                onChange={(e) => {
+                  setCountryCode(e.target.value)
+                  setCity('') // Reset city when country changes
+                }}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                  errors.country ? 'border-red-500' : 'border-gray-300'
+                }`}
+                disabled={loading}
+              >
+                <option value="">Выберите страну</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {errors.country && (
+                <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Город
+              </label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                  errors.city ? 'border-red-500' : 'border-gray-300'
+                }`}
+                disabled={loading || !countryCode}
+              >
+                <option value="">{countryCode ? 'Выберите город' : 'Сначала выберите страну'}</option>
+                {availableCities.map((cityName) => (
+                  <option key={cityName} value={cityName}>
+                    {cityName}
+                  </option>
+                ))}
+              </select>
+              {errors.city && (
+                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Trainer-specific fields */}
+          {isTrainer && (
+            <>
+              {/* Verification Document Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Документ подтверждения квалификации
+                </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Загрузите сертификат, диплом или другой документ, подтверждающий вашу квалификацию тренера
+                </p>
+                
+                {!verificationDocument ? (
+                  <div
+                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      dragActive 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : errors.verificationDocument 
+                          ? 'border-red-500 bg-red-50' 
+                          : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleFileInputChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={loading}
+                    />
+                    <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-primary-600">Нажмите для загрузки</span>
+                      {' '}или перетащите файл
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      PDF, JPG, PNG до 10 МБ
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        {getFileIcon(verificationDocument)}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {verificationDocument.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatFileSize(verificationDocument.size)}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeFile}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        disabled={loading}
+                      >
+                        <X className="h-5 w-5 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {errors.verificationDocument && (
+                  <p className="mt-1 text-sm text-red-600">{errors.verificationDocument}</p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Terms */}
           <div>
             <label className="flex items-start space-x-3">
               <input
@@ -234,5 +588,17 @@ export default function RegisterPage() {
         </div>
       </Card>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="light w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <RegisterPageContent />
+    </Suspense>
   )
 }

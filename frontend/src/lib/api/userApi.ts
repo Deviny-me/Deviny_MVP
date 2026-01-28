@@ -1,9 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+import { API_URL, getAuthHeader } from '@/lib/config'
 
 export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
@@ -12,9 +12,7 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
 
   const response = await fetch(`${API_URL}/user/avatar`, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeader,
     body: formData,
     credentials: 'include',
   })
@@ -32,17 +30,15 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
 }
 
 export async function deleteAvatar(): Promise<void> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/user/avatar`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
+    headers: authHeader,
     credentials: 'include',
   })
 

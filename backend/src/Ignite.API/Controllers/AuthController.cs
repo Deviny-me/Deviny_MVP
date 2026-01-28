@@ -61,15 +61,51 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<LoginResponse>> Register([FromBody] RegisterRequest request)
+    public async Task<ActionResult<LoginResponse>> Register([FromForm] RegisterRequest request)
     {
         try
         {
+            // Validate file for trainers
+            if (request.Role == Domain.Enums.UserRole.Trainer)
+            {
+                if (request.VerificationDocument == null)
+                {
+                    return BadRequest(new { message = "Verification document is required for trainers" });
+                }
+
+                // Validate file size (10 MB max)
+                if (request.VerificationDocument.Length > 10 * 1024 * 1024)
+                {
+                    return BadRequest(new { message = "File size must be less than 10 MB" });
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                var extension = Path.GetExtension(request.VerificationDocument.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return BadRequest(new { message = "Only PDF, JPG, and PNG files are allowed" });
+                }
+            }
+
+            // Parse Gender if provided
+            Domain.Enums.Gender? gender = null;
+            if (!string.IsNullOrEmpty(request.Gender) && 
+                Enum.TryParse<Domain.Enums.Gender>(request.Gender, true, out var parsedGender))
+            {
+                gender = parsedGender;
+            }
+
             var command = new RegisterCommand(
-                request.Name,
+                request.FirstName,
+                request.LastName,
                 request.Email,
                 request.Password,
-                request.Role
+                request.Role,
+                gender,
+                request.Country,
+                request.City,
+                request.VerificationDocument
             );
 
             var response = await _mediator.Send(command);
@@ -174,8 +210,12 @@ public class AuthController : ControllerBase
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    Name = user.Name,
-                    Role = user.Role
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    FullName = user.FullName,
+                    Role = user.Role,
+                    Country = user.Country,
+                    City = user.City
                 }
             });
         }

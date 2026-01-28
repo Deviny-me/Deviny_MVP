@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Ignite.Application.Common.Interfaces;
+using Ignite.Application.Features.Levels.DTOs;
 using Ignite.Application.Features.Levels.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

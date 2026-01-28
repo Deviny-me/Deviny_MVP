@@ -1,4 +1,4 @@
-using Ignite.Application.Common.Interfaces;
+using Ignite.Application.Features.Levels.DTOs;
 using MediatR;
 
 namespace Ignite.Application.Features.Levels.Queries;

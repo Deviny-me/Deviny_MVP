@@ -41,7 +41,9 @@ public class StudentsController : ControllerBase
                 .Select(u => new StudentDto
                 {
                     Id = u.Id,
-                    Name = u.Name,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    FullName = u.FirstName + " " + u.LastName,
                     Email = u.Email,
                     Phone = u.Phone,
                     AvatarUrl = u.AvatarUrl

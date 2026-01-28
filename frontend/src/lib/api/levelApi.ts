@@ -1,18 +1,17 @@
 import { UserLevelDto } from '@/types/level'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+import { API_URL, getAuthHeader } from '@/lib/config'
 
 export async function getMyLevel(): Promise<UserLevelDto> {
-  const token = localStorage.getItem('accessToken')
+  const authHeader = getAuthHeader()
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated')
   }
 
   const response = await fetch(`${API_URL}/me/level`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...authHeader,
       'Content-Type': 'application/json',
     },
     credentials: 'include',

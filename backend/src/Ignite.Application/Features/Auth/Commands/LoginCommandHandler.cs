@@ -75,8 +75,12 @@ public class LoginCommandHandler
             {
                 Id = user.Id,
                 Email = user.Email,
-                Name = user.Name,
-                Role = user.Role
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                FullName = user.FullName,
+                Role = user.Role,
+                Country = user.Country,
+                City = user.City
             }
         };
     }

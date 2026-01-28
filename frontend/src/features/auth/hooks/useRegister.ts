@@ -6,20 +6,33 @@ import { authService } from '@/features/auth/services/authService'
 
 import { RoleType } from '@/features/auth/types/role.types'
 
-interface RegisterFormData {
-  fullName: string
+export type GenderType = 'Male' | 'Female' | 'Other'
+
+export interface RegisterFormData {
+  firstName: string
+  lastName: string
   email: string
   password: string
   confirmPassword: string
   termsAccepted: boolean
+  // Extended fields for trainer registration
+  gender?: GenderType
+  country?: string
+  city?: string
+  verificationDocument?: File
 }
 
 interface ValidationErrors {
-  fullName?: string
+  firstName?: string
+  lastName?: string
   email?: string
   password?: string
   confirmPassword?: string
   termsAccepted?: string
+  gender?: string
+  country?: string
+  city?: string
+  verificationDocument?: string
   general?: string
 }
 
@@ -28,14 +41,21 @@ export const useRegister = () => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<ValidationErrors>({})
 
-  const validateForm = (data: RegisterFormData): boolean => {
+  const validateForm = (data: RegisterFormData, role: RoleType): boolean => {
     const newErrors: ValidationErrors = {}
 
-    // Validate full name
-    if (!data.fullName.trim()) {
-      newErrors.fullName = 'Имя обязательно'
-    } else if (data.fullName.trim().length < 2) {
-      newErrors.fullName = 'Имя должно содержать минимум 2 символа'
+    // Validate first name
+    if (!data.firstName.trim()) {
+      newErrors.firstName = 'Имя обязательно'
+    } else if (data.firstName.trim().length < 2) {
+      newErrors.firstName = 'Имя должно содержать минимум 2 символа'
+    }
+
+    // Validate last name
+    if (!data.lastName.trim()) {
+      newErrors.lastName = 'Фамилия обязательна'
+    } else if (data.lastName.trim().length < 2) {
+      newErrors.lastName = 'Фамилия должна содержать минимум 2 символа'
     }
 
     // Validate email
@@ -67,6 +87,32 @@ export const useRegister = () => {
       newErrors.termsAccepted = 'Необходимо принять условия'
     }
 
+    // Additional validation for trainers
+    if (role === 'trainer') {
+      if (!data.gender) {
+        newErrors.gender = 'Выберите пол'
+      }
+      if (!data.country) {
+        newErrors.country = 'Выберите страну'
+      }
+      if (!data.city?.trim()) {
+        newErrors.city = 'Укажите город'
+      }
+      if (!data.verificationDocument) {
+        newErrors.verificationDocument = 'Загрузите документ подтверждения квалификации'
+      } else {
+        // Validate file size (10 MB max)
+        if (data.verificationDocument.size > 10 * 1024 * 1024) {
+          newErrors.verificationDocument = 'Размер файла не должен превышать 10 МБ'
+        }
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+        if (!allowedTypes.includes(data.verificationDocument.type)) {
+          newErrors.verificationDocument = 'Допустимые форматы: PDF, JPG, PNG'
+        }
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -76,7 +122,7 @@ export const useRegister = () => {
     setErrors({})
 
     // Validate form
-    if (!validateForm(data)) {
+    if (!validateForm(data, role)) {
       return
     }
 
@@ -84,10 +130,15 @@ export const useRegister = () => {
 
     try {
       const response = await authService.register({
-        fullName: data.fullName,
+        firstName: data.firstName,
+        lastName: data.lastName,
         email: data.email,
         password: data.password,
         role,
+        gender: data.gender,
+        country: data.country,
+        city: data.city,
+        verificationDocument: data.verificationDocument,
       })
 
       // Store auth data

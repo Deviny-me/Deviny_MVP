@@ -10,20 +10,29 @@ namespace Ignite.Application.Features.Auth.Commands;
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResponse>
 {
     private readonly IUserRepository _userRepository;
+    private readonly ITrainerProfileRepository _trainerProfileRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
+    private readonly ISlugGenerator _slugGenerator;
     private readonly ILogger<RegisterCommandHandler> _logger;
+    private readonly IVerificationDocumentService _verificationDocumentService;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
+        ITrainerProfileRepository trainerProfileRepository,
         IPasswordHasher passwordHasher,
         ITokenService tokenService,
-        ILogger<RegisterCommandHandler> logger)
+        ISlugGenerator slugGenerator,
+        ILogger<RegisterCommandHandler> logger,
+        IVerificationDocumentService verificationDocumentService)
     {
         _userRepository = userRepository;
+        _trainerProfileRepository = trainerProfileRepository;
         _passwordHasher = passwordHasher;
         _tokenService = tokenService;
+        _slugGenerator = slugGenerator;
         _logger = logger;
+        _verificationDocumentService = verificationDocumentService;
     }
 
     public async Task<LoginResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -47,9 +56,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            Name = request.FullName,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             PasswordHash = passwordHash,
             Role = request.Role,
+            Gender = request.Gender,
+            Country = request.Country,
+            City = request.City,
             IsActive = true,
             IsEmailConfirmed = false,
             CreatedAt = DateTime.UtcNow,
@@ -61,6 +74,68 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
 
         _logger.LogInformation("User registered successfully: {Email}, Id: {UserId}", 
             user.Email, user.Id);
+
+        // Handle trainer-specific setup: create profile and add verification document as certificate
+        if (request.Role == UserRole.Trainer)
+        {
+            // Generate unique slug for trainer profile
+            var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
+            var slug = baseSlug;
+            var suffix = 1;
+            
+            while (!await _trainerProfileRepository.IsSlugUniqueAsync(slug))
+            {
+                slug = _slugGenerator.GenerateSlug(user.FullName, suffix);
+                suffix++;
+            }
+
+            // Create trainer profile
+            var trainerProfile = new TrainerProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Slug = slug,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                Certificates = new List<TrainerCertificate>()
+            };
+
+            // If verification document uploaded, add it as certificate
+            if (request.VerificationDocument != null)
+            {
+                var verificationDoc = await _verificationDocumentService.SaveVerificationDocumentAsync(
+                    user.Id, 
+                    request.VerificationDocument, 
+                    cancellationToken);
+                
+                _logger.LogInformation("Verification document uploaded for trainer: {UserId}", user.Id);
+
+                // Add document as certificate
+                var certificate = new TrainerCertificate
+                {
+                    Id = Guid.NewGuid(),
+                    TrainerId = trainerProfile.Id,
+                    Title = "Документ подтверждения квалификации",
+                    Issuer = null,
+                    Year = DateTime.UtcNow.Year,
+                    SortOrder = 0,
+                    FileUrl = verificationDoc.FilePath,
+                    FileName = verificationDoc.FileName,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                trainerProfile.Certificates.Add(certificate);
+            }
+
+            await _trainerProfileRepository.CreateAsync(trainerProfile);
+            
+            // Update user with slug
+            user.Slug = slug;
+            await _userRepository.UpdateAsync(user);
+
+            _logger.LogInformation("Trainer profile created for user: {UserId}, slug: {Slug}", user.Id, slug);
+        }
 
         // Generate tokens
         var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Email, user.Role.ToString());
@@ -89,8 +164,12 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
             {
                 Id = user.Id,
                 Email = user.Email,
-                Name = user.Name,
-                Role = user.Role
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                FullName = user.FullName,
+                Role = user.Role,
+                Country = user.Country,
+                City = user.City
             }
         };
     }

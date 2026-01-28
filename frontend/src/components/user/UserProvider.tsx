@@ -10,6 +10,9 @@ interface UserData {
   phone: string
   avatarUrl?: string | null
   role: number | string
+  gender?: string | null
+  country?: string | null
+  city?: string | null
 }
 
 interface UserContextType {
@@ -49,6 +52,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
           phone: data.phone,
           avatarUrl: data.avatarUrl,
           role: data.role,
+          gender: data.gender,
+          country: data.country,
+          city: data.city,
         })
       } else if (response.status === 401) {
         const refreshResult = await authService.refreshToken()

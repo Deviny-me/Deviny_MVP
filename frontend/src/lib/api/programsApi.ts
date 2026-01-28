@@ -1,18 +1,17 @@
 import { ProgramDto, CreateProgramRequest, UpdateProgramRequest } from '@/types/program';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+import { API_URL, getAuthHeader } from '@/lib/config';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('accessToken');
+  const authHeader = getAuthHeader();
   
-  if (!token) {
+  if (!authHeader.Authorization) {
     throw new Error('Not authenticated');
   }
 
   const response = await fetch(`${API_URL}${url}`, {
     ...options,
     headers: {
-      'Authorization': `Bearer ${token}`,
+      ...authHeader,
       ...options.headers,
     },
     credentials: 'include',
@@ -43,9 +42,9 @@ export const programsApi = {
 
   // Create program
   createProgram: async (request: CreateProgramRequest): Promise<ProgramDto> => {
-    const token = localStorage.getItem('accessToken');
+    const authHeader = getAuthHeader();
     
-    if (!token) {
+    if (!authHeader.Authorization) {
       throw new Error('Not authenticated');
     }
 
@@ -64,7 +63,7 @@ export const programsApi = {
     const response = await fetch(`${API_URL}/trainer/me/programs`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        ...authHeader,
       },
       body: formData,
       credentials: 'include',
@@ -79,9 +78,9 @@ export const programsApi = {
 
   // Update program
   updateProgram: async (id: string, request: UpdateProgramRequest): Promise<ProgramDto> => {
-    const token = localStorage.getItem('accessToken');
+    const authHeader = getAuthHeader();
     
-    if (!token) {
+    if (!authHeader.Authorization) {
       throw new Error('Not authenticated');
     }
 
@@ -102,7 +101,7 @@ export const programsApi = {
     const response = await fetch(`${API_URL}/trainer/me/programs/${id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        ...authHeader,
       },
       body: formData,
       credentials: 'include',

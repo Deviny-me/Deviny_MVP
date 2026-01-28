@@ -9,32 +9,39 @@ export interface LoginRequestDto {
   rememberMe: boolean
 }
 
+export interface UserDto {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  fullName: string
+  role: RoleType
+  country?: string
+  city?: string
+}
+
 export interface LoginResponseDto {
   accessToken: string
   refreshToken: string
-  user: {
-    id: string
-    email: string
-    name: string
-    role: RoleType
-  }
+  user: UserDto
 }
 
 export interface RefreshResponseDto {
   accessToken: string
-  user: {
-    id: string
-    email: string
-    name: string
-    role: string
-  }
+  user: UserDto
 }
 
 export interface RegisterRequestDto {
-  fullName: string
+  firstName: string
+  lastName: string
   email: string
   password: string
   role: RoleType
+  // Extended fields for trainer registration
+  gender?: 'Male' | 'Female' | 'Other'
+  country?: string
+  city?: string
+  verificationDocument?: File
 }
 
 export const authService = {
@@ -62,18 +69,31 @@ export const authService = {
   },
 
   async register(data: RegisterRequestDto): Promise<LoginResponseDto> {
+    const formData = new FormData()
+    formData.append('firstName', data.firstName)
+    formData.append('lastName', data.lastName)
+    formData.append('email', data.email)
+    formData.append('password', data.password)
+    formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '2')
+    
+    // Extended fields for trainers
+    if (data.gender) {
+      formData.append('gender', data.gender)
+    }
+    if (data.country) {
+      formData.append('country', data.country)
+    }
+    if (data.city) {
+      formData.append('city', data.city)
+    }
+    if (data.verificationDocument) {
+      formData.append('verificationDocument', data.verificationDocument)
+    }
+
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       credentials: 'include',
-      body: JSON.stringify({
-        name: data.fullName,
-        email: data.email,
-        password: data.password,
-        role: data.role === 'user' ? 0 : 1,
-      }),
+      body: formData,
     })
 
     if (!response.ok) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useEffect, useState, FormEvent } from 'react'
+import { useEffect, useState, FormEvent, Suspense } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
@@ -10,7 +10,7 @@ import { RoleType } from '@/features/auth/types/role.types'
 import { Eye, EyeOff } from 'lucide-react'
 import { useLogin } from '@/features/auth/hooks/useLogin'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [role, setRole] = useState<RoleType | null>(null)
@@ -211,5 +211,17 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="light w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   )
 }

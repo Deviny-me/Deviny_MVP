@@ -86,6 +86,7 @@ interface Translations {
   topPrograms: string
   noPrograms: string
   createProgram: string
+  viewAllPrograms: string
   
   // Clients
   manageClients: string
@@ -303,7 +304,7 @@ const translations: Record<Language, Translations> = {
     activityWillAppear: 'Активность клиентов будет отображаться здесь',
     topPrograms: 'Топ программы',
     noPrograms: 'У вас пока нет программ',
-    createProgram: 'Создать программу',
+    viewAllPrograms: 'Смотреть все программы',
     
     // Clients
     manageClients: 'Управляйте своими клиентами',
@@ -519,7 +520,7 @@ const translations: Record<Language, Translations> = {
     activityWillAppear: 'Client activity will appear here',
     topPrograms: 'Top programs',
     noPrograms: 'You don\'t have any programs yet',
-    createProgram: 'Create program',
+    viewAllPrograms: 'View all programs',
     
     // Clients
     manageClients: 'Manage your clients',

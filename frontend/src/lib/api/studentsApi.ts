@@ -1,3 +1,5 @@
+import { API_URL, getAuthHeader } from '@/lib/config'
+
 export interface Student {
   id: string
   name: string
@@ -6,16 +8,10 @@ export interface Student {
   avatarUrl?: string
 }
 
-const API_URL = 'http://localhost:5000/api'
-
 export const studentsApi = {
   async getStudents(): Promise<Student[]> {
-    const token = localStorage.getItem('accessToken')
-
     const response = await fetch(`${API_URL}/trainer/me/students`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeader(),
     })
 
     if (!response.ok) throw new Error('Failed to fetch students')

@@ -61,9 +61,9 @@ public class TrainerScheduleController : ControllerBase
                 {
                     Id = e.Id,
                     TrainerId = e.TrainerId,
-                    TrainerName = e.Trainer != null ? e.Trainer.Name : null,
+                    TrainerName = e.Trainer != null ? e.Trainer.FirstName + " " + e.Trainer.LastName : null,
                     StudentId = e.StudentId,
-                    StudentName = e.Student != null ? e.Student.Name : null,
+                    StudentName = e.Student != null ? e.Student.FirstName + " " + e.Student.LastName : null,
                     StartAt = e.StartAt,
                     DurationMinutes = e.DurationMinutes,
                     Type = e.Type.ToString(),
@@ -109,9 +109,9 @@ public class TrainerScheduleController : ControllerBase
             {
                 Id = evt.Id,
                 TrainerId = evt.TrainerId,
-                TrainerName = evt.Trainer != null ? evt.Trainer.Name : null,
+                TrainerName = evt.Trainer != null ? evt.Trainer.FullName : null,
                 StudentId = evt.StudentId,
-                StudentName = evt.Student != null ? evt.Student.Name : null,
+                StudentName = evt.Student != null ? evt.Student.FullName : null,
                 StartAt = evt.StartAt,
                 DurationMinutes = evt.DurationMinutes,
                 Type = evt.Type.ToString(),

@@ -52,13 +52,18 @@ public class UserController : ControllerBase
             return Ok(new
             {
                 id = user.Id,
-                name = user.Name,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                fullName = user.FullName,
                 email = user.Email,
                 phone = user.Phone ?? "",
                 avatarUrl = user.AvatarUrl ?? "",
-                theme = user.Theme ?? "light",
+                theme = user.Settings?.Theme ?? "light",
                 pushNotificationsEnabled = user.PushNotificationsEnabled,
-                role = user.Role
+                role = user.Role,
+                country = user.Country,
+                city = user.City,
+                gender = user.Gender?.ToString()
             });
         }
         catch (Exception ex)
@@ -95,14 +100,20 @@ public class UserController : ControllerBase
             }
 
             // Update user data
-            if (!string.IsNullOrEmpty(request.Name))
-                user.Name = request.Name;
+            if (!string.IsNullOrEmpty(request.FirstName))
+                user.FirstName = request.FirstName;
+            if (!string.IsNullOrEmpty(request.LastName))
+                user.LastName = request.LastName;
             if (!string.IsNullOrEmpty(request.Phone))
                 user.Phone = request.Phone;
-            if (!string.IsNullOrEmpty(request.Theme))
-                user.Theme = request.Theme;
+            if (!string.IsNullOrEmpty(request.Theme) && user.Settings != null)
+                user.Settings.Theme = request.Theme;
             if (request.PushNotificationsEnabled.HasValue)
                 user.PushNotificationsEnabled = request.PushNotificationsEnabled.Value;
+            if (!string.IsNullOrEmpty(request.Country))
+                user.Country = request.Country;
+            if (!string.IsNullOrEmpty(request.City))
+                user.City = request.City;
 
             await _userRepository.UpdateAsync(user);
 
@@ -112,12 +123,16 @@ public class UserController : ControllerBase
                 user = new
                 {
                     id = user.Id,
-                    name = user.Name,
+                    firstName = user.FirstName,
+                    lastName = user.LastName,
+                    fullName = user.FullName,
                     email = user.Email,
                     phone = user.Phone,
                     avatarUrl = user.AvatarUrl,
-                    theme = user.Theme,
-                    pushNotificationsEnabled = user.PushNotificationsEnabled
+                    theme = user.Settings?.Theme ?? "light",
+                    pushNotificationsEnabled = user.PushNotificationsEnabled,
+                    country = user.Country,
+                    city = user.City
                 }
             });
         }

@@ -1,9 +1,10 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Ignite.Application.Common.Interfaces;
 
 namespace Ignite.Infrastructure.Services;
 
-public class SlugGenerator
+public class SlugGenerator : ISlugGenerator
 {
     private static readonly Dictionary<char, string> CyrillicToLatinMap = new()
     {
