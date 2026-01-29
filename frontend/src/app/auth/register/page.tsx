@@ -11,85 +11,105 @@ import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks
 import { Eye, EyeOff, Upload, X, FileText, Image } from 'lucide-react'
 
 // 20 popular countries with their major cities
-const COUNTRIES_WITH_CITIES: Record<string, { name: string; cities: string[] }> = {
+const COUNTRIES_WITH_CITIES: Record<string, { name: string; cities: string[]; phoneCode: string }> = {
   'RU': {
     name: 'Россия',
+    phoneCode: '+7',
     cities: ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Челябинск', 'Самара', 'Омск', 'Ростов-на-Дону', 'Уфа', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград']
   },
   'KZ': {
     name: 'Казахстан',
+    phoneCode: '+7',
     cities: ['Алматы', 'Астана', 'Шымкент', 'Караганда', 'Актобе', 'Тараз', 'Павлодар', 'Усть-Каменогорск', 'Семей', 'Атырау']
   },
   'UA': {
     name: 'Украина',
+    phoneCode: '+380',
     cities: ['Киев', 'Харьков', 'Одесса', 'Днепр', 'Донецк', 'Запорожье', 'Львов', 'Кривой Рог', 'Николаев', 'Мариуполь']
   },
   'BY': {
     name: 'Беларусь',
+    phoneCode: '+375',
     cities: ['Минск', 'Гомель', 'Могилёв', 'Витебск', 'Гродно', 'Брест', 'Бобруйск', 'Барановичи', 'Борисов', 'Пинск']
   },
   'US': {
     name: 'США',
+    phoneCode: '+1',
     cities: ['Нью-Йорк', 'Лос-Анджелес', 'Чикаго', 'Хьюстон', 'Финикс', 'Филадельфия', 'Сан-Антонио', 'Сан-Диего', 'Даллас', 'Сан-Хосе', 'Остин', 'Майами', 'Бостон', 'Сиэтл', 'Денвер']
   },
   'DE': {
     name: 'Германия',
+    phoneCode: '+49',
     cities: ['Берлин', 'Гамбург', 'Мюнхен', 'Кёльн', 'Франкфурт', 'Штутгарт', 'Дюссельдорф', 'Дортмунд', 'Эссен', 'Лейпциг', 'Бремен', 'Дрезден', 'Ганновер', 'Нюрнберг']
   },
   'GB': {
     name: 'Великобритания',
+    phoneCode: '+44',
     cities: ['Лондон', 'Бирмингем', 'Манчестер', 'Глазго', 'Ливерпуль', 'Бристоль', 'Шеффилд', 'Лидс', 'Эдинбург', 'Лестер', 'Кардифф', 'Белфаст', 'Ноттингем', 'Ньюкасл']
   },
   'FR': {
     name: 'Франция',
+    phoneCode: '+33',
     cities: ['Париж', 'Марсель', 'Лион', 'Тулуза', 'Ницца', 'Нант', 'Страсбург', 'Монпелье', 'Бордо', 'Лилль', 'Ренн', 'Реймс', 'Гавр', 'Тулон']
   },
   'IT': {
     name: 'Италия',
+    phoneCode: '+39',
     cities: ['Рим', 'Милан', 'Неаполь', 'Турин', 'Палермо', 'Генуя', 'Болонья', 'Флоренция', 'Бари', 'Катания', 'Венеция', 'Верона', 'Мессина', 'Падуя']
   },
   'ES': {
     name: 'Испания',
+    phoneCode: '+34',
     cities: ['Мадрид', 'Барселона', 'Валенсия', 'Севилья', 'Сарагоса', 'Малага', 'Мурсия', 'Пальма', 'Бильбао', 'Аликанте', 'Кордова', 'Вальядолид', 'Виго', 'Хихон']
   },
   'PL': {
     name: 'Польша',
+    phoneCode: '+48',
     cities: ['Варшава', 'Краков', 'Лодзь', 'Вроцлав', 'Познань', 'Гданьск', 'Щецин', 'Быдгощ', 'Люблин', 'Катовице', 'Белосток', 'Гдыня', 'Ченстохова', 'Радом']
   },
   'TR': {
     name: 'Турция',
+    phoneCode: '+90',
     cities: ['Стамбул', 'Анкара', 'Измир', 'Бурса', 'Анталья', 'Адана', 'Конья', 'Газиантеп', 'Мерсин', 'Диярбакыр', 'Кайсери', 'Эскишехир', 'Самсун', 'Денизли']
   },
   'AE': {
     name: 'ОАЭ',
+    phoneCode: '+971',
     cities: ['Дубай', 'Абу-Даби', 'Шарджа', 'Аджман', 'Рас-эль-Хайма', 'Фуджейра', 'Умм-эль-Кайвайн', 'Аль-Айн']
   },
   'CA': {
     name: 'Канада',
+    phoneCode: '+1',
     cities: ['Торонто', 'Монреаль', 'Ванкувер', 'Калгари', 'Эдмонтон', 'Оттава', 'Виннипег', 'Квебек', 'Гамильтон', 'Китченер', 'Лондон', 'Виктория', 'Галифакс', 'Ошава']
   },
   'AU': {
     name: 'Австралия',
+    phoneCode: '+61',
     cities: ['Сидней', 'Мельбурн', 'Брисбен', 'Перт', 'Аделаида', 'Голд-Кост', 'Ньюкасл', 'Канберра', 'Саншайн-Кост', 'Вуллонгонг', 'Хобарт', 'Джилонг', 'Таунсвилл', 'Кэрнс']
   },
   'BR': {
     name: 'Бразилия',
+    phoneCode: '+55',
     cities: ['Сан-Паулу', 'Рио-де-Жанейро', 'Бразилиа', 'Салвадор', 'Форталеза', 'Белу-Оризонти', 'Манаус', 'Куритиба', 'Ресифи', 'Порту-Алегри', 'Гояния', 'Белен', 'Гуарульюс', 'Кампинас']
   },
   'CN': {
     name: 'Китай',
+    phoneCode: '+86',
     cities: ['Шанхай', 'Пекин', 'Гуанчжоу', 'Шэньчжэнь', 'Чэнду', 'Тяньцзинь', 'Ухань', 'Дунгуань', 'Чунцин', 'Нанкин', 'Шэньян', 'Ханчжоу', 'Сиань', 'Харбин']
   },
   'JP': {
     name: 'Япония',
+    phoneCode: '+81',
     cities: ['Токио', 'Йокогама', 'Осака', 'Нагоя', 'Саппоро', 'Фукуока', 'Кобе', 'Киото', 'Кавасаки', 'Сайтама', 'Хиросима', 'Сендай', 'Китакюсю', 'Тиба']
   },
   'KR': {
     name: 'Южная Корея',
+    phoneCode: '+82',
     cities: ['Сеул', 'Пусан', 'Инчхон', 'Тэгу', 'Тэджон', 'Кванджу', 'Сувон', 'Ульсан', 'Чханвон', 'Соннам', 'Коян', 'Йонгин', 'Пучхон', 'Аньян']
   },
   'IN': {
     name: 'Индия',
+    phoneCode: '+91',
     cities: ['Мумбаи', 'Дели', 'Бангалор', 'Хайдарабад', 'Ахмадабад', 'Ченнаи', 'Калькутта', 'Сурат', 'Пуна', 'Джайпур', 'Лакхнау', 'Канпур', 'Нагпур', 'Индор']
   },
 }
@@ -122,6 +142,8 @@ function RegisterPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   // Extended fields for trainer
+  const [phone, setPhone] = useState('')
+  const [phoneCountryCode, setPhoneCountryCode] = useState<string>('RU')
   const [gender, setGender] = useState<GenderType | undefined>()
   const [countryCode, setCountryCode] = useState<string>('')
   const [city, setCity] = useState('')
@@ -155,6 +177,22 @@ function RegisterPageContent() {
 
     clearErrors()
     
+    // Combine phone code with phone number for trainers
+    const fullPhone = role === 'trainer' && phone 
+      ? `${COUNTRIES_WITH_CITIES[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
+      : phone
+    
+    console.log('Registration data:', {
+      firstName,
+      lastName,
+      email,
+      phone: fullPhone,
+      phoneCountryCode,
+      gender,
+      country: selectedCountryName,
+      city
+    })
+    
     const formData: RegisterFormData = {
       firstName,
       lastName,
@@ -162,6 +200,7 @@ function RegisterPageContent() {
       password,
       confirmPassword,
       termsAccepted,
+      phone: fullPhone,
       gender,
       country: selectedCountryName,
       city,
@@ -383,82 +422,124 @@ function RegisterPageContent() {
           </div>
 
           {/* Gender */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Пол
-            </label>
-            <select
-              value={gender || ''}
-              onChange={(e) => setGender(e.target.value as GenderType || undefined)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                errors.gender ? 'border-red-500' : 'border-gray-300'
-              }`}
-              disabled={loading}
-            >
-              <option value="">Выберите пол</option>
-              {GENDERS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
-            {errors.gender && (
-              <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
-            )}
-          </div>
-
-          {/* Country and City */}
-          <div className="grid grid-cols-2 gap-4">
+          {isTrainer && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Страна
+                Пол
               </label>
               <select
-                value={countryCode}
-                onChange={(e) => {
-                  setCountryCode(e.target.value)
-                  setCity('') // Reset city when country changes
-                }}
+                value={gender || ''}
+                onChange={(e) => setGender(e.target.value as GenderType || undefined)}
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.country ? 'border-red-500' : 'border-gray-300'
+                  errors.gender ? 'border-red-500' : 'border-gray-300'
                 }`}
                 disabled={loading}
               >
-                <option value="">Выберите страну</option>
-                {COUNTRIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
+                <option value="">Выберите пол</option>
+                {GENDERS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
                   </option>
                 ))}
               </select>
-              {errors.country && (
-                <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+              {errors.gender && (
+                <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
               )}
             </div>
+          )}
+
+          {/* Phone - Only for trainers */}
+          {isTrainer && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Город
+                Номер телефона *
               </label>
-              <select
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.city ? 'border-red-500' : 'border-gray-300'
-                }`}
-                disabled={loading || !countryCode}
-              >
-                <option value="">{countryCode ? 'Выберите город' : 'Сначала выберите страну'}</option>
-                {availableCities.map((cityName) => (
-                  <option key={cityName} value={cityName}>
-                    {cityName}
-                  </option>
-                ))}
-              </select>
-              {errors.city && (
-                <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+              <div className="flex gap-2">
+                <select
+                  value={phoneCountryCode}
+                  onChange={(e) => setPhoneCountryCode(e.target.value)}
+                  className={`w-32 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  disabled={loading}
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {COUNTRIES_WITH_CITIES[c.code].phoneCode}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.phone ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="999 123-45-67"
+                  disabled={loading}
+                />
+              </div>
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
               )}
             </div>
-          </div>
+          )}
+
+          {/* Country and City */}
+          {isTrainer && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Страна
+                </label>
+                <select
+                  value={countryCode}
+                  onChange={(e) => {
+                    setCountryCode(e.target.value)
+                    setCity('') // Reset city when country changes
+                  }}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.country ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  disabled={loading}
+                >
+                  <option value="">Выберите страну</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.country && (
+                  <p className="mt-1 text-sm text-red-600">{errors.country}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Город
+                </label>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    errors.city ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  disabled={loading || !countryCode}
+                >
+                  <option value="">{countryCode ? 'Выберите город' : 'Сначала выберите страну'}</option>
+                  {availableCities.map((cityName) => (
+                    <option key={cityName} value={cityName}>
+                      {cityName}
+                    </option>
+                  ))}
+                </select>
+                {errors.city && (
+                  <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Trainer-specific fields */}
           {isTrainer && (

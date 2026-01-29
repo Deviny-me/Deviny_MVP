@@ -102,6 +102,7 @@ public class AuthController : ControllerBase
                 request.Email,
                 request.Password,
                 request.Role,
+                request.Phone,
                 gender,
                 request.Country,
                 request.City,

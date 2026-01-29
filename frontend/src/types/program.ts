@@ -14,6 +14,23 @@ export interface ProgramDto {
   totalPurchases: number;
 }
 
+// Public program for browsing (includes trainer info)
+export interface PublicProgramDto {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  code: string;
+  coverImageUrl: string;
+  averageRating: number;
+  totalReviews: number;
+  totalPurchases: number;
+  createdAt: string;
+  trainerId: string;
+  trainerName: string;
+  trainerAvatarUrl: string;
+}
+
 export interface CreateProgramRequest {
   title: string;
   description: string;

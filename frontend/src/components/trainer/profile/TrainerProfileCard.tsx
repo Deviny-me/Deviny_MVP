@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
-import { MapPin, Briefcase, Star, Camera, Trash2, Loader2, User, Globe } from 'lucide-react'
+import { MapPin, Briefcase, Star, Camera, Trash2, Loader2, User, Globe, Phone } from 'lucide-react'
 import { TrainerDto } from '@/types/trainerProfile'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { useState, useRef } from 'react'
@@ -154,6 +154,14 @@ export function TrainerProfileCard({ trainer, onAvatarChanged }: TrainerProfileC
             <div className="flex items-center gap-1">
               <User className="w-4 h-4" />
               <span>{trainer.gender === 'male' ? 'Мужской' : trainer.gender === 'female' ? 'Женский' : trainer.gender}</span>
+            </div>
+          )}
+          {trainer.phone && (
+            <div className="flex items-center gap-1">
+              <Phone className="w-4 h-4" />
+              <a href={`tel:${trainer.phone}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                {trainer.phone}
+              </a>
             </div>
           )}
           {(trainer.country || trainer.city) && (

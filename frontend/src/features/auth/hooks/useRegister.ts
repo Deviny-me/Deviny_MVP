@@ -16,6 +16,7 @@ export interface RegisterFormData {
   confirmPassword: string
   termsAccepted: boolean
   // Extended fields for trainer registration
+  phone?: string
   gender?: GenderType
   country?: string
   city?: string
@@ -29,6 +30,7 @@ interface ValidationErrors {
   password?: string
   confirmPassword?: string
   termsAccepted?: string
+  phone?: string
   gender?: string
   country?: string
   city?: string
@@ -89,6 +91,17 @@ export const useRegister = () => {
 
     // Additional validation for trainers
     if (role === 'trainer') {
+      if (!data.phone?.trim()) {
+        newErrors.phone = 'Номер телефона обязателен для тренеров'
+      } else {
+        // Basic phone validation (digits, spaces, +, -, parentheses)
+        const phoneRegex = /^[\d\s\+\-\(\)]+$/
+        if (!phoneRegex.test(data.phone)) {
+          newErrors.phone = 'Неверный формат номера телефона'
+        } else if (data.phone.replace(/\D/g, '').length < 10) {
+          newErrors.phone = 'Номер телефона должен содержать минимум 10 цифр'
+        }
+      }
       if (!data.gender) {
         newErrors.gender = 'Выберите пол'
       }
@@ -135,6 +148,7 @@ export const useRegister = () => {
         email: data.email,
         password: data.password,
         role,
+        phone: data.phone,
         gender: data.gender,
         country: data.country,
         city: data.city,

@@ -15,6 +15,7 @@ export interface TrainerDto {
   secondaryTitle: string | null
   location: string | null
   gender: string | null
+  phone: string | null
   country: string | null
   city: string | null
   experienceYears: number | null

@@ -38,6 +38,7 @@ export interface RegisterRequestDto {
   password: string
   role: RoleType
   // Extended fields for trainer registration
+  phone?: string
   gender?: 'Male' | 'Female' | 'Other'
   country?: string
   city?: string
@@ -77,6 +78,9 @@ export const authService = {
     formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '2')
     
     // Extended fields for trainers
+    if (data.phone) {
+      formData.append('phone', data.phone)
+    }
     if (data.gender) {
       formData.append('gender', data.gender)
     }

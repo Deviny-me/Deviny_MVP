@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { programsApi } from '@/lib/api/programsApi'
 import { ProgramDto } from '@/types/program'
-import { TopPrograms } from '@/components/trainer/dashboard/TopPrograms'
-import { TopProgramItem } from '@/lib/trainer/mock/dashboard'
+import { TopPrograms, TopProgramItem } from '@/components/trainer/dashboard/TopPrograms'
 import ProgramDetailsModal from '@/components/trainer/programs/ProgramDetailsModal'
 
 export default function TrainerDashboardPage() {

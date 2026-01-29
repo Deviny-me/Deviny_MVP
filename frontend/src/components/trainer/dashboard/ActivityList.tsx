@@ -1,6 +1,14 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
-import { ActivityItem } from '@/lib/trainer/mock/dashboard';
+
+export interface ActivityItem {
+  id: string;
+  initials: string;
+  name: string;
+  text: string;
+  timeAgo: string;
+  colorClass: string;
+}
 
 interface ActivityListProps {
   activities: ActivityItem[];

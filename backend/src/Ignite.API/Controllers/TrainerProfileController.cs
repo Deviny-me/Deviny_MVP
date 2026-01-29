@@ -121,6 +121,7 @@ public class TrainerProfileController : ControllerBase
                     SecondaryTitle = profile.SecondaryTitle,
                     Location = profile.Location,
                     Gender = user.Gender?.ToString().ToLower(),
+                    Phone = user.Phone,
                     Country = user.Country,
                     City = user.City,
                     ExperienceYears = profile.ExperienceYears,

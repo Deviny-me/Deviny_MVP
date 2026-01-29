@@ -2,9 +2,11 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
 import { authService } from '@/features/auth/services/authService'
+import { API_URL } from '@/lib/config'
 
 interface UserData {
   id: string
+  fullName: string
   name: string
   email: string
   phone: string
@@ -13,6 +15,12 @@ interface UserData {
   gender?: string | null
   country?: string | null
   city?: string | null
+  // Level data
+  level?: number
+  xp?: number
+  xpToNextLevel?: number
+  streak?: number
+  workoutsCompleted?: number
 }
 
 interface UserContextType {
@@ -37,7 +45,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch(`${API_URL}/user/profile`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -45,8 +53,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json()
+        
+        // Also fetch level data
+        let levelData: { currentLevel?: number; currentXp?: number; xpToNextLevel?: number; requiredXpForNextLevel?: number } = {}
+        try {
+          const levelResponse = await fetch(`${API_URL}/me/level`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          })
+          if (levelResponse.ok) {
+            levelData = await levelResponse.json()
+          }
+        } catch (e) {
+          console.log('Level data not available')
+        }
+
         setUser({
           id: data.id,
+          fullName: data.name || data.fullName,
           name: data.name,
           email: data.email,
           phone: data.phone,
@@ -55,6 +80,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
           gender: data.gender,
           country: data.country,
           city: data.city,
+          level: levelData.currentLevel || 1,
+          xp: levelData.currentXp || 0,
+          xpToNextLevel: levelData.xpToNextLevel || levelData.requiredXpForNextLevel || 1000,
+          streak: 0, // Will be fetched from separate endpoint
+          workoutsCompleted: 0, // Will be fetched from separate endpoint
         })
       } else if (response.status === 401) {
         const refreshResult = await authService.refreshToken()

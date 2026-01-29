@@ -12,6 +12,7 @@ public class RegisterRequest
     public UserRole Role { get; set; }
     
     // Extended fields for trainer registration
+    public string? Phone { get; set; }
     public string? Gender { get; set; }
     public string? Country { get; set; }
     public string? City { get; set; }

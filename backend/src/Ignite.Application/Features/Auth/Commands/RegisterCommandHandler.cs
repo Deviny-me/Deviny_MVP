@@ -60,6 +60,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
             LastName = request.LastName,
             PasswordHash = passwordHash,
             Role = request.Role,
+            Phone = request.Phone,
             Gender = request.Gender,
             Country = request.Country,
             City = request.City,

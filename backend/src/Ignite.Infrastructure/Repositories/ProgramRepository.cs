@@ -40,6 +40,17 @@ public class ProgramRepository : IProgramRepository
             .ToListAsync();
     }
 
+    public async Task<List<TrainingProgram>> GetAllPublicAsync()
+    {
+        return await _context.TrainingPrograms
+            .Include(p => p.Reviews)
+            .Include(p => p.Purchases)
+            .Include(p => p.Trainer)
+            .Where(p => !p.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<TrainingProgram> CreateAsync(TrainingProgram program)
     {
         _context.TrainingPrograms.Add(program);

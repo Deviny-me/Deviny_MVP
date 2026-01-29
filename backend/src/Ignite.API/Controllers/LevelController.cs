@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ignite.API.Controllers;
 
 [ApiController]
-[Route("api/me/level")]
+[Route("api/me")]
 [Authorize]
 public class LevelController : ControllerBase
 {
@@ -22,7 +22,7 @@ public class LevelController : ControllerBase
         _levelService = levelService;
     }
 
-    [HttpGet]
+    [HttpGet("level")]
     public async Task<ActionResult<UserLevelDto>> GetMyLevel()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

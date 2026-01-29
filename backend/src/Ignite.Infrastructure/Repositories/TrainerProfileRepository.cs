@@ -30,6 +30,16 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             .FirstOrDefaultAsync(tp => tp.UserId == userId);
     }
 
+    public async Task<List<TrainerProfile>> GetAllWithDetailsAsync()
+    {
+        return await _context.TrainerProfiles
+            .Include(tp => tp.User)
+            .Include(tp => tp.Specializations)
+                .ThenInclude(ts => ts.Specialization)
+            .OrderByDescending(tp => tp.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<TrainerProfile> CreateAsync(TrainerProfile profile)
     {
         _context.TrainerProfiles.Add(profile);

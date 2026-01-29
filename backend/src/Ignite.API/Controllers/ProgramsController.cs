@@ -18,6 +18,17 @@ public class ProgramsController : ControllerBase
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// Get all public programs for browsing
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<List<PublicProgramDto>>> GetAllPublic()
+    {
+        var query = new GetAllPublicProgramsQuery();
+        var programs = await _mediator.Send(query);
+        return Ok(programs);
+    }
+
     [HttpGet("by-code/{code}")]
     public async Task<ActionResult<ProgramDto>> GetByCode(string code)
     {

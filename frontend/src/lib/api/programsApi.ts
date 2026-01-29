@@ -1,4 +1,4 @@
-import { ProgramDto, CreateProgramRequest, UpdateProgramRequest } from '@/types/program';
+import { ProgramDto, CreateProgramRequest, UpdateProgramRequest, PublicProgramDto } from '@/types/program';
 import { API_URL, getAuthHeader } from '@/lib/config';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
@@ -35,6 +35,11 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 }
 
 export const programsApi = {
+  // Get all public programs for browsing
+  getAllPublic: async (): Promise<PublicProgramDto[]> => {
+    return fetchWithAuth('/programs');
+  },
+
   // Get trainer's programs
   getMyPrograms: async (): Promise<ProgramDto[]> => {
     return fetchWithAuth('/trainer/me/programs');

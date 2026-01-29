@@ -12,6 +12,7 @@ public record RegisterCommand(
     string Password,
     UserRole Role,
     // Extended fields for trainer registration
+    string? Phone = null,
     Gender? Gender = null,
     string? Country = null,
     string? City = null,

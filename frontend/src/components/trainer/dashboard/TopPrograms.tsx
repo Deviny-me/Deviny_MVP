@@ -1,9 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
-import { TopProgramItem } from '@/lib/trainer/mock/dashboard';
 import { useLanguage } from '@/components/language/LanguageProvider';
 import { Copy } from 'lucide-react';
+
+export interface TopProgramItem {
+  id: string;
+  title: string;
+  salesText: string;
+  amount: string;
+  code: string;
+}
 
 interface TopProgramsProps {
   programs: TopProgramItem[];
