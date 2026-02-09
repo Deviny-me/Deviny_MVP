@@ -13,19 +13,26 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
+import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 
 export function UserTopNav() {
   const router = useRouter()
   const pathname = usePathname()
   const { user, logout } = useUser()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const { unreadCount } = useUnreadMessages()
 
   const navItems = [
     { icon: Users, label: 'Friends', path: '/dashboard/user/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/dashboard/user/messages', badge: 0 },
+    { icon: MessageCircle, label: 'Messages', path: '/dashboard/user/messages', badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: User, label: 'Profile', path: '/dashboard/user/profile' },
     { icon: Settings, label: 'Settings', path: '/dashboard/user/settings' },
   ]
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[UserTopNav] unreadCount updated:', unreadCount)
+  }, [unreadCount])
 
   const isActive = (path: string) => pathname === path
 
@@ -63,29 +70,34 @@ export function UserTopNav() {
 
           {/* Center: Navigation */}
           <div className="flex items-center gap-2">
-            {navItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => router.push(item.path)}
-                className={`relative flex flex-col items-center justify-center px-6 py-2 rounded transition-colors ${
-                  isActive(item.path)
-                    ? 'text-[#FF6B35]'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-                title={item.label}
-              >
-                <item.icon className="w-6 h-6" strokeWidth={1.5} />
-                <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
-                {isActive(item.path) && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35]" />
-                )}
-                {item.badge !== undefined && item.badge > 0 && (
-                  <div className="absolute top-1 right-4 w-4 h-4 bg-[#FF0844] rounded-full flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-white">{item.badge}</span>
-                  </div>
-                )}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              const hasUnread = item.badge !== undefined && item.badge > 0
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`relative flex flex-col items-center justify-center px-6 py-2 rounded transition-colors ${
+                    isActive(item.path)
+                      ? 'text-[#FF6B35]'
+                      : hasUnread
+                      ? 'text-[#FF0844] hover:text-[#FF0844]'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  title={item.label}
+                >
+                  <item.icon className="w-6 h-6" strokeWidth={1.5} />
+                  <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+                  {isActive(item.path) && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35]" />
+                  )}
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <div className="absolute top-1 right-4 w-4 h-4 bg-[#FF0844] rounded-full flex items-center justify-center animate-pulse">
+                      <span className="text-[10px] font-bold text-white">{item.badge}</span>
+                    </div>
+                  )}
+                </button>
+              )
+            })}
           </div>
 
           {/* Right: Notifications & Profile */}

@@ -15,12 +15,18 @@ interface UserData {
   gender?: string | null
   country?: string | null
   city?: string | null
+  bio?: string | null
+  createdAt?: string | null
   // Level data
   level?: number
   xp?: number
   xpToNextLevel?: number
   streak?: number
   workoutsCompleted?: number
+  // Social stats (placeholders for future features)
+  achievementsCount?: number
+  followingCount?: number
+  postsCount?: number
 }
 
 interface UserContextType {
@@ -38,6 +44,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const loadUserFromAPI = useCallback(async (token?: string) => {
+    if (typeof window === 'undefined') {
+      setIsLoading(false)
+      return
+    }
+    
     const accessToken = token || localStorage.getItem('accessToken')
     if (!accessToken) {
       setIsLoading(false)
@@ -80,11 +91,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
           gender: data.gender,
           country: data.country,
           city: data.city,
+          bio: data.bio || null,
+          createdAt: data.createdAt || null,
           level: levelData.currentLevel || 1,
           xp: levelData.currentXp || 0,
           xpToNextLevel: levelData.xpToNextLevel || levelData.requiredXpForNextLevel || 1000,
           streak: 0, // Will be fetched from separate endpoint
           workoutsCompleted: 0, // Will be fetched from separate endpoint
+          // Social stats (placeholders for future features)
+          achievementsCount: 0,
+          followingCount: 0,
+          postsCount: 0,
         })
       } else if (response.status === 401) {
         const refreshResult = await authService.refreshToken()
@@ -148,8 +165,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [loadUserFromAPI])
 
   const logout = useCallback(async () => {
-    await authService.logout()
-    setUser(null)
+    if (typeof window === 'undefined') return
+    
+    try {
+      await authService.logout()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      localStorage.removeItem('accessToken')
+      setUser(null)
+    }
   }, [])
 
   return (

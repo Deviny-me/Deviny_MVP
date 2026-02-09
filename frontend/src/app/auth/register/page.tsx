@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
 import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
-import { Eye, EyeOff, Upload, X, FileText, Image } from 'lucide-react'
+import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
 
 // 20 popular countries with their major cities
 const COUNTRIES_WITH_CITIES: Record<string, { name: string; cities: string[]; phoneCode: string }> = {
@@ -262,7 +262,7 @@ function RegisterPageContent() {
     if (file.type === 'application/pdf') {
       return <FileText className="w-8 h-8 text-red-500" />
     }
-    return <Image className="w-8 h-8 text-blue-500" />
+    return <ImageIcon className="w-8 h-8 text-blue-500" />
   }
 
   const formatFileSize = (bytes: number) => {

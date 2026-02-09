@@ -6,13 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/trainer")]
-[Authorize]
-public class TrainerProfileController : ControllerBase
+public class TrainerProfileController : BaseApiController
 {
     private readonly ITrainerProfileRepository _trainerProfileRepository;
     private readonly IUserRepository _userRepository;
@@ -113,7 +112,8 @@ public class TrainerProfileController : ControllerBase
             {
                 Trainer = new TrainerDto
                 {
-                    Id = user.Id,
+                    Id = profile.Id,
+                    UserId = user.Id,
                     FullName = user.FullName,
                     AvatarUrl = user.AvatarUrl,
                     Initials = initials,
@@ -164,6 +164,59 @@ public class TrainerProfileController : ControllerBase
             };
 
             return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+        }
+    }
+
+    [HttpPut("me/profile")]
+    public async Task<ActionResult> UpdateProfile([FromBody] UpdateTrainerProfileRequest request)
+    {
+        try
+        {
+            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(emailClaim))
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            var user = await _userRepository.GetByEmailAsync(emailClaim);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User not found" });
+            }
+
+            if (user.Role != Domain.Enums.UserRole.Trainer)
+            {
+                return Forbid();
+            }
+
+            var profile = await _trainerProfileRepository.GetByUserIdWithDetailsAsync(user.Id);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Trainer profile not found" });
+            }
+
+            // Update profile fields
+            if (!string.IsNullOrEmpty(request.PrimaryTitle))
+                profile.PrimaryTitle = request.PrimaryTitle;
+            
+            if (!string.IsNullOrEmpty(request.SecondaryTitle))
+                profile.SecondaryTitle = request.SecondaryTitle;
+            
+            if (request.ExperienceYears.HasValue)
+                profile.ExperienceYears = request.ExperienceYears.Value;
+            
+            if (!string.IsNullOrEmpty(request.Location))
+                profile.Location = request.Location;
+
+            profile.UpdatedAt = DateTime.UtcNow;
+            
+            await _trainerProfileRepository.UpdateAsync(profile);
+
+            return Ok(new { message = "Profile updated successfully" });
         }
         catch (Exception ex)
         {
@@ -506,6 +559,91 @@ public class TrainerProfileController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "An error occurred while deleting specialization", error = ex.Message });
+        }
+    }
+
+    [HttpPost("me/avatar")]
+    public async Task<ActionResult> UploadAvatar([FromForm] IFormFile file)
+    {
+        try
+        {
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+            {
+                return Unauthorized(new { message = "Требуется авторизация" });
+            }
+
+            var token = authHeader.Substring("Bearer ".Length).Trim();
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            
+            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
+            if (emailClaim == null)
+            {
+                return Unauthorized(new { message = "Неверный токен" });
+            }
+
+            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            if (user == null)
+            {
+                return NotFound(new { message = "Пользователь не найден" });
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { message = "Файл не выбран" });
+            }
+
+            // Validate file size (max 5MB)
+            if (file.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "Размер файла не должен превышать 5 МБ" });
+            }
+
+            // Validate file type
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest(new { message = "Допустимые форматы: JPG, JPEG, PNG, GIF" });
+            }
+
+            // Delete old avatar if exists
+            if (!string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                var oldAvatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.AvatarUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldAvatarPath))
+                {
+                    System.IO.File.Delete(oldAvatarPath);
+                }
+            }
+
+            // Generate unique filename
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+            Directory.CreateDirectory(uploadPath);
+            var filePath = Path.Combine(uploadPath, fileName);
+
+            // Save file
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Update user avatar URL
+            var avatarUrl = $"/uploads/avatars/{fileName}";
+            user.AvatarUrl = avatarUrl;
+            await _userRepository.UpdateAsync(user);
+
+            return Ok(new
+            {
+                message = "Аватар успешно загружен",
+                avatarUrl = avatarUrl
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Ошибка при загрузке аватара", error = ex.Message });
         }
     }
 }

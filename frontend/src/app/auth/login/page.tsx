@@ -75,7 +75,7 @@ function LoginPageContent() {
         rememberMe: formData.rememberMe,
       })
 
-      router.push(role === 'user' ? '/dashboard/user' : '/trainer/dashboard')
+      router.push(role === 'user' ? '/dashboard/user' : '/dashboard/trainer')
     } catch (err) {
       console.error('Login error:', err)
     }

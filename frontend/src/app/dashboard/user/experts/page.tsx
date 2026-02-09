@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from 'react'
 import { trainersApi } from '@/lib/api/trainersApi'
 import { PublicTrainerDto } from '@/types/trainer'
+import { getMediaUrl } from '@/lib/config'
 
 export default function ExpertsPage() {
   const router = useRouter()
@@ -104,7 +105,7 @@ export default function ExpertsPage() {
                     {/* Avatar */}
                     {trainer.avatarUrl ? (
                       <img
-                        src={trainer.avatarUrl}
+                        src={getMediaUrl(trainer.avatarUrl) || ''}
                         alt={trainer.name}
                         className="w-20 h-20 rounded-xl object-cover"
                       />

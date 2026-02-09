@@ -1,5 +1,23 @@
 import { TrainerProfileResponse } from '@/types/trainerProfile'
-import { API_URL, getAuthHeader } from '@/lib/config'
+import { API_URL, getAuthHeader, fetchWithAuth } from '@/lib/config'
+
+export async function uploadTrainerAvatar(file: File): Promise<{ avatarUrl: string }> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetchWithAuth(`${API_URL}/trainer/me/avatar`, {
+    method: 'POST',
+    body: formData,
+    // Don't set headers at all for FormData - browser will set Content-Type with boundary
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to upload avatar')
+  }
+
+  return response.json()
+}
 
 export async function fetchTrainerProfile(): Promise<TrainerProfileResponse> {
   const authHeader = getAuthHeader()
@@ -176,6 +194,44 @@ export async function deleteSpecialization(specializationId: string): Promise<vo
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     throw new Error(errorData.message || 'Failed to delete specialization')
+  }
+}
+
+export interface UpdateTrainerProfileRequest {
+  primaryTitle?: string
+  secondaryTitle?: string
+  experienceYears?: number
+  location?: string
+}
+
+export async function updateTrainerProfile(data: UpdateTrainerProfileRequest): Promise<void> {
+  const authHeader = getAuthHeader()
+  
+  if (!authHeader.Authorization) {
+    throw new Error('Not authenticated')
+  }
+
+  const response = await fetch(`${API_URL}/trainer/me/profile`, {
+    method: 'PUT',
+    headers: {
+      ...authHeader,
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  })
+
+  if (response.status === 401) {
+    throw new Error('Unauthorized. Please log in again.')
+  }
+
+  if (response.status === 403) {
+    throw new Error('Access denied. Trainer role required.')
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to update trainer profile')
   }
 }
 

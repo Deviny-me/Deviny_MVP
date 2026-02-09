@@ -75,7 +75,9 @@ export const programsApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create program');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Create program error:', errorData);
+      throw new Error(errorData.message || errorData.details || 'Failed to create program');
     }
 
     return response.json();
@@ -113,7 +115,9 @@ export const programsApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update program');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Update program error:', errorData);
+      throw new Error(errorData.message || errorData.details || 'Failed to update program');
     }
 
     return response.json();

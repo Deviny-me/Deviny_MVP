@@ -3,14 +3,13 @@ using Ignite.Application.Features.Programs.DTOs;
 using Ignite.Application.Features.Programs.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/trainer/me/programs")]
-[Authorize]
-public class TrainerProgramsController : ControllerBase
+public class TrainerProgramsController : BaseApiController
 {
     private readonly IMediator _mediator;
 
@@ -33,6 +32,8 @@ public class TrainerProgramsController : ControllerBase
     }
 
     [HttpPost]
+    [RequestSizeLimit(200 * 1024 * 1024)] // 200MB max for cover + videos
+    [RequestFormLimits(MultipartBodyLengthLimit = 200 * 1024 * 1024)]
     public async Task<ActionResult<ProgramDto>> CreateProgram([FromForm] CreateProgramRequest request)
     {
         var trainerId = GetTrainerId();
@@ -57,6 +58,13 @@ public class TrainerProgramsController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            // Log the actual error for server-side debugging
+            Console.Error.WriteLine($"CreateProgram error: {ex.GetType().Name}: {ex.Message}");
+            Console.Error.WriteLine(ex.StackTrace);
+            return StatusCode(500, new { message = "Failed to create program", details = ex.Message });
         }
     }
 

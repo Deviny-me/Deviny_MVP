@@ -29,6 +29,7 @@ export interface PublicProgramDto {
   trainerId: string;
   trainerName: string;
   trainerAvatarUrl: string;
+  trainerSlug: string;
 }
 
 export interface CreateProgramRequest {

@@ -31,6 +31,22 @@ public class ApplicationDbContext : DbContext
     
     // Verification
     public DbSet<VerificationDocument> VerificationDocuments { get; set; } = null!;
+    
+    // User Posts (Media)
+    public DbSet<UserPost> UserPosts { get; set; } = null!;
+    public DbSet<PostMedia> PostMedia { get; set; } = null!;
+    public DbSet<PostLike> PostLikes { get; set; } = null!;
+    public DbSet<PostComment> PostComments { get; set; } = null!;
+    
+    // Friends & Social
+    public DbSet<FriendRequest> FriendRequests { get; set; } = null!;
+    public DbSet<UserFollow> UserFollows { get; set; } = null!;
+    public DbSet<UserBlock> UserBlocks { get; set; } = null!;
+    
+    // Messages
+    public DbSet<Conversation> Conversations { get; set; } = null!;
+    public DbSet<ConversationMember> ConversationMembers { get; set; } = null!;
+    public DbSet<Message> Messages { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

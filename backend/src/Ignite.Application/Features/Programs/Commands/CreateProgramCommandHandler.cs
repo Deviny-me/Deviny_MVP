@@ -108,13 +108,22 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         var created = await _programRepository.CreateAsync(program);
 
         // Award XP to trainer for creating a program
-        await _levelService.AddXpAsync(
-            request.TrainerId,
-            XpEventType.TrainerCreatedProgram,
-            50, // 50 XP for creating a program
-            $"TrainerCreatedProgram:{created.Id}",
-            created.Id
-        );
+        // Wrap in try-catch so XP failure doesn't fail the program creation
+        try
+        {
+            await _levelService.AddXpAsync(
+                request.TrainerId,
+                XpEventType.TrainerCreatedProgram,
+                50, // 50 XP for creating a program
+                $"TrainerCreatedProgram:{created.Id}",
+                created.Id
+            );
+        }
+        catch (Exception ex)
+        {
+            // Log but don't fail - program was already created successfully
+            Console.Error.WriteLine($"Warning: Failed to award XP for program creation: {ex.Message}");
+        }
 
         var videoPaths = string.IsNullOrEmpty(created.TrainingVideosPath) 
             ? new List<string>() 
@@ -127,8 +136,8 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
             Description = created.Description,
             Price = created.Price,
             Code = created.Code,
-            CoverImageUrl = $"http://localhost:5000{created.CoverImagePath}",
-            TrainingVideoUrls = videoPaths.Select(v => $"http://localhost:5000{v}").ToList(),
+            CoverImageUrl = created.CoverImagePath,
+            TrainingVideoUrls = videoPaths,
             AverageRating = 0,
             TotalReviews = 0,
             TotalPurchases = 0,

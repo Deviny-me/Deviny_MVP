@@ -7,9 +7,8 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UserController : BaseApiController
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;

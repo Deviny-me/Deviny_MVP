@@ -3,6 +3,7 @@ namespace Ignite.API.DTOs;
 public class TrainerDto
 {
     public required Guid Id { get; set; }
+    public required Guid UserId { get; set; }
     public required string FullName { get; set; }
     public string? AvatarUrl { get; set; }
     public required string Initials { get; set; }

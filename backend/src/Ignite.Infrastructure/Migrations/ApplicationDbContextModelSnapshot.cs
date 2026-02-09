@@ -68,6 +68,94 @@ namespace Ignite.Infrastructure.Migrations
                     b.ToTable("CallSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UpdatedAt")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Conversations_UpdatedAt");
+
+                    b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.ConversationMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_ConversationMembers_UserId");
+
+                    b.HasIndex("ConversationId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ConversationMembers_ConversationId_UserId");
+
+                    b.ToTable("ConversationMembers");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.FriendRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FriendRequests_CreatedAt");
+
+                    b.HasIndex("ReceiverId", "Status")
+                        .HasDatabaseName("IX_FriendRequests_Receiver_Status");
+
+                    b.HasIndex("SenderId", "ReceiverId", "Status")
+                        .HasDatabaseName("IX_FriendRequests_Sender_Receiver_Status");
+
+                    b.ToTable("FriendRequests", (string)null);
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.LevelDefinition", b =>
                 {
                     b.Property<int>("Level")
@@ -89,6 +177,194 @@ namespace Ignite.Infrastructure.Migrations
                     b.HasKey("Level");
 
                     b.ToTable("LevelDefinitions");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AttachmentContentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentFileName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("AttachmentSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ReplyToMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReplyToMessageId")
+                        .HasDatabaseName("IX_Messages_ReplyToMessageId");
+
+                    b.HasIndex("SenderId")
+                        .HasDatabaseName("IX_Messages_SenderId");
+
+                    b.HasIndex("ConversationId", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_Messages_ConversationId_CreatedAt");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostComment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid?>("ParentCommentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCommentId")
+                        .HasDatabaseName("IX_PostComments_ParentCommentId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PostComments_UserId");
+
+                    b.HasIndex("PostId", "CreatedAt")
+                        .HasDatabaseName("IX_PostComments_Post_CreatedAt");
+
+                    b.ToTable("PostComments", (string)null);
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId")
+                        .HasDatabaseName("IX_PostLikes_PostId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PostLikes_UserId");
+
+                    b.HasIndex("PostId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PostLikes_Post_User_Unique");
+
+                    b.ToTable("PostLikes", (string)null);
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ThumbnailPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId")
+                        .HasDatabaseName("IX_PostMedia_PostId");
+
+                    b.ToTable("PostMedia", (string)null);
                 });
 
             modelBuilder.Entity("Ignite.Domain.Entities.ProgramPurchase", b =>
@@ -121,6 +397,10 @@ namespace Ignite.Infrastructure.Migrations
                     b.HasIndex("ProgramId");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "PurchasedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_ProgramPurchases_UserId_PurchasedAt");
 
                     b.ToTable("ProgramPurchases");
                 });
@@ -157,7 +437,10 @@ namespace Ignite.Infrastructure.Migrations
                     b.HasIndex("ProgramId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ProgramReviews");
+                    b.ToTable("ProgramReviews", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProgramReview_Rating", "[Rating] >= 1 AND [Rating] <= 5");
+                        });
                 });
 
             modelBuilder.Entity("Ignite.Domain.Entities.RefreshToken", b =>
@@ -505,6 +788,10 @@ namespace Ignite.Infrastructure.Migrations
 
                     b.HasIndex("TrainerId");
 
+                    b.HasIndex("IsDeleted", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_TrainingPrograms_IsDeleted_CreatedAt");
+
                     b.ToTable("TrainingPrograms");
                 });
 
@@ -586,6 +873,67 @@ namespace Ignite.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.UserBlock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("BlockedUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BlockerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockedUserId")
+                        .HasDatabaseName("IX_UserBlocks_BlockedUser");
+
+                    b.HasIndex("BlockerId", "BlockedUserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserBlocks_Blocker_Blocked_Unique");
+
+                    b.ToTable("UserBlocks", (string)null);
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.UserFollow", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FollowerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_UserFollows_CreatedAt");
+
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("IX_UserFollows_Trainer");
+
+                    b.HasIndex("FollowerId", "TrainerId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserFollows_Follower_Trainer_Unique");
+
+                    b.ToTable("UserFollows", (string)null);
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.UserLevel", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -619,6 +967,68 @@ namespace Ignite.Infrastructure.Migrations
                     b.HasIndex("LifetimeXp");
 
                     b.ToTable("UserLevels");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.UserPost", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid?>("OriginalPostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RepostQuote")
+                        .HasMaxLength(280)
+                        .HasColumnType("nvarchar(280)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Visibility")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Public");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OriginalPostId")
+                        .HasDatabaseName("IX_UserPosts_OriginalPostId");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("IX_UserPosts_Type");
+
+                    b.HasIndex("UserId", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_UserPosts_UserId_CreatedAt");
+
+                    b.HasIndex("IsDeleted", "Visibility", "CreatedAt")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("IX_UserPosts_Feed");
+
+                    b.ToTable("UserPosts", (string)null);
                 });
 
             modelBuilder.Entity("Ignite.Domain.Entities.UserSettings", b =>
@@ -778,6 +1188,126 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.ConversationMember", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Members")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany("ConversationMemberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.FriendRequest", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.User", "Receiver")
+                        .WithMany("ReceivedFriendRequests")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "Sender")
+                        .WithMany("SentFriendRequests")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.Message", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.Message", "ReplyToMessage")
+                        .WithMany()
+                        .HasForeignKey("ReplyToMessageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Ignite.Domain.Entities.User", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("ReplyToMessage");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostComment", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.PostComment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Ignite.Domain.Entities.UserPost", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany("PostComments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostLike", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.UserPost", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany("PostLikes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostMedia", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.UserPost", "Post")
+                        .WithMany("Media")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.ProgramPurchase", b =>
                 {
                     b.HasOne("Ignite.Domain.Entities.TrainingProgram", "Program")
@@ -787,7 +1317,7 @@ namespace Ignite.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Ignite.Domain.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("ProgramPurchases")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -806,7 +1336,7 @@ namespace Ignite.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Ignite.Domain.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("ProgramReviews")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -915,6 +1445,44 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.UserBlock", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.User", "BlockedUser")
+                        .WithMany("BlockedByUsers")
+                        .HasForeignKey("BlockedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "Blocker")
+                        .WithMany("BlockedUsers")
+                        .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BlockedUser");
+
+                    b.Navigation("Blocker");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.UserFollow", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.User", "Follower")
+                        .WithMany("Following")
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Ignite.Domain.Entities.User", "Trainer")
+                        .WithMany("Followers")
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Follower");
+
+                    b.Navigation("Trainer");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.UserLevel", b =>
                 {
                     b.HasOne("Ignite.Domain.Entities.User", "User")
@@ -922,6 +1490,24 @@ namespace Ignite.Infrastructure.Migrations
                         .HasForeignKey("Ignite.Domain.Entities.UserLevel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.UserPost", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.UserPost", "OriginalPost")
+                        .WithMany("Reposts")
+                        .HasForeignKey("OriginalPostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Ignite.Domain.Entities.User", "User")
+                        .WithMany("Posts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OriginalPost");
 
                     b.Navigation("User");
                 });
@@ -959,6 +1545,18 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.Conversation", b =>
+                {
+                    b.Navigation("Members");
+
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.PostComment", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.ScheduleEvent", b =>
                 {
                     b.Navigation("CallSessions");
@@ -987,13 +1585,50 @@ namespace Ignite.Infrastructure.Migrations
 
             modelBuilder.Entity("Ignite.Domain.Entities.User", b =>
                 {
+                    b.Navigation("BlockedByUsers");
+
+                    b.Navigation("BlockedUsers");
+
+                    b.Navigation("ConversationMemberships");
+
+                    b.Navigation("Followers");
+
+                    b.Navigation("Following");
+
+                    b.Navigation("PostComments");
+
+                    b.Navigation("PostLikes");
+
+                    b.Navigation("Posts");
+
+                    b.Navigation("ProgramPurchases");
+
+                    b.Navigation("ProgramReviews");
+
+                    b.Navigation("ReceivedFriendRequests");
+
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("SentFriendRequests");
+
+                    b.Navigation("SentMessages");
 
                     b.Navigation("Settings");
 
                     b.Navigation("TrainerProfile");
 
                     b.Navigation("VerificationDocuments");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.UserPost", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
+
+                    b.Navigation("Media");
+
+                    b.Navigation("Reposts");
                 });
 #pragma warning restore 612, 618
         }

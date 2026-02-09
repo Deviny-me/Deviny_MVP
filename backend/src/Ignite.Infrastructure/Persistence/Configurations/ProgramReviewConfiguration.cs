@@ -16,6 +16,9 @@ public class ProgramReviewConfiguration : IEntityTypeConfiguration<ProgramReview
         builder.Property(pr => pr.Rating)
             .IsRequired();
 
+        // Add check constraint for rating range 1-5
+        builder.ToTable(t => t.HasCheckConstraint("CK_ProgramReview_Rating", "[Rating] >= 1 AND [Rating] <= 5"));
+
         builder.Property(pr => pr.Comment)
             .HasMaxLength(1000);
 
@@ -25,7 +28,7 @@ public class ProgramReviewConfiguration : IEntityTypeConfiguration<ProgramReview
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(pr => pr.User)
-            .WithMany()
+            .WithMany(u => u.ProgramReviews)
             .HasForeignKey(pr => pr.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }

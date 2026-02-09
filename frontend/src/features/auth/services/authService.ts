@@ -1,6 +1,9 @@
 import { RoleType } from '@/features/auth/types/role.types'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
+// Use relative URLs in development for Next.js proxy (enables same-site cookies)
+const isServer = typeof window === 'undefined';
+const isDev = process.env.NODE_ENV === 'development';
+const API_URL = !isServer && isDev ? '/api' : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
 
 export interface LoginRequestDto {
   email: string

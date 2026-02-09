@@ -30,6 +30,11 @@ public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingPro
 
         builder.HasIndex(p => p.TrainerId);
 
+        // Composite index for listing active programs
+        builder.HasIndex(p => new { p.IsDeleted, p.CreatedAt })
+            .IsDescending(false, true)
+            .HasDatabaseName("IX_TrainingPrograms_IsDeleted_CreatedAt");
+
         builder.Property(p => p.CoverImagePath)
             .IsRequired()
             .HasMaxLength(500);

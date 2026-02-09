@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/me")]
-[Authorize]
-public class LevelController : ControllerBase
+public class LevelController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILevelService _levelService;

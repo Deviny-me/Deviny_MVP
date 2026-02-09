@@ -1,25 +1,8 @@
 import { PublicTrainerDto } from '@/types/trainer';
-import { API_URL, getAuthHeader } from '@/lib/config';
+import { API_URL, fetchWithAuth } from '@/lib/config';
 
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const authHeader = getAuthHeader();
-  
-  if (!authHeader.Authorization) {
-    throw new Error('Not authenticated');
-  }
-
-  const response = await fetch(`${API_URL}${url}`, {
-    ...options,
-    headers: {
-      ...authHeader,
-      ...options.headers,
-    },
-    credentials: 'include',
-  });
-
-  if (response.status === 401) {
-    throw new Error('Unauthorized. Please log in again.');
-  }
+async function apiRequest(url: string, options: RequestInit = {}) {
+  const response = await fetchWithAuth(`${API_URL}${url}`, options);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -32,6 +15,11 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 export const trainersApi = {
   // Get all trainers for browsing
   getAll: async (): Promise<PublicTrainerDto[]> => {
-    return fetchWithAuth('/trainers');
+    return apiRequest('/trainers');
+  },
+
+  // Get trainer profile by slug
+  getBySlug: async (slug: string) => {
+    return apiRequest(`/trainers/${slug}/profile`);
   },
 };

@@ -1,5 +1,8 @@
 using System.Text;
+using Ignite.API.Hubs;
+using Ignite.API.Middleware;
 using Ignite.Application;
+using Ignite.Application.Common.Interfaces;
 using Ignite.Infrastructure;
 using Ignite.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,6 +16,8 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
     });
+
+builder.Services.AddSignalR();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -37,8 +42,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                // Читаем access token из cookie если он там есть
-                context.Token = context.Request.Cookies["accessToken"];
+                // Support SignalR token from query string
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                // Let the default JWT handler read from Authorization header otherwise
+                
                 return Task.CompletedTask;
             }
         };
@@ -48,24 +60,46 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
+        // Allow localhost for development
         policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
+              .SetIsOriginAllowed(origin => origin.StartsWith("http://localhost:"))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
-              .SetIsOriginAllowed(origin => true) // Разрешить любой origin в dev режиме
-              .WithExposedHeaders("Content-Disposition"); // Для загрузки файлов
+              .WithExposedHeaders("Content-Disposition");
     });
 });
 
 var app = builder.Build();
 
-// CORS должен быть первым middleware
+// CORS must be FIRST - it handles preflight requests
 app.UseCors("AllowFrontend");
 
-using (var scope = app.Services.CreateScope())
+// Global exception handler
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
+// Apply migrations
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    logger.LogInformation("🔄 Applying migrations...");
     await context.Database.MigrateAsync();
+    logger.LogInformation("✅ Migrations applied.");
+    
+    // Seed database with initial data
+    try
+    {
+        logger.LogInformation("🌱 Starting database seed...");
+        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        await Ignite.Infrastructure.Persistence.DatabaseSeeder.SeedAsync(context, passwordHasher);
+        logger.LogInformation("✅ Database seed completed.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "❌ Error during database seeding");
+    }
 }
 
 // app.UseHttpsRedirection(); // Отключено для разработки
@@ -84,5 +118,6 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat").RequireCors("AllowFrontend");
 
 app.Run();

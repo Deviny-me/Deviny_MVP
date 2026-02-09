@@ -36,7 +36,8 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
             TrainerName = p.Trainer?.FullName ?? "Unknown Trainer",
             TrainerAvatarUrl = string.IsNullOrEmpty(p.Trainer?.AvatarUrl) 
                 ? "" 
-                : $"http://localhost:5000{p.Trainer.AvatarUrl}"
+                : $"http://localhost:5000{p.Trainer.AvatarUrl}",
+            TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? ""
         }).ToList();
     }
 }

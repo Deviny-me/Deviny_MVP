@@ -8,6 +8,7 @@ export interface TrainerProfileResponse {
 
 export interface TrainerDto {
   id: string
+  userId: string
   fullName: string
   avatarUrl: string | null
   initials: string

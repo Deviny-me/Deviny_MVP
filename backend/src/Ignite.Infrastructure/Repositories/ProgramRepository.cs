@@ -46,6 +46,7 @@ public class ProgramRepository : IProgramRepository
             .Include(p => p.Reviews)
             .Include(p => p.Purchases)
             .Include(p => p.Trainer)
+                .ThenInclude(u => u.TrainerProfile)
             .Where(p => !p.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
@@ -77,7 +78,11 @@ public class ProgramRepository : IProgramRepository
 
     public async Task<bool> IsCodeUniqueAsync(string code, Guid? excludeProgramId = null)
     {
-        var query = _context.TrainingPrograms.Where(p => p.Code == code);
+        // Use IgnoreQueryFilters to check against ALL programs (including soft-deleted)
+        // because the unique index on Code column applies to all records
+        var query = _context.TrainingPrograms
+            .IgnoreQueryFilters()
+            .Where(p => p.Code == code);
         
         if (excludeProgramId.HasValue)
         {

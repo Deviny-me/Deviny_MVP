@@ -4,27 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ignite.Infrastructure.Persistence;
 using Ignite.Domain.Enums;
+using System.Security.Claims;
+using Ignite.Application.Common.Interfaces;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
-[Route("api/trainer/me/[controller]")]
 [Authorize]
-public class StudentsController : ControllerBase
+[Route("api/trainer/me/[controller]")]
+public class StudentsController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
+    private readonly IUserRepository _userRepository;
 
-    public StudentsController(ApplicationDbContext context)
+    public StudentsController(ApplicationDbContext context, IUserRepository userRepository)
     {
         _context = context;
-    }
-
-    private Guid GetTrainerId()
-    {
-        var userIdClaim = User.FindFirst("userId");
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            throw new UnauthorizedAccessException("Invalid user");
-        return userId;
+        _userRepository = userRepository;
     }
 
     [HttpGet]
@@ -32,7 +27,18 @@ public class StudentsController : ControllerBase
     {
         try
         {
-            var trainerId = GetTrainerId();
+            // Get current user ID from claims
+            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(emailClaim))
+            {
+                return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            var user = await _userRepository.GetByEmailAsync(emailClaim);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "User not found" });
+            }
 
             // Для демонстрации возвращаем всех пользователей с ролью Student
             // В реальном приложении здесь должна быть связь между тренером и его студентами
@@ -51,10 +57,6 @@ public class StudentsController : ControllerBase
                 .ToListAsync();
 
             return Ok(students);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized();
         }
         catch (Exception ex)
         {

@@ -1,0 +1,15 @@
+/**
+ * Shared layout components for trainer and user roles.
+ */
+export { SharedMainLayout } from './SharedMainLayout'
+export { SharedLeftSidebar } from './SharedLeftSidebar'
+export { SharedTopNav } from './SharedTopNav'
+export { getLayoutConfig, trainerConfig, userConfig } from './config'
+export type { 
+  UserRole, 
+  NavLink, 
+  NavSection, 
+  TopNavItem, 
+  LayoutConfig 
+} from './types'
+export { getBasePath } from './types'

@@ -38,8 +38,8 @@ public class AuthController : ControllerBase
             Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // Always use HTTPS in production
-                SameSite = SameSiteMode.Lax,
+                Secure = false, // HTTP in development
+                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
                 Expires = DateTimeOffset.UtcNow.AddDays(request.RememberMe ? 30 : 7),
                 Path = "/"
             });
@@ -114,8 +114,8 @@ public class AuthController : ControllerBase
             Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // Set to true in production
-                SameSite = SameSiteMode.Lax, // For cross-origin in development
+                Secure = false, // HTTP in development
+                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 Path = "/"
             });
@@ -198,8 +198,8 @@ public class AuthController : ControllerBase
             Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // Set to true in production
-                SameSite = SameSiteMode.Lax, // For cross-origin in development
+                Secure = false, // HTTP in development
+                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
                 Expires = DateTimeOffset.UtcNow.AddDays(wasRememberMe ? 30 : 7),
                 Path = "/"
             });

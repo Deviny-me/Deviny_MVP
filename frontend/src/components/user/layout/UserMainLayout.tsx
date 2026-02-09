@@ -1,8 +1,8 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { SharedMainLayout, userConfig } from '@/components/shared/layout'
 import { UserTopNav } from './UserTopNav'
-import { UserLeftSidebar } from './UserLeftSidebar'
 import { UserRightSidebar } from './UserRightSidebar'
 
 interface UserMainLayoutProps {
@@ -11,37 +11,23 @@ interface UserMainLayoutProps {
   showRightSidebar?: boolean
 }
 
+/**
+ * User main layout using shared components.
+ */
 export function UserMainLayout({ 
   children, 
   showLeftSidebar = true, 
   showRightSidebar = true 
 }: UserMainLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      <UserTopNav />
-      
-      <div className="max-w-[1280px] mx-auto px-6">
-        <div className="flex gap-6 pt-4">
-          {/* Left Sidebar */}
-          {showLeftSidebar && (
-            <div className="hidden lg:block">
-              <UserLeftSidebar />
-            </div>
-          )}
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            {children}
-          </div>
-
-          {/* Right Sidebar */}
-          {showRightSidebar && (
-            <div className="hidden xl:block">
-              <UserRightSidebar />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <SharedMainLayout
+      topNav={<UserTopNav />}
+      leftSidebarSections={userConfig.navSections}
+      rightSidebar={<UserRightSidebar />}
+      showLeftSidebar={showLeftSidebar}
+      showRightSidebar={showRightSidebar}
+    >
+      {children}
+    </SharedMainLayout>
   )
 }

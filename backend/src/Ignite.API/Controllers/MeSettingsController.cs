@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/me")]
-[Authorize]
-public class MeSettingsController : ControllerBase
+public class MeSettingsController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private const string ThemeCookieName = "ignite_theme";
@@ -30,10 +28,8 @@ public class MeSettingsController : ControllerBase
     public async Task<ActionResult<SettingsResponse>> GetSettings()
     {
         var userId = GetCurrentUserId();
-        if (userId == null)
-            return Unauthorized();
 
-        var settings = await GetOrCreateUserSettings(userId.Value);
+        var settings = await GetOrCreateUserSettings(userId);
         
         // Set/update cookie for SSR
         SetThemeCookie(settings.Theme);
@@ -54,11 +50,9 @@ public class MeSettingsController : ControllerBase
         }
 
         var userId = GetCurrentUserId();
-        if (userId == null)
-            return Unauthorized();
 
         var theme = request.Theme.ToLower();
-        var settings = await GetOrCreateUserSettings(userId.Value);
+        var settings = await GetOrCreateUserSettings(userId);
         
         settings.Theme = theme;
         settings.UpdatedAt = DateTime.UtcNow;
@@ -83,11 +77,9 @@ public class MeSettingsController : ControllerBase
         }
 
         var userId = GetCurrentUserId();
-        if (userId == null)
-            return Unauthorized();
 
         var language = request.Language.ToLower();
-        var settings = await GetOrCreateUserSettings(userId.Value);
+        var settings = await GetOrCreateUserSettings(userId);
         
         settings.Language = language;
         settings.UpdatedAt = DateTime.UtcNow;
@@ -98,18 +90,6 @@ public class MeSettingsController : ControllerBase
         SetLanguageCookie(language);
 
         return Ok(new UpdateLanguageResponse(language));
-    }
-
-    private Guid? GetCurrentUserId()
-    {
-        var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value 
-            ?? User.FindFirst("email")?.Value;
-        
-        if (string.IsNullOrEmpty(emailClaim))
-            return null;
-
-        var user = _context.Users.FirstOrDefault(u => u.Email == emailClaim);
-        return user?.Id;
     }
 
     private async Task<UserSettings> GetOrCreateUserSettings(Guid userId)

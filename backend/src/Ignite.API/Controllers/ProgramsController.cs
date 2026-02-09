@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/programs")]
-[Authorize]
-public class ProgramsController : ControllerBase
+public class ProgramsController : BaseApiController
 {
     private readonly IMediator _mediator;
 

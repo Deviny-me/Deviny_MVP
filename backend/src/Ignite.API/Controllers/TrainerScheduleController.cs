@@ -10,10 +10,8 @@ using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
-[ApiController]
 [Route("api/trainer/me/schedule")]
-[Authorize]
-public class TrainerScheduleController : ControllerBase
+public class TrainerScheduleController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILevelService _levelService;

@@ -1,109 +1,132 @@
 'use client'
 
 import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
-import { useUser } from '@/components/user/UserProvider'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { API_URL, getAuthHeader } from '@/lib/config'
 import { 
-  Star, 
-  Clock, 
+  Search,
+  Star,
   Users,
-  PlayCircle,
-  CheckCircle,
-  Lock
+  ShoppingCart,
+  Loader2,
+  Filter,
+  SortAsc,
+  Dumbbell,
+  Apple,
+  X
 } from 'lucide-react'
+import { programsApi } from '@/lib/api/programsApi'
+import { PublicProgramDto } from '@/types/program'
 
-interface Program {
-  id: string
-  title: string
-  trainer: string
-  trainerAvatar?: string
-  cover: string
-  price: number
-  difficulty: string
-  duration: string
-  rating: number
-  reviews: number
-  progress?: number
-  enrolled?: boolean
-}
+type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
+type FilterType = 'all' | 'training' | 'nutrition'
 
 export default function ProgramsPage() {
   const router = useRouter()
-  const { user } = useUser()
-  const [activeTab, setActiveTab] = useState<'enrolled' | 'browse'>('enrolled')
-  
-  // Demo data
-  const enrolledPrograms: Program[] = [
-    {
-      id: '1',
-      title: 'Ultimate Strength Builder',
-      trainer: 'Sarah Martinez',
-      trainerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
-      cover: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800',
-      price: 49.99,
-      difficulty: 'Advanced',
-      duration: '8 weeks',
-      rating: 4.9,
-      reviews: 247,
-      progress: 45,
-      enrolled: true,
-    },
-    {
-      id: '2',
-      title: 'Fat Burn HIIT',
-      trainer: 'Jessica Lee',
-      trainerAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-      cover: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
-      price: 44.99,
-      difficulty: 'Intermediate',
-      duration: '4 weeks',
-      rating: 4.9,
-      reviews: 312,
-      progress: 78,
-      enrolled: true,
-    },
-  ]
+  const searchParams = useSearchParams()
+  const [programs, setPrograms] = useState<PublicProgramDto[]>([])
+  const [filteredPrograms, setFilteredPrograms] = useState<PublicProgramDto[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<SortOption>('newest')
+  const [filterType, setFilterType] = useState<FilterType>('all')
+  const [selectedProgram, setSelectedProgram] = useState<PublicProgramDto | null>(null)
 
-  const browsePrograms: Program[] = [
-    {
-      id: '3',
-      title: 'Yoga Flow Mastery',
-      trainer: 'Marcus Chen',
-      trainerAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400',
-      cover: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800',
-      price: 39.99,
-      difficulty: 'Intermediate',
-      duration: '6 weeks',
-      rating: 4.8,
-      reviews: 189,
-    },
-    {
-      id: '4',
-      title: 'Beginner\'s Full Body',
-      trainer: 'Sarah Martinez',
-      trainerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
-      cover: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=800',
-      price: 29.99,
-      difficulty: 'Beginner',
-      duration: '4 weeks',
-      rating: 4.8,
-      reviews: 156,
-    },
-    {
-      id: '5',
-      title: 'Powerlifting Fundamentals',
-      trainer: 'David Thompson',
-      trainerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-      cover: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800',
-      price: 54.99,
-      difficulty: 'Intermediate',
-      duration: '10 weeks',
-      rating: 4.7,
-      reviews: 98,
-    },
-  ]
+  useEffect(() => {
+    loadPrograms()
+  }, [])
+
+  // Check for program query parameter to open modal
+  useEffect(() => {
+    const programId = searchParams.get('program')
+    if (programId && programs.length > 0) {
+      const program = programs.find(p => p.id === programId)
+      if (program) {
+        setSelectedProgram(program)
+        // Clear the query param from URL without navigation
+        router.replace('/dashboard/user/programs', { scroll: false })
+      }
+    }
+  }, [searchParams, programs, router])
+
+  useEffect(() => {
+    applyFiltersAndSort()
+  }, [programs, searchQuery, sortBy, filterType])
+
+  const loadPrograms = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await programsApi.getAllPublic()
+      setPrograms(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load programs')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const applyFiltersAndSort = () => {
+    let result = [...programs]
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(p => 
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.trainerName.toLowerCase().includes(query)
+      )
+    }
+
+    // Filter by type (based on title/description keywords for now)
+    if (filterType === 'training') {
+      result = result.filter(p => 
+        p.title.toLowerCase().includes('training') ||
+        p.title.toLowerCase().includes('workout') ||
+        p.title.toLowerCase().includes('fitness') ||
+        p.title.toLowerCase().includes('тренировк') ||
+        p.description.toLowerCase().includes('training') ||
+        p.description.toLowerCase().includes('workout')
+      )
+    } else if (filterType === 'nutrition') {
+      result = result.filter(p => 
+        p.title.toLowerCase().includes('nutrition') ||
+        p.title.toLowerCase().includes('diet') ||
+        p.title.toLowerCase().includes('meal') ||
+        p.title.toLowerCase().includes('питани') ||
+        p.description.toLowerCase().includes('nutrition') ||
+        p.description.toLowerCase().includes('diet')
+      )
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'newest':
+        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        break
+      case 'popular':
+        result.sort((a, b) => b.totalPurchases - a.totalPurchases)
+        break
+      case 'rating':
+        result.sort((a, b) => b.averageRating - a.averageRating)
+        break
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price)
+        break
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price)
+        break
+    }
+
+    setFilteredPrograms(result)
+  }
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return 'Free'
+    return `$${price.toFixed(2)}`
+  }
 
   return (
     <UserMainLayout>
@@ -111,166 +134,328 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">My Programs</h1>
-            <p className="text-sm text-gray-400">Track your training progress</p>
+            <h1 className="text-2xl font-bold text-white">Programs</h1>
+            <p className="text-sm text-gray-400">Training and nutrition programs from professional trainers</p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActiveTab('enrolled')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'enrolled'
-                ? 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white'
-                : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
-            }`}
-          >
-            My Programs ({enrolledPrograms.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('browse')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'browse'
-                ? 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white'
-                : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
-            }`}
-          >
-            Browse More
-          </button>
+        {/* Search and Filters */}
+        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 space-y-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search programs, trainers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
+            />
+          </div>
+
+          {/* Filter and Sort Row */}
+          <div className="flex flex-wrap gap-2">
+            {/* Type Filters */}
+            <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-1">
+              <button
+                onClick={() => setFilterType('all')}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  filterType === 'all' 
+                    ? 'bg-[#FF6B35] text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterType('training')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  filterType === 'training' 
+                    ? 'bg-[#FF6B35] text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Dumbbell className="w-4 h-4" />
+                Training
+              </button>
+              <button
+                onClick={() => setFilterType('nutrition')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  filterType === 'nutrition' 
+                    ? 'bg-[#FF6B35] text-white' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Apple className="w-4 h-4" />
+                Nutrition
+              </button>
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2 ml-auto">
+              <SortAsc className="w-4 h-4 text-gray-500" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF6B35]/50"
+              >
+                <option value="newest">Newest</option>
+                <option value="popular">Most Popular</option>
+                <option value="rating">Highest Rated</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Enrolled Programs */}
-        {activeTab === 'enrolled' && (
-          <div className="space-y-4">
-            {enrolledPrograms.length === 0 ? (
-              <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#0A0A0A] flex items-center justify-center">
-                  <PlayCircle className="w-8 h-8 text-gray-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">No programs yet</h3>
-                <p className="text-sm text-gray-400 mb-4">Start your fitness journey by enrolling in a program</p>
-                <button
-                  onClick={() => setActiveTab('browse')}
-                  className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  Browse Programs
-                </button>
-              </div>
-            ) : (
-              enrolledPrograms.map((program) => (
-                <div
-                  key={program.id}
-                  onClick={() => router.push(`/dashboard/user/programs/${program.id}`)}
-                  className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#FF6B35]/50 transition-all"
-                >
-                  <div className="flex">
-                    {/* Cover */}
-                    <div className="w-48 h-32 flex-shrink-0 relative">
+        {/* Programs List */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+            <p className="text-red-400 mb-4">{error}</p>
+            <button
+              onClick={loadPrograms}
+              className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredPrograms.length === 0 ? (
+          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#0A0A0A] flex items-center justify-center">
+              <Search className="w-8 h-8 text-gray-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              {programs.length === 0 ? 'No programs available yet' : 'No programs found'}
+            </h3>
+            <p className="text-sm text-gray-400">
+              {programs.length === 0 
+                ? 'Check back later for new programs from trainers'
+                : 'Try adjusting your search or filters'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {filteredPrograms.map((program) => (
+              <div
+                key={program.id}
+                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
+                onClick={() => setSelectedProgram(program)}
+              >
+                <div className="flex">
+                  {/* Cover Image */}
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-[#0A0A0A]">
+                    {program.coverImageUrl ? (
                       <img
-                        src={program.cover}
+                        src={program.coverImageUrl}
                         alt={program.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#1A1A1A]" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-white">{program.title}</h3>
-                          <p className="text-sm text-gray-400">{program.trainer}</p>
-                        </div>
-                        <div className="flex items-center gap-1 px-2 py-1 bg-[#0A0A0A] rounded">
-                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                          <span className="text-xs font-medium text-white">{program.rating}</span>
-                        </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Dumbbell className="w-10 h-10 text-gray-600" />
                       </div>
+                    )}
+                  </div>
 
-                      {/* Progress */}
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-gray-400">Progress</span>
-                          <span className="text-[#FF6B35] font-medium">{program.progress}%</span>
-                        </div>
-                        <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full transition-all"
-                            style={{ width: `${program.progress}%` }}
+                  {/* Content */}
+                  <div className="flex-1 p-4 flex flex-col">
+                    {/* Title & Trainer */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white line-clamp-1">{program.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        {program.trainerAvatarUrl ? (
+                          <img
+                            src={program.trainerAvatarUrl}
+                            alt={program.trainerName}
+                            className="w-5 h-5 rounded-full object-cover"
                           />
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                            <span className="text-white text-[10px] font-bold">
+                              {program.trainerName.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-sm text-gray-400">{program.trainerName}</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-2 line-clamp-2">{program.description}</p>
+                    </div>
+
+                    {/* Stats & Price */}
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                          <span className="text-sm text-white">
+                            {program.averageRating > 0 ? program.averageRating.toFixed(1) : '-'}
+                          </span>
+                          <span className="text-xs text-gray-500">({program.totalReviews})</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-400">
+                          <Users className="w-4 h-4" />
+                          <span className="text-sm">{program.totalPurchases}</span>
                         </div>
                       </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-3 mt-3">
-                        <button className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
-                          <PlayCircle className="w-4 h-4" />
-                          Continue
-                        </button>
-                        <span className="text-xs text-gray-400">{program.duration}</span>
-                      </div>
+                      <span className={`text-lg font-bold ${
+                        program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+                      }`}>
+                        {formatPrice(program.price)}
+                      </span>
                     </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Browse Programs */}
-        {activeTab === 'browse' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {browsePrograms.map((program) => (
-              <div
-                key={program.id}
-                onClick={() => router.push(`/dashboard/user/programs/${program.id}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#FF6B35]/50 transition-all group"
-              >
-                {/* Cover Image */}
-                <div className="relative aspect-video">
-                  <img
-                    src={program.cover}
-                    alt={program.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-sm rounded text-xs font-medium text-white">
-                    {program.difficulty}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                  <h3 className="font-semibold text-white mb-1 group-hover:text-[#FF6B35] transition-colors">
-                    {program.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-3">{program.trainer}</p>
-                  <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{program.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                      <span className="text-white font-medium">{program.rating}</span>
-                      <span>({program.reviews})</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
-                      ${program.price}
-                    </span>
-                    <button className="px-4 py-1.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
-                      Enroll
-                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* Results Count */}
+        {!isLoading && !error && programs.length > 0 && (
+          <p className="text-center text-sm text-gray-500">
+            Showing {filteredPrograms.length} of {programs.length} programs
+          </p>
+        )}
       </div>
+
+      {/* Program Detail Modal */}
+      {selectedProgram && (
+        <ProgramDetailModal
+          program={selectedProgram}
+          onClose={() => setSelectedProgram(null)}
+        />
+      )}
     </UserMainLayout>
+  )
+}
+
+// Program Detail Modal Component
+function ProgramDetailModal({ 
+  program, 
+  onClose 
+}: { 
+  program: PublicProgramDto
+  onClose: () => void 
+}) {
+  const router = useRouter()
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return 'Free'
+    return `$${price.toFixed(2)}`
+  }
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header with Cover */}
+        <div className="relative">
+          {program.coverImageUrl ? (
+            <img
+              src={program.coverImageUrl}
+              alt={program.title}
+              className="w-full h-48 object-cover"
+            />
+          ) : (
+            <div className="w-full h-48 bg-[#0A0A0A] flex items-center justify-center">
+              <Dumbbell className="w-16 h-16 text-gray-600" />
+            </div>
+          )}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+          >
+            <X className="w-5 h-5 text-white" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          {/* Title & Price */}
+          <div className="flex items-start justify-between gap-4">
+            <h2 className="text-xl font-bold text-white">{program.title}</h2>
+            <span className={`text-2xl font-bold flex-shrink-0 ${
+              program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+            }`}>
+              {formatPrice(program.price)}
+            </span>
+          </div>
+
+          {/* Trainer */}
+          <div 
+            className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg cursor-pointer hover:bg-[#141414] transition-colors"
+            onClick={() => {
+              onClose()
+              router.push(`/dashboard/user/experts/${program.trainerSlug || program.trainerId}`)
+            }}
+          >
+            {program.trainerAvatarUrl ? (
+              <img
+                src={program.trainerAvatarUrl}
+                alt={program.trainerName}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                <span className="text-white font-bold">
+                  {program.trainerName.charAt(0)}
+                </span>
+              </div>
+            )}
+            <div>
+              <p className="text-white font-medium">{program.trainerName}</p>
+              <p className="text-xs text-gray-400">View trainer profile →</p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+              <span className="text-white font-medium">
+                {program.averageRating > 0 ? program.averageRating.toFixed(1) : 'No ratings'}
+              </span>
+              <span className="text-gray-500">({program.totalReviews} reviews)</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-400">
+              <Users className="w-5 h-5" />
+              <span>{program.totalPurchases} purchases</span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-2">About this program</h3>
+            <p className="text-white leading-relaxed">{program.description}</p>
+          </div>
+
+          {/* Purchase Button */}
+          <button
+            className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            onClick={() => {
+              // TODO: Implement purchase flow
+              alert('Purchase flow coming soon!')
+            }}
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {program.price === 0 ? 'Get for Free' : `Purchase for ${formatPrice(program.price)}`}
+          </button>
+
+          {/* Program Code */}
+          <p className="text-center text-xs text-gray-500">
+            Program code: <span className="text-gray-400 font-mono">{program.code}</span>
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

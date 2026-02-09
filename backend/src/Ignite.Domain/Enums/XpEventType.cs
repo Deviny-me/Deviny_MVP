@@ -9,6 +9,7 @@ public enum XpEventType
     TrainerCompletedCallSession,
     TrainerAddedCertificate,
     TrainerAddedAchievement,
+    TrainerCreatedPost,
     
     // User/Student events
     UserPurchasedProgram,
@@ -16,6 +17,7 @@ public enum XpEventType
     UserLeftReview,
     UserCompletedWorkout,
     UserLoggedProgress,
+    UserCreatedPost,
     
     // General events
     ProfileCompleted,

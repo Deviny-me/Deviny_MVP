@@ -1,5 +1,12 @@
-import { redirect } from 'next/navigation'
+'use client'
 
-export default function TrainerDashboard() {
-  redirect('/trainer/dashboard')
+import { MainLayout } from '@/components/trainer/layout/MainLayout'
+import { TrainerHomeFeed } from '@/components/trainer/screens/TrainerHomeFeed'
+
+export default function TrainerDashboardPage() {
+  return (
+    <MainLayout>
+      <TrainerHomeFeed />
+    </MainLayout>
+  )
 }

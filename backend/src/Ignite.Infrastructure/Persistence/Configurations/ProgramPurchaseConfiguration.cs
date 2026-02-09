@@ -13,6 +13,11 @@ public class ProgramPurchaseConfiguration : IEntityTypeConfiguration<ProgramPurc
         builder.HasIndex(pp => pp.ProgramId);
         builder.HasIndex(pp => pp.UserId);
 
+        // Composite index for user's purchased programs
+        builder.HasIndex(pp => new { pp.UserId, pp.PurchasedAt })
+            .IsDescending(false, true)
+            .HasDatabaseName("IX_ProgramPurchases_UserId_PurchasedAt");
+
         builder.Property(pp => pp.Status)
             .HasConversion<string>();
 
@@ -22,7 +27,7 @@ public class ProgramPurchaseConfiguration : IEntityTypeConfiguration<ProgramPurc
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(pp => pp.User)
-            .WithMany()
+            .WithMany(u => u.ProgramPurchases)
             .HasForeignKey(pp => pp.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
