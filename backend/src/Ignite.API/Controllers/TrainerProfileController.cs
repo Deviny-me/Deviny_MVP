@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Ignite.API.Controllers;
 
@@ -567,23 +566,13 @@ public class TrainerProfileController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
+            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(emailClaim))
             {
                 return Unauthorized(new { message = "Требуется авторизация" });
             }
 
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var user = await _userRepository.GetByEmailAsync(emailClaim);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -644,6 +633,47 @@ public class TrainerProfileController : BaseApiController
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Ошибка при загрузке аватара", error = ex.Message });
+        }
+    }
+
+    [HttpDelete("me/avatar")]
+    public async Task<ActionResult> DeleteAvatar()
+    {
+        try
+        {
+            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value;
+            if (string.IsNullOrEmpty(emailClaim))
+            {
+                return Unauthorized(new { message = "Требуется авторизация" });
+            }
+
+            var user = await _userRepository.GetByEmailAsync(emailClaim);
+            if (user == null)
+            {
+                return NotFound(new { message = "Пользователь не найден" });
+            }
+
+            if (string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                return NotFound(new { message = "Аватар не найден" });
+            }
+
+            // Delete avatar file from disk
+            var avatarPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.AvatarUrl.TrimStart('/'));
+            if (System.IO.File.Exists(avatarPath))
+            {
+                System.IO.File.Delete(avatarPath);
+            }
+
+            // Clear avatar URL
+            user.AvatarUrl = null;
+            await _userRepository.UpdateAsync(user);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Ошибка при удалении аватара", error = ex.Message });
         }
     }
 }

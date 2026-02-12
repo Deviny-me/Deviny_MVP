@@ -33,6 +33,7 @@ public class TrainerProfileRepository : ITrainerProfileRepository
     public async Task<List<TrainerProfile>> GetAllWithDetailsAsync()
     {
         return await _context.TrainerProfiles
+            .AsNoTracking()
             .Include(tp => tp.User)
             .Include(tp => tp.Specializations)
                 .ThenInclude(ts => ts.Specialization)

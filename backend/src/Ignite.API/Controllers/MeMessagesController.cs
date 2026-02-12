@@ -86,6 +86,7 @@ public class ChatsController : BaseApiController
         return Ok(new { unreadCount = count });
     }
 
+#if DEBUG
     /// <summary>TEST ENDPOINT: Manually trigger UnreadCountUpdated event for current user.</summary>
     [HttpPost("test-unread-event")]
     public async Task<ActionResult<object>> TestUnreadEvent()
@@ -98,6 +99,7 @@ public class ChatsController : BaseApiController
         
         return Ok(new { message = "Event sent", userId, count, group });
     }
+#endif
 }
 
 /// <summary>Body for the REST send-message endpoint.</summary>

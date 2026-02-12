@@ -22,6 +22,17 @@ public class ProgramRepository : IProgramRepository
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<TrainingProgram?> GetByIdPublicAsync(Guid id)
+    {
+        return await _context.TrainingPrograms
+            .AsNoTracking()
+            .Include(p => p.Reviews)
+            .Include(p => p.Purchases)
+            .Include(p => p.Trainer)
+                .ThenInclude(u => u.TrainerProfile)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+    }
+
     public async Task<TrainingProgram?> GetByCodeAsync(string code)
     {
         return await _context.TrainingPrograms
@@ -33,6 +44,7 @@ public class ProgramRepository : IProgramRepository
     public async Task<List<TrainingProgram>> GetByTrainerIdAsync(Guid trainerId)
     {
         return await _context.TrainingPrograms
+            .AsNoTracking()
             .Include(p => p.Reviews)
             .Include(p => p.Purchases)
             .Where(p => p.TrainerId == trainerId)
@@ -43,6 +55,7 @@ public class ProgramRepository : IProgramRepository
     public async Task<List<TrainingProgram>> GetAllPublicAsync()
     {
         return await _context.TrainingPrograms
+            .AsNoTracking()
             .Include(p => p.Reviews)
             .Include(p => p.Purchases)
             .Include(p => p.Trainer)

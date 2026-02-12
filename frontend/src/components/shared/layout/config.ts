@@ -21,41 +21,41 @@ import { LayoutConfig } from './types'
  */
 export const trainerConfig: LayoutConfig = {
   role: 'trainer',
-  basePath: '/dashboard/trainer',
+  basePath: '/trainer',
   logoText: 'TRAINER',
   searchPlaceholder: 'Search students, programs...',
   navSections: [
     {
       title: null,
       links: [
-        { icon: Home, label: 'Home', path: '/dashboard/trainer' },
-        { icon: Compass, label: 'Discover', path: '/dashboard/trainer/discovery' },
-        { icon: GraduationCap, label: 'Experts', path: '/dashboard/trainer/experts' },
+        { icon: Home, label: 'Home', path: '/trainer' },
+        { icon: Compass, label: 'Discover', path: '/trainer/discovery' },
+        { icon: GraduationCap, label: 'Experts', path: '/trainer/experts' },
       ]
     },
     {
       title: 'Training',
       links: [
-        { icon: Layers, label: 'My Programs', path: '/dashboard/trainer/programs' },
-        { icon: Users, label: 'Students', path: '/dashboard/trainer/students' },
-        { icon: Radio, label: 'Live Workouts', path: '/dashboard/trainer/live' },
-        { icon: Calendar, label: 'Schedule', path: '/dashboard/trainer/schedule' },
+        { icon: Layers, label: 'My Programs', path: '/trainer/programs' },
+        { icon: Users, label: 'Students', path: '/trainer/students' },
+        { icon: Radio, label: 'Live Workouts', path: '/trainer/live' },
+        { icon: Calendar, label: 'Schedule', path: '/trainer/schedule' },
       ]
     },
     {
       title: 'Compete',
       links: [
-        { icon: Target, label: 'Challenges', path: '/dashboard/trainer/challenges' },
-        { icon: Trophy, label: 'Leaderboards', path: '/dashboard/trainer/leaderboards' },
-        { icon: Award, label: 'Achievements', path: '/dashboard/trainer/achievements' },
+        { icon: Target, label: 'Challenges', path: '/trainer/challenges' },
+        { icon: Trophy, label: 'Leaderboards', path: '/trainer/leaderboards' },
+        { icon: Award, label: 'Achievements', path: '/trainer/achievements' },
       ]
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Students', path: '/dashboard/trainer/students' },
-    { icon: MessageCircle, label: 'Messages', path: '/dashboard/trainer/messages' },
-    { icon: User, label: 'My Profile', path: '/dashboard/trainer/profile' },
-    { icon: Settings, label: 'Settings', path: '/dashboard/trainer/settings' },
+    { icon: Users, label: 'Students', path: '/trainer/students' },
+    { icon: MessageCircle, label: 'Messages', path: '/trainer/messages' },
+    { icon: User, label: 'My Profile', path: '/trainer/profile' },
+    { icon: Settings, label: 'Settings', path: '/trainer/settings' },
   ]
 }
 
@@ -64,41 +64,41 @@ export const trainerConfig: LayoutConfig = {
  */
 export const userConfig: LayoutConfig = {
   role: 'user',
-  basePath: '/dashboard/user',
+  basePath: '/user',
   logoText: undefined,
   searchPlaceholder: 'Search trainers, programs, workouts...',
   navSections: [
     {
       title: null,
       links: [
-        { icon: Home, label: 'Home', path: '/dashboard/user' },
-        { icon: Compass, label: 'Discover', path: '/dashboard/user/discovery' },
-        { icon: GraduationCap, label: 'Experts', path: '/dashboard/user/experts' },
+        { icon: Home, label: 'Home', path: '/user' },
+        { icon: Compass, label: 'Discover', path: '/user/discovery' },
+        { icon: GraduationCap, label: 'Experts', path: '/user/experts' },
       ]
     },
     {
       title: 'Training',
       links: [
-        { icon: Layers, label: 'Programs', path: '/dashboard/user/programs' },
-        { icon: BookOpen, label: 'My Journey', path: '/dashboard/user/journey' },
-        { icon: Radio, label: 'Live Workouts', path: '/dashboard/user/live' },
-        { icon: Calendar, label: 'Schedule', path: '/dashboard/user/schedule' },
+        { icon: Layers, label: 'Programs', path: '/user/programs' },
+        { icon: BookOpen, label: 'My Journey', path: '/user/journey' },
+        { icon: Radio, label: 'Live Workouts', path: '/user/live' },
+        { icon: Calendar, label: 'Schedule', path: '/user/schedule' },
       ]
     },
     {
       title: 'Compete',
       links: [
-        { icon: Target, label: 'Challenges', path: '/dashboard/user/challenges' },
-        { icon: Trophy, label: 'Leaderboards', path: '/dashboard/user/leaderboards' },
-        { icon: Award, label: 'Achievements', path: '/dashboard/user/achievements' },
+        { icon: Target, label: 'Challenges', path: '/user/challenges' },
+        { icon: Trophy, label: 'Leaderboards', path: '/user/leaderboards' },
+        { icon: Award, label: 'Achievements', path: '/user/achievements' },
       ]
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Friends', path: '/dashboard/user/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/dashboard/user/messages' },
-    { icon: User, label: 'Profile', path: '/dashboard/user/profile' },
-    { icon: Settings, label: 'Settings', path: '/dashboard/user/settings' },
+    { icon: Users, label: 'Friends', path: '/user/friends' },
+    { icon: MessageCircle, label: 'Messages', path: '/user/messages' },
+    { icon: User, label: 'Profile', path: '/user/profile' },
+    { icon: Settings, label: 'Settings', path: '/user/settings' },
   ]
 }
 

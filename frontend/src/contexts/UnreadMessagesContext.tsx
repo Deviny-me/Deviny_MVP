@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { usePathname } from 'next/navigation'
 import { messagesApi } from '@/lib/api/messagesApi'
@@ -73,11 +73,13 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchUnreadCount])
 
-  const incrementUnread = () => setUnreadCount(prev => prev + 1)
-  const resetUnread = () => setUnreadCount(0)
+  const incrementUnread = useCallback(() => setUnreadCount(prev => prev + 1), [])
+  const resetUnread = useCallback(() => setUnreadCount(0), [])
+
+  const value = useMemo(() => ({ unreadCount, incrementUnread, resetUnread }), [unreadCount, incrementUnread, resetUnread])
 
   return (
-    <UnreadMessagesContext.Provider value={{ unreadCount, incrementUnread, resetUnread }}>
+    <UnreadMessagesContext.Provider value={value}>
       {children}
     </UnreadMessagesContext.Provider>
   )

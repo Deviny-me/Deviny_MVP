@@ -33,11 +33,11 @@ public class GetMyFriendsQueryHandler : IRequestHandler<GetMyFriendsQuery, List<
 
         return friends.Select(f => new FriendDto
         {
-            Id = f.Id,
-            Email = f.Email,
-            FullName = f.FullName,
-            Avatar = f.AvatarUrl,
-            FriendsSince = DateTime.UtcNow // This should be taken from the FriendRequest entity
+            Id = f.Friend.Id,
+            Email = f.Friend.Email,
+            FullName = f.Friend.FullName,
+            Avatar = f.Friend.AvatarUrl,
+            FriendsSince = f.FriendsSince
         }).ToList();
     }
 }

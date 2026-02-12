@@ -1,3 +1,4 @@
+using Ignite.Application.Features.Posts.DTOs;
 using Ignite.Domain.Entities;
 
 namespace Ignite.Application.Common.Interfaces;
@@ -40,9 +41,54 @@ public interface IUserPostRepository
         CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Gets paginated posts for a user filtered by profile tab.
+    /// </summary>
+    Task<List<UserPost>> GetByUserIdPagedAsync(
+        Guid userId, 
+        ProfilePostTab tab,
+        int page, 
+        int pageSize, 
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets paginated PUBLIC posts for a user (for viewing other people's profiles).
+    /// Only returns non-deleted posts with Public visibility.
+    /// </summary>
+    Task<List<UserPost>> GetPublicByUserIdPagedAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets paginated PUBLIC posts for a user filtered by profile tab.
+    /// </summary>
+    Task<List<UserPost>> GetPublicByUserIdPagedAsync(
+        Guid userId,
+        ProfilePostTab tab,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total count of PUBLIC posts for a user.
+    /// </summary>
+    Task<int> GetPublicCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets total count of PUBLIC posts for a user filtered by profile tab.
+    /// </summary>
+    Task<int> GetPublicCountByUserIdAsync(Guid userId, ProfilePostTab tab, CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Gets the total count of posts for a user.
     /// </summary>
     Task<int> GetCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of posts for a user filtered by profile tab.
+    /// </summary>
+    Task<int> GetCountByUserIdAsync(Guid userId, ProfilePostTab tab, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Creates a new post with its media.
@@ -108,4 +154,13 @@ public interface IUserPostRepository
     /// Returns null if the user hasn't reposted this post.
     /// </summary>
     Task<UserPost?> GetUserRepostAsync(Guid originalPostId, Guid userId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets which posts from a list have been reposted by a user.
+    /// Returns a set of original post IDs that have been reposted.
+    /// </summary>
+    Task<HashSet<Guid>> GetRepostedPostIdsByUserAsync(
+        IEnumerable<Guid> postIds, 
+        Guid userId, 
+        CancellationToken cancellationToken = default);
 }

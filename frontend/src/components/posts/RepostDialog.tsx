@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { X, Repeat2, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
+import { getMediaUrl } from '@/lib/config'
 import { PostDto, PostType } from '@/types/post'
 
 interface RepostDialogProps {
@@ -160,13 +161,13 @@ export function RepostDialog({
               <div className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden">
                 {post.type === PostType.Video ? (
                   <video
-                    src={post.media[0].url}
+                    src={getMediaUrl(post.media[0].url) || ''}
                     className="w-full h-full object-cover"
                     muted
                   />
                 ) : (
                   <img
-                    src={post.media[0].thumbnailUrl || post.media[0].url}
+                    src={getMediaUrl(post.media[0].thumbnailUrl || post.media[0].url) || ''}
                     alt="Post media"
                     className="w-full h-full object-cover"
                   />

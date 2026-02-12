@@ -5,21 +5,20 @@ import { Send, Trash2, Loader2, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
 import { PostCommentDto } from '@/types/post'
+import { getMediaUrl } from '@/lib/config'
 
 interface PostCommentsProps {
   postId: string
-  currentUserId?: string
   className?: string
   onCommentCountChange?: (delta: number) => void
 }
 
 /**
- * Comments section for a post.
- * Supports pagination, adding comments, and deleting own comments.
+ * Comments section for a post (dark theme).
+ * Uses server-side canDelete for delete permissions.
  */
 export function PostComments({
   postId,
-  currentUserId,
   className,
   onCommentCountChange,
 }: PostCommentsProps) {
@@ -33,28 +32,25 @@ export function PostComments({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
   
   const inputRef = useRef<HTMLInputElement>(null)
-  const PAGE_SIZE = 10
+  const PAGE_SIZE = 15
 
   // Load initial comments
   useEffect(() => {
+    setComments([])
+    setPage(1)
+    setHasMore(false)
     loadComments(1)
   }, [postId])
 
   const loadComments = useCallback(async (pageNum: number) => {
     try {
-      if (pageNum === 1) {
-        setIsLoading(true)
-      } else {
-        setIsLoadingMore(true)
-      }
+      if (pageNum === 1) setIsLoading(true)
+      else setIsLoadingMore(true)
 
       const response = await postsApi.getComments(postId, pageNum, PAGE_SIZE)
       
-      if (pageNum === 1) {
-        setComments(response.comments)
-      } else {
-        setComments(prev => [...prev, ...response.comments])
-      }
+      if (pageNum === 1) setComments(response.comments)
+      else setComments(prev => [...prev, ...response.comments])
       
       setHasMore(response.hasMore)
       setPage(pageNum)
@@ -67,19 +63,14 @@ export function PostComments({
   }, [postId])
 
   const handleLoadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore) {
-      loadComments(page + 1)
-    }
+    if (!isLoadingMore && hasMore) loadComments(page + 1)
   }, [isLoadingMore, hasMore, page, loadComments])
 
   const handleSubmitComment = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    
     const content = newComment.trim()
     if (!content || isSubmitting) return
-
     setIsSubmitting(true)
-    
     try {
       const comment = await postsApi.addComment(postId, { content })
       setComments(prev => [comment, ...prev])
@@ -93,11 +84,16 @@ export function PostComments({
     }
   }, [postId, newComment, isSubmitting, onCommentCountChange])
 
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmitComment(e as unknown as React.FormEvent)
+    }
+  }, [handleSubmitComment])
+
   const handleDeleteComment = useCallback(async (commentId: string) => {
     if (deletingIds.has(commentId)) return
-
     setDeletingIds(prev => new Set(prev).add(commentId))
-    
     try {
       await postsApi.deleteComment(commentId)
       setComments(prev => prev.filter(c => c.id !== commentId))
@@ -120,12 +116,11 @@ export function PostComments({
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return 'just now'
-    if (diffMins < 60) return `${diffMins}m`
-    if (diffHours < 24) return `${diffHours}h`
-    if (diffDays < 7) return `${diffDays}d`
-    return date.toLocaleDateString()
+    if (diffMins < 1) return 'сейчас'
+    if (diffMins < 60) return `${diffMins}м`
+    if (diffHours < 24) return `${diffHours}ч`
+    if (diffDays < 7) return `${diffDays}д`
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
   }
 
   const getInitials = (firstName: string, lastName: string): string => {
@@ -135,35 +130,117 @@ export function PostComments({
   if (isLoading) {
     return (
       <div className={cn('flex justify-center py-8', className)}>
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
       </div>
     )
   }
 
   return (
-    <div className={cn('space-y-4', className)}>
-      {/* Add Comment Form */}
-      <form onSubmit={handleSubmitComment} className="flex gap-2">
+    <div className={cn('flex flex-col h-full', className)}>
+      {/* Comments List */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+        {comments.length === 0 ? (
+          <p className="text-center text-gray-500 py-8 text-sm">
+            Пока нет комментариев. Будьте первым!
+          </p>
+        ) : (
+          <>
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex gap-2.5 group">
+                {/* Avatar */}
+                {comment.author.avatarUrl ? (
+                  <img
+                    src={getMediaUrl(comment.author.avatarUrl) || comment.author.avatarUrl}
+                    alt={`${comment.author.firstName} ${comment.author.lastName}`}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[10px] font-bold text-white">
+                      {getInitials(comment.author.firstName, comment.author.lastName)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="bg-white/5 rounded-2xl px-3 py-2">
+                    <p className="text-xs font-semibold text-white">
+                      {comment.author.firstName} {comment.author.lastName}
+                    </p>
+                    <p className="text-sm text-gray-300 whitespace-pre-wrap break-words mt-0.5">
+                      {comment.content}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 px-2">
+                    <span className="text-[11px] text-gray-500">
+                      {formatTimeAgo(comment.createdAt)}
+                    </span>
+                    
+                    {/* Delete — canDelete from server */}
+                    {comment.canDelete && (
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        disabled={deletingIds.has(comment.id)}
+                        className="text-[11px] text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                        aria-label="Удалить комментарий"
+                      >
+                        {deletingIds.has(comment.id) ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Load More */}
+            {hasMore && (
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="w-full py-2 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1"
+              >
+                {isLoadingMore ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    Загрузить ещё
+                  </>
+                )}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Input — fixed at bottom */}
+      <form onSubmit={handleSubmitComment} className="px-4 py-3 border-t border-white/10 flex gap-2 flex-shrink-0">
         <input
           ref={inputRef}
           type="text"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Write a comment..."
-          className="flex-1 px-4 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          onKeyDown={handleKeyDown}
+          placeholder="Написать комментарий..."
+          className="flex-1 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#FF6B35]/50 focus:border-[#FF6B35]/50"
           disabled={isSubmitting}
-          maxLength={500}
+          maxLength={1000}
         />
         <button
           type="submit"
           disabled={!newComment.trim() || isSubmitting}
           className={cn(
-            'p-2 rounded-full transition-colors',
+            'p-2 rounded-full transition-colors flex-shrink-0',
             newComment.trim() && !isSubmitting
-              ? 'bg-primary-500 text-white hover:bg-primary-600'
-              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'bg-[#FF6B35] text-white hover:bg-[#FF8555]'
+              : 'bg-white/5 text-gray-600 cursor-not-allowed'
           )}
-          aria-label="Post comment"
+          aria-label="Отправить"
         >
           {isSubmitting ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -172,88 +249,6 @@ export function PostComments({
           )}
         </button>
       </form>
-
-      {/* Comments List */}
-      {comments.length === 0 ? (
-        <p className="text-center text-gray-500 py-4">
-          No comments yet. Be the first to comment!
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="flex gap-3 group"
-            >
-              {/* Avatar */}
-              {comment.author.avatarUrl ? (
-                <img
-                  src={comment.author.avatarUrl}
-                  alt={`${comment.author.firstName} ${comment.author.lastName}`}
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-medium text-gray-600">
-                    {getInitials(comment.author.firstName, comment.author.lastName)}
-                  </span>
-                </div>
-              )}
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="bg-gray-100 rounded-2xl px-4 py-2">
-                  <p className="text-sm font-medium text-gray-900">
-                    {comment.author.firstName} {comment.author.lastName}
-                  </p>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                    {comment.content}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 mt-1 px-2">
-                  <span className="text-xs text-gray-500">
-                    {formatTimeAgo(comment.createdAt)}
-                  </span>
-                  
-                  {/* Delete button (only for own comments) */}
-                  {currentUserId && comment.author.id === currentUserId && (
-                    <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      disabled={deletingIds.has(comment.id)}
-                      className="text-xs text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                      aria-label="Delete comment"
-                    >
-                      {deletingIds.has(comment.id) ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-3 h-3" />
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Load More Button */}
-          {hasMore && (
-            <button
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-              className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center gap-1"
-            >
-              {isLoadingMore ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" />
-                  Load more comments
-                </>
-              )}
-            </button>
-          )}
-        </div>
-      )}
     </div>
   )
 }

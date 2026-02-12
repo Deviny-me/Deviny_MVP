@@ -11,13 +11,16 @@ namespace Ignite.Application.Features.Posts.Commands;
 public class DeletePostCommentCommandHandler : IRequestHandler<DeletePostCommentCommand, Result<bool>>
 {
     private readonly IPostCommentRepository _commentRepository;
+    private readonly IUserPostRepository _postRepository;
     private readonly ILogger<DeletePostCommentCommandHandler> _logger;
 
     public DeletePostCommentCommandHandler(
         IPostCommentRepository commentRepository,
+        IUserPostRepository postRepository,
         ILogger<DeletePostCommentCommandHandler> logger)
     {
         _commentRepository = commentRepository;
+        _postRepository = postRepository;
         _logger = logger;
     }
 
@@ -30,10 +33,14 @@ public class DeletePostCommentCommandHandler : IRequestHandler<DeletePostComment
             return Result.Failure<bool>(new Error("Comment.NotFound", "The comment was not found"));
         }
 
-        // Only the author can delete the comment
+        // Allow delete if user is comment author OR post author
         if (comment.UserId != request.UserId)
         {
-            return Result.Failure<bool>(new Error("Comment.NotOwner", "You can only delete your own comments"));
+            var post = await _postRepository.GetByIdAsync(comment.PostId, cancellationToken);
+            if (post == null || post.UserId != request.UserId)
+            {
+                return Result.Failure<bool>(new Error("Comment.NotOwner", "You can only delete your own comments or comments on your posts"));
+            }
         }
 
         await _commentRepository.SoftDeleteAsync(request.CommentId, cancellationToken);

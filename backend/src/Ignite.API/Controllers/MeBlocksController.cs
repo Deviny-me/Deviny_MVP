@@ -2,7 +2,6 @@ using Ignite.Application.Features.Friends.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -16,16 +15,10 @@ public class MeBlocksController : BaseApiController
         _mediator = mediator;
     }
 
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(userIdClaim!);
-    }
-
     [HttpPost("{userId}")]
     public async Task<IActionResult> BlockUser(Guid userId)
     {
-        var blockerId = GetUserId();
+        var blockerId = GetCurrentUserId();
         var command = new BlockUserCommand
         {
             BlockerId = blockerId,
@@ -39,7 +32,7 @@ public class MeBlocksController : BaseApiController
     [HttpDelete("{userId}")]
     public async Task<IActionResult> UnblockUser(Guid userId)
     {
-        var blockerId = GetUserId();
+        var blockerId = GetCurrentUserId();
         var command = new UnblockUserCommand
         {
             BlockerId = blockerId,

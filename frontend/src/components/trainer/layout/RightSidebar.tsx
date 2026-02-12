@@ -55,7 +55,7 @@ export function RightSidebar() {
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">Недавние ученики</h3>
             <button
-              onClick={() => router.push('/dashboard/trainer/students')}
+              onClick={() => router.push('/trainer/students')}
               className="text-xs text-[#FF6B35] hover:underline flex items-center gap-1"
             >
               Все

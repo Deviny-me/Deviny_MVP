@@ -1,12 +1,14 @@
 using Ignite.Application.Common;
+using Ignite.Application.Features.Posts.DTOs;
 using MediatR;
 
 namespace Ignite.Application.Features.Posts.Commands;
 
 /// <summary>
 /// Command to add a like to a post.
+/// Returns updated PostStatsDto for frontend reconciliation.
 /// </summary>
-public class AddPostLikeCommand : IRequest<Result<bool>>
+public class AddPostLikeCommand : IRequest<Result<PostStatsDto>>
 {
     /// <summary>
     /// The ID of the post to like.

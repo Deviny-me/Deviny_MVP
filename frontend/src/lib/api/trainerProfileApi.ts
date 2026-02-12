@@ -19,6 +19,17 @@ export async function uploadTrainerAvatar(file: File): Promise<{ avatarUrl: stri
   return response.json()
 }
 
+export async function deleteTrainerAvatar(): Promise<void> {
+  const response = await fetchWithAuth(`${API_URL}/trainer/me/avatar`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to delete avatar')
+  }
+}
+
 export async function fetchTrainerProfile(): Promise<TrainerProfileResponse> {
   const authHeader = getAuthHeader()
   

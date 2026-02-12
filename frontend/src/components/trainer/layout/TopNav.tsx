@@ -5,7 +5,6 @@ import {
   Flame, 
   MessageCircle, 
   Bell, 
-  Search,
   Settings,
   LogOut,
   User,
@@ -18,6 +17,7 @@ import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { getMediaUrl } from '@/lib/config'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { useLevel } from '@/components/level/LevelProvider'
+import { SearchBar } from '@/components/search/SearchBar'
 
 export function TopNav() {
   const router = useRouter()
@@ -50,10 +50,10 @@ export function TopNav() {
   }
 
   const navItems = [
-    { icon: Users, label: 'Students', path: '/dashboard/trainer/students', badge: undefined },
-    { icon: MessageCircle, label: 'Messages', path: '/dashboard/trainer/messages', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: User, label: 'My Profile', path: '/dashboard/trainer/profile', badge: undefined },
-    { icon: Settings, label: 'Settings', path: '/dashboard/trainer/settings', badge: undefined },
+    { icon: Users, label: 'Students', path: '/trainer/students', badge: undefined },
+    { icon: MessageCircle, label: 'Messages', path: '/trainer/messages', badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: User, label: 'My Profile', path: '/trainer/profile', badge: undefined },
+    { icon: Settings, label: 'Settings', path: '/trainer/settings', badge: undefined },
   ]
 
   // Debug logging
@@ -76,7 +76,7 @@ export function TopNav() {
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             {/* Logo */}
             <button 
-              onClick={() => router.push('/dashboard/trainer')}
+              onClick={() => router.push('/trainer')}
               className="flex items-center gap-2 flex-shrink-0"
             >
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
@@ -86,14 +86,7 @@ export function TopNav() {
             </button>
 
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search students, programs..."
-                className="w-full pl-10 pr-4 py-1.5 bg-[#0A0A0A] border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-[#262626] transition-colors"
-              />
-            </div>
+            <SearchBar placeholder="Search students, programs..." />
           </div>
 
           {/* Center: Navigation */}
@@ -205,7 +198,7 @@ export function TopNav() {
                       )}
                       <button
                         onClick={() => {
-                          router.push('/dashboard/trainer/profile')
+                          router.push('/trainer/profile')
                           setShowProfileMenu(false)
                         }}
                         className="mt-3 w-full py-1.5 border border-[#FF6B35] text-[#FF6B35] rounded-lg text-sm font-semibold hover:bg-[#FF6B35]/10 transition-colors"
@@ -217,7 +210,7 @@ export function TopNav() {
                     <div className="p-2">
                       <button
                         onClick={() => {
-                          router.push('/dashboard/trainer/settings')
+                          router.push('/trainer/settings')
                           setShowProfileMenu(false)
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/5 rounded-lg transition-colors text-left"

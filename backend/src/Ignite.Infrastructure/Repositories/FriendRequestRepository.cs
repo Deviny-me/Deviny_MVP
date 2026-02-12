@@ -46,6 +46,7 @@ public class FriendRequestRepository : IFriendRequestRepository
     public async Task<List<FriendRequest>> GetIncomingRequestsAsync(Guid userId)
     {
         return await _context.FriendRequests
+            .AsNoTracking()
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
             .Where(fr => fr.ReceiverId == userId && fr.Status == FriendRequestStatus.Pending)
@@ -56,6 +57,7 @@ public class FriendRequestRepository : IFriendRequestRepository
     public async Task<List<FriendRequest>> GetOutgoingRequestsAsync(Guid userId)
     {
         return await _context.FriendRequests
+            .AsNoTracking()
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
             .Where(fr => fr.SenderId == userId && fr.Status == FriendRequestStatus.Pending)
@@ -63,9 +65,10 @@ public class FriendRequestRepository : IFriendRequestRepository
             .ToListAsync();
     }
 
-    public async Task<List<User>> GetFriendsAsync(Guid userId)
+    public async Task<List<(User Friend, DateTime FriendsSince)>> GetFriendsAsync(Guid userId)
     {
         var friendRequests = await _context.FriendRequests
+            .AsNoTracking()
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
             .Where(fr =>
@@ -74,7 +77,10 @@ public class FriendRequestRepository : IFriendRequestRepository
             .ToListAsync();
 
         var friends = friendRequests
-            .Select(fr => fr.SenderId == userId ? fr.Receiver : fr.Sender)
+            .Select(fr => (
+                Friend: fr.SenderId == userId ? fr.Receiver : fr.Sender,
+                FriendsSince: fr.RespondedAt ?? fr.CreatedAt
+            ))
             .ToList();
 
         return friends;

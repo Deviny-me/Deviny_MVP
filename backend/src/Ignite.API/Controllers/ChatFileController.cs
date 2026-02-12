@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ignite.API.Controllers;
@@ -7,10 +6,8 @@ namespace Ignite.API.Controllers;
 /// Upload files for chat messages.
 /// Files are stored in /uploads/chat/ and served via static files middleware.
 /// </summary>
-[Authorize]
 [Route("api/chat/files")]
-[ApiController]
-public class ChatFileController : ControllerBase
+public class ChatFileController : BaseApiController
 {
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<ChatFileController> _logger;

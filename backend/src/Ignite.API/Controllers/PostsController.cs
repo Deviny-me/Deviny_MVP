@@ -1,11 +1,10 @@
-using Ignite.Application.Common;
+﻿using Ignite.Application.Common;
 using Ignite.Application.Features.Posts.Commands;
 using Ignite.Application.Features.Posts.DTOs;
 using Ignite.Application.Features.Posts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -32,7 +31,7 @@ public class PostsController : BaseApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<ActionResult<PostDto>> GetPost(Guid postId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         
         var query = new GetPostByIdQuery
         {
@@ -54,6 +53,66 @@ public class PostsController : BaseApiController
     }
 
     /// <summary>
+    /// Get posts for a specific user by their ID.
+    /// Returns only public posts for other users; all posts for the authenticated user.
+    /// </summary>
+    /// <param name="userId">Target user ID</param>
+    /// <param name="tab">Filter: all, videos, reposts (default: all)</param>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Items per page (default: 20, max: 100)</param>
+    [HttpGet("/api/users/{userId:guid}/posts")]
+    [ProducesResponseType(typeof(UserPostsResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UserPostsResponse>> GetUserPosts(
+        Guid userId,
+        [FromQuery] string tab = "all",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var currentUserId = TryGetCurrentUserId();
+
+        if (!TryParseTab(tab, out var profileTab))
+        {
+            return BadRequest(CreateProblemDetails(
+                "InvalidTab",
+                "Tab must be 'all', 'videos', or 'reposts'.",
+                StatusCodes.Status400BadRequest));
+        }
+
+        var query = new GetUserPostsQuery
+        {
+            TargetUserId = userId,
+            CurrentUserId = currentUserId,
+            Tab = profileTab,
+            Page = page,
+            PageSize = pageSize
+        };
+
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(CreateProblemDetails(
+                result.Error.Code,
+                result.Error.Message,
+                StatusCodes.Status400BadRequest));
+        }
+
+        return Ok(result.Value);
+    }
+
+    private static bool TryParseTab(string tab, out ProfilePostTab result)
+    {
+        result = tab.ToLowerInvariant() switch
+        {
+            "all" => ProfilePostTab.All,
+            "videos" => ProfilePostTab.Videos,
+            "reposts" => ProfilePostTab.Reposts,
+            _ => (ProfilePostTab)(-1)
+        };
+        return Enum.IsDefined(result);
+    }
+
+    /// <summary>
     /// Add a like to a post.
     /// </summary>
     [Authorize]
@@ -63,7 +122,7 @@ public class PostsController : BaseApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> AddLike(Guid postId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -102,7 +161,7 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} liked post {PostId}", userId, postId);
-        return Ok(new { success = true });
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -114,7 +173,7 @@ public class PostsController : BaseApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> RemoveLike(Guid postId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -145,7 +204,7 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} unliked post {PostId}", userId, postId);
-        return Ok(new { success = true });
+        return Ok(result.Value);
     }
 
     /// <summary>
@@ -164,7 +223,8 @@ public class PostsController : BaseApiController
         {
             PostId = postId,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
+            CurrentUserId = TryGetCurrentUserId()
         };
 
         var result = await _mediator.Send(query);
@@ -183,7 +243,7 @@ public class PostsController : BaseApiController
         Guid postId,
         [FromBody] CreateCommentRequest request)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -232,7 +292,7 @@ public class PostsController : BaseApiController
         Guid postId,
         [FromBody] CreateRepostRequest? request = null)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -280,11 +340,11 @@ public class PostsController : BaseApiController
     /// </summary>
     [Authorize]
     [HttpDelete("{postId:guid}/repost")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(PostStatsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRepost(Guid postId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -307,38 +367,7 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} removed repost of post {PostId}", userId, postId);
-        return NoContent();
-    }
-
-    private static ProblemDetails CreateProblemDetails(string code, string detail, int status)
-    {
-        return new ProblemDetails
-        {
-            Type = status switch
-            {
-                400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-                409 => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
-                _ => "https://tools.ietf.org/html/rfc7231#section-6.6.1"
-            },
-            Title = code,
-            Detail = detail,
-            Status = status
-        };
-    }
-    
-    private Guid? GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) 
-            ?? User.FindFirst("sub")
-            ?? User.FindFirst("userId");
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            return null;
-        }
-
-        return userId;
+        return Ok(result.Value);
     }
 }
 

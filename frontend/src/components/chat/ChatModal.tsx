@@ -22,6 +22,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const loadingRef = useRef(false);
 
   // Get current user ID from token
   useEffect(() => {
@@ -40,6 +41,9 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
 
   // Load conversation and messages
   useEffect(() => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+
     const loadConversation = async () => {
       try {
         setIsLoading(true);
@@ -59,6 +63,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         setError(err instanceof Error ? err.message : 'Failed to load conversation');
       } finally {
         setIsLoading(false);
+        loadingRef.current = false;
       }
     };
 

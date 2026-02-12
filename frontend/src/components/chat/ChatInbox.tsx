@@ -105,6 +105,7 @@ export default function ChatInbox() {
   const selectedConvIdRef = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const creatingConvRef = useRef(false)
 
   // Keep ref in sync
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
@@ -244,15 +245,17 @@ export default function ChatInbox() {
 
   // ─── handle userId from URL (deep link into a DM) ───
   useEffect(() => {
-    if (!userIdFromUrl || conversations.length === 0 && loadingConvs) return
+    if (!userIdFromUrl || loadingConvs || creatingConvRef.current) return
 
-    const existing = conversations.find(c => c.peerUser.id === userIdFromUrl)
+    const targetId = userIdFromUrl.toLowerCase()
+    const existing = conversations.find(c => c.peerUser.id.toLowerCase() === targetId)
     if (existing) {
       setSelectedConvId(existing.id)
       return
     }
 
-    // Create conversation
+    // Create conversation — guard with ref to prevent double calls
+    creatingConvRef.current = true
     ;(async () => {
       try {
         const { conversationId } = await messagesApi.getOrCreateConversation(userIdFromUrl)
@@ -260,9 +263,12 @@ export default function ChatInbox() {
         setSelectedConvId(conversationId)
       } catch (err) {
         console.error('Failed to create conversation', err)
+      } finally {
+        creatingConvRef.current = false
       }
     })()
-  }, [userIdFromUrl, conversations, loadingConvs, loadConversations])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdFromUrl, loadingConvs, conversations])
 
   // ─── when selected conv changes → load messages + join group ───
   useEffect(() => {

@@ -34,6 +34,7 @@ public class TrainersController : BaseApiController
     /// Get all trainers for browsing
     /// </summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<PublicTrainerDto>>> GetAll()
     {
         var query = new GetAllTrainersQuery();
@@ -45,6 +46,7 @@ public class TrainersController : BaseApiController
     /// Get public trainer profile by slug
     /// </summary>
     [HttpGet("{slug}/profile")]
+    [AllowAnonymous]
     public async Task<ActionResult<TrainerProfileResponse>> GetPublicProfile(string slug)
     {
         try

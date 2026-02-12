@@ -46,11 +46,11 @@ public class GetMyPostsQueryHandler
 
             // Get total count
             var totalCount = await _postRepository.GetCountByUserIdAsync(
-                request.UserId, cancellationToken);
+                request.UserId, request.Tab, cancellationToken);
 
             // Get paginated posts
             var posts = await _postRepository.GetByUserIdPagedAsync(
-                request.UserId, page, pageSize, cancellationToken);
+                request.UserId, request.Tab, page, pageSize, cancellationToken);
 
             // Collect all post IDs (including original posts for reposts)
             var allPostIds = posts.Select(p => p.Id).ToList();
@@ -64,23 +64,11 @@ public class GetMyPostsQueryHandler
             // Get counts and user interactions in batch
             var commentCounts = await _commentRepository.GetCountsForPostsAsync(allPostIds, cancellationToken);
             var repostCounts = await _postRepository.GetRepostCountsForPostsAsync(allPostIds, cancellationToken);
-            
-            var likeCounts = new Dictionary<Guid, int>();
-            foreach (var postId in allPostIds)
-            {
-                likeCounts[postId] = await _likeRepository.GetCountAsync(postId, cancellationToken);
-            }
+            var likeCounts = await _likeRepository.GetLikeCountsForPostsAsync(allPostIds, cancellationToken);
 
             // Check which posts the user has liked/reposted
             var likedPostIds = await _likeRepository.GetLikedPostIdsAsync(allPostIds, request.UserId, cancellationToken);
-            var repostedPostIds = new HashSet<Guid>();
-            foreach (var postId in allPostIds)
-            {
-                if (await _postRepository.HasUserRepostedAsync(postId, request.UserId, cancellationToken))
-                {
-                    repostedPostIds.Add(postId);
-                }
-            }
+            var repostedPostIds = await _postRepository.GetRepostedPostIdsByUserAsync(allPostIds, request.UserId, cancellationToken);
 
             // Map to DTOs
             var postDtos = posts.Select(p => MapToDto(
@@ -90,7 +78,7 @@ public class GetMyPostsQueryHandler
                 repostCounts.GetValueOrDefault(p.Id, 0),
                 likedPostIds.Contains(p.Id),
                 repostedPostIds.Contains(p.Id),
-                p.OriginalPost != null ? MapToDto(
+                p.OriginalPost != null && !p.OriginalPost.IsDeleted ? MapToDto(
                     p.OriginalPost,
                     likeCounts.GetValueOrDefault(p.OriginalPost.Id, 0),
                     commentCounts.GetValueOrDefault(p.OriginalPost.Id, 0),

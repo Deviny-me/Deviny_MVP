@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react'
 import { UserLevelDto } from '@/types/level'
 import { getMyLevel } from '@/lib/api/levelApi'
 
@@ -35,8 +35,10 @@ export function LevelProvider({ children }: { children: ReactNode }) {
     fetchLevel()
   }, [refreshLevel])
 
+  const value = useMemo(() => ({ level, loading, refreshLevel }), [level, loading, refreshLevel])
+
   return (
-    <LevelContext.Provider value={{ level, loading, refreshLevel }}>
+    <LevelContext.Provider value={value}>
       {children}
     </LevelContext.Provider>
   )

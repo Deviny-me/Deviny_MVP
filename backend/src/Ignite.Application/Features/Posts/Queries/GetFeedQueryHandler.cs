@@ -52,9 +52,9 @@ public class GetFeedQueryHandler : IRequestHandler<GetFeedQuery, UserPostsRespon
         allPostIds.AddRange(originalPostIds);
 
         // Get counts and user interactions in batch
-        var likeCounts = new Dictionary<Guid, int>();
         var commentCounts = await _commentRepository.GetCountsForPostsAsync(allPostIds, cancellationToken);
         var repostCounts = await _postRepository.GetRepostCountsForPostsAsync(allPostIds, cancellationToken);
+        var likeCounts = await _likeRepository.GetLikeCountsForPostsAsync(allPostIds, cancellationToken);
         
         HashSet<Guid> likedPostIds = new();
         HashSet<Guid> repostedPostIds = new();
@@ -62,21 +62,7 @@ public class GetFeedQueryHandler : IRequestHandler<GetFeedQuery, UserPostsRespon
         if (request.CurrentUserId.HasValue)
         {
             likedPostIds = await _likeRepository.GetLikedPostIdsAsync(allPostIds, request.CurrentUserId.Value, cancellationToken);
-            
-            // Check which original posts the user has reposted
-            foreach (var postId in allPostIds)
-            {
-                if (await _postRepository.HasUserRepostedAsync(postId, request.CurrentUserId.Value, cancellationToken))
-                {
-                    repostedPostIds.Add(postId);
-                }
-            }
-        }
-
-        // Get like counts for all posts
-        foreach (var postId in allPostIds)
-        {
-            likeCounts[postId] = await _likeRepository.GetCountAsync(postId, cancellationToken);
+            repostedPostIds = await _postRepository.GetRepostedPostIdsByUserAsync(allPostIds, request.CurrentUserId.Value, cancellationToken);
         }
 
         var postDtos = posts.Select(p => MapToDto(
@@ -86,7 +72,7 @@ public class GetFeedQueryHandler : IRequestHandler<GetFeedQuery, UserPostsRespon
             repostCounts.GetValueOrDefault(p.Id, 0),
             likedPostIds.Contains(p.Id),
             repostedPostIds.Contains(p.Id),
-            p.OriginalPost != null ? MapToDto(
+            p.OriginalPost != null && !p.OriginalPost.IsDeleted ? MapToDto(
                 p.OriginalPost,
                 likeCounts.GetValueOrDefault(p.OriginalPost.Id, 0),
                 commentCounts.GetValueOrDefault(p.OriginalPost.Id, 0),

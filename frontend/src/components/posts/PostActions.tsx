@@ -1,17 +1,13 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef, useEffect, useState } from 'react'
 import { Heart, MessageCircle, Repeat2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
+import { usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 
 interface PostActionsProps {
   postId: string
-  likeCount: number
-  commentCount: number
-  repostCount: number
-  isLikedByMe: boolean
-  isRepostedByMe: boolean
   onCommentClick?: () => void
   onRepostSuccess?: () => void
   className?: string
@@ -19,114 +15,156 @@ interface PostActionsProps {
 
 /**
  * Social interaction actions for a post (like, comment, repost).
- * Implements optimistic updates for instant feedback.
+ * Reads all data from PostStore; optimistic updates dispatched to store
+ * so every visible instance of this post updates immediately.
  */
 export function PostActions({
   postId,
-  likeCount: initialLikeCount,
-  commentCount,
-  repostCount: initialRepostCount,
-  isLikedByMe: initialIsLiked,
-  isRepostedByMe: initialIsReposted,
   onCommentClick,
   onRepostSuccess,
   className,
 }: PostActionsProps) {
-  const [isLiked, setIsLiked] = useState(initialIsLiked)
-  const [likeCount, setLikeCount] = useState(initialLikeCount)
+  const post = usePost(postId)
+  const dispatch = usePostDispatch()
   const [isLikeLoading, setIsLikeLoading] = useState(false)
-  
-  const [isReposted, setIsReposted] = useState(initialIsReposted)
-  const [repostCount, setRepostCount] = useState(initialRepostCount)
   const [isRepostLoading, setIsRepostLoading] = useState(false)
   const isMountedRef = useRef(true)
 
-  // Sync isReposted state when parent provides updated props (e.g. after feed reload)
-  useEffect(() => {
-    setIsReposted(initialIsReposted)
-  }, [initialIsReposted])
-
-  // Sync repostCount when parent provides updated props
-  useEffect(() => {
-    setRepostCount(initialRepostCount)
-  }, [initialRepostCount])
-
-  // Track mounted state to avoid state updates after unmount
   useEffect(() => {
     isMountedRef.current = true
     return () => { isMountedRef.current = false }
   }, [])
 
-  const handleLikeClick = useCallback(async () => {
-    if (isLikeLoading) return
+  const isLiked = post?.isLikedByMe ?? false
+  const likeCount = post?.likeCount ?? 0
+  const commentCount = post?.commentCount ?? 0
+  const isReposted = post?.isRepostedByMe ?? false
+  const repostCount = post?.repostCount ?? 0
 
-    // Optimistic update
+  const handleLikeClick = useCallback(async () => {
+    if (isLikeLoading || !post) return
+
     const wasLiked = isLiked
-    const previousCount = likeCount
-    
-    setIsLiked(!wasLiked)
-    setLikeCount(wasLiked ? previousCount - 1 : previousCount + 1)
+    const prevCount = likeCount
+
+    // Optimistic update via store
+    dispatch({
+      type: 'UPDATE_POST',
+      postId,
+      partial: {
+        isLikedByMe: !wasLiked,
+        likeCount: wasLiked ? prevCount - 1 : prevCount + 1,
+      },
+    })
     setIsLikeLoading(true)
 
     try {
-      if (wasLiked) {
-        await postsApi.unlikePost(postId)
-      } else {
-        await postsApi.likePost(postId)
+      const stats = wasLiked
+        ? await postsApi.unlikePost(postId)
+        : await postsApi.likePost(postId)
+
+      // Reconcile with server
+      if (isMountedRef.current) {
+        dispatch({
+          type: 'UPDATE_POST',
+          postId,
+          partial: {
+            likeCount: stats.likeCount,
+            commentCount: stats.commentCount,
+            repostCount: stats.repostCount,
+            isLikedByMe: stats.isLikedByMe,
+            isRepostedByMe: stats.isRepostedByMe,
+          },
+        })
       }
     } catch (error) {
-      // Revert on error
-      setIsLiked(wasLiked)
-      setLikeCount(previousCount)
+      // Revert
+      if (isMountedRef.current) {
+        dispatch({
+          type: 'UPDATE_POST',
+          postId,
+          partial: { isLikedByMe: wasLiked, likeCount: prevCount },
+        })
+      }
       console.error('Failed to update like:', error)
     } finally {
-      setIsLikeLoading(false)
+      if (isMountedRef.current) setIsLikeLoading(false)
     }
-  }, [postId, isLiked, likeCount, isLikeLoading])
+  }, [postId, post, isLiked, likeCount, isLikeLoading, dispatch])
 
   const handleRepostClick = useCallback(async () => {
-    if (isRepostLoading) return
+    if (isRepostLoading || !post) return
 
-    // Optimistic update
     const wasReposted = isReposted
-    const previousCount = repostCount
-    
-    setIsReposted(!wasReposted)
-    setRepostCount(wasReposted ? previousCount - 1 : previousCount + 1)
+    const prevCount = repostCount
+
+    // Optimistic update via store
+    dispatch({
+      type: 'UPDATE_POST',
+      postId,
+      partial: {
+        isRepostedByMe: !wasReposted,
+        repostCount: wasReposted ? prevCount - 1 : prevCount + 1,
+      },
+    })
     setIsRepostLoading(true)
 
     try {
       if (wasReposted) {
-        await postsApi.removeRepost(postId)
+        const stats = await postsApi.removeRepost(post.originalPostId ?? postId)
+        if (isMountedRef.current) {
+          dispatch({
+            type: 'UPDATE_POST',
+            postId,
+            partial: {
+              likeCount: stats.likeCount,
+              commentCount: stats.commentCount,
+              repostCount: stats.repostCount,
+              isLikedByMe: stats.isLikedByMe,
+              isRepostedByMe: stats.isRepostedByMe,
+            },
+          })
+        }
       } else {
-        await postsApi.repost(postId)
+        const newRepost = await postsApi.repost(post.originalPostId ?? postId)
+        if (isMountedRef.current) {
+          // Add the new repost to the store so it appears in feeds
+          dispatch({ type: 'UPSERT_POSTS', posts: [newRepost] })
+          // Reconcile original post stats
+          dispatch({
+            type: 'UPDATE_POST',
+            postId,
+            partial: {
+              isRepostedByMe: true,
+              repostCount: (post.repostCount ?? 0) + 1,
+            },
+          })
+        }
       }
       if (isMountedRef.current) {
         onRepostSuccess?.()
       }
     } catch (error) {
-      // Revert on error
       if (isMountedRef.current) {
-        setIsReposted(wasReposted)
-        setRepostCount(previousCount)
+        dispatch({
+          type: 'UPDATE_POST',
+          postId,
+          partial: { isRepostedByMe: wasReposted, repostCount: prevCount },
+        })
       }
       console.error('Failed to update repost:', error)
     } finally {
-      if (isMountedRef.current) {
-        setIsRepostLoading(false)
-      }
+      if (isMountedRef.current) setIsRepostLoading(false)
     }
-  }, [postId, isReposted, repostCount, isRepostLoading, onRepostSuccess])
+  }, [postId, post, isReposted, repostCount, isRepostLoading, dispatch, onRepostSuccess])
 
   const formatCount = (count: number): string => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`
-    }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`
-    }
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
     return count.toString()
   }
+
+  if (!post) return null
 
   return (
     <div className={cn('flex items-center gap-4', className)}>
@@ -136,9 +174,7 @@ export function PostActions({
         disabled={isLikeLoading}
         className={cn(
           'flex items-center gap-1.5 transition-colors group',
-          isLiked
-            ? 'text-red-500'
-            : 'text-gray-500 hover:text-red-500'
+          isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
         )}
         aria-label={isLiked ? 'Unlike post' : 'Like post'}
       >
@@ -170,9 +206,7 @@ export function PostActions({
         onClick={handleRepostClick}
         className={cn(
           'flex items-center gap-1.5 transition-colors group cursor-pointer',
-          isReposted
-            ? 'text-green-500'
-            : 'text-gray-500 hover:text-green-500',
+          isReposted ? 'text-green-500' : 'text-gray-500 hover:text-green-500',
           isRepostLoading && 'opacity-70 pointer-events-none'
         )}
         aria-label={isReposted ? 'Remove repost' : 'Repost'}

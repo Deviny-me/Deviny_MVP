@@ -2,40 +2,28 @@
 
 import { useRouter } from 'next/navigation'
 import { 
-  Heart, 
-  MessageCircle, 
-  Share2, 
-  MoreHorizontal, 
   Image as ImageIcon,
   Video,
   Award,
-  ThumbsUp,
-  Send,
   Flame,
-  Loader2,
-  Star,
-  Users,
-  BookOpen,
-  MapPin,
-  Edit3,
-  Settings,
-  TrendingUp,
-  Trash2,
-  Repeat2
+  Loader2
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { postsApi } from '@/lib/api/postsApi'
-import { PostType, PostDto } from '@/types/post'
+import { PostType } from '@/types/post'
 import { fetchTrainerProfile } from '@/lib/api/trainerProfileApi'
-import { PostActions } from '@/components/posts'
+import { PostCard } from '@/components/posts/PostCard'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { getMediaUrl } from '@/lib/config'
 import { Toast } from '@/components/ui/Toast'
 import { ComingSoonModal } from '@/components/ui/ComingSoonModal'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
+import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 
 export function TrainerHomeFeed() {
   const router = useRouter()
+  const upsertPosts = useUpsertPosts()
+  const dispatch = usePostDispatch()
   
   // Profile state
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
@@ -45,11 +33,7 @@ export function TrainerHomeFeed() {
   useEffect(() => {
     loadProfile()
     
-    // Listen for avatar update events
-    const handleAvatarUpdate = () => {
-      loadProfile()
-    }
-    
+    const handleAvatarUpdate = () => { loadProfile() }
     window.addEventListener('trainerAvatarUpdated', handleAvatarUpdate)
     return () => window.removeEventListener('trainerAvatarUpdated', handleAvatarUpdate)
   }, [])
@@ -75,50 +59,46 @@ export function TrainerHomeFeed() {
   const photoInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   
-  // State
+  // State — only IDs; data in store
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [showAchievementModal, setShowAchievementModal] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  const [recentPosts, setRecentPosts] = useState<PostDto[]>([])
+  const [feedPostIds, setFeedPostIds] = useState<string[]>([])
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
-  // Repost is now instant - no dialog needed
 
-  // Load recent posts on mount
+  // Load feed on mount
   useEffect(() => {
-    loadRecentPosts()
+    loadFeed()
   }, [])
 
-  const loadRecentPosts = async () => {
+  const loadFeed = async () => {
     try {
-      const response = await postsApi.getMyPosts(1, 10)
-      // Filter out reposts - only show original posts in personal feed
-      const originalPosts = response.posts.filter(p => p.type !== PostType.Repost && !p.isRepost)
-      setRecentPosts(originalPosts.slice(0, 5))
+      const response = await postsApi.getFeed(1, 20)
+      const ids = upsertPosts(response.posts)
+      setFeedPostIds(ids)
     } catch (error) {
-      console.error('Failed to load posts:', error)
+      console.error('Failed to load feed:', error)
     }
   }
 
   // Handle post deletion
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
-      return
-    }
+    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) return
 
     try {
       setDeletingPostId(postId)
       await postsApi.deletePost(postId)
+      dispatch({ type: 'REMOVE_POST', postId })
+      setFeedPostIds(prev => prev.filter(id => id !== postId))
       setToast({ message: 'Публикация удалена', type: 'success' })
-      // Reload posts to reflect cascade deletion of reposts
-      await loadRecentPosts()
     } catch (error) {
-      // If post wasn't found (404), it's already deleted - still show success
       if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
+        dispatch({ type: 'REMOVE_POST', postId })
+        setFeedPostIds(prev => prev.filter(id => id !== postId))
         setToast({ message: 'Публикация удалена', type: 'success' })
-        await loadRecentPosts()
       } else {
         const message = error instanceof Error ? error.message : 'Не удалось удалить публикацию'
         setToast({ message, type: 'error' })
@@ -133,33 +113,24 @@ export function TrainerHomeFeed() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Reset input
     event.target.value = ''
 
-    // Validate file
     const validation = postsApi.validateFile(file, type)
     if (!validation.valid) {
       setToast({ message: validation.error!, type: 'error' })
       return
     }
 
-    // Upload file
     setIsUploading(true)
-    setUploadProgress(type === PostType.Photo ? 'Uploading photo...' : 'Uploading video...')
+    setUploadProgress(type === PostType.Photo ? 'Загрузка фото...' : 'Загрузка видео...')
 
     try {
-      const newPost = await postsApi.createMediaPost({
-        file,
-        type
-      })
-      
-      setToast({ message: 'Post uploaded successfully!', type: 'success' })
-      
-      // Add to recent posts
-      setRecentPosts(prev => [newPost, ...prev].slice(0, 5))
-      
+      const newPost = await postsApi.createMediaPost({ file, type })
+      setToast({ message: 'Публикация загружена!', type: 'success' })
+      const ids = upsertPosts([newPost])
+      setFeedPostIds(prev => [...ids, ...prev])
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Upload failed'
+      const message = error instanceof Error ? error.message : 'Ошибка загрузки'
       setToast({ message, type: 'error' })
     } finally {
       setIsUploading(false)
@@ -203,9 +174,9 @@ export function TrainerHomeFeed() {
           )}
           <button 
             className="flex-1 px-4 py-3 bg-[#0A0A0A] hover:bg-[#262626] border border-white/10 rounded-full text-left text-sm text-gray-400 transition-colors"
-            onClick={() => router.push('/dashboard/trainer/profile')}
+            onClick={() => router.push('/trainer/profile')}
           >
-            Share your fitness journey...
+            Поделитесь своим прогрессом...
           </button>
         </div>
         
@@ -224,7 +195,7 @@ export function TrainerHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ImageIcon className="w-5 h-5 text-[#FF6B35]" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Photo</span>
+            <span className="text-sm font-medium text-gray-300">Фото</span>
           </button>
           <button 
             onClick={() => videoInputRef.current?.click()}
@@ -232,7 +203,7 @@ export function TrainerHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Video className="w-5 h-5 text-green-500" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Video</span>
+            <span className="text-sm font-medium text-gray-300">Видео</span>
           </button>
           <button 
             onClick={() => setShowAchievementModal(true)}
@@ -240,7 +211,7 @@ export function TrainerHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Award className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Achievement</span>
+            <span className="text-sm font-medium text-gray-300">Достижение</span>
           </button>
         </div>
       </div>
@@ -248,168 +219,35 @@ export function TrainerHomeFeed() {
       {/* Separator */}
       <div className="flex items-center gap-3 px-2">
         <div className="flex-1 h-px bg-white/10" />
-        <span className="text-xs text-gray-500 font-medium">Recent Activity</span>
+        <span className="text-xs text-gray-500 font-medium">Лента</span>
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
-      {/* Recent Posts or Empty State */}
-      {recentPosts.length > 0 ? (
+      {/* Feed Posts or Empty State */}
+      {feedPostIds.length > 0 ? (
         <div className="space-y-3">
-          {recentPosts.map((post) => {
-            // For reposts, use original post content
-            const isRepost = post.type === PostType.Repost || post.isRepost
-            const displayMedia = isRepost ? post.originalPost?.media : post.media
-            const displayCaption = isRepost ? post.originalPost?.caption : post.caption
-            
-            return (
-            <div 
-              key={post.id} 
-              className="bg-[#1A1A1A] rounded-lg border border-white/10 overflow-hidden"
-            >
-              {/* Repost indicator */}
-              {isRepost && (
-                <div className="px-3 pt-2 flex items-center gap-1.5 text-gray-400 text-xs">
-                  <Repeat2 className="w-3 h-3" />
-                  <span>You reposted</span>
-                </div>
-              )}
-              
-              {/* Post Header - click to go to profile */}
-              <div 
-                className="p-3 hover:bg-white/5 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="flex items-center gap-2 flex-1 cursor-pointer"
-                    onClick={() => router.push('/dashboard/trainer/profile')}
-                  >
-                    {avatarUrl ? (
-                      <img 
-                        src={avatarUrl} 
-                        alt={trainerName}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">{trainerInitials}</span>
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-white">{trainerName}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(post.createdAt).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Delete button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeletePost(post.id)
-                    }}
-                    disabled={deletingPostId === post.id}
-                    className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors group"
-                    title="Удалить публикацию"
-                  >
-                    {deletingPostId === post.id ? (
-                      <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Post Media Preview */}
-              {displayMedia && displayMedia[0] && (
-                <div 
-                  className="relative aspect-video bg-black cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    if (displayMedia[0].mediaType === 1) {
-                      // Video - toggle play/pause
-                      setPlayingVideoId(playingVideoId === post.id ? null : post.id)
-                    } else {
-                      // Photo - open lightbox
-                      setViewingPhoto({ 
-                        url: getMediaUrl(displayMedia[0].url) || '', 
-                        caption: displayCaption || undefined 
-                      })
-                    }
-                  }}
-                >
-                  {displayMedia[0].mediaType === 0 ? (
-                    <img
-                      src={getMediaUrl(displayMedia[0].url) || ''}
-                      alt={displayCaption || 'Post image'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="relative w-full h-full">
-                      <video
-                        src={getMediaUrl(displayMedia[0].url) || ''}
-                        className="w-full h-full object-cover"
-                        controls={playingVideoId === post.id}
-                        autoPlay={playingVideoId === post.id}
-                        muted={playingVideoId !== post.id}
-                        playsInline
-                        onEnded={() => setPlayingVideoId(null)}
-                      />
-                      {playingVideoId !== post.id && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors">
-                          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center hover:bg-white/30 transition-colors">
-                            <Video className="w-8 h-8 text-white ml-1" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {/* Post Caption */}
-              {displayCaption && (
-                <div className="px-3 py-2">
-                  <p className="text-sm text-gray-300">{displayCaption}</p>
-                </div>
-              )}
-
-              {/* Post Actions */}
-              <div className="px-3 py-2 border-t border-white/10">
-                <PostActions
-                  postId={post.id}
-                  likeCount={post.likeCount}
-                  commentCount={post.commentCount}
-                  repostCount={post.repostCount}
-                  isLikedByMe={post.isLikedByMe}
-                  isRepostedByMe={post.isRepostedByMe || isRepost}
-                  onCommentClick={() => router.push(`/post/${post.id}`)}
-                  onRepostSuccess={() => loadRecentPosts()}
-                />
-              </div>
-            </div>
-          )})}}
-          
-          {/* View All Link */}
-          <button
-            onClick={() => router.push('/dashboard/trainer/profile')}
-            className="w-full py-2 text-center text-sm text-[#FF6B35] hover:text-[#FF8555] transition-colors"
-          >
-            View all posts in your profile →
-          </button>
+          {feedPostIds.map((id) => (
+            <PostCard
+              key={id}
+              postId={id}
+              currentUserId={profile?.trainer?.userId}
+              showDeleteInHeader
+              onDelete={handleDeletePost}
+              deletingPostId={deletingPostId}
+              onRepostSuccess={() => loadFeed()}
+              playingVideoId={playingVideoId}
+              onVideoToggle={setPlayingVideoId}
+              onPhotoClick={(url, caption) => setViewingPhoto({ url, caption })}
+            />
+          ))}
         </div>
       ) : (
         <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-12 text-center">
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
             <Flame className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">No Posts Yet</h3>
-          <p className="text-sm text-gray-400">Share your fitness journey to inspire others!</p>
+          <h3 className="text-lg font-semibold text-white mb-2">Пока нет публикаций</h3>
+          <p className="text-sm text-gray-400">Поделитесь своим прогрессом, чтобы вдохновить других!</p>
         </div>
       )}
 
@@ -417,8 +255,8 @@ export function TrainerHomeFeed() {
       {showAchievementModal && (
         <ComingSoonModal 
           onClose={() => setShowAchievementModal(false)}
-          title="Coming Soon!"
-          message="Share your achievements with friends. This feature will be available in the next update!"
+          title="Скоро!"
+          message="Делитесь достижениями с друзьями. Эта функция будет доступна в следующем обновлении!"
           icon={<Award className="w-8 h-8 text-amber-500" />}
         />
       )}
@@ -431,8 +269,6 @@ export function TrainerHomeFeed() {
           onClose={() => setViewingPhoto(null)}
         />
       )}
-
-
 
       {/* Toast Notifications */}
       {toast && (

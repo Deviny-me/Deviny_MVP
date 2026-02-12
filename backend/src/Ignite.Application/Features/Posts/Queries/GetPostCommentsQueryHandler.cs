@@ -10,10 +10,14 @@ namespace Ignite.Application.Features.Posts.Queries;
 public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery, PostCommentsResponse>
 {
     private readonly IPostCommentRepository _commentRepository;
+    private readonly IUserPostRepository _postRepository;
 
-    public GetPostCommentsQueryHandler(IPostCommentRepository commentRepository)
+    public GetPostCommentsQueryHandler(
+        IPostCommentRepository commentRepository,
+        IUserPostRepository postRepository)
     {
         _commentRepository = commentRepository;
+        _postRepository = postRepository;
     }
 
     public async Task<PostCommentsResponse> Handle(GetPostCommentsQuery request, CancellationToken cancellationToken)
@@ -25,6 +29,14 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
             cancellationToken);
         
         var totalCount = await _commentRepository.GetCountByPostIdAsync(request.PostId, cancellationToken);
+
+        // Get post author to determine canDelete for post owner
+        Guid? postAuthorId = null;
+        if (request.CurrentUserId.HasValue)
+        {
+            var post = await _postRepository.GetByIdAsync(request.PostId, cancellationToken);
+            postAuthorId = post?.UserId;
+        }
 
         var commentDtos = comments.Select(c => new PostCommentDto
         {
@@ -40,7 +52,9 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
             },
             Content = c.Content,
             CreatedAt = c.CreatedAt,
-            ParentCommentId = c.ParentCommentId
+            ParentCommentId = c.ParentCommentId,
+            CanDelete = request.CurrentUserId.HasValue && 
+                (c.UserId == request.CurrentUserId.Value || postAuthorId == request.CurrentUserId.Value)
         }).ToList();
 
         return new PostCommentsResponse

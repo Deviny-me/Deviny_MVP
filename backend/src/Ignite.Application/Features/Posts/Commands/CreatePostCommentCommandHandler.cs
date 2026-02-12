@@ -94,7 +94,8 @@ public class CreatePostCommentCommandHandler : IRequestHandler<CreatePostComment
             },
             Content = comment.Content,
             CreatedAt = comment.CreatedAt,
-            ParentCommentId = comment.ParentCommentId
+            ParentCommentId = comment.ParentCommentId,
+            CanDelete = true // Author can always delete their own comment
         });
     }
 }

@@ -22,4 +22,10 @@ public class GetPostCommentsQuery : IRequest<PostCommentsResponse>
     /// Number of comments per page.
     /// </summary>
     public int PageSize { get; set; } = 20;
+    
+    /// <summary>
+    /// Current authenticated user ID (nullable for anonymous).
+    /// Used to compute CanDelete on each comment.
+    /// </summary>
+    public Guid? CurrentUserId { get; set; }
 }

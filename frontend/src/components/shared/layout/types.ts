@@ -49,5 +49,5 @@ export interface LayoutConfig {
  * Get base path for a role.
  */
 export function getBasePath(role: UserRole): string {
-  return role === 'trainer' ? '/dashboard/trainer' : '/dashboard/user'
+  return role === 'trainer' ? '/trainer' : '/user'
 }

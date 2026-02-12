@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using Ignite.Application.Common.Interfaces;
 using Ignite.Application.Features.Levels.DTOs;
 using Ignite.Application.Features.Levels.Queries;
 using MediatR;
@@ -12,22 +10,16 @@ namespace Ignite.API.Controllers;
 public class LevelController : BaseApiController
 {
     private readonly IMediator _mediator;
-    private readonly ILevelService _levelService;
 
-    public LevelController(IMediator mediator, ILevelService levelService)
+    public LevelController(IMediator mediator)
     {
         _mediator = mediator;
-        _levelService = levelService;
     }
 
     [HttpGet("level")]
     public async Task<ActionResult<UserLevelDto>> GetMyLevel()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            return Unauthorized();
-        }
+        var userId = GetCurrentUserId();
 
         var query = new GetMyLevelQuery { UserId = userId };
         var result = await _mediator.Send(query);

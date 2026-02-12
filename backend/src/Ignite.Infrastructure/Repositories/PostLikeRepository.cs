@@ -57,6 +57,7 @@ public class PostLikeRepository : IPostLikeRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.Set<PostLike>()
+            .AsNoTracking()
             .Include(l => l.User)
             .Where(l => l.PostId == postId)
             .OrderByDescending(l => l.CreatedAt)
@@ -78,5 +79,20 @@ public class PostLikeRepository : IPostLikeRepository
             .ToListAsync(cancellationToken);
         
         return likedIds.ToHashSet();
+    }
+    
+    public async Task<Dictionary<Guid, int>> GetLikeCountsForPostsAsync(
+        IEnumerable<Guid> postIds, 
+        CancellationToken cancellationToken = default)
+    {
+        var postIdList = postIds.ToList();
+        
+        var counts = await _context.Set<PostLike>()
+            .Where(l => postIdList.Contains(l.PostId))
+            .GroupBy(l => l.PostId)
+            .Select(g => new { PostId = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+        
+        return counts.ToDictionary(x => x.PostId, x => x.Count);
     }
 }

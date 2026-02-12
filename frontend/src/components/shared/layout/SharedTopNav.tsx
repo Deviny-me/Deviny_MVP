@@ -1,9 +1,10 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import { Flame, Search } from 'lucide-react'
+import { Flame } from 'lucide-react'
 import { ReactNode } from 'react'
 import { TopNavItem, UserRole } from './types'
+import { SearchBar } from '@/components/search/SearchBar'
 
 interface SharedTopNavProps {
   role: UserRole
@@ -61,14 +62,7 @@ export function SharedTopNav({
             </button>
 
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder={searchPlaceholder}
-                className="w-full pl-10 pr-4 py-1.5 bg-[#0A0A0A] border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-[#262626] transition-colors"
-              />
-            </div>
+            <SearchBar placeholder={searchPlaceholder} />
           </div>
 
           {/* Center: Navigation */}

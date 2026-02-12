@@ -53,7 +53,7 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
 
         // Get original post data if this is a repost
         PostDto? originalPostDto = null;
-        if (post.OriginalPost != null)
+        if (post.OriginalPost != null && !post.OriginalPost.IsDeleted)
         {
             var originalLikeCount = await _likeRepository.GetCountAsync(post.OriginalPost.Id, cancellationToken);
             var originalCommentCount = await _commentRepository.GetCountByPostIdAsync(post.OriginalPost.Id, cancellationToken);

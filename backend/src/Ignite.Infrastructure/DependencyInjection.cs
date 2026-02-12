@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IUserBlockRepository, UserBlockRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<ISearchRepository, SearchRepository>();
         
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();

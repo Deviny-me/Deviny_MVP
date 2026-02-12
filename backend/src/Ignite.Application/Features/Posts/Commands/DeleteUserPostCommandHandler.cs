@@ -45,14 +45,11 @@ public class DeleteUserPostCommandHandler : IRequestHandler<DeleteUserPostComman
                 return Result.Success(true);
             }
 
-            // Soft delete the post
+            // Soft delete the post (reposts remain with "deleted" placeholder)
             await _postRepository.SoftDeleteAsync(post, cancellationToken);
             
-            // Also soft delete all reposts of this post
-            await _postRepository.SoftDeleteRepostsOfPostAsync(request.PostId, cancellationToken);
-            
             _logger.LogInformation(
-                "User {UserId} soft-deleted post {PostId} and its reposts",
+                "User {UserId} soft-deleted post {PostId}",
                 request.UserId,
                 request.PostId);
 

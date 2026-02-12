@@ -53,6 +53,7 @@ public class PostCommentRepository : IPostCommentRepository
         CancellationToken cancellationToken = default)
     {
         return await _context.Set<PostComment>()
+            .AsNoTracking()
             .Include(c => c.User)
             .Where(c => c.PostId == postId && !c.IsDeleted)
             .OrderBy(c => c.CreatedAt)

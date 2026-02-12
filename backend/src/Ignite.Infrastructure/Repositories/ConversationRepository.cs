@@ -24,12 +24,15 @@ public class ConversationRepository : IConversationRepository
 
     public async Task<Conversation> GetOrCreateDirectAsync(Guid userA, Guid userB, CancellationToken ct = default)
     {
+        // Normalize order to prevent race conditions with reversed pairs
+        var (first, second) = userA.CompareTo(userB) <= 0 ? (userA, userB) : (userB, userA);
+
         // Find an existing direct conversation that has BOTH users as members
         var conversation = await _context.Conversations
             .Include(c => c.Members).ThenInclude(m => m.User)
             .Where(c => c.Type == ConversationType.Direct)
-            .Where(c => c.Members.Any(m => m.UserId == userA) &&
-                        c.Members.Any(m => m.UserId == userB))
+            .Where(c => c.Members.Any(m => m.UserId == first) &&
+                        c.Members.Any(m => m.UserId == second))
             .FirstOrDefaultAsync(ct);
 
         if (conversation != null)
@@ -49,19 +52,43 @@ public class ConversationRepository : IConversationRepository
         {
             Id = Guid.NewGuid(),
             ConversationId = conversation.Id,
-            UserId = userA,
+            UserId = first,
             JoinedAt = now
         });
         conversation.Members.Add(new ConversationMember
         {
             Id = Guid.NewGuid(),
             ConversationId = conversation.Id,
-            UserId = userB,
+            UserId = second,
             JoinedAt = now
         });
 
         _context.Conversations.Add(conversation);
-        await _context.SaveChangesAsync(ct);
+
+        try
+        {
+            await _context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            // Race condition: another request created the conversation simultaneously.
+            // Detach the failed entity and re-query.
+            _context.Entry(conversation).State = EntityState.Detached;
+            foreach (var member in conversation.Members)
+                _context.Entry(member).State = EntityState.Detached;
+
+            conversation = await _context.Conversations
+                .Include(c => c.Members).ThenInclude(m => m.User)
+                .Where(c => c.Type == ConversationType.Direct)
+                .Where(c => c.Members.Any(m => m.UserId == first) &&
+                            c.Members.Any(m => m.UserId == second))
+                .FirstOrDefaultAsync(ct);
+
+            if (conversation != null)
+                return conversation;
+
+            throw; // Truly unexpected error
+        }
 
         // Reload with User navigation
         await _context.Entry(conversation).Collection(c => c.Members).Query()
@@ -79,6 +106,7 @@ public class ConversationRepository : IConversationRepository
     public async Task<List<Conversation>> GetUserConversationsAsync(Guid userId, CancellationToken ct = default)
     {
         return await _context.Conversations
+            .AsNoTracking()
             .Include(c => c.Members).ThenInclude(m => m.User)
             .Include(c => c.Messages.OrderByDescending(msg => msg.CreatedAt).Take(1))
                 .ThenInclude(msg => msg.Sender)

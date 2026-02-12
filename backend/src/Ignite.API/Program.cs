@@ -15,6 +15,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 builder.Services.AddSignalR();
@@ -84,9 +85,16 @@ app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-    logger.LogInformation("🔄 Applying migrations...");
-    await context.Database.MigrateAsync();
-    logger.LogInformation("✅ Migrations applied.");
+    try
+    {
+        logger.LogInformation("🔄 Applying migrations...");
+        await context.Database.MigrateAsync();
+        logger.LogInformation("✅ Migrations applied.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "⚠️ Migration attempt finished with error (DB may already be up to date).");
+    }
     
     // Seed database with initial data
     try

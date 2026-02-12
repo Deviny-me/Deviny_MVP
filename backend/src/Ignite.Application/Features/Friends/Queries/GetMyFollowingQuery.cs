@@ -33,11 +33,11 @@ public class GetMyFollowingQueryHandler : IRequestHandler<GetMyFollowingQuery, L
 
         return following.Select(f => new FriendDto
         {
-            Id = f.Id,
-            Email = f.Email,
-            FullName = f.FullName,
-            Avatar = f.AvatarUrl,
-            FriendsSince = DateTime.UtcNow // This represents FollowingSince
+            Id = f.Trainer.Id,
+            Email = f.Trainer.Email,
+            FullName = f.Trainer.FullName,
+            Avatar = f.Trainer.AvatarUrl,
+            FriendsSince = f.FollowedAt
         }).ToList();
     }
 }

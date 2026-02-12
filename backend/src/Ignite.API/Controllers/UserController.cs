@@ -2,8 +2,6 @@ using Ignite.API.DTOs;
 using Ignite.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Ignite.API.Controllers;
 
@@ -12,13 +10,11 @@ public class UserController : BaseApiController
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IConfiguration _configuration;
 
-    public UserController(IUserRepository userRepository, IPasswordHasher passwordHasher, IConfiguration configuration)
+    public UserController(IUserRepository userRepository, IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
-        _configuration = configuration;
     }
 
     [HttpGet("profile")]
@@ -26,23 +22,8 @@ public class UserController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return Unauthorized(new { message = "Требуется авторизация" });
-            }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -65,9 +46,9 @@ public class UserController : BaseApiController
                 gender = user.Gender?.ToString()
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при получении профиля", error = ex.Message });
+            return StatusCode(500, new { message = "Ошибка при получении профиля" });
         }
     }
 
@@ -76,23 +57,8 @@ public class UserController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return Unauthorized(new { message = "Требуется авторизация" });
-            }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -135,9 +101,9 @@ public class UserController : BaseApiController
                 }
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при обновлении профиля", error = ex.Message });
+            return StatusCode(500, new { message = "Ошибка при обновлении профиля" });
         }
     }
 
@@ -146,23 +112,8 @@ public class UserController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return Unauthorized(new { message = "Требуется авторизация" });
-            }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -180,9 +131,9 @@ public class UserController : BaseApiController
 
             return Ok(new { message = "Пароль успешно изменен" });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при смене пароля", error = ex.Message });
+            return StatusCode(500, new { message = "Ошибка при смене пароля" });
         }
     }
 
@@ -191,23 +142,8 @@ public class UserController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return Unauthorized(new { message = "Требуется авторизация" });
-            }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -265,9 +201,9 @@ public class UserController : BaseApiController
                 avatarUrl = avatarUrl
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при загрузке аватара", error = ex.Message });
+            return StatusCode(500, new { message = "Ошибка при загрузке аватара" });
         }
     }
 
@@ -276,23 +212,8 @@ public class UserController : BaseApiController
     {
         try
         {
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-            {
-                return Unauthorized(new { message = "Требуется авторизация" });
-            }
-
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            if (emailClaim == null)
-            {
-                return Unauthorized(new { message = "Неверный токен" });
-            }
-
-            var user = await _userRepository.GetByEmailAsync(emailClaim.Value);
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
@@ -316,9 +237,9 @@ public class UserController : BaseApiController
 
             return NoContent();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при удалении аватара", error = ex.Message });
+            return StatusCode(500, new { message = "Ошибка при удалении аватара" });
         }
     }
 }

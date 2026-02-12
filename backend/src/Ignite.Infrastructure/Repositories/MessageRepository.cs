@@ -46,6 +46,7 @@ public class MessageRepository : IMessageRepository
         CancellationToken ct = default)
     {
         var query = _context.Messages
+            .AsNoTracking()
             .Include(m => m.Sender)
             .Include(m => m.ReplyToMessage).ThenInclude(r => r!.Sender)
             .Where(m => m.ConversationId == conversationId && !m.IsDeleted);

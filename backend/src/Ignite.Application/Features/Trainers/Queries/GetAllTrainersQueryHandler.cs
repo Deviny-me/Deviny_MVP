@@ -7,10 +7,14 @@ namespace Ignite.Application.Features.Trainers.Queries;
 public class GetAllTrainersQueryHandler : IRequestHandler<GetAllTrainersQuery, List<PublicTrainerDto>>
 {
     private readonly ITrainerProfileRepository _trainerProfileRepository;
+    private readonly IFileStorageService _fileStorage;
 
-    public GetAllTrainersQueryHandler(ITrainerProfileRepository trainerProfileRepository)
+    public GetAllTrainersQueryHandler(
+        ITrainerProfileRepository trainerProfileRepository,
+        IFileStorageService fileStorage)
     {
         _trainerProfileRepository = trainerProfileRepository;
+        _fileStorage = fileStorage;
     }
 
     public async Task<List<PublicTrainerDto>> Handle(GetAllTrainersQuery request, CancellationToken cancellationToken)
@@ -24,7 +28,7 @@ public class GetAllTrainersQueryHandler : IRequestHandler<GetAllTrainersQuery, L
             Name = t.User?.FullName ?? "Unknown Trainer",
             AvatarUrl = string.IsNullOrEmpty(t.User?.AvatarUrl) 
                 ? "" 
-                : $"http://localhost:5000{t.User.AvatarUrl}",
+                : _fileStorage.GetPublicUrl(t.User.AvatarUrl),
             PrimaryTitle = t.PrimaryTitle,
             SecondaryTitle = t.SecondaryTitle,
             Location = t.Location,

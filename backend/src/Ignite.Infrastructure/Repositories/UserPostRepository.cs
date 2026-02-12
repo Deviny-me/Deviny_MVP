@@ -1,4 +1,5 @@
 using Ignite.Application.Common.Interfaces;
+using Ignite.Application.Features.Posts.DTOs;
 using Ignite.Domain.Entities;
 using Ignite.Domain.Enums;
 using Ignite.Infrastructure.Persistence;
@@ -17,6 +18,33 @@ public class UserPostRepository : IUserPostRepository
     public UserPostRepository(ApplicationDbContext context)
     {
         _context = context;
+    }
+
+    // ─── Helper: builds a base IQueryable with all Includes for paged queries ───
+    private IQueryable<UserPost> BasePagedQuery()
+    {
+        return _context.Set<UserPost>()
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(p => p.Media.OrderBy(m => m.DisplayOrder))
+            .Include(p => p.User)
+            .Include(p => p.OriginalPost)
+                .ThenInclude(op => op!.Media.OrderBy(m => m.DisplayOrder))
+            .Include(p => p.OriginalPost)
+                .ThenInclude(op => op!.User);
+    }
+
+    // ─── Helper: applies tab filter to a query already filtered by userId ───
+    private static IQueryable<UserPost> ApplyTabFilter(
+        IQueryable<UserPost> query,
+        ProfilePostTab tab)
+    {
+        return tab switch
+        {
+            ProfilePostTab.Videos => query.Where(p => p.Type == PostType.Video),
+            ProfilePostTab.Reposts => query.Where(p => p.Type == PostType.Repost),
+            _ => query // All — no extra filter
+        };
     }
 
     public async Task<UserPost?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -58,8 +86,6 @@ public class UserPostRepository : IUserPostRepository
             .Include(p => p.OriginalPost)
                 .ThenInclude(op => op!.User)
             .Where(p => p.UserId == userId && !p.IsDeleted)
-            // Hide reposts where the original post was deleted
-            .Where(p => p.OriginalPostId == null || !p.OriginalPost!.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -70,18 +96,25 @@ public class UserPostRepository : IUserPostRepository
         int pageSize, 
         CancellationToken cancellationToken = default)
     {
-        return await _context.Set<UserPost>()
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Include(p => p.Media.OrderBy(m => m.DisplayOrder))
-            .Include(p => p.User)
-            .Include(p => p.OriginalPost)
-                .ThenInclude(op => op!.Media.OrderBy(m => m.DisplayOrder))
-            .Include(p => p.OriginalPost)
-                .ThenInclude(op => op!.User)
+        return await BasePagedQuery()
             .Where(p => p.UserId == userId && !p.IsDeleted)
-            // Hide reposts where the original post was deleted
-            .Where(p => p.OriginalPostId == null || !p.OriginalPost!.IsDeleted)
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<UserPost>> GetByUserIdPagedAsync(
+        Guid userId, 
+        ProfilePostTab tab,
+        int page, 
+        int pageSize, 
+        CancellationToken cancellationToken = default)
+    {
+        var query = BasePagedQuery()
+            .Where(p => p.UserId == userId && !p.IsDeleted);
+        query = ApplyTabFilter(query, tab);
+        return await query
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -92,9 +125,61 @@ public class UserPostRepository : IUserPostRepository
     {
         return await _context.Set<UserPost>()
             .Where(p => p.UserId == userId && !p.IsDeleted)
-            // Hide reposts where the original post was deleted
-            .Where(p => p.OriginalPostId == null || !p.OriginalPost!.IsDeleted)
             .CountAsync(cancellationToken);
+    }
+
+    public async Task<int> GetCountByUserIdAsync(Guid userId, ProfilePostTab tab, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Set<UserPost>()
+            .Where(p => p.UserId == userId && !p.IsDeleted);
+        query = ApplyTabFilter(query, tab);
+        return await query.CountAsync(cancellationToken);
+    }
+
+    public async Task<List<UserPost>> GetPublicByUserIdPagedAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        return await BasePagedQuery()
+            .Where(p => p.UserId == userId && !p.IsDeleted && p.Visibility == PostVisibility.Public)
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<UserPost>> GetPublicByUserIdPagedAsync(
+        Guid userId,
+        ProfilePostTab tab,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = BasePagedQuery()
+            .Where(p => p.UserId == userId && !p.IsDeleted && p.Visibility == PostVisibility.Public);
+        query = ApplyTabFilter(query, tab);
+        return await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetPublicCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<UserPost>()
+            .Where(p => p.UserId == userId && !p.IsDeleted && p.Visibility == PostVisibility.Public)
+            .CountAsync(cancellationToken);
+    }
+
+    public async Task<int> GetPublicCountByUserIdAsync(Guid userId, ProfilePostTab tab, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Set<UserPost>()
+            .Where(p => p.UserId == userId && !p.IsDeleted && p.Visibility == PostVisibility.Public);
+        query = ApplyTabFilter(query, tab);
+        return await query.CountAsync(cancellationToken);
     }
 
     public async Task<UserPost> CreateAsync(UserPost post, CancellationToken cancellationToken = default)
@@ -139,18 +224,8 @@ public class UserPostRepository : IUserPostRepository
         int pageSize, 
         CancellationToken cancellationToken = default)
     {
-        return await _context.Set<UserPost>()
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Include(p => p.Media.OrderBy(m => m.DisplayOrder))
-            .Include(p => p.User)
-            .Include(p => p.OriginalPost)
-                .ThenInclude(op => op!.Media.OrderBy(m => m.DisplayOrder))
-            .Include(p => p.OriginalPost)
-                .ThenInclude(op => op!.User)
+        return await BasePagedQuery()
             .Where(p => !p.IsDeleted && p.Visibility == PostVisibility.Public)
-            // Hide reposts where the original post was deleted
-            .Where(p => p.OriginalPostId == null || !p.OriginalPost!.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -161,8 +236,6 @@ public class UserPostRepository : IUserPostRepository
     {
         return await _context.Set<UserPost>()
             .Where(p => !p.IsDeleted && p.Visibility == PostVisibility.Public)
-            // Hide reposts where the original post was deleted
-            .Where(p => p.OriginalPostId == null || !p.OriginalPost!.IsDeleted)
             .CountAsync(cancellationToken);
     }
     
@@ -197,5 +270,20 @@ public class UserPostRepository : IUserPostRepository
     {
         return await _context.Set<UserPost>()
             .FirstOrDefaultAsync(p => p.OriginalPostId == originalPostId && p.UserId == userId && !p.IsDeleted, cancellationToken);
+    }
+    
+    public async Task<HashSet<Guid>> GetRepostedPostIdsByUserAsync(
+        IEnumerable<Guid> postIds, 
+        Guid userId, 
+        CancellationToken cancellationToken = default)
+    {
+        var postIdList = postIds.ToList();
+        
+        var repostedIds = await _context.Set<UserPost>()
+            .Where(p => p.OriginalPostId != null && postIdList.Contains(p.OriginalPostId.Value) && p.UserId == userId && !p.IsDeleted)
+            .Select(p => p.OriginalPostId!.Value)
+            .ToListAsync(cancellationToken);
+        
+        return repostedIds.ToHashSet();
     }
 }

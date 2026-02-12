@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { authService, LoginRequestDto, UserDto } from './services/authService'
 
@@ -25,13 +25,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+function normalizeRole(role: string | number | undefined): 'user' | 'trainer' {
+  if (role === 'trainer' || role === 'Trainer' || role === 1 || role === '1') return 'trainer'
+  return 'user'
+}
+
 function mapUserDtoToUser(dto: UserDto): User {
   return {
     id: dto.id,
     email: dto.email,
     firstName: dto.firstName,
     lastName: dto.lastName,
-    role: dto.role === 'trainer' ? 'trainer' : 'user',
+    role: normalizeRole(dto.role),
   }
 }
 
@@ -69,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth()
   }, [])
 
-  const login = async (email: string, password: string, role: 'user' | 'trainer' = 'trainer', rememberMe: boolean = false) => {
+  const login = useCallback(async (email: string, password: string, role: 'user' | 'trainer' = 'trainer', rememberMe: boolean = false) => {
     setIsLoading(true)
     try {
       const response = await authService.login({
@@ -86,17 +91,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authService.logout()
     setUser(null)
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
     router.push('/auth/login')
-  }
+  }, [router])
 
-  const register = async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'trainer' = 'trainer') => {
+  const register = useCallback(async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'trainer' = 'trainer') => {
     setIsLoading(true)
     try {
       const response = await authService.register({
@@ -114,10 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  const value = useMemo(() => ({ user, isLoading, login, logout, register }), [user, isLoading, login, logout, register])
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, register }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )

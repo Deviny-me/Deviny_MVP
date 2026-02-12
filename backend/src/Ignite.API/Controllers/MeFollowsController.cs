@@ -4,7 +4,6 @@ using Ignite.Application.Features.Friends.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -18,16 +17,10 @@ public class MeFollowsController : BaseApiController
         _mediator = mediator;
     }
 
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(userIdClaim!);
-    }
-
     [HttpPost("{trainerId}")]
     public async Task<IActionResult> FollowTrainer(Guid trainerId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new FollowTrainerCommand
         {
             FollowerId = userId,
@@ -41,7 +34,7 @@ public class MeFollowsController : BaseApiController
     [HttpDelete("{trainerId}")]
     public async Task<IActionResult> UnfollowTrainer(Guid trainerId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new UnfollowTrainerCommand
         {
             FollowerId = userId,
@@ -55,7 +48,7 @@ public class MeFollowsController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<FriendDto>>> GetMyFollowing()
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var query = new GetMyFollowingQuery { UserId = userId };
         var result = await _mediator.Send(query);
         return Ok(result);

@@ -18,7 +18,7 @@ export interface UserDto {
   firstName: string
   lastName: string
   fullName: string
-  role: RoleType
+  role: string | number
   country?: string
   city?: string
 }
@@ -65,8 +65,15 @@ export const authService = {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || 'Login failed')
+      let message = 'Login failed'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        // Backend returned non-JSON (e.g. server is down)
+        message = 'Сервер недоступен. Попробуйте позже.'
+      }
+      throw new Error(message)
     }
 
     return response.json()
@@ -104,11 +111,18 @@ export const authService = {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      if (response.status === 409) {
-        throw new Error('Email уже зарегистрирован')
+      let message = 'Registration failed'
+      try {
+        const error = await response.json()
+        if (response.status === 409) {
+          throw new Error('Email уже зарегистрирован')
+        }
+        message = error.message || message
+      } catch (e) {
+        if (e instanceof Error && e.message === 'Email уже зарегистрирован') throw e
+        message = 'Сервер недоступен. Попробуйте позже.'
       }
-      throw new Error(error.message || 'Registration failed')
+      throw new Error(message)
     }
 
     return response.json()

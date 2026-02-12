@@ -179,6 +179,65 @@ namespace Ignite.Infrastructure.Migrations
                     b.ToTable("LevelDefinitions");
                 });
 
+            modelBuilder.Entity("Ignite.Domain.Entities.MealProgram", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CoverImagePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("TrainerId");
+
+                    b.HasIndex("IsDeleted", "CreatedAt")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("IX_MealPrograms_IsDeleted_CreatedAt");
+
+                    b.ToTable("MealPrograms");
+                });
+
             modelBuilder.Entity("Ignite.Domain.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1224,6 +1283,17 @@ namespace Ignite.Infrastructure.Migrations
                     b.Navigation("Receiver");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("Ignite.Domain.Entities.MealProgram", b =>
+                {
+                    b.HasOne("Ignite.Domain.Entities.User", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Trainer");
                 });
 
             modelBuilder.Entity("Ignite.Domain.Entities.Message", b =>

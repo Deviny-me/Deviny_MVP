@@ -1,4 +1,4 @@
-﻿using Ignite.API.DTOs;
+using Ignite.API.DTOs;
 using Ignite.Application.Common.Interfaces;
 using Ignite.Domain.Entities;
 using Ignite.Domain.Enums;
@@ -6,7 +6,6 @@ using Ignite.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -22,13 +21,10 @@ public class TrainerScheduleController : BaseApiController
         _levelService = levelService;
     }
 
-    private Guid GetTrainerId()
+    private async Task<Guid> GetTrainerIdAsync()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        if (string.IsNullOrEmpty(email))
-            throw new UnauthorizedAccessException();
-
-        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        var userId = GetCurrentUserId();
+        var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null || user.Role != UserRole.Trainer)
             throw new UnauthorizedAccessException();
 
@@ -40,7 +36,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var eventsQuery = _context.ScheduleEvents
                 .Include(e => e.Trainer)
@@ -92,7 +88,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents
                 .Include(e => e.Trainer)
@@ -139,7 +135,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             if (!Enum.TryParse<ScheduleEventType>(request.Type, out var eventType))
                 return BadRequest(new { message = "Invalid event type" });
@@ -219,7 +215,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents.FindAsync(id);
             if (evt == null || evt.TrainerId != trainerId)
@@ -272,7 +268,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents.FindAsync(id);
             if (evt == null || evt.TrainerId != trainerId)
@@ -355,7 +351,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents.FindAsync(id);
             if (evt == null || evt.TrainerId != trainerId)
@@ -383,7 +379,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents.FindAsync(id);
             if (evt == null || evt.TrainerId != trainerId)
@@ -433,7 +429,7 @@ public class TrainerScheduleController : BaseApiController
     {
         try
         {
-            var trainerId = GetTrainerId();
+            var trainerId = await GetTrainerIdAsync();
 
             var start = weekStart ?? DateTime.UtcNow.Date.AddDays(-(int)DateTime.UtcNow.DayOfWeek);
             var end = start.AddDays(7);

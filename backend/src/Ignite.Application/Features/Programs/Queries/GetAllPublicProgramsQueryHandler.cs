@@ -8,10 +8,14 @@ namespace Ignite.Application.Features.Programs.Queries;
 public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProgramsQuery, List<PublicProgramDto>>
 {
     private readonly IProgramRepository _programRepository;
+    private readonly IFileStorageService _fileStorage;
 
-    public GetAllPublicProgramsQueryHandler(IProgramRepository programRepository)
+    public GetAllPublicProgramsQueryHandler(
+        IProgramRepository programRepository,
+        IFileStorageService fileStorage)
     {
         _programRepository = programRepository;
+        _fileStorage = fileStorage;
     }
 
     public async Task<List<PublicProgramDto>> Handle(GetAllPublicProgramsQuery request, CancellationToken cancellationToken)
@@ -27,7 +31,7 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath) 
                 ? "" 
-                : $"http://localhost:5000{p.CoverImagePath}",
+                : _fileStorage.GetPublicUrl(p.CoverImagePath),
             AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
             TotalReviews = p.Reviews.Count,
             TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
@@ -36,7 +40,7 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
             TrainerName = p.Trainer?.FullName ?? "Unknown Trainer",
             TrainerAvatarUrl = string.IsNullOrEmpty(p.Trainer?.AvatarUrl) 
                 ? "" 
-                : $"http://localhost:5000{p.Trainer.AvatarUrl}",
+                : _fileStorage.GetPublicUrl(p.Trainer.AvatarUrl),
             TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? ""
         }).ToList();
     }

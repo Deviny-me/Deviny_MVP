@@ -20,13 +20,14 @@ public class UserFollowRepository : IUserFollowRepository
             .FirstOrDefaultAsync(uf => uf.FollowerId == followerId && uf.TrainerId == trainerId);
     }
 
-    public async Task<List<User>> GetFollowingAsync(Guid userId)
+    public async Task<List<(User Trainer, DateTime FollowedAt)>> GetFollowingAsync(Guid userId)
     {
         return await _context.UserFollows
+            .AsNoTracking()
             .Include(uf => uf.Trainer)
             .Where(uf => uf.FollowerId == userId)
             .OrderByDescending(uf => uf.CreatedAt)
-            .Select(uf => uf.Trainer)
+            .Select(uf => new ValueTuple<User, DateTime>(uf.Trainer, uf.CreatedAt))
             .ToListAsync();
     }
 

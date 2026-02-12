@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using FluentValidation;
 
 namespace Ignite.API.Middleware;
 
@@ -33,6 +34,11 @@ public class GlobalExceptionHandlerMiddleware
         {
             _logger.LogWarning(ex, "Unauthorized access attempt");
             await HandleExceptionAsync(context, ex, HttpStatusCode.Unauthorized, "Unauthorized access");
+        }
+        catch (ValidationException ex)
+        {
+            _logger.LogWarning(ex, "Validation failed");
+            await HandleExceptionAsync(context, ex, HttpStatusCode.BadRequest, ex.Message);
         }
         catch (KeyNotFoundException ex)
         {

@@ -44,4 +44,12 @@ public interface IPostLikeRepository
         IEnumerable<Guid> postIds, 
         Guid userId, 
         CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets like counts for multiple posts at once.
+    /// Returns a dictionary of postId -> count.
+    /// </summary>
+    Task<Dictionary<Guid, int>> GetLikeCountsForPostsAsync(
+        IEnumerable<Guid> postIds, 
+        CancellationToken cancellationToken = default);
 }

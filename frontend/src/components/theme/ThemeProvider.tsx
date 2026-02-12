@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode, useEffect } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -102,8 +102,10 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
     await setTheme(newTheme)
   }, [theme, setTheme])
 
+  const value = useMemo(() => ({ theme, setTheme, toggleTheme, isLoading }), [theme, setTheme, toggleTheme, isLoading])
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, isLoading }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   )

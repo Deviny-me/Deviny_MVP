@@ -7,7 +7,8 @@ import {
   PostCommentsResponse,
   PostCommentDto,
   CreateCommentRequest,
-  CreateRepostRequest
+  CreateRepostRequest,
+  PostStatsDto
 } from '@/types/post'
 
 /**
@@ -50,13 +51,16 @@ export const postsApi = {
   },
 
   /**
-   * Get current user's posts with pagination.
+   * Get current user's posts with pagination and optional tab filter.
    */
-  async getMyPosts(page: number = 1, pageSize: number = 20): Promise<UserPostsResponse> {
+  async getMyPosts(page: number = 1, pageSize: number = 20, tab: string = 'all', signal?: AbortSignal): Promise<UserPostsResponse> {
     const params = new URLSearchParams({
       page: page.toString(),
       pageSize: pageSize.toString()
     })
+    if (tab && tab !== 'all') {
+      params.set('tab', tab)
+    }
 
     const response = await fetch(`${API_URL}/me/posts?${params}`, {
       method: 'GET',
@@ -65,6 +69,7 @@ export const postsApi = {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
+      signal,
     })
 
     if (!response.ok) {
@@ -173,6 +178,36 @@ export const postsApi = {
   },
 
   /**
+   * Get posts for a specific user by their ID.
+   * Returns public posts for other users, all posts for the authenticated user.
+   */
+  async getUserPosts(userId: string, page: number = 1, pageSize: number = 20, tab: string = 'all', signal?: AbortSignal): Promise<UserPostsResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString()
+    })
+    if (tab && tab !== 'all') {
+      params.set('tab', tab)
+    }
+
+    const response = await fetch(`${API_URL}/users/${userId}/posts?${params}`, {
+      method: 'GET',
+      headers: {
+        ...getAuthHeader(),
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      signal,
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user posts')
+    }
+
+    return response.json()
+  },
+
+  /**
    * Get a single post by ID.
    */
   async getPostById(postId: string): Promise<PostDto> {
@@ -201,9 +236,9 @@ export const postsApi = {
 
   /**
    * Like a post.
-   * @returns true if successful, throws on error
+   * @returns updated PostStatsDto with fresh counts + viewer flags
    */
-  async likePost(postId: string): Promise<boolean> {
+  async likePost(postId: string): Promise<PostStatsDto> {
     const response = await fetch(`${API_URL}/posts/${postId}/likes`, {
       method: 'POST',
       headers: {
@@ -215,21 +250,21 @@ export const postsApi = {
 
     if (!response.ok) {
       if (response.status === 409) {
-        // Already liked - treat as success
-        return true
+        // Already liked — return current stats
+        return response.json()
       }
       const error = await response.json().catch(() => ({ detail: 'Failed to like post' }))
       throw new Error(error.detail || 'Failed to like post')
     }
 
-    return true
+    return response.json()
   },
 
   /**
    * Unlike a post.
-   * @returns true if successful, throws on error
+   * @returns updated PostStatsDto with fresh counts + viewer flags
    */
-  async unlikePost(postId: string): Promise<boolean> {
+  async unlikePost(postId: string): Promise<PostStatsDto> {
     const response = await fetch(`${API_URL}/posts/${postId}/likes`, {
       method: 'DELETE',
       headers: {
@@ -241,14 +276,14 @@ export const postsApi = {
 
     if (!response.ok) {
       if (response.status === 404) {
-        // Not liked - treat as success
-        return true
+        // Not liked — return current stats
+        return response.json()
       }
       const error = await response.json().catch(() => ({ detail: 'Failed to unlike post' }))
       throw new Error(error.detail || 'Failed to unlike post')
     }
 
-    return true
+    return response.json()
   },
 
   // ============================================
@@ -352,8 +387,9 @@ export const postsApi = {
 
   /**
    * Remove a repost of a post.
+   * @returns updated PostStatsDto for the original post.
    */
-  async removeRepost(postId: string): Promise<void> {
+  async removeRepost(postId: string): Promise<PostStatsDto> {
     const response = await fetch(`${API_URL}/posts/${postId}/repost`, {
       method: 'DELETE',
       headers: {
@@ -366,5 +402,12 @@ export const postsApi = {
       const error = await response.json().catch(() => ({ detail: 'Failed to remove repost' }))
       throw new Error(error.detail || 'Failed to remove repost')
     }
+
+    // Защита от пустого тела (204 NoContent)
+    if (response.status === 204) {
+      return {} as PostStatsDto
+    }
+
+    return response.json()
   }
 }

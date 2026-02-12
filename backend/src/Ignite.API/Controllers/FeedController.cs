@@ -3,7 +3,6 @@ using Ignite.Application.Features.Posts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -27,13 +26,14 @@ public class FeedController : BaseApiController
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Posts per page (default: 20, max: 100)</param>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(UserPostsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<UserPostsResponse>> GetFeed(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
         pageSize = Math.Min(pageSize, 100);
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
 
         var query = new GetFeedQuery
         {
@@ -44,19 +44,5 @@ public class FeedController : BaseApiController
 
         var result = await _mediator.Send(query);
         return Ok(result);
-    }
-    
-    private Guid? GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) 
-            ?? User.FindFirst("sub")
-            ?? User.FindFirst("userId");
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            return null;
-        }
-
-        return userId;
     }
 }

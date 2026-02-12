@@ -62,6 +62,19 @@ public class PostDto
 }
 
 /// <summary>
+/// DTO with updated stats and viewer flags, returned by mutation endpoints (like, repost).
+/// Allows the frontend to reconcile optimistic updates with the server state.
+/// </summary>
+public class PostStatsDto
+{
+    public int LikeCount { get; set; }
+    public int CommentCount { get; set; }
+    public int RepostCount { get; set; }
+    public bool IsLikedByMe { get; set; }
+    public bool IsRepostedByMe { get; set; }
+}
+
+/// <summary>
 /// Response for paginated posts list.
 /// </summary>
 public class UserPostsResponse
@@ -84,6 +97,12 @@ public class PostCommentDto
     public string Content { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public Guid? ParentCommentId { get; set; }
+    
+    /// <summary>
+    /// Whether the current user can delete this comment
+    /// (true if user is comment author OR post author).
+    /// </summary>
+    public bool CanDelete { get; set; }
 }
 
 /// <summary>

@@ -40,6 +40,15 @@ export const programsApi = {
     return fetchWithAuth('/programs');
   },
 
+  // Get a single public program by ID
+  getProgramById: async (id: string): Promise<PublicProgramDto | null> => {
+    try {
+      return await fetchWithAuth(`/programs/${id}`);
+    } catch (error) {
+      return null;
+    }
+  },
+
   // Get trainer's programs
   getMyPrograms: async (): Promise<ProgramDto[]> => {
     return fetchWithAuth('/trainer/me/programs');

@@ -5,6 +5,7 @@ namespace Ignite.Application.Common.Interfaces;
 public interface IProgramRepository
 {
     Task<TrainingProgram?> GetByIdAsync(Guid id);
+    Task<TrainingProgram?> GetByIdPublicAsync(Guid id);
     Task<TrainingProgram?> GetByCodeAsync(string code);
     Task<List<TrainingProgram>> GetByTrainerIdAsync(Guid trainerId);
     Task<List<TrainingProgram>> GetAllPublicAsync();

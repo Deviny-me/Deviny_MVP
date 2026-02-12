@@ -2,7 +2,6 @@ using Ignite.Application.Features.Posts.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -32,7 +31,7 @@ public class CommentsController : BaseApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteComment(Guid commentId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -81,19 +80,5 @@ public class CommentsController : BaseApiController
 
         _logger.LogInformation("User {UserId} deleted comment {CommentId}", userId, commentId);
         return NoContent();
-    }
-    
-    private Guid? GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) 
-            ?? User.FindFirst("sub")
-            ?? User.FindFirst("userId");
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            return null;
-        }
-
-        return userId;
     }
 }

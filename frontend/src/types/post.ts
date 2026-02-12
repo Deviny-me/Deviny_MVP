@@ -4,21 +4,26 @@
  */
 
 export enum PostType {
-  Photo = 0,
-  Video = 1,
-  Achievement = 2,
-  Repost = 3
+  Photo = 'Photo',
+  Video = 'Video',
+  Achievement = 'Achievement',
+  Repost = 'Repost'
 }
 
 export enum MediaType {
-  Image = 0,
-  Video = 1
+  Image = 'Image',
+  Video = 'Video'
 }
 
 export enum PostVisibility {
-  Public = 0,
-  Private = 1
+  Public = 'Public',
+  Private = 'Private'
 }
+
+/**
+ * Profile tab filter for publications section.
+ */
+export type ProfilePostTab = 'all' | 'videos' | 'reposts'
 
 /**
  * Basic author information for posts and comments.
@@ -86,6 +91,7 @@ export interface PostCommentDto {
   content: string
   createdAt: string
   parentCommentId?: string | null
+  canDelete: boolean
 }
 
 /**
@@ -97,6 +103,18 @@ export interface PostCommentsResponse {
   page: number
   pageSize: number
   hasMore: boolean
+}
+
+/**
+ * Stats + viewer flags returned by mutation endpoints (like, repost).
+ * Used for reconciling optimistic UI with server state.
+ */
+export interface PostStatsDto {
+  likeCount: number
+  commentCount: number
+  repostCount: number
+  isLikedByMe: boolean
+  isRepostedByMe: boolean
 }
 
 export interface CreateMediaPostRequest {

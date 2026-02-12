@@ -1,25 +1,19 @@
 using Ignite.API.DTOs;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Ignite.Infrastructure.Persistence;
 using Ignite.Domain.Enums;
-using System.Security.Claims;
-using Ignite.Application.Common.Interfaces;
 
 namespace Ignite.API.Controllers;
 
-[Authorize]
 [Route("api/trainer/me/[controller]")]
 public class StudentsController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
-    private readonly IUserRepository _userRepository;
 
-    public StudentsController(ApplicationDbContext context, IUserRepository userRepository)
+    public StudentsController(ApplicationDbContext context)
     {
         _context = context;
-        _userRepository = userRepository;
     }
 
     [HttpGet]
@@ -27,22 +21,17 @@ public class StudentsController : BaseApiController
     {
         try
         {
-            // Get current user ID from claims
-            var emailClaim = User.FindFirst(ClaimTypes.Email)?.Value ?? User.FindFirst("email")?.Value;
-            if (string.IsNullOrEmpty(emailClaim))
+            var userId = GetCurrentUserId();
+
+            // Verify the user is a trainer
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null || user.Role != UserRole.Trainer)
             {
-                return Unauthorized(new { message = "User not authenticated" });
+                return Forbid();
             }
 
-            var user = await _userRepository.GetByEmailAsync(emailClaim);
-            if (user == null)
-            {
-                return Unauthorized(new { message = "User not found" });
-            }
-
-            // Для демонстрации возвращаем всех пользователей с ролью Student
-            // В реальном приложении здесь должна быть связь между тренером и его студентами
             var students = await _context.Users
+                .AsNoTracking()
                 .Where(u => u.Role == UserRole.Student && u.IsActive)
                 .Select(u => new StudentDto
                 {
@@ -58,9 +47,9 @@ public class StudentsController : BaseApiController
 
             return Ok(students);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { message = "Error fetching students", error = ex.Message });
+            return StatusCode(500, new { message = "Error fetching students" });
         }
     }
 }

@@ -1,10 +1,9 @@
-using Ignite.Application.DTOs;
+﻿using Ignite.Application.DTOs;
 using Ignite.Application.Features.Friends.Commands;
 using Ignite.Application.Features.Friends.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -18,16 +17,10 @@ public class MeFriendsController : BaseApiController
         _mediator = mediator;
     }
 
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(userIdClaim!);
-    }
-
     [HttpPost("requests")]
     public async Task<ActionResult<FriendRequestDto>> SendFriendRequest([FromBody] SendFriendRequestDto dto)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new SendFriendRequestCommand
         {
             SenderId = userId,
@@ -41,7 +34,7 @@ public class MeFriendsController : BaseApiController
     [HttpGet("requests/incoming")]
     public async Task<ActionResult<List<FriendRequestDto>>> GetIncomingRequests()
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var query = new GetIncomingRequestsQuery { UserId = userId };
         var result = await _mediator.Send(query);
         return Ok(result);
@@ -50,7 +43,7 @@ public class MeFriendsController : BaseApiController
     [HttpGet("requests/outgoing")]
     public async Task<ActionResult<List<FriendRequestDto>>> GetOutgoingRequests()
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var query = new GetOutgoingRequestsQuery { UserId = userId };
         var result = await _mediator.Send(query);
         return Ok(result);
@@ -59,7 +52,7 @@ public class MeFriendsController : BaseApiController
     [HttpPost("requests/{requestId}/accept")]
     public async Task<IActionResult> AcceptFriendRequest(int requestId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new AcceptFriendRequestCommand
         {
             UserId = userId,
@@ -73,7 +66,7 @@ public class MeFriendsController : BaseApiController
     [HttpPost("requests/{requestId}/decline")]
     public async Task<IActionResult> DeclineFriendRequest(int requestId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new DeclineFriendRequestCommand
         {
             UserId = userId,
@@ -87,7 +80,7 @@ public class MeFriendsController : BaseApiController
     [HttpDelete("requests/{requestId}")]
     public async Task<IActionResult> CancelFriendRequest(int requestId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new CancelFriendRequestCommand
         {
             UserId = userId,
@@ -101,7 +94,7 @@ public class MeFriendsController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<FriendDto>>> GetMyFriends()
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var query = new GetMyFriendsQuery { UserId = userId };
         var result = await _mediator.Send(query);
         return Ok(result);
@@ -110,7 +103,7 @@ public class MeFriendsController : BaseApiController
     [HttpDelete("{friendId}")]
     public async Task<IActionResult> RemoveFriend(Guid friendId)
     {
-        var userId = GetUserId();
+        var userId = GetCurrentUserId();
         var command = new RemoveFriendCommand
         {
             UserId = userId,

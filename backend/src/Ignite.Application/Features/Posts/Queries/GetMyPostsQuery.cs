@@ -15,6 +15,11 @@ public class GetMyPostsQuery : IRequest<Result<UserPostsResponse>>
     public required Guid UserId { get; set; }
     
     /// <summary>
+    /// Profile tab filter: All, Videos, Reposts. Default: All
+    /// </summary>
+    public ProfilePostTab Tab { get; set; } = ProfilePostTab.All;
+    
+    /// <summary>
     /// Page number (1-based). Default: 1
     /// </summary>
     public int Page { get; set; } = 1;

@@ -5,7 +5,6 @@ import {
   Flame, 
   MessageCircle, 
   Bell, 
-  Search,
   Settings,
   LogOut,
   User,
@@ -14,6 +13,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
+import { SearchBar } from '@/components/search/SearchBar'
 
 export function UserTopNav() {
   const router = useRouter()
@@ -23,10 +23,10 @@ export function UserTopNav() {
   const { unreadCount } = useUnreadMessages()
 
   const navItems = [
-    { icon: Users, label: 'Friends', path: '/dashboard/user/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/dashboard/user/messages', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: User, label: 'Profile', path: '/dashboard/user/profile' },
-    { icon: Settings, label: 'Settings', path: '/dashboard/user/settings' },
+    { icon: Users, label: 'Friends', path: '/user/friends' },
+    { icon: MessageCircle, label: 'Messages', path: '/user/messages', badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: User, label: 'Profile', path: '/user/profile' },
+    { icon: Settings, label: 'Settings', path: '/user/settings' },
   ]
 
   // Debug logging
@@ -49,7 +49,7 @@ export function UserTopNav() {
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             {/* Logo */}
             <button 
-              onClick={() => router.push('/dashboard/user')}
+              onClick={() => router.push('/user')}
               className="flex items-center gap-2 flex-shrink-0"
             >
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
@@ -58,14 +58,7 @@ export function UserTopNav() {
             </button>
 
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search trainers, programs, workouts..."
-                className="w-full pl-10 pr-4 py-1.5 bg-[#0A0A0A] border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-[#262626] transition-colors"
-              />
-            </div>
+            <SearchBar placeholder="Search trainers, programs, workouts..." />
           </div>
 
           {/* Center: Navigation */}
@@ -151,7 +144,7 @@ export function UserTopNav() {
                       </div>
                       <button
                         onClick={() => {
-                          router.push('/dashboard/user/profile')
+                          router.push('/user/profile')
                           setShowProfileMenu(false)
                         }}
                         className="mt-3 w-full py-1.5 border border-[#FF6B35] text-[#FF6B35] rounded-lg text-sm font-semibold hover:bg-[#FF6B35]/10 transition-colors"
@@ -163,7 +156,7 @@ export function UserTopNav() {
                     <div className="p-2">
                       <button
                         onClick={() => {
-                          router.push('/dashboard/user/settings')
+                          router.push('/user/settings')
                           setShowProfileMenu(false)
                         }}
                         className="w-full flex items-center gap-3 p-2.5 rounded-lg text-gray-300 hover:bg-white/5 transition-colors"

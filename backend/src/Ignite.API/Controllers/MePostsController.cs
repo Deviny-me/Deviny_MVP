@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Ignite.Application.Common;
 using Ignite.Application.Features.Posts.Commands;
 using Ignite.Application.Features.Posts.DTOs;
@@ -7,7 +7,6 @@ using Ignite.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ignite.API.Controllers;
 
@@ -47,7 +46,7 @@ public class MePostsController : BaseApiController
         [FromForm] PostType type,
         [FromForm] string? caption = null)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized(CreateProblemDetails(
@@ -114,6 +113,7 @@ public class MePostsController : BaseApiController
     /// <summary>
     /// Get all posts for the current user.
     /// </summary>
+    /// <param name="tab">Filter: all, videos, reposts (default: all)</param>
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Posts per page (default: 20, max: 100)</param>
     /// <returns>Paginated list of posts with media</returns>
@@ -122,13 +122,22 @@ public class MePostsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<UserPostsResponse>> GetMyPosts(
+        [FromQuery] string tab = "all",
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
+        }
+
+        if (!TryParseTab(tab, out var profileTab))
+        {
+            return BadRequest(CreateProblemDetails(
+                "InvalidTab",
+                "Tab must be 'all', 'videos', or 'reposts'.",
+                StatusCodes.Status400BadRequest));
         }
 
         try
@@ -136,6 +145,7 @@ public class MePostsController : BaseApiController
             var query = new GetMyPostsQuery
             {
                 UserId = userId.Value,
+                Tab = profileTab,
                 Page = page,
                 PageSize = pageSize
             };
@@ -166,6 +176,18 @@ public class MePostsController : BaseApiController
         }
     }
 
+    private static bool TryParseTab(string tab, out ProfilePostTab result)
+    {
+        result = tab.ToLowerInvariant() switch
+        {
+            "all" => ProfilePostTab.All,
+            "videos" => ProfilePostTab.Videos,
+            "reposts" => ProfilePostTab.Reposts,
+            _ => (ProfilePostTab)(-1)
+        };
+        return Enum.IsDefined(result);
+    }
+
     /// <summary>
     /// Delete a post.
     /// </summary>
@@ -179,7 +201,7 @@ public class MePostsController : BaseApiController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeletePost([FromRoute] Guid postId)
     {
-        var userId = GetUserId();
+        var userId = TryGetCurrentUserId();
         if (userId == null)
         {
             return Unauthorized();
@@ -237,45 +259,5 @@ public class MePostsController : BaseApiController
                     "An unexpected error occurred while deleting the post.",
                     StatusCodes.Status500InternalServerError));
         }
-    }
-
-    /// <summary>
-    /// Get user ID from JWT claims.
-    /// </summary>
-    private Guid? GetUserId()
-    {
-        // Try different claim types for user ID
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) 
-            ?? User.FindFirst("sub")
-            ?? User.FindFirst("userId");
-
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-        {
-            // Fallback: try to get from email claim and lookup user
-            return null;
-        }
-
-        return userId;
-    }
-
-    /// <summary>
-    /// Creates a standardized ProblemDetails response according to RFC 7807.
-    /// </summary>
-    private static ProblemDetails CreateProblemDetails(string title, string detail, int status)
-    {
-        return new ProblemDetails
-        {
-            Type = status switch
-            {
-                400 => "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-                401 => "https://tools.ietf.org/html/rfc7235#section-3.1",
-                404 => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
-                500 => "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                _ => "https://tools.ietf.org/html/rfc7231#section-6.5.1"
-            },
-            Title = title,
-            Detail = detail,
-            Status = status
-        };
     }
 }
