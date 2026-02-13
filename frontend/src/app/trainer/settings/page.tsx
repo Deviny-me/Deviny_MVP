@@ -96,7 +96,7 @@ export default function SettingsPage() {
 
         {/* Version */}
         <p className="text-center text-xs text-gray-500">
-          Ignite v1.0.0
+          Deviny v1.0.0
         </p>
       </div>
     </>

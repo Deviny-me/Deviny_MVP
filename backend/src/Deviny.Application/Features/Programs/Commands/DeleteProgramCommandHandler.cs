@@ -1,0 +1,37 @@
+using Deviny.Application.Common.Interfaces;
+using MediatR;
+
+namespace Deviny.Application.Features.Programs.Commands;
+
+public class DeleteProgramCommandHandler : IRequestHandler<DeleteProgramCommand, Unit>
+{
+    private readonly IProgramRepository _programRepository;
+
+    public DeleteProgramCommandHandler(IProgramRepository programRepository)
+    {
+        _programRepository = programRepository;
+    }
+
+    public async Task<Unit> Handle(DeleteProgramCommand request, CancellationToken cancellationToken)
+    {
+        var program = await _programRepository.GetByIdAsync(request.Id);
+        
+        if (program == null)
+        {
+            throw new KeyNotFoundException("Программа не найдена");
+        }
+
+        if (program.TrainerId != request.TrainerId)
+        {
+            throw new UnauthorizedAccessException("Нет доступа к этой программе");
+        }
+
+        program.IsDeleted = true;
+        program.DeletedAt = DateTime.UtcNow;
+        program.UpdatedAt = DateTime.UtcNow;
+
+        await _programRepository.UpdateAsync(program);
+
+        return Unit.Value;
+    }
+}

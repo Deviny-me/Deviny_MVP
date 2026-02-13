@@ -6,7 +6,7 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
 
 export const metadata: Metadata = {
-  title: 'Ignite - Социальная сеть для фитнеса',
+  title: 'Deviny - Социальная сеть для фитнеса',
   description: 'Социальная сеть для фитнеса и здорового образа жизни',
 }
 

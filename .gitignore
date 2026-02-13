@@ -5,6 +5,8 @@
 *.swp
 *.swo
 *~
+*.user
+*.suo
 
 # OS
 .DS_Store
@@ -43,3 +45,27 @@ secrets/
 # SQL scripts with credentials
 create_sql_user.sql
 **/create_sql_user.sql
+
+# .NET build outputs
+bin/
+obj/
+
+# Solution files (if not needed)
+*.sln
+
+# Frontend
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Testing
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+*.cache

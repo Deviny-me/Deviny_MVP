@@ -173,7 +173,7 @@ export function UserRightSidebar() {
           <div className="w-5 h-5 rounded bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
             <Flame className="w-3 h-3 text-white" strokeWidth={2.5} />
           </div>
-          <p className="text-[10px] text-gray-600">IGNITE Fitness © 2026</p>
+          <p className="text-[10px] text-gray-600">Deviny Fitness © 2026</p>
         </div>
       </div>
 

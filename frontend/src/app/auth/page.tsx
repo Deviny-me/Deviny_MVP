@@ -15,7 +15,7 @@ export default function AuthPage() {
   return (
     <div className="light w-full max-w-6xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-primary-700 mb-4">Ignite</h1>
+        <h1 className="text-5xl font-bold text-primary-700 mb-4">Deviny</h1>
         <p className="text-xl text-gray-600">
           Социальная сеть для фитнеса и здорового образа жизни
         </p>

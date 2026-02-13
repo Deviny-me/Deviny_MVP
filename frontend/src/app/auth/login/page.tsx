@@ -90,7 +90,7 @@ function LoginPageContent() {
   return (
     <div className="light w-full max-w-md mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-primary-700 mb-2">Ignite</h1>
+        <h1 className="text-4xl font-bold text-primary-700 mb-2">Deviny</h1>
         <p className="text-gray-600">
           Социальная сеть для фитнеса и здорового образа жизни
         </p>

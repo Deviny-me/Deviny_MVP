@@ -1,10 +1,10 @@
-# Ignite
+# Deviny
 
 ## Быстрый старт
 
 ### Backend (ASP.NET Core)
 ```bash
-cd backend/src/Ignite.API
+cd backend/src/Deviny.API
 dotnet run
 ```
 Сервис поднимется на http://localhost:5000.

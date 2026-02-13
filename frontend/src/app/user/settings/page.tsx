@@ -174,7 +174,7 @@ export default function SettingsPage() {
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-500">
-          <p>IGNITE Fitness v1.0.0</p>
+          <p>Deviny Fitness v1.0.0</p>
           <p className="mt-1">© 2026 All rights reserved</p>
         </div>
       </div>
