@@ -126,7 +126,7 @@ public class TrainerProfileController : BaseApiController
                     ExperienceYears = profile.ExperienceYears,
                     ProgramsCount = profile.ProgramsCount,
                     StudentsCount = 0, // Placeholder - will be calculated from client relationships
-                    AchievementsCount = profile.Achievements.Count,
+                    AchievementsCount = 0, // Now managed via /api/me/achievements
                     RatingValue = 0, // Placeholder for future reviews
                     ReviewsCount = 0, // Placeholder for future reviews
                     Slug = profile.Slug,
@@ -144,14 +144,6 @@ public class TrainerProfileController : BaseApiController
                     Year = c.Year,
                     FileUrl = c.FileUrl,
                     FileName = c.FileName
-                }).ToList(),
-                Achievements = profile.Achievements.Select(a => new AchievementDto
-                {
-                    Id = a.Id,
-                    Title = a.Title,
-                    Subtitle = a.Subtitle,
-                    IconKey = a.IconKey,
-                    Tone = a.Tone
                 }).ToList(),
                 Specializations = profile.Specializations
                     .Select(ts => new SpecializationDto

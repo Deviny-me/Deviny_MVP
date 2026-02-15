@@ -16,7 +16,6 @@ import { PostCard } from '@/components/posts/PostCard'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { getMediaUrl } from '@/lib/config'
 import { Toast } from '@/components/ui/Toast'
-import { ComingSoonModal } from '@/components/ui/ComingSoonModal'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 
@@ -62,7 +61,6 @@ export function TrainerHomeFeed() {
   // State — only IDs; data in store
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
-  const [showAchievementModal, setShowAchievementModal] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [feedPostIds, setFeedPostIds] = useState<string[]>([])
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
@@ -206,7 +204,7 @@ export function TrainerHomeFeed() {
             <span className="text-sm font-medium text-gray-300">Видео</span>
           </button>
           <button 
-            onClick={() => setShowAchievementModal(true)}
+            onClick={() => router.push('/trainer/achievements')}
             disabled={isUploading}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -249,16 +247,6 @@ export function TrainerHomeFeed() {
           <h3 className="text-lg font-semibold text-white mb-2">Пока нет публикаций</h3>
           <p className="text-sm text-gray-400">Поделитесь своим прогрессом, чтобы вдохновить других!</p>
         </div>
-      )}
-
-      {/* Modals */}
-      {showAchievementModal && (
-        <ComingSoonModal 
-          onClose={() => setShowAchievementModal(false)}
-          title="Скоро!"
-          message="Делитесь достижениями с друзьями. Эта функция будет доступна в следующем обновлении!"
-          icon={<Award className="w-8 h-8 text-amber-500" />}
-        />
       )}
 
       {/* Photo Lightbox */}

@@ -43,11 +43,16 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<ISearchRepository, SearchRepository>();
+        services.AddScoped<IAchievementRepository, AchievementRepository>();
+        services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
+        services.AddScoped<IChallengeRepository, ChallengeRepository>();
+        services.AddScoped<IUserChallengeProgressRepository, UserChallengeProgressRepository>();
         
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<ILevelService, LevelService>();
+        services.AddScoped<IAchievementService, AchievementService>();
         services.AddScoped<IVerificationDocumentService, VerificationDocumentService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddSingleton<ISlugGenerator, SlugGenerator>();

@@ -24,6 +24,7 @@ public class CreateUserMediaPostCommandHandler
     private readonly IFileStorageService _fileStorage;
     private readonly IUserRepository _userRepository;
     private readonly ILevelService _levelService;
+    private readonly IAchievementService _achievementService;
     private readonly FileStorageSettings _storageSettings;
     private readonly ILogger<CreateUserMediaPostCommandHandler> _logger;
 
@@ -32,6 +33,7 @@ public class CreateUserMediaPostCommandHandler
         IFileStorageService fileStorage,
         IUserRepository userRepository,
         ILevelService levelService,
+        IAchievementService achievementService,
         IOptions<FileStorageSettings> storageSettings,
         ILogger<CreateUserMediaPostCommandHandler> logger)
     {
@@ -39,6 +41,7 @@ public class CreateUserMediaPostCommandHandler
         _fileStorage = fileStorage;
         _userRepository = userRepository;
         _levelService = levelService;
+        _achievementService = achievementService;
         _storageSettings = storageSettings.Value;
         _logger = logger;
     }
@@ -148,6 +151,23 @@ public class CreateUserMediaPostCommandHandler
                 // Log but don't fail - post was already created successfully
                 _logger.LogWarning(xpEx, 
                     "Failed to award XP for post creation. User: {UserId}, Post: {PostId}",
+                    request.UserId, post.Id);
+            }
+
+            // Try to award achievement for first post
+            try
+            {
+                await _achievementService.TryAwardAchievementAsync(
+                    request.UserId,
+                    "FIRST_POST",
+                    AchievementSourceType.Post,
+                    post.Id,
+                    cancellationToken);
+            }
+            catch (Exception achEx)
+            {
+                _logger.LogWarning(achEx,
+                    "Failed to check achievement for post creation. User: {UserId}, Post: {PostId}",
                     request.UserId, post.Id);
             }
             

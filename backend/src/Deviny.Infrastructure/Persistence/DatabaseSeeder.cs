@@ -115,4 +115,122 @@ public static class DatabaseSeeder
         Console.WriteLine($"   - Test User: user@test.com / password123");
         Console.WriteLine($"   - Test Trainer: trainer@test.com / password123");
     }
+
+    /// <summary>
+    /// Seeds achievements and challenges. Runs independently — safe to call on existing databases.
+    /// </summary>
+    public static async Task SeedAchievementsAsync(ApplicationDbContext context)
+    {
+        if (await context.Achievements.AnyAsync())
+        {
+            System.Diagnostics.Debug.WriteLine("⏩ Achievements already seeded, skipping.");
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
+        // ── Achievements ──
+        var firstPost = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "FIRST_POST",
+            Title = "Первый пост",
+            Description = "Опубликуйте свой первый пост",
+            IconKey = "pen-line",
+            ColorKey = "blue",
+            Rarity = AchievementRarity.Common,
+            XpReward = 25,
+            IsActive = true,
+            TargetRole = null, // available to all roles
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var firstMessage = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "FIRST_MESSAGE_SENT",
+            Title = "Первое сообщение",
+            Description = "Отправьте своё первое сообщение",
+            IconKey = "message-circle",
+            ColorKey = "green",
+            Rarity = AchievementRarity.Common,
+            XpReward = 15,
+            IsActive = true,
+            TargetRole = null,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var firstProgram = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "FIRST_PROGRAM_CREATED",
+            Title = "Первая программа",
+            Description = "Создайте свою первую тренировочную программу",
+            IconKey = "dumbbell",
+            ColorKey = "purple",
+            Rarity = AchievementRarity.Rare,
+            XpReward = 50,
+            IsActive = true,
+            TargetRole = UserRole.Trainer,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        context.Achievements.AddRange(firstPost, firstMessage, firstProgram);
+        await context.SaveChangesAsync();
+
+        // ── Challenges (linked 1-to-1 with achievements) ──
+        var challenges = new List<Challenge>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_FIRST_POST",
+                Title = "Опубликуй пост",
+                Description = "Создайте и опубликуйте свой первый пост в ленте",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = null,
+                AchievementId = firstPost.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_FIRST_MESSAGE",
+                Title = "Напиши сообщение",
+                Description = "Отправьте первое сообщение другому пользователю",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = null,
+                AchievementId = firstMessage.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_FIRST_PROGRAM",
+                Title = "Создай программу",
+                Description = "Создайте свою первую тренировочную программу",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.Trainer,
+                AchievementId = firstProgram.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            }
+        };
+
+        context.Challenges.AddRange(challenges);
+        await context.SaveChangesAsync();
+
+        Console.WriteLine("✅ Achievements & challenges seeded (3 achievements, 3 challenges).");
+    }
 }
