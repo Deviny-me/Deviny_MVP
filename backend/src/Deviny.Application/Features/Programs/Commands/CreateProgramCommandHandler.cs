@@ -11,12 +11,14 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
 {
     private readonly IProgramRepository _programRepository;
     private readonly ILevelService _levelService;
+    private readonly IAchievementService _achievementService;
     private readonly string _uploadsPath;
 
-    public CreateProgramCommandHandler(IProgramRepository programRepository, ILevelService levelService)
+    public CreateProgramCommandHandler(IProgramRepository programRepository, ILevelService levelService, IAchievementService achievementService)
     {
         _programRepository = programRepository;
         _levelService = levelService;
+        _achievementService = achievementService;
         _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "programs");
         
         if (!Directory.Exists(_uploadsPath))
@@ -123,6 +125,21 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         {
             // Log but don't fail - program was already created successfully
             Console.Error.WriteLine($"Warning: Failed to award XP for program creation: {ex.Message}");
+        }
+
+        // Try to award achievement for first program created
+        try
+        {
+            await _achievementService.TryAwardAchievementAsync(
+                request.TrainerId,
+                "FIRST_PROGRAM_CREATED",
+                AchievementSourceType.Program,
+                created.Id,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Warning: Failed to check achievement for program creation: {ex.Message}");
         }
 
         var videoPaths = string.IsNullOrEmpty(created.TrainingVideosPath) 

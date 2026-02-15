@@ -54,7 +54,6 @@ public class TrainersController : BaseApiController
             // Find trainer profile by slug
             var profile = await _context.TrainerProfiles
                 .Include(p => p.Certificates.OrderBy(c => c.SortOrder))
-                .Include(p => p.Achievements.OrderBy(a => a.SortOrder))
                 .Include(p => p.Specializations)
                     .ThenInclude(ts => ts.Specialization)
                 .FirstOrDefaultAsync(p => p.Slug == slug);
@@ -94,7 +93,7 @@ public class TrainersController : BaseApiController
                     ExperienceYears = profile.ExperienceYears,
                     ProgramsCount = profile.ProgramsCount,
                     StudentsCount = 0,
-                    AchievementsCount = profile.Achievements.Count,
+                    AchievementsCount = 0, // Now managed via /api/me/achievements
                     RatingValue = 0,
                     ReviewsCount = 0,
                     Slug = profile.Slug,
@@ -112,14 +111,6 @@ public class TrainersController : BaseApiController
                     Year = c.Year,
                     FileUrl = c.FileUrl,
                     FileName = c.FileName
-                }).ToList(),
-                Achievements = profile.Achievements.Select(a => new AchievementDto
-                {
-                    Id = a.Id,
-                    Title = a.Title,
-                    Subtitle = a.Subtitle,
-                    IconKey = a.IconKey,
-                    Tone = a.Tone
                 }).ToList(),
                 Specializations = profile.Specializations.Select(s => new SpecializationDto
                 {

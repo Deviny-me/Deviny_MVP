@@ -1,0 +1,171 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { Target, CheckCircle2, Loader2, Trophy } from 'lucide-react'
+import { getMyChallenges } from '@/lib/api/achievementApi'
+import type { MyChallengesResponse, UserChallengeProgressDto } from '@/types/achievement'
+import { getIcon, getGradient } from '@/components/shared/achievementUtils'
+
+export default function ChallengesContent() {
+  const [data, setData] = useState<MyChallengesResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    getMyChallenges()
+      .then(setData)
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-red-400 mb-2">Failed to load challenges</p>
+          <p className="text-sm text-gray-500">{error}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data || data.challenges.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+            <Target className="w-10 h-10 text-gray-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">No Challenges Available</h2>
+          <p className="text-gray-400">Check back later for new challenges!</p>
+        </div>
+      </div>
+    )
+  }
+
+  const active = data.challenges.filter(c => c.status !== 'Completed')
+  const completed = data.challenges.filter(c => c.status === 'Completed')
+
+  return (
+    <div className="space-y-6 pb-6">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Challenges</h1>
+            <p className="text-gray-400">Complete challenges to earn achievements and XP</p>
+          </div>
+          <div className="text-right">
+            <div className="text-4xl font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
+              {data.completedCount}/{data.totalCount}
+            </div>
+            <p className="text-sm text-gray-400">Completed</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Active challenges */}
+      {active.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Target className="w-5 h-5 text-[#FF6B35]" />
+            Active ({active.length})
+          </h3>
+          <div className="space-y-4">
+            {active.map(item => (
+              <ChallengeCard key={item.challenge.id} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Completed challenges */}
+      {completed.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-green-400" />
+            Completed ({completed.length})
+          </h3>
+          <div className="space-y-4">
+            {completed.map(item => (
+              <ChallengeCard key={item.challenge.id} item={item} />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
+  const isCompleted = item.status === 'Completed'
+  const c = item.challenge
+  const IconCmp = c.achievementIconKey ? getIcon(c.achievementIconKey) : Trophy
+  const gradient = c.achievementColorKey ? getGradient(c.achievementColorKey) : 'from-[#FF6B35] to-[#FF0844]'
+
+  return (
+    <div className={`bg-[#1A1A1A] rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-white/10'} p-5 hover:border-white/20 transition-all`}>
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 ${isCompleted ? '' : 'opacity-70'}`}>
+          <IconCmp className="w-7 h-7 text-white" />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <h4 className="font-bold text-white">{c.title}</h4>
+            {isCompleted && (
+              <span className="flex items-center gap-1 text-xs font-medium text-green-400">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Done
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-gray-400 mb-3">{c.description}</p>
+
+          {/* Progress bar */}
+          <div>
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+              <span>Progress</span>
+              <span>{item.currentValue}/{item.targetValue}</span>
+            </div>
+            <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isCompleted
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-400'
+                    : 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844]'
+                }`}
+                style={{ width: `${item.progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Reward badge */}
+          {c.achievementTitle && (
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
+              <Trophy className="w-3.5 h-3.5 text-yellow-400" />
+              <span className="text-xs text-gray-300">Reward: {c.achievementTitle}</span>
+            </div>
+          )}
+
+          {/* Completed date */}
+          {isCompleted && item.completedAt && (
+            <p className="text-[11px] text-gray-500 mt-2">
+              Completed {new Date(item.completedAt).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -48,4 +48,8 @@ public class User : BaseEntity
     // Programs navigation properties
     public ICollection<ProgramPurchase> ProgramPurchases { get; set; } = new List<ProgramPurchase>();
     public ICollection<ProgramReview> ProgramReviews { get; set; } = new List<ProgramReview>();
+    
+    // Achievements & Challenges navigation properties
+    public ICollection<UserAchievement> Achievements { get; set; } = new List<UserAchievement>();
+    public ICollection<UserChallengeProgress> ChallengeProgress { get; set; } = new List<UserChallengeProgress>();
 }

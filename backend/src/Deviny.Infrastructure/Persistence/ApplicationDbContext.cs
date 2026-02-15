@@ -15,7 +15,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserSettings> UserSettings { get; set; } = null!;
     public DbSet<TrainerProfile> TrainerProfiles { get; set; } = null!;
     public DbSet<TrainerCertificate> TrainerCertificates { get; set; } = null!;
-    public DbSet<TrainerAchievement> TrainerAchievements { get; set; } = null!;
     public DbSet<Specialization> Specializations { get; set; } = null!;
     public DbSet<TrainerSpecialization> TrainerSpecializations { get; set; } = null!;
     public DbSet<ScheduleEvent> ScheduleEvents { get; set; } = null!;
@@ -48,6 +47,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<Conversation> Conversations { get; set; } = null!;
     public DbSet<ConversationMember> ConversationMembers { get; set; } = null!;
     public DbSet<Message> Messages { get; set; } = null!;
+    
+    // Achievements & Challenges
+    public DbSet<Achievement> Achievements { get; set; } = null!;
+    public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
+    public DbSet<Challenge> Challenges { get; set; } = null!;
+    public DbSet<UserChallengeProgress> UserChallengeProgress { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

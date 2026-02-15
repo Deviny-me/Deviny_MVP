@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
+import { TrainerAchievementBridge } from '@/components/trainer/TrainerAchievementBridge'
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
 
@@ -66,9 +67,11 @@ export default function TrainerDashboardLayout({
   return (
     <UnreadMessagesProvider>
       <LevelProvider>
-        <MainLayout showRightSidebar={showRightSidebar}>
-          {children}
-        </MainLayout>
+        <TrainerAchievementBridge>
+          <MainLayout showRightSidebar={showRightSidebar}>
+            {children}
+          </MainLayout>
+        </TrainerAchievementBridge>
       </LevelProvider>
     </UnreadMessagesProvider>
   )
