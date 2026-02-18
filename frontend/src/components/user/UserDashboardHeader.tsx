@@ -4,10 +4,12 @@ import { useRouter } from 'next/navigation'
 import { LogOut } from 'lucide-react'
 import { useUser } from '@/components/user/UserProvider'
 import { LevelBadge } from '@/components/ui/LevelBadge'
+import { useTranslations } from 'next-intl'
 
 export function UserDashboardHeader() {
   const router = useRouter()
   const { user, logout } = useUser()
+  const t = useTranslations('userDashboard')
 
   const handleLogout = async () => {
     await logout()
@@ -39,13 +41,13 @@ export function UserDashboardHeader() {
                 {initials}
               </div>
               <div className="hidden sm:block">
-                <p className="font-semibold text-gray-900 dark:text-neutral-50 text-sm">{user?.name || 'Пользователь'}</p>
-                <p className="text-xs text-gray-500 dark:text-neutral-400">Ученик</p>
+                <p className="font-semibold text-gray-900 dark:text-neutral-50 text-sm">{user?.name || t('user')}</p>
+                <p className="text-xs text-gray-500 dark:text-neutral-400">{t('student')}</p>
               </div>
               <button
                 onClick={handleLogout}
                 className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                title="Выйти"
+                title={t('logout')}
               >
                 <LogOut className="w-5 h-5" />
               </button>

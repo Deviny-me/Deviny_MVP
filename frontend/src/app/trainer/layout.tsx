@@ -6,6 +6,8 @@ import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
 import { TrainerAchievementBridge } from '@/components/trainer/TrainerAchievementBridge'
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
+import { LanguageProvider } from '@/components/language/LanguageProvider'
+import { ThemeProvider } from '@/components/theme/ThemeProvider'
 
 // Routes where right sidebar should be hidden
 const HIDE_RIGHT_SIDEBAR = [
@@ -65,14 +67,16 @@ export default function TrainerDashboardLayout({
   }
 
   return (
-    <UnreadMessagesProvider>
-      <LevelProvider>
-        <TrainerAchievementBridge>
-          <MainLayout showRightSidebar={showRightSidebar}>
-            {children}
-          </MainLayout>
-        </TrainerAchievementBridge>
-      </LevelProvider>
-    </UnreadMessagesProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <UnreadMessagesProvider>
+          <LevelProvider>
+            <MainLayout showRightSidebar={showRightSidebar}>
+              {children}
+            </MainLayout>
+          </LevelProvider>
+        </UnreadMessagesProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }

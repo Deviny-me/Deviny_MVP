@@ -2,11 +2,13 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { RoleType } from '../types/role.types'
 import { saveRole, getRole } from '../utils/storage'
 
 export const useRoleSelection = () => {
   const router = useRouter()
+  const t = useTranslations('auth.validation')
   const [selectedRole, setSelectedRole] = useState<RoleType | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,25 +21,25 @@ export const useRoleSelection = () => {
     const roleToUse = role || selectedRole
     
     if (!roleToUse) {
-      setError('Пожалуйста, выберите роль')
+      setError(t('roleRequired'))
       return
     }
     
     saveRole(roleToUse)
     router.push(`/auth/login?role=${roleToUse}`)
-  }, [selectedRole, router])
+  }, [selectedRole, router, t])
 
   const navigateToRegister = useCallback((role?: RoleType) => {
     const roleToUse = role || selectedRole
     
     if (!roleToUse) {
-      setError('Пожалуйста, выберите роль')
+      setError(t('roleRequired'))
       return
     }
     
     saveRole(roleToUse)
     router.push(`/auth/register?role=${roleToUse}`)
-  }, [selectedRole, router])
+  }, [selectedRole, router, t])
 
   const loadStoredRole = useCallback(() => {
     const storedRole = getRole()

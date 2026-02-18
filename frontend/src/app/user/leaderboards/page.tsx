@@ -1,8 +1,12 @@
 'use client'
 
 import { Trophy, Sparkles, Clock, Award, TrendingUp, Zap, Crown, Medal } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function LeaderboardsPage() {
+  const t = useTranslations('leaderboards')
+  const tc = useTranslations('common')
+
   return (
     <>
       <div className="flex items-center justify-center min-h-[calc(100vh-120px)] pb-6">
@@ -26,18 +30,18 @@ export default function LeaderboardsPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <Crown className="w-6 h-6 text-amber-500" />
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
-                    Leaderboards
+                    {t('title')}
                   </h1>
                   <Crown className="w-6 h-6 text-yellow-500" />
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-xl text-gray-400 mb-2">Coming Very Soon!</p>
+                <p className="text-xl text-gray-400 mb-2">{tc('comingVerySoon')}</p>
                 
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full">
                   <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-amber-500">In Development</span>
+                  <span className="text-sm font-medium text-amber-500">{tc('inDevelopment')}</span>
                 </div>
               </div>
             </div>
@@ -45,7 +49,7 @@ export default function LeaderboardsPage() {
             {/* Features Grid */}
             <div className="p-8 pt-6">
               <p className="text-center text-gray-400 mb-8">
-                Compete with others and climb to the top of the rankings
+                {t('description')}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -56,8 +60,8 @@ export default function LeaderboardsPage() {
                       <TrendingUp className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Global Rankings</h3>
-                      <p className="text-sm text-gray-400">See how you rank against users worldwide</p>
+                      <h3 className="text-white font-semibold mb-1">{t('globalRankings')}</h3>
+                      <p className="text-sm text-gray-400">{t('globalRankingsDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -69,8 +73,8 @@ export default function LeaderboardsPage() {
                       <Crown className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Top Performers</h3>
-                      <p className="text-sm text-gray-400">Highlight and celebrate the best athletes</p>
+                      <h3 className="text-white font-semibold mb-1">{t('topPerformers')}</h3>
+                      <p className="text-sm text-gray-400">{t('topPerformersDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -82,8 +86,8 @@ export default function LeaderboardsPage() {
                       <Medal className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Weekly Challenges</h3>
-                      <p className="text-sm text-gray-400">Compete in special events for exclusive rewards</p>
+                      <h3 className="text-white font-semibold mb-1">{t('weeklyChallenges')}</h3>
+                      <p className="text-sm text-gray-400">{t('weeklyChallengesDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -95,8 +99,8 @@ export default function LeaderboardsPage() {
                       <Award className="w-6 h-6 text-amber-500" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Achievements & Badges</h3>
-                      <p className="text-sm text-gray-400">Earn recognition for your accomplishments</p>
+                      <h3 className="text-white font-semibold mb-1">{t('achievementsBadges')}</h3>
+                      <p className="text-sm text-gray-400">{t('achievementsBadgesDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -104,7 +108,7 @@ export default function LeaderboardsPage() {
 
               {/* Sample Leaderboard Preview */}
               <div className="bg-[#0A0A0A] rounded-xl p-6 border border-white/5 mb-6">
-                <h3 className="text-white font-semibold mb-4 text-center">Preview: Top 3</h3>
+                <h3 className="text-white font-semibold mb-4 text-center">{t('previewTop3')}</h3>
                 <div className="space-y-3">
                   {/* 1st Place */}
                   <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-500/10 to-transparent rounded-lg border border-amber-500/20">
@@ -157,13 +161,13 @@ export default function LeaderboardsPage() {
               <div className="bg-gradient-to-r from-amber-500/5 to-yellow-500/5 rounded-xl p-6 border border-amber-500/10">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <Clock className="w-5 h-5 text-amber-500" />
-                  <h3 className="text-white font-semibold">Expected Launch</h3>
+                  <h3 className="text-white font-semibold">{tc('expectedLaunch')}</h3>
                 </div>
                 <p className="text-center text-2xl font-bold bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent">
-                  Coming in Q2 2026
+                  {tc('comingQ2')}
                 </p>
                 <p className="text-center text-sm text-gray-400 mt-2">
-                  Get ready to compete and show the world what you&apos;re made of
+                  {t('getReady')}
                 </p>
               </div>
 
@@ -173,9 +177,9 @@ export default function LeaderboardsPage() {
                   disabled
                   className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-semibold rounded-lg opacity-50 cursor-not-allowed"
                 >
-                  Notify Me When Available
+                  {tc('notifyWhenAvailable')}
                 </button>
-                <p className="text-xs text-gray-500 mt-2">Feature coming soon</p>
+                <p className="text-xs text-gray-500 mt-2">{tc('featureComingSoon')}</p>
               </div>
             </div>
           </div>
@@ -183,7 +187,7 @@ export default function LeaderboardsPage() {
           {/* Additional Info */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Start training now to be ready when leaderboards launch!
+              {t('startTraining')}
             </p>
           </div>
         </div>

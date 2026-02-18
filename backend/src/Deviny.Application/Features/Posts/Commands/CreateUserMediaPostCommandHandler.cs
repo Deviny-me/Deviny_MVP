@@ -130,7 +130,7 @@ public class CreateUserMediaPostCommandHandler
             // Determine event type based on user role
             try
             {
-                var xpEventType = user.Role == UserRole.Trainer 
+                var xpEventType = (user.Role == UserRole.Trainer || user.Role == UserRole.Nutritionist)
                     ? XpEventType.TrainerCreatedPost 
                     : XpEventType.UserCreatedPost;
                 

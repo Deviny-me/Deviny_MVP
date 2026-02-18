@@ -16,12 +16,15 @@ import { Toast } from '@/components/ui/Toast'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { PostCard } from '@/components/posts/PostCard'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useTranslations } from 'next-intl'
 
 export function UserHomeFeed() {
   const router = useRouter()
   const { user } = useUser()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
+  const tf = useTranslations('feed')
+  const tPosts = useTranslations('posts')
   
   // File input refs
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -52,20 +55,20 @@ export function UserHomeFeed() {
   }
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) return
+    if (!confirm(tPosts('deleteConfirm'))) return
     try {
       setDeletingPostId(postId)
       await postsApi.deletePost(postId)
       dispatch({ type: 'REMOVE_POST', postId })
       setFeedPostIds(prev => prev.filter(id => id !== postId))
-      setToast({ message: 'Публикация удалена', type: 'success' })
+      setToast({ message: tPosts('deleted'), type: 'success' })
     } catch (error) {
       if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
         dispatch({ type: 'REMOVE_POST', postId })
         setFeedPostIds(prev => prev.filter(id => id !== postId))
-        setToast({ message: 'Публикация удалена', type: 'success' })
+        setToast({ message: tPosts('deleted'), type: 'success' })
       } else {
-        const message = error instanceof Error ? error.message : 'Не удалось удалить публикацию'
+        const message = error instanceof Error ? error.message : tPosts('deleteError')
         setToast({ message, type: 'error' })
       }
     } finally {
@@ -90,19 +93,19 @@ export function UserHomeFeed() {
 
     // Upload file
     setIsUploading(true)
-    setUploadProgress(type === PostType.Photo ? 'Загрузка фото...' : 'Загрузка видео...')
+    setUploadProgress(type === PostType.Photo ? tf('uploadingPhoto') : tf('uploadingVideo'))
 
     try {
       const newPost = await postsApi.createMediaPost({ file, type })
       
-      setToast({ message: 'Публикация загружена!', type: 'success' })
+      setToast({ message: tf('postUploaded'), type: 'success' })
       
       // Add to store + prepend to feed
       const ids = upsertPosts([newPost])
       setFeedPostIds(prev => [...ids, ...prev])
       
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Ошибка загрузки'
+      const message = error instanceof Error ? error.message : tf('uploadError')
       setToast({ message, type: 'error' })
     } finally {
       setIsUploading(false)
@@ -142,7 +145,7 @@ export function UserHomeFeed() {
             className="flex-1 px-4 py-3 bg-[#0A0A0A] hover:bg-[#262626] border border-white/10 rounded-full text-left text-sm text-gray-400 transition-colors"
             onClick={() => router.push('/user/profile')}
           >
-            Поделитесь своим прогрессом...
+            {tf('shareProgress')}
           </button>
         </div>
         
@@ -161,7 +164,7 @@ export function UserHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ImageIcon className="w-5 h-5 text-[#FF6B35]" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Фото</span>
+            <span className="text-sm font-medium text-gray-300">{tf('photo')}</span>
           </button>
           <button 
             onClick={() => videoInputRef.current?.click()}
@@ -169,7 +172,7 @@ export function UserHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Video className="w-5 h-5 text-green-500" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Видео</span>
+            <span className="text-sm font-medium text-gray-300">{tf('video')}</span>
           </button>
           <button 
             onClick={() => router.push('/user/achievements')}
@@ -177,7 +180,7 @@ export function UserHomeFeed() {
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Award className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">Достижение</span>
+            <span className="text-sm font-medium text-gray-300">{tf('achievement')}</span>
           </button>
         </div>
       </div>
@@ -185,7 +188,7 @@ export function UserHomeFeed() {
       {/* Separator */}
       <div className="flex items-center gap-3 px-2">
         <div className="flex-1 h-px bg-white/10" />
-        <span className="text-xs text-gray-500 font-medium">Лента</span>
+        <span className="text-xs text-gray-500 font-medium">{tf('title')}</span>
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
@@ -212,8 +215,8 @@ export function UserHomeFeed() {
           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
             <Flame className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">Пока нет публикаций</h3>
-          <p className="text-sm text-gray-400">Поделитесь своим прогрессом, чтобы вдохновить других!</p>
+          <h3 className="text-lg font-semibold text-white mb-2">{tf('noPosts')}</h3>
+          <p className="text-sm text-gray-400">{tf('noPostsDescription')}</p>
         </div>
       )}
 

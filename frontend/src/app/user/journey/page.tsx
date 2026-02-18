@@ -9,6 +9,7 @@ import {
   BookOpen,
   Loader2
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface PurchasedProgram {
   id: string
@@ -24,6 +25,8 @@ interface PurchasedProgram {
 }
 
 export default function MyJourneyPage() {
+  const t = useTranslations('journey')
+  const tc = useTranslations('common')
   const router = useRouter()
   const [programs, setPrograms] = useState<PurchasedProgram[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -45,7 +48,7 @@ export default function MyJourneyPage() {
         
       } catch (err) {
         console.error('Failed to fetch purchased programs:', err)
-        setError('Failed to load your programs')
+        setError(t('errorLoading'))
       } finally {
         setIsLoading(false)
       }
@@ -60,8 +63,8 @@ export default function MyJourneyPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">My Journey</h1>
-            <p className="text-sm text-gray-400">Your purchased training and nutrition programs</p>
+            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+            <p className="text-sm text-gray-400">{t('description')}</p>
           </div>
         </div>
 
@@ -78,13 +81,13 @@ export default function MyJourneyPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Error loading programs</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">{t('errorLoading')}</h3>
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button 
               onClick={() => window.location.reload()}
               className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
-              Try Again
+              {tc('tryAgain')}
             </button>
           </div>
         )}
@@ -128,7 +131,7 @@ export default function MyJourneyPage() {
                     {program.progress !== undefined && (
                       <div className="mt-4">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-gray-400">Progress</span>
+                          <span className="text-gray-400">{t('progress')}</span>
                           <span className="text-[#FF6B35] font-medium">{program.progress}%</span>
                         </div>
                         <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
@@ -144,10 +147,10 @@ export default function MyJourneyPage() {
                     <div className="flex items-center gap-3 mt-3">
                       <button className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
                         <PlayCircle className="w-4 h-4" />
-                        {program.progress && program.progress > 0 ? 'Continue' : 'Start'}
+                        {program.progress && program.progress > 0 ? t('continue') : t('start')}
                       </button>
                       <span className="text-xs text-gray-400">
-                        Purchased {new Date(program.purchasedAt).toLocaleDateString()}
+                        {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -163,15 +166,15 @@ export default function MyJourneyPage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#0A0A0A] flex items-center justify-center">
               <BookOpen className="w-8 h-8 text-gray-500" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">No programs yet</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">{t('noPrograms')}</h3>
             <p className="text-sm text-gray-400 mb-4">
-              Start your fitness journey by purchasing a program from our expert trainers
+              {t('startJourney')}
             </p>
             <button
               onClick={() => router.push('/user/programs')}
               className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
-              Browse Programs
+              {t('browsePrograms')}
             </button>
           </div>
         )}

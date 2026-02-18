@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { User, Upload, Trash2, Loader2 } from 'lucide-react'
 import { uploadAvatar, deleteAvatar } from '@/lib/api/userApi'
+import { useTranslations } from 'next-intl'
 
 interface AvatarUploadProps {
   avatarUrl?: string | null
@@ -11,6 +12,7 @@ interface AvatarUploadProps {
 }
 
 export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploadProps) {
+  const t = useTranslations('avatar')
   const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -25,7 +27,7 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
       onAvatarChanged()
     } catch (error) {
       console.error('Failed to upload avatar:', error)
-      alert('Ошибка при загрузке аватара. Попробуйте снова.')
+      alert(t('uploadError'))
     } finally {
       setUploading(false)
     }
@@ -39,7 +41,7 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
       onAvatarChanged()
     } catch (error) {
       console.error('Failed to delete avatar:', error)
-      alert('Ошибка при удалении аватара. Попробуйте снова.')
+      alert(t('deleteError'))
     } finally {
       setDeleting(false)
     }
@@ -74,12 +76,12 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
           {uploading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Загрузка...
+              {t('loading')}
             </>
           ) : (
             <>
               <Upload className="w-4 h-4" />
-              {avatarUrl ? 'Изменить' : 'Загрузить'}
+              {avatarUrl ? t('change') : t('upload')}
             </>
           )}
           <input
@@ -100,12 +102,12 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
             {deleting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Удаление...
+                {t('deleting')}
               </>
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Удалить
+                {t('deleteBtn')}
               </>
             )}
           </button>

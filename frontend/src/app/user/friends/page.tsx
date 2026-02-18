@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { friendsApi, followsApi } from '@/lib/api/friendsApi';
 import { FriendDto, FriendRequestDto } from '@/types/friend';
 import { Users, UserPlus, UserCheck, Loader2, Mail, Check, X, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type Tab = 'friends' | 'requests' | 'sent' | 'following';
 
 export default function FriendsPage() {
+  const t = useTranslations('friends');
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<FriendRequestDto[]>([]);
@@ -80,7 +82,7 @@ export default function FriendsPage() {
   };
 
   const handleRemoveFriend = async (friendId: string) => {
-    if (!confirm('Are you sure you want to remove this friend?')) return;
+    if (!confirm(t('removeFriendConfirm'))) return;
     setActionLoading(`remove-${friendId}`);
     try {
       await friendsApi.removeFriend(friendId);
@@ -105,16 +107,16 @@ export default function FriendsPage() {
   };
 
   const tabs = [
-    { id: 'friends', label: 'Friends', icon: Users, count: friends.length },
-    { id: 'requests', label: 'Requests', icon: Mail, count: incomingRequests.length },
-    { id: 'sent', label: 'Sent', icon: UserPlus, count: outgoingRequests.length },
-    { id: 'following', label: 'Following', icon: UserCheck, count: following.length },
+    { id: 'friends', label: t('tabs.friends'), icon: Users, count: friends.length },
+    { id: 'requests', label: t('tabs.requests'), icon: Mail, count: incomingRequests.length },
+    { id: 'sent', label: t('tabs.sent'), icon: UserPlus, count: outgoingRequests.length },
+    { id: 'following', label: t('tabs.following'), icon: UserCheck, count: following.length },
   ];
 
   return (
     <>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-white">Friends & Following</h1>
+        <h1 className="text-3xl font-bold text-white">{t('friendsAndFollowing')}</h1>
 
         {/* Tabs */}
         <div className="flex gap-2 border-b border-white/10">
@@ -152,7 +154,7 @@ export default function FriendsPage() {
                 {friends.length === 0 ? (
                   <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
                     <Users className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                    <p className="text-gray-400">No friends yet. Start connecting!</p>
+                    <p className="text-gray-400">{t('noFriendsYet')}</p>
                   </div>
                 ) : (
                   friends.map((friend) => (
@@ -192,7 +194,7 @@ export default function FriendsPage() {
                 {incomingRequests.length === 0 ? (
                   <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
                     <Mail className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                    <p className="text-gray-400">No pending requests</p>
+                    <p className="text-gray-400">{t('noPendingRequests')}</p>
                   </div>
                 ) : (
                   incomingRequests.map((request) => (
@@ -220,7 +222,7 @@ export default function FriendsPage() {
                           ) : (
                             <>
                               <Check className="w-5 h-5" />
-                              Accept
+                              {t('accept')}
                             </>
                           )}
                         </button>
@@ -234,7 +236,7 @@ export default function FriendsPage() {
                           ) : (
                             <>
                               <X className="w-5 h-5" />
-                              Decline
+                              {t('decline')}
                             </>
                           )}
                         </button>
@@ -251,7 +253,7 @@ export default function FriendsPage() {
                 {outgoingRequests.length === 0 ? (
                   <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
                     <UserPlus className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                    <p className="text-gray-400">No pending requests sent</p>
+                    <p className="text-gray-400">{t('noPendingSent')}</p>
                   </div>
                 ) : (
                   outgoingRequests.map((request) => (
@@ -267,7 +269,7 @@ export default function FriendsPage() {
                           {request.receiverFullName || request.receiverEmail}
                         </h3>
                         <p className="text-sm text-gray-400">{request.receiverEmail}</p>
-                        <span className="text-xs text-[#FF6B35]">Pending</span>
+                        <span className="text-xs text-[#FF6B35]">{t('pending')}</span>
                       </div>
                       <button
                         onClick={() => handleCancelRequest(request.id)}
@@ -277,7 +279,7 @@ export default function FriendsPage() {
                         {actionLoading === `cancel-${request.id}` ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                          <>Cancel</>
+                          <>{t('cancel')}</>
                         )}
                       </button>
                     </div>
@@ -292,7 +294,7 @@ export default function FriendsPage() {
                 {following.length === 0 ? (
                   <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
                     <UserCheck className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                    <p className="text-gray-400">Not following any trainers yet</p>
+                    <p className="text-gray-400">{t('notFollowingYet')}</p>
                   </div>
                 ) : (
                   following.map((trainer) => (
@@ -308,7 +310,7 @@ export default function FriendsPage() {
                           {trainer.fullName || trainer.email}
                         </h3>
                         <p className="text-sm text-gray-400">{trainer.email}</p>
-                        <span className="text-xs text-green-500">Trainer</span>
+                        <span className="text-xs text-green-500">{t('trainer')}</span>
                       </div>
                       <button
                         onClick={() => handleUnfollow(trainer.id)}
@@ -318,7 +320,7 @@ export default function FriendsPage() {
                         {actionLoading === `unfollow-${trainer.id}` ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
                         ) : (
-                          <>Unfollow</>
+                          <>{t('unfollow')}</>
                         )}
                       </button>
                     </div>

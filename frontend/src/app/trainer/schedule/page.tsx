@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { scheduleApi } from '@/lib/api/scheduleApi'
 import { ScheduleEvent, CreateScheduleEventRequest, ScheduleEventType, ScheduleStats } from '@/types/schedule'
 
@@ -26,14 +27,17 @@ const toast = {
   error: (msg: string) => console.error('Error:', msg),
 }
 
-const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-const eventTypes: { value: ScheduleEventType; label: string }[] = [
-  { value: 'Gym', label: 'В зале' },
-  { value: 'Online', label: 'Онлайн' },
-  { value: 'Consultation', label: 'Консультация' },
-]
-
 export default function SchedulePage() {
+  const t = useTranslations('schedule')
+  const tc = useTranslations('common')
+
+  const weekDays = [t('days.mon'), t('days.tue'), t('days.wed'), t('days.thu'), t('days.fri'), t('days.sat'), t('days.sun')]
+  const eventTypes: { value: ScheduleEventType; label: string }[] = [
+    { value: 'Gym', label: t('eventTypes.gym') },
+    { value: 'Online', label: t('eventTypes.online') },
+    { value: 'Consultation', label: t('eventTypes.consultation') },
+  ]
+
   const [events, setEvents] = useState<ScheduleEvent[]>([])
   const [stats, setStats] = useState<ScheduleStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -90,7 +94,7 @@ export default function SchedulePage() {
       setEvents(data)
     } catch (error) {
       console.error('Failed to load events:', error)
-      toast.error('Не удалось загрузить расписание')
+      toast.error(t('toasts.loadError'))
     } finally {
       setLoading(false)
     }
@@ -145,7 +149,7 @@ export default function SchedulePage() {
     e.preventDefault()
     
     if (!title || !startDate || !startTime || !duration) {
-      toast.error('Заполните все обязательные поля')
+      toast.error(t('toasts.fillRequired'))
       return
     }
 
@@ -165,10 +169,10 @@ export default function SchedulePage() {
 
       if (editingEvent) {
         await scheduleApi.updateEvent(editingEvent.id, request)
-        toast.success('Событие обновлено')
+        toast.success(t('toasts.updated'))
       } else {
         await scheduleApi.createEvent(request)
-        toast.success('Событие создано')
+        toast.success(t('toasts.created'))
       }
       
       closeModal()
@@ -185,24 +189,24 @@ export default function SchedulePage() {
       }
     } catch (error) {
       console.error('Failed to save event:', error)
-      toast.error(editingEvent ? 'Не удалось обновить событие' : 'Не удалось создать событие')
+      toast.error(editingEvent ? t('toasts.updateError') : t('toasts.createError'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (eventId: string) => {
-    if (!confirm('Вы уверены, что хотите отменить это событие?')) return
+    if (!confirm(t('toasts.cancelConfirm'))) return
 
     try {
       setDeleting(eventId)
       await scheduleApi.cancelEvent(eventId)
-      toast.success('Событие отменено')
+      toast.success(t('toasts.cancelled'))
       loadEvents()
       loadStats()
     } catch (error) {
       console.error('Failed to cancel event:', error)
-      toast.error('Не удалось отменить событие')
+      toast.error(t('toasts.cancelError'))
     } finally {
       setDeleting(null)
     }
@@ -214,7 +218,7 @@ export default function SchedulePage() {
       window.open(result.callUrl, '_blank')
     } catch (error) {
       console.error('Failed to start call:', error)
-      toast.error('Не удалось начать звонок')
+      toast.error(t('toasts.callError'))
     }
   }
 
@@ -256,15 +260,15 @@ export default function SchedulePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Расписание</h1>
-            <p className="text-gray-400">Управляйте своими тренировками</p>
+            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+            <p className="text-gray-400">{t('description')}</p>
           </div>
           <button 
             onClick={openCreateModal}
             className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            Добавить событие
+            {t('addEvent')}
           </button>
         </div>
 
@@ -285,7 +289,7 @@ export default function SchedulePage() {
                 onClick={goToToday}
                 className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-gray-300 transition-colors"
               >
-                Сегодня
+                {t('today')}
               </button>
             </div>
             <button 
@@ -347,12 +351,12 @@ export default function SchedulePage() {
           ) : todaysEvents.length === 0 ? (
             <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
               <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">Нет событий на этот день</p>
+              <p className="text-gray-400">{t('noEvents')}</p>
               <button 
                 onClick={openCreateModal}
                 className="mt-4 px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90"
               >
-                Добавить событие
+                {t('addEvent')}
               </button>
             </div>
           ) : (
@@ -391,13 +395,13 @@ export default function SchedulePage() {
                             ? 'bg-green-500/20 text-green-400' 
                             : 'bg-amber-500/20 text-amber-400'
                         }`}>
-                          {event.status === 'Confirmed' ? 'Подтверждено' : 'Ожидание'}
+                          {event.status === 'Confirmed' ? t('confirmed') : t('pending')}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-400">
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span>{formatTime(event.startAt)} • {event.durationMinutes} мин</span>
+                          <span>{formatTime(event.startAt)} • {event.durationMinutes} {tc('min')}</span>
                         </div>
                         {event.location && (
                           <div className="flex items-center gap-1">
@@ -456,17 +460,17 @@ export default function SchedulePage() {
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Calendar className="w-8 h-8 text-[#FF6B35] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats?.totalEvents || 0}</p>
-            <p className="text-xs text-gray-400">Всего событий</p>
+            <p className="text-xs text-gray-400">{t('totalEvents')}</p>
           </div>
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Users className="w-8 h-8 text-blue-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats?.upcomingEvents || 0}</p>
-            <p className="text-xs text-gray-400">Предстоящих</p>
+            <p className="text-xs text-gray-400">{t('upcoming')}</p>
           </div>
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Clock className="w-8 h-8 text-green-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats?.totalMinutes ? Math.round(stats.totalMinutes / 60) : 0}ч</p>
-            <p className="text-xs text-gray-400">Часов тренировок</p>
+            <p className="text-xs text-gray-400">{t('trainingHours')}</p>
           </div>
         </div>
 
@@ -481,7 +485,7 @@ export default function SchedulePage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-white">
-                    {editingEvent ? 'Редактировать событие' : 'Новое событие'}
+                    {editingEvent ? t('editEvent') : t('newEvent')}
                   </h2>
                   <button onClick={closeModal} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
@@ -492,21 +496,21 @@ export default function SchedulePage() {
                   {/* Title */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Название *
+                      {t('eventName')}
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Название события"
+                      placeholder={t('eventNamePlaceholder')}
                     />
                   </div>
 
                   {/* Event Type */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Тип события *
+                      {t('eventType')}
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {eventTypes.map((type) => (
@@ -530,7 +534,7 @@ export default function SchedulePage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Дата *
+                        {t('date')}
                       </label>
                       <input
                         type="date"
@@ -541,7 +545,7 @@ export default function SchedulePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Время *
+                        {t('time')}
                       </label>
                       <input
                         type="time"
@@ -555,18 +559,18 @@ export default function SchedulePage() {
                   {/* Duration */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Длительность (минуты) *
+                      {t('duration')}
                     </label>
                     <select
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
                     >
-                      <option value="30">30 минут</option>
-                      <option value="45">45 минут</option>
-                      <option value="60">60 минут</option>
-                      <option value="90">90 минут</option>
-                      <option value="120">120 минут</option>
+                      <option value="30">{t('duration30')}</option>
+                      <option value="45">{t('duration45')}</option>
+                      <option value="60">{t('duration60')}</option>
+                      <option value="90">{t('duration90')}</option>
+                      <option value="120">{t('duration120')}</option>
                     </select>
                   </div>
 
@@ -574,14 +578,14 @@ export default function SchedulePage() {
                   {eventType === 'Gym' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Место
+                        {t('location')}
                       </label>
                       <input
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                        placeholder="Адрес или название зала"
+                        placeholder={t('locationPlaceholder')}
                       />
                     </div>
                   )}
@@ -589,14 +593,14 @@ export default function SchedulePage() {
                   {/* Comment */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Комментарий
+                      {t('comment')}
                     </label>
                     <textarea
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={2}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] resize-none"
-                      placeholder="Дополнительная информация"
+                      placeholder={t('commentPlaceholder')}
                     />
                   </div>
 
@@ -607,7 +611,7 @@ export default function SchedulePage() {
                     className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                    {editingEvent ? 'Сохранить изменения' : 'Создать событие'}
+                    {editingEvent ? t('saveChanges') : t('createEvent')}
                   </button>
                 </form>
               </div>

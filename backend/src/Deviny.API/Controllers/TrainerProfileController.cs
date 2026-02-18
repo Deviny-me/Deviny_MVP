@@ -50,8 +50,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer
-            if (user.Role != Domain.Enums.UserRole.Trainer)
+            // Check if user is a trainer or nutritionist
+            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
             {
                 return Forbid();
             }
@@ -179,7 +179,7 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            if (user.Role != Domain.Enums.UserRole.Trainer)
+            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
             {
                 return Forbid();
             }
@@ -253,8 +253,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer
-            if (user.Role != Domain.Enums.UserRole.Trainer)
+            // Check if user is a trainer or nutritionist
+            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
             {
                 return Forbid();
             }
@@ -355,8 +355,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer
-            if (user.Role != Domain.Enums.UserRole.Trainer)
+            // Check if user is a trainer or nutritionist
+            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
             {
                 return Forbid();
             }

@@ -14,6 +14,7 @@ import {
   Sun,
   LucideIcon
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface SettingsItem {
   icon: LucideIcon
@@ -29,6 +30,8 @@ interface SettingsSection {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations('userSettings')
+  const tc = useTranslations('common')
   const router = useRouter()
   const { user, logout } = useUser()
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -46,52 +49,52 @@ export default function SettingsPage() {
 
   const settingsSections: SettingsSection[] = [
     {
-      title: 'Account',
+      title: t('account'),
       items: [
-        { icon: User, label: 'Edit Profile', action: () => router.push('/user/profile') },
-        { icon: Shield, label: 'Privacy & Security', action: () => {} },
+        { icon: User, label: t('editProfile'), action: () => router.push('/user/profile') },
+        { icon: Shield, label: t('privacySecurity'), action: () => {} },
       ]
     },
     {
-      title: 'Preferences',
+      title: t('preferences'),
       items: [
         { 
           icon: isDarkMode ? Moon : Sun, 
-          label: 'Dark Mode', 
+          label: t('darkMode'), 
           toggle: true, 
           value: isDarkMode, 
           action: () => setIsDarkMode(!isDarkMode) 
         },
-        { icon: Globe, label: 'Language', value: 'English', action: () => {} },
+        { icon: Globe, label: t('language'), value: t('english'), action: () => {} },
       ]
     },
     {
-      title: 'Notifications',
+      title: t('notifications'),
       items: [
         { 
           icon: Bell, 
-          label: 'Workout Reminders', 
+          label: t('workoutReminders'), 
           toggle: true, 
           value: notifications.workoutReminders, 
           action: () => setNotifications(prev => ({ ...prev, workoutReminders: !prev.workoutReminders })) 
         },
         { 
           icon: Bell, 
-          label: 'Achievements', 
+          label: t('achievements'), 
           toggle: true, 
           value: notifications.achievements, 
           action: () => setNotifications(prev => ({ ...prev, achievements: !prev.achievements })) 
         },
         { 
           icon: Bell, 
-          label: 'New Programs', 
+          label: t('newPrograms'), 
           toggle: true, 
           value: notifications.newPrograms, 
           action: () => setNotifications(prev => ({ ...prev, newPrograms: !prev.newPrograms })) 
         },
         { 
           icon: Bell, 
-          label: 'Messages', 
+          label: t('messages'), 
           toggle: true, 
           value: notifications.messages, 
           action: () => setNotifications(prev => ({ ...prev, messages: !prev.messages })) 
@@ -105,8 +108,8 @@ export default function SettingsPage() {
       <div className="max-w-2xl space-y-6 pb-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
-          <p className="text-sm text-gray-400">Manage your account preferences</p>
+          <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+          <p className="text-sm text-gray-400">{t('description')}</p>
         </div>
 
         {/* Profile Card */}
@@ -114,11 +117,11 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
               <span className="text-white text-2xl font-bold">
-                {user?.fullName?.charAt(0) || 'U'}
+                {user?.fullName?.charAt(0) || tc('user').charAt(0)}
               </span>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white">{user?.fullName || 'User'}</h3>
+              <h3 className="font-semibold text-white">{user?.fullName || tc('user')}</h3>
               <p className="text-sm text-gray-400">{user?.email || 'user@example.com'}</p>
               <p className="text-xs text-[#FF6B35] mt-1">Level {user?.level || 1} • {user?.xp || 0} XP</p>
             </div>
@@ -126,7 +129,7 @@ export default function SettingsPage() {
               onClick={() => router.push('/user/profile')}
               className="px-4 py-2 border border-[#FF6B35] text-[#FF6B35] text-sm font-semibold rounded-lg hover:bg-[#FF6B35]/10 transition-colors"
             >
-              Edit
+              {t('edit')}
             </button>
           </div>
         </div>
@@ -169,13 +172,13 @@ export default function SettingsPage() {
           className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl hover:bg-red-500/20 transition-colors"
         >
           <LogOut className="w-5 h-5" />
-          <span className="font-semibold">Sign Out</span>
+          <span className="font-semibold">{t('signOut')}</span>
         </button>
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-500">
-          <p>Deviny Fitness v1.0.0</p>
-          <p className="mt-1">© 2026 All rights reserved</p>
+          <p>{t('version')}</p>
+          <p className="mt-1">{t('copyright')}</p>
         </div>
       </div>
     </>

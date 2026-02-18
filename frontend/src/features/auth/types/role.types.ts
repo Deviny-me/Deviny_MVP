@@ -1,9 +1,9 @@
-export type RoleType = 'user' | 'trainer'
+export type RoleType = 'user' | 'trainer' | 'nutritionist'
 
 export interface RoleCardData {
   type: RoleType
   title: string
   description: string
   tags: string[]
-  accentColor: 'user' | 'trainer'
+  accentColor: 'user' | 'trainer' | 'nutritionist'
 }

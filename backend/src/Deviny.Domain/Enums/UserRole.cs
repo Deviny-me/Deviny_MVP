@@ -4,5 +4,6 @@ public enum UserRole
 {
     User,
     Trainer,
-    Student
+    Student,
+    Nutritionist
 }

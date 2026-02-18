@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Plus,
@@ -53,6 +54,9 @@ export default function ProgramsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user: currentUser } = useAuth()
+  const t = useTranslations('programs')
+  const tp = useTranslations('profile')
+  const tc = useTranslations('common')
   const [programs, setPrograms] = useState<ProgramDto[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -123,7 +127,7 @@ export default function ProgramsPage() {
       setPrograms(data)
     } catch (error) {
       console.error('Failed to load programs:', error)
-      toast.error('Не удалось загрузить программы')
+      toast.error(t('toasts.loadError'))
     } finally {
       setLoading(false)
     }
@@ -179,12 +183,12 @@ export default function ProgramsPage() {
     e.preventDefault()
     
     if (!title || !description || !price) {
-      toast.error('Заполните все обязательные поля')
+      toast.error(t('toasts.fillRequired'))
       return
     }
 
     if (!editingProgram && !coverImage) {
-      toast.error('Добавьте обложку программы')
+      toast.error(t('toasts.addCover'))
       return
     }
 
@@ -199,7 +203,7 @@ export default function ProgramsPage() {
           coverImage: coverImage || undefined,
           trainingVideos: trainingVideos.length > 0 ? trainingVideos : undefined,
         })
-        toast.success('Программа обновлена')
+        toast.success(t('toasts.updated'))
       } else {
         const request: CreateProgramRequest = {
           title,
@@ -209,7 +213,7 @@ export default function ProgramsPage() {
           trainingVideos,
         }
         await programsApi.createProgram(request)
-        toast.success('Программа создана')
+        toast.success(t('toasts.created'))
       }
       
       closeModal()
@@ -217,23 +221,23 @@ export default function ProgramsPage() {
     } catch (error) {
       console.error('Failed to save program:', error)
       const message = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(editingProgram ? `Не удалось обновить программу: ${message}` : `Не удалось создать программу: ${message}`)
+      toast.error(editingProgram ? `${t('toasts.updateError')}: ${message}` : `${t('toasts.createError')}: ${message}`)
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (programId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту программу?')) return
+    if (!confirm(t('toasts.deleteConfirm'))) return
 
     try {
       setDeleting(programId)
       await programsApi.deleteProgram(programId)
-      toast.success('Программа удалена')
+      toast.success(t('toasts.deleted'))
       loadPrograms()
     } catch (error) {
       console.error('Failed to delete program:', error)
-      toast.error('Не удалось удалить программу')
+      toast.error(t('toasts.deleteError'))
     } finally {
       setDeleting(null)
     }
@@ -246,10 +250,10 @@ export default function ProgramsPage() {
 
   // Calculate stats from real data
   const stats = [
-    { label: 'Всего программ', value: programs.length.toString(), icon: BookOpen },
-    { label: 'Всего покупок', value: programs.reduce((acc, p) => acc + p.totalPurchases, 0).toString(), icon: Users },
-    { label: 'Средний рейтинг', value: programs.length > 0 ? (programs.reduce((acc, p) => acc + p.averageRating, 0) / programs.length).toFixed(1) : '0', icon: Star },
-    { label: 'Всего отзывов', value: programs.reduce((acc, p) => acc + p.totalReviews, 0).toString(), icon: TrendingUp },
+    { label: t('totalPrograms'), value: programs.length.toString(), icon: BookOpen },
+    { label: t('totalPurchases'), value: programs.reduce((acc, p) => acc + p.totalPurchases, 0).toString(), icon: Users },
+    { label: t('averageRating'), value: programs.length > 0 ? (programs.reduce((acc, p) => acc + p.averageRating, 0) / programs.length).toFixed(1) : '0', icon: Star },
+    { label: t('totalReviews'), value: programs.reduce((acc, p) => acc + p.totalReviews, 0).toString(), icon: TrendingUp },
   ]
 
   return (
@@ -258,15 +262,15 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Мои программы</h1>
-            <p className="text-gray-400">Создавайте и управляйте программами тренировок</p>
+            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+            <p className="text-gray-400">{t('description')}</p>
           </div>
           <button 
             onClick={openCreateModal}
             className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            Создать программу
+            {t('createProgram')}
           </button>
         </div>
 
@@ -293,7 +297,7 @@ export default function ProgramsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Поиск программ..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6B35]"
@@ -309,13 +313,13 @@ export default function ProgramsPage() {
         ) : filteredPrograms.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">Нет программ</h3>
-            <p className="text-gray-400 mb-4">Создайте свою первую программу тренировок</p>
+            <h3 className="text-xl font-semibold text-white mb-2">{t('noPrograms')}</h3>
+            <p className="text-gray-400 mb-4">{t('createFirstProgram')}</p>
             <button 
               onClick={openCreateModal}
               className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90"
             >
-              Создать программу
+              {t('createProgram')}
             </button>
           </div>
         ) : (
@@ -369,7 +373,7 @@ export default function ProgramsPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
                     <div className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
-                      {program.totalPurchases} покупок
+                      {program.totalPurchases} {tc('purchases')}
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-3.5 h-3.5 text-yellow-500" />
@@ -378,13 +382,13 @@ export default function ProgramsPage() {
                     {program.trainingVideoUrls?.length > 0 && (
                       <div className="flex items-center gap-1">
                         <Video className="w-3.5 h-3.5" />
-                        {program.trainingVideoUrls.length} видео
+                        {program.trainingVideoUrls.length} {tc('videos')}
                       </div>
                     )}
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-white/10">
                     <span className="text-xs text-gray-500">
-                      Код: {program.code}
+                      {t('programCode')}: {program.code}
                     </span>
                     <span className="text-xs text-gray-500">
                       {new Date(program.createdAt).toLocaleDateString('ru-RU')}
@@ -463,7 +467,7 @@ export default function ProgramsPage() {
                     )}
                     <div>
                       <p className="text-white font-medium">{selectedProgram.trainerName}</p>
-                      <p className="text-xs text-gray-400">Профиль тренера →</p>
+                      <p className="text-xs text-gray-400">{tp('trainerProfile')} →</p>
                     </div>
                   </div>
                 )}
@@ -473,32 +477,32 @@ export default function ProgramsPage() {
                   <div className="flex items-center gap-2">
                     <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
                     <span className="text-white font-medium">
-                      {selectedProgram.averageRating > 0 ? selectedProgram.averageRating.toFixed(1) : 'Нет оценок'}
+                      {selectedProgram.averageRating > 0 ? selectedProgram.averageRating.toFixed(1) : tp('noRating')}
                     </span>
                     <span className="text-gray-500">({selectedProgram.totalReviews})</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
                     <Users className="w-5 h-5" />
-                    <span>{selectedProgram.totalPurchases} покупок</span>
+                    <span>{selectedProgram.totalPurchases} {tc('purchases')}</span>
                   </div>
                   {selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
                     <div className="flex items-center gap-2 text-gray-400">
                       <Video className="w-5 h-5" />
-                      <span>{selectedProgram.trainingVideoUrls.length} видео</span>
+                      <span>{selectedProgram.trainingVideoUrls.length} {tc('videos')}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Description */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">Описание</h3>
+                  <h3 className="text-sm font-medium text-gray-400 mb-2">{tp('description')}</h3>
                   <p className="text-white leading-relaxed">{selectedProgram.description}</p>
                 </div>
 
                 {/* Training Videos (only for own programs) */}
                 {isOwnProgram && selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">Видео тренировок</h3>
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('trainingVideos')}</h3>
                     <div className="space-y-2">
                       {selectedProgram.trainingVideoUrls.map((url, i) => (
                         <video
@@ -526,7 +530,7 @@ export default function ProgramsPage() {
                       className="flex-1 py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                     >
                       <Edit className="w-5 h-5" />
-                      Редактировать
+                      {tc('edit')}
                     </button>
                     <button
                       onClick={() => {
@@ -541,13 +545,13 @@ export default function ProgramsPage() {
                   </div>
                 ) : (
                   <p className="text-center text-sm text-gray-400 pt-2">
-                    Это программа другого тренера
+                    {t('otherTrainerProgram')}
                   </p>
                 )}
 
                 {/* Program Code */}
                 <p className="text-center text-xs text-gray-500">
-                  Код программы: <span className="text-gray-400 font-mono">{selectedProgram.code}</span>
+                  {t('programCode')}: <span className="text-gray-400 font-mono">{selectedProgram.code}</span>
                 </p>
               </div>
             </motion.div>
@@ -565,7 +569,7 @@ export default function ProgramsPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-white">
-                    {editingProgram ? 'Редактировать программу' : 'Новая программа'}
+                    {editingProgram ? t('editProgram') : t('newProgram')}
                   </h2>
                   <button onClick={closeModal} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
@@ -576,7 +580,7 @@ export default function ProgramsPage() {
                   {/* Cover Image */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Обложка программы *
+                      {t('coverImage')}
                     </label>
                     <div className="relative">
                       {coverPreview ? (
@@ -600,7 +604,7 @@ export default function ProgramsPage() {
                       ) : (
                         <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FF6B35]/50 transition-colors">
                           <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-400">Нажмите для загрузки</span>
+                          <span className="text-sm text-gray-400">{t('clickToUpload')}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -615,35 +619,35 @@ export default function ProgramsPage() {
                   {/* Title */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Название *
+                      {t('nameLabel')}
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Введите название программы"
+                      placeholder={t('namePlaceholder')}
                     />
                   </div>
 
                   {/* Description */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Описание *
+                      {t('descriptionLabel')}
                     </label>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       rows={3}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] resize-none"
-                      placeholder="Опишите вашу программу"
+                      placeholder={t('descriptionPlaceholder')}
                     />
                   </div>
 
                   {/* Price */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Цена ($) *
+                      {t('priceLabel')}
                     </label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -662,11 +666,11 @@ export default function ProgramsPage() {
                   {/* Training Videos */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Видео тренировок
+                      {t('trainingVideos')}
                     </label>
                     <label className="flex items-center justify-center w-full py-3 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FF6B35]/50 transition-colors">
                       <Video className="w-5 h-5 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-400">Добавить видео</span>
+                      <span className="text-sm text-gray-400">{t('addVideo')}</span>
                       <input
                         type="file"
                         accept="video/*"
@@ -700,7 +704,7 @@ export default function ProgramsPage() {
                     className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                    {editingProgram ? 'Сохранить изменения' : 'Создать программу'}
+                    {editingProgram ? t('saveChanges') : t('createProgram')}
                   </button>
                 </form>
               </div>

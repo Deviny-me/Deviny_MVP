@@ -65,8 +65,8 @@ public class AuthController : ControllerBase
     {
         try
         {
-            // Validate file for trainers
-            if (request.Role == Domain.Enums.UserRole.Trainer)
+            // Validate file for trainers and nutritionists
+            if (request.Role == Domain.Enums.UserRole.Trainer || request.Role == Domain.Enums.UserRole.Nutritionist)
             {
                 if (request.VerificationDocument == null)
                 {

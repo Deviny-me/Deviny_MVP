@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { 
   Users, 
   Search, 
@@ -17,6 +18,8 @@ import { studentsApi, Student } from '@/lib/api/studentsApi'
 import { getMediaUrl } from '@/lib/config'
 
 export default function StudentsPage() {
+  const t = useTranslations('students')
+  const tc = useTranslations('common')
   const [students, setStudents] = useState<Student[]>([])
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,9 +82,9 @@ export default function StudentsPage() {
       <div className="pb-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white mb-2">Мои ученики</h1>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('title')}</h1>
           <p className="text-gray-400">
-            Управляйте своими учениками и следите за их прогрессом
+            {t('description')}
           </p>
         </div>
 
@@ -94,7 +97,7 @@ export default function StudentsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{students.length}</p>
-                <p className="text-sm text-gray-400">Всего учеников</p>
+                <p className="text-sm text-gray-400">{t('totalStudents')}</p>
               </div>
             </div>
           </div>
@@ -105,7 +108,7 @@ export default function StudentsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{students.length}</p>
-                <p className="text-sm text-gray-400">Активных</p>
+                <p className="text-sm text-gray-400">{t('active')}</p>
               </div>
             </div>
           </div>
@@ -116,7 +119,7 @@ export default function StudentsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">0</p>
-                <p className="text-sm text-gray-400">Занятий сегодня</p>
+                <p className="text-sm text-gray-400">{t('todaySessions')}</p>
               </div>
             </div>
           </div>
@@ -127,7 +130,7 @@ export default function StudentsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
-            placeholder="Поиск по имени, email или телефону..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[#1A1A1A]/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35] transition-colors"
@@ -141,12 +144,12 @@ export default function StudentsPage() {
               <Users className="w-8 h-8 text-gray-600" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              {searchQuery ? 'Ученики не найдены' : 'Нет учеников'}
+              {searchQuery ? t('notFound') : t('noStudents')}
             </h3>
             <p className="text-gray-400 text-sm">
               {searchQuery
-                ? 'Попробуйте изменить поисковый запрос'
-                : 'Ваши ученики появятся здесь после регистрации на ваши программы'}
+                ? t('tryDifferentSearch')
+                : t('willAppear')}
             </p>
           </div>
         ) : (
@@ -171,7 +174,7 @@ export default function StudentsPage() {
                     )}
                     <div>
                       <h3 className="font-semibold text-white">{student.name}</h3>
-                      <p className="text-sm text-gray-400">Ученик</p>
+                      <p className="text-sm text-gray-400">{t('student')}</p>
                     </div>
                   </div>
                   <button className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
@@ -195,7 +198,7 @@ export default function StudentsPage() {
                 <div className="flex items-center gap-2">
                   <button className="flex-1 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
                     <MessageCircle className="w-4 h-4" />
-                    Написать
+                    {t('write')}
                   </button>
                   <button className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors">
                     <UserX className="w-4 h-4 text-gray-400" />

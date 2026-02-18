@@ -17,6 +17,7 @@ import {
 import { programsApi } from '@/lib/api/programsApi'
 import { PublicProgramDto } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
+import { useTranslations } from 'next-intl'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'training' | 'nutrition'
@@ -24,6 +25,8 @@ type FilterType = 'all' | 'training' | 'nutrition'
 export default function ProgramsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('userPrograms')
+  const tc = useTranslations('common')
   const [programs, setPrograms] = useState<PublicProgramDto[]>([])
   const [filteredPrograms, setFilteredPrograms] = useState<PublicProgramDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -135,7 +138,7 @@ export default function ProgramsPage() {
   }
 
   const formatPrice = (price: number) => {
-    if (price === 0) return 'Free'
+    if (price === 0) return tc('free')
     return `$${price.toFixed(2)}`
   }
 
@@ -145,8 +148,8 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Programs</h1>
-            <p className="text-sm text-gray-400">Training and nutrition programs from professional trainers</p>
+            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+            <p className="text-sm text-gray-400">{t('description')}</p>
           </div>
         </div>
 
@@ -157,7 +160,7 @@ export default function ProgramsPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
               type="text"
-              placeholder="Search programs, trainers..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
@@ -176,7 +179,7 @@ export default function ProgramsPage() {
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
-                All
+                {tc('all')}
               </button>
               <button
                 onClick={() => setFilterType('training')}
@@ -187,7 +190,7 @@ export default function ProgramsPage() {
                 }`}
               >
                 <Dumbbell className="w-4 h-4" />
-                Training
+                {t('training')}
               </button>
               <button
                 onClick={() => setFilterType('nutrition')}
@@ -198,7 +201,7 @@ export default function ProgramsPage() {
                 }`}
               >
                 <Apple className="w-4 h-4" />
-                Nutrition
+                {t('nutrition')}
               </button>
             </div>
 
@@ -210,11 +213,11 @@ export default function ProgramsPage() {
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF6B35]/50"
               >
-                <option value="newest">Newest</option>
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="newest">{t('newest')}</option>
+                <option value="popular">{t('mostPopular')}</option>
+                <option value="rating">{t('highestRated')}</option>
+                <option value="price-low">{t('priceLowToHigh')}</option>
+                <option value="price-high">{t('priceHighToLow')}</option>
               </select>
             </div>
           </div>
@@ -232,7 +235,7 @@ export default function ProgramsPage() {
               onClick={loadPrograms}
               className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
             >
-              Try Again
+              {tc('tryAgain')}
             </button>
           </div>
         ) : filteredPrograms.length === 0 ? (
@@ -241,12 +244,12 @@ export default function ProgramsPage() {
               <Search className="w-8 h-8 text-gray-500" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              {programs.length === 0 ? 'No programs available yet' : 'No programs found'}
+              {programs.length === 0 ? t('noPrograms') : t('noProgramsFound')}
             </h3>
             <p className="text-sm text-gray-400">
               {programs.length === 0 
-                ? 'Check back later for new programs from trainers'
-                : 'Try adjusting your search or filters'}
+                ? t('checkBackLater')
+                : t('adjustSearchFilters')}
             </p>
           </div>
         ) : (
@@ -328,7 +331,7 @@ export default function ProgramsPage() {
         {/* Results Count */}
         {!isLoading && !error && programs.length > 0 && (
           <p className="text-center text-sm text-gray-500">
-            Showing {filteredPrograms.length} of {programs.length} programs
+            {tc('showingXofY', { shown: filteredPrograms.length, total: programs.length })}
           </p>
         )}
       </div>
@@ -338,6 +341,8 @@ export default function ProgramsPage() {
         <ProgramDetailModal
           program={selectedProgram}
           onClose={() => setSelectedProgram(null)}
+          t={t}
+          tc={tc}
         />
       )}
     </>
@@ -347,15 +352,19 @@ export default function ProgramsPage() {
 // Program Detail Modal Component
 function ProgramDetailModal({ 
   program, 
-  onClose 
+  onClose,
+  t,
+  tc
 }: { 
   program: PublicProgramDto
-  onClose: () => void 
+  onClose: () => void
+  t: ReturnType<typeof useTranslations>
+  tc: ReturnType<typeof useTranslations>
 }) {
   const router = useRouter()
 
   const formatPrice = (price: number) => {
-    if (price === 0) return 'Free'
+    if (price === 0) return tc('free')
     return `$${price.toFixed(2)}`
   }
 
@@ -424,7 +433,7 @@ function ProgramDetailModal({
             )}
             <div>
               <p className="text-white font-medium">{program.trainerName}</p>
-              <p className="text-xs text-gray-400">View trainer profile →</p>
+              <p className="text-xs text-gray-400">{t('viewTrainerProfile')}</p>
             </div>
           </div>
 
@@ -433,19 +442,19 @@ function ProgramDetailModal({
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               <span className="text-white font-medium">
-                {program.averageRating > 0 ? program.averageRating.toFixed(1) : 'No ratings'}
+                {program.averageRating > 0 ? program.averageRating.toFixed(1) : tc('noRating')}
               </span>
-              <span className="text-gray-500">({program.totalReviews} reviews)</span>
+              <span className="text-gray-500">({program.totalReviews} {tc('reviews')})</span>
             </div>
             <div className="flex items-center gap-2 text-gray-400">
               <Users className="w-5 h-5" />
-              <span>{program.totalPurchases} purchases</span>
+              <span>{program.totalPurchases} {tc('purchases')}</span>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">About this program</h3>
+            <h3 className="text-sm font-medium text-gray-400 mb-2">{t('aboutProgram')}</h3>
             <p className="text-white leading-relaxed">{program.description}</p>
           </div>
 
@@ -454,16 +463,16 @@ function ProgramDetailModal({
             className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             onClick={() => {
               // TODO: Implement purchase flow
-              alert('Purchase flow coming soon!')
+              alert(t('purchaseComingSoon'))
             }}
           >
             <ShoppingCart className="w-5 h-5" />
-            {program.price === 0 ? 'Get for Free' : `Purchase for ${formatPrice(program.price)}`}
+            {program.price === 0 ? t('getForFree') : t('purchaseFor', { price: formatPrice(program.price) })}
           </button>
 
           {/* Program Code */}
           <p className="text-center text-xs text-gray-500">
-            Program code: <span className="text-gray-400 font-mono">{program.code}</span>
+            {t('programCode')} <span className="text-gray-400 font-mono">{program.code}</span>
           </p>
         </div>
       </div>

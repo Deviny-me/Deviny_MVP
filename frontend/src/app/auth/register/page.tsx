@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
@@ -9,127 +10,16 @@ import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
 import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
 import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
-
-// 20 popular countries with their major cities
-const COUNTRIES_WITH_CITIES: Record<string, { name: string; cities: string[]; phoneCode: string }> = {
-  'RU': {
-    name: 'Россия',
-    phoneCode: '+7',
-    cities: ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 'Челябинск', 'Самара', 'Омск', 'Ростов-на-Дону', 'Уфа', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград']
-  },
-  'KZ': {
-    name: 'Казахстан',
-    phoneCode: '+7',
-    cities: ['Алматы', 'Астана', 'Шымкент', 'Караганда', 'Актобе', 'Тараз', 'Павлодар', 'Усть-Каменогорск', 'Семей', 'Атырау']
-  },
-  'UA': {
-    name: 'Украина',
-    phoneCode: '+380',
-    cities: ['Киев', 'Харьков', 'Одесса', 'Днепр', 'Донецк', 'Запорожье', 'Львов', 'Кривой Рог', 'Николаев', 'Мариуполь']
-  },
-  'BY': {
-    name: 'Беларусь',
-    phoneCode: '+375',
-    cities: ['Минск', 'Гомель', 'Могилёв', 'Витебск', 'Гродно', 'Брест', 'Бобруйск', 'Барановичи', 'Борисов', 'Пинск']
-  },
-  'US': {
-    name: 'США',
-    phoneCode: '+1',
-    cities: ['Нью-Йорк', 'Лос-Анджелес', 'Чикаго', 'Хьюстон', 'Финикс', 'Филадельфия', 'Сан-Антонио', 'Сан-Диего', 'Даллас', 'Сан-Хосе', 'Остин', 'Майами', 'Бостон', 'Сиэтл', 'Денвер']
-  },
-  'DE': {
-    name: 'Германия',
-    phoneCode: '+49',
-    cities: ['Берлин', 'Гамбург', 'Мюнхен', 'Кёльн', 'Франкфурт', 'Штутгарт', 'Дюссельдорф', 'Дортмунд', 'Эссен', 'Лейпциг', 'Бремен', 'Дрезден', 'Ганновер', 'Нюрнберг']
-  },
-  'GB': {
-    name: 'Великобритания',
-    phoneCode: '+44',
-    cities: ['Лондон', 'Бирмингем', 'Манчестер', 'Глазго', 'Ливерпуль', 'Бристоль', 'Шеффилд', 'Лидс', 'Эдинбург', 'Лестер', 'Кардифф', 'Белфаст', 'Ноттингем', 'Ньюкасл']
-  },
-  'FR': {
-    name: 'Франция',
-    phoneCode: '+33',
-    cities: ['Париж', 'Марсель', 'Лион', 'Тулуза', 'Ницца', 'Нант', 'Страсбург', 'Монпелье', 'Бордо', 'Лилль', 'Ренн', 'Реймс', 'Гавр', 'Тулон']
-  },
-  'IT': {
-    name: 'Италия',
-    phoneCode: '+39',
-    cities: ['Рим', 'Милан', 'Неаполь', 'Турин', 'Палермо', 'Генуя', 'Болонья', 'Флоренция', 'Бари', 'Катания', 'Венеция', 'Верона', 'Мессина', 'Падуя']
-  },
-  'ES': {
-    name: 'Испания',
-    phoneCode: '+34',
-    cities: ['Мадрид', 'Барселона', 'Валенсия', 'Севилья', 'Сарагоса', 'Малага', 'Мурсия', 'Пальма', 'Бильбао', 'Аликанте', 'Кордова', 'Вальядолид', 'Виго', 'Хихон']
-  },
-  'PL': {
-    name: 'Польша',
-    phoneCode: '+48',
-    cities: ['Варшава', 'Краков', 'Лодзь', 'Вроцлав', 'Познань', 'Гданьск', 'Щецин', 'Быдгощ', 'Люблин', 'Катовице', 'Белосток', 'Гдыня', 'Ченстохова', 'Радом']
-  },
-  'TR': {
-    name: 'Турция',
-    phoneCode: '+90',
-    cities: ['Стамбул', 'Анкара', 'Измир', 'Бурса', 'Анталья', 'Адана', 'Конья', 'Газиантеп', 'Мерсин', 'Диярбакыр', 'Кайсери', 'Эскишехир', 'Самсун', 'Денизли']
-  },
-  'AE': {
-    name: 'ОАЭ',
-    phoneCode: '+971',
-    cities: ['Дубай', 'Абу-Даби', 'Шарджа', 'Аджман', 'Рас-эль-Хайма', 'Фуджейра', 'Умм-эль-Кайвайн', 'Аль-Айн']
-  },
-  'CA': {
-    name: 'Канада',
-    phoneCode: '+1',
-    cities: ['Торонто', 'Монреаль', 'Ванкувер', 'Калгари', 'Эдмонтон', 'Оттава', 'Виннипег', 'Квебек', 'Гамильтон', 'Китченер', 'Лондон', 'Виктория', 'Галифакс', 'Ошава']
-  },
-  'AU': {
-    name: 'Австралия',
-    phoneCode: '+61',
-    cities: ['Сидней', 'Мельбурн', 'Брисбен', 'Перт', 'Аделаида', 'Голд-Кост', 'Ньюкасл', 'Канберра', 'Саншайн-Кост', 'Вуллонгонг', 'Хобарт', 'Джилонг', 'Таунсвилл', 'Кэрнс']
-  },
-  'BR': {
-    name: 'Бразилия',
-    phoneCode: '+55',
-    cities: ['Сан-Паулу', 'Рио-де-Жанейро', 'Бразилиа', 'Салвадор', 'Форталеза', 'Белу-Оризонти', 'Манаус', 'Куритиба', 'Ресифи', 'Порту-Алегри', 'Гояния', 'Белен', 'Гуарульюс', 'Кампинас']
-  },
-  'CN': {
-    name: 'Китай',
-    phoneCode: '+86',
-    cities: ['Шанхай', 'Пекин', 'Гуанчжоу', 'Шэньчжэнь', 'Чэнду', 'Тяньцзинь', 'Ухань', 'Дунгуань', 'Чунцин', 'Нанкин', 'Шэньян', 'Ханчжоу', 'Сиань', 'Харбин']
-  },
-  'JP': {
-    name: 'Япония',
-    phoneCode: '+81',
-    cities: ['Токио', 'Йокогама', 'Осака', 'Нагоя', 'Саппоро', 'Фукуока', 'Кобе', 'Киото', 'Кавасаки', 'Сайтама', 'Хиросима', 'Сендай', 'Китакюсю', 'Тиба']
-  },
-  'KR': {
-    name: 'Южная Корея',
-    phoneCode: '+82',
-    cities: ['Сеул', 'Пусан', 'Инчхон', 'Тэгу', 'Тэджон', 'Кванджу', 'Сувон', 'Ульсан', 'Чханвон', 'Соннам', 'Коян', 'Йонгин', 'Пучхон', 'Аньян']
-  },
-  'IN': {
-    name: 'Индия',
-    phoneCode: '+91',
-    cities: ['Мумбаи', 'Дели', 'Бангалор', 'Хайдарабад', 'Ахмадабад', 'Ченнаи', 'Калькутта', 'Сурат', 'Пуна', 'Джайпур', 'Лакхнау', 'Канпур', 'Нагпур', 'Индор']
-  },
-}
-
-// Get list of countries for dropdown
-const COUNTRIES = Object.entries(COUNTRIES_WITH_CITIES).map(([code, data]) => ({
-  code,
-  name: data.name
-}))
-
-const GENDERS: { value: GenderType; label: string }[] = [
-  { value: 'Male', label: 'Мужской' },
-  { value: 'Female', label: 'Женский' },
-  { value: 'Other', label: 'Другой' },
-]
+import { COUNTRIES_DATA, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName, translateCityName } from '@/lib/data/countries'
+import { useLanguage } from '@/components/language/LanguageProvider'
 
 function RegisterPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations('auth')
+  const tr = useTranslations('auth.register')
+  const { language } = useLanguage()
   
   const [role, setRole] = useState<RoleType | null>(null)
   const [firstName, setFirstName] = useState('')
@@ -150,19 +40,42 @@ function RegisterPageContent() {
   const [verificationDocument, setVerificationDocument] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
-  // Get available cities based on selected country
-  const availableCities = countryCode ? COUNTRIES_WITH_CITIES[countryCode]?.cities || [] : []
-  const selectedCountryName = countryCode ? COUNTRIES_WITH_CITIES[countryCode]?.name || '' : ''
+  // Get available cities based on selected country with language-aware translations
+  const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
+  const selectedCountryName = countryCode ? getCountryName(countryCode, language) : ''
+  const countries = getCountries(language)
+
+  // Get phone format and max digits for selected phone country
+  const phoneCountryData = COUNTRIES_DATA[phoneCountryCode]
+  const phoneFormat = phoneCountryData?.phoneFormat || 'XXX XXX XXX'
+  const maxPhoneDigits = phoneCountryData?.maxDigits || 10
+
+  const GENDERS: { value: GenderType; label: string }[] = [
+    { value: 'Male', label: tr('male') },
+    { value: 'Female', label: tr('female') },
+  ]
 
   const { loading, errors, register, clearErrors } = useRegister()
 
+  // Handle phone number input with formatting
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    const digits = value.replace(/\D/g, '')
+    
+    // Limit to max digits for the country
+    if (digits.length <= maxPhoneDigits) {
+      const formatted = formatPhoneNumber(digits, phoneFormat)
+      setPhone(formatted)
+    }
+  }
+
   useEffect(() => {
     const roleFromQuery = searchParams.get('role') as RoleType
-    if (roleFromQuery && (roleFromQuery === 'user' || roleFromQuery === 'trainer')) {
+    if (roleFromQuery && (roleFromQuery === 'user' || roleFromQuery === 'trainer' || roleFromQuery === 'nutritionist')) {
       setRole(roleFromQuery)
     } else {
       const roleFromStorage = getRole()
-      if (roleFromStorage && (roleFromStorage === 'user' || roleFromStorage === 'trainer')) {
+      if (roleFromStorage && (roleFromStorage === 'user' || roleFromStorage === 'trainer' || roleFromStorage === 'nutritionist')) {
         setRole(roleFromStorage)
       } else {
         router.push('/auth')
@@ -177,21 +90,10 @@ function RegisterPageContent() {
 
     clearErrors()
     
-    // Combine phone code with phone number for trainers
-    const fullPhone = role === 'trainer' && phone 
-      ? `${COUNTRIES_WITH_CITIES[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
+    // Combine phone code with phone number for trainers and nutritionists
+    const fullPhone = (role === 'trainer' || role === 'nutritionist') && phone 
+      ? `${COUNTRIES_DATA[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
       : phone
-    
-    console.log('Registration data:', {
-      firstName,
-      lastName,
-      email,
-      phone: fullPhone,
-      phoneCountryCode,
-      gender,
-      country: selectedCountryName,
-      city
-    })
     
     const formData: RegisterFormData = {
       firstName,
@@ -203,11 +105,11 @@ function RegisterPageContent() {
       phone: fullPhone,
       gender,
       country: selectedCountryName,
-      city,
+      city: translateCityName(city, language),
     }
 
-    // Add trainer-specific fields
-    if (role === 'trainer') {
+    // Add trainer and nutritionist specific fields
+    if (role === 'trainer' || role === 'nutritionist') {
       formData.verificationDocument = verificationDocument || undefined
     }
     
@@ -276,25 +178,22 @@ function RegisterPageContent() {
   }
 
   const isTrainer = role === 'trainer'
+  const isNutritionist = role === 'nutritionist'
+  const isProfessional = isTrainer || isNutritionist
 
   return (
     <div className="light w-full max-w-md mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-primary-700 mb-2">Deviny</h1>
         <p className="text-lg text-gray-600">
-          Социальная сеть для фитнеса
+          {t('tagline')}
         </p>
       </div>
 
       <Card className="p-8 bg-white">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-          {isTrainer ? 'Регистрация тренера' : 'Регистрация пользователя'}
+        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+          {isTrainer ? tr('titleTrainer') : isNutritionist ? tr('titleNutritionist') : tr('titleUser')}
         </h2>
-        <p className="text-gray-600 mb-6 text-center text-sm">
-          {isTrainer 
-            ? 'Создайте профиль тренера и начните помогать людям' 
-            : 'Создайте аккаунт и начните свой путь к здоровью'}
-        </p>
 
         {errors.general && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -307,7 +206,7 @@ function RegisterPageContent() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Имя
+                {tr('firstName')}
               </label>
               <input
                 type="text"
@@ -316,7 +215,7 @@ function RegisterPageContent() {
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   errors.firstName ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Иван"
+                placeholder={tr('firstNamePlaceholder')}
                 disabled={loading}
               />
               {errors.firstName && (
@@ -325,7 +224,7 @@ function RegisterPageContent() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Фамилия
+                {tr('lastName')}
               </label>
               <input
                 type="text"
@@ -334,7 +233,7 @@ function RegisterPageContent() {
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   errors.lastName ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Иванов"
+                placeholder={tr('lastNamePlaceholder')}
                 disabled={loading}
               />
               {errors.lastName && (
@@ -346,7 +245,7 @@ function RegisterPageContent() {
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {tr('email')}
             </label>
             <input
               type="email"
@@ -355,7 +254,7 @@ function RegisterPageContent() {
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
               }`}
-              placeholder="your@email.com"
+              placeholder={tr('emailPlaceholder')}
               disabled={loading}
             />
             {errors.email && (
@@ -366,7 +265,7 @@ function RegisterPageContent() {
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Пароль
+              {tr('password')}
             </label>
             <div className="relative">
               <input
@@ -376,7 +275,7 @@ function RegisterPageContent() {
                 className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   errors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Минимум 6 символов, 1 цифра"
+                placeholder={tr('passwordPlaceholder')}
                 disabled={loading}
               />
               <button
@@ -395,7 +294,7 @@ function RegisterPageContent() {
           {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Повторите пароль
+              {tr('confirmPassword')}
             </label>
             <div className="relative">
               <input
@@ -405,7 +304,7 @@ function RegisterPageContent() {
                 className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Повторите пароль"
+                placeholder={tr('confirmPasswordPlaceholder')}
                 disabled={loading}
               />
               <button
@@ -422,10 +321,10 @@ function RegisterPageContent() {
           </div>
 
           {/* Gender */}
-          {isTrainer && (
+          {isProfessional && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Пол
+                {tr('gender')}
               </label>
               <select
                 value={gender || ''}
@@ -435,7 +334,7 @@ function RegisterPageContent() {
                 }`}
                 disabled={loading}
               >
-                <option value="">Выберите пол</option>
+                <option value="">{tr('selectGender')}</option>
                 {GENDERS.map((g) => (
                   <option key={g.value} value={g.value}>
                     {g.label}
@@ -448,35 +347,38 @@ function RegisterPageContent() {
             </div>
           )}
 
-          {/* Phone - Only for trainers */}
-          {isTrainer && (
+          {/* Phone - Only for professionals */}
+          {isProfessional && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Номер телефона *
+                {tr('phone')} *
               </label>
               <div className="flex gap-2">
                 <select
                   value={phoneCountryCode}
-                  onChange={(e) => setPhoneCountryCode(e.target.value)}
+                  onChange={(e) => {
+                    setPhoneCountryCode(e.target.value)
+                    setPhone('') // Clear phone when changing country code
+                  }}
                   className={`w-32 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                     errors.phone ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={loading}
                 >
-                  {COUNTRIES.map((c) => (
+                  {countries.map((c) => (
                     <option key={c.code} value={c.code}>
-                      {COUNTRIES_WITH_CITIES[c.code].phoneCode}
+                      {COUNTRIES_DATA[c.code].phoneCode}
                     </option>
                   ))}
                 </select>
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                     errors.phone ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="999 123-45-67"
+                  placeholder={phoneFormat.replace(/X/g, '9')}
                   disabled={loading}
                 />
               </div>
@@ -487,11 +389,11 @@ function RegisterPageContent() {
           )}
 
           {/* Country and City */}
-          {isTrainer && (
+          {isProfessional && (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Страна
+                  {tr('country')}
                 </label>
                 <select
                   value={countryCode}
@@ -504,8 +406,8 @@ function RegisterPageContent() {
                   }`}
                   disabled={loading}
                 >
-                  <option value="">Выберите страну</option>
-                  {COUNTRIES.map((c) => (
+                  <option value="">{tr('selectCountry')}</option>
+                  {countries.map((c) => (
                     <option key={c.code} value={c.code}>
                       {c.name}
                     </option>
@@ -517,7 +419,7 @@ function RegisterPageContent() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Город
+                  {tr('city')}
                 </label>
                 <select
                   value={city}
@@ -527,10 +429,10 @@ function RegisterPageContent() {
                   }`}
                   disabled={loading || !countryCode}
                 >
-                  <option value="">{countryCode ? 'Выберите город' : 'Сначала выберите страну'}</option>
-                  {availableCities.map((cityName) => (
-                    <option key={cityName} value={cityName}>
-                      {cityName}
+                  <option value="">{countryCode ? tr('selectCity') : tr('selectCountry')}</option>
+                  {availableCities.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
                     </option>
                   ))}
                 </select>
@@ -541,17 +443,14 @@ function RegisterPageContent() {
             </div>
           )}
 
-          {/* Trainer-specific fields */}
-          {isTrainer && (
+          {/* Professional-specific fields */}
+          {isProfessional && (
             <>
               {/* Verification Document Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Документ подтверждения квалификации
+                  {tr('documentLabel')}
                 </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Загрузите сертификат, диплом или другой документ, подтверждающий вашу квалификацию тренера
-                </p>
                 
                 {!verificationDocument ? (
                   <div
@@ -577,11 +476,10 @@ function RegisterPageContent() {
                     />
                     <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium text-primary-600">Нажмите для загрузки</span>
-                      {' '}или перетащите файл
+                      <span className="font-medium text-primary-600">{tr('selectFile')}</span>
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      PDF, JPG, PNG до 10 МБ
+                      {tr('allowedFormats')}
                     </p>
                   </div>
                 ) : (
@@ -630,13 +528,9 @@ function RegisterPageContent() {
                 disabled={loading}
               />
               <span className="text-sm text-gray-700">
-                Согласен с{' '}
+                {tr('termsAccept')}{' '}
                 <Link href="/terms" className="text-primary-600 hover:text-primary-700 underline">
-                  условиями использования
-                </Link>
-                {' '}и{' '}
-                <Link href="/privacy" className="text-primary-600 hover:text-primary-700 underline">
-                  политикой конфиденциальности
+                  {tr('termsLink')}
                 </Link>
               </span>
             </label>
@@ -646,24 +540,24 @@ function RegisterPageContent() {
           </div>
 
           <Button
-            variant={isTrainer ? 'trainer' : 'user'}
+            variant={isProfessional ? 'trainer' : 'user'}
             size="lg"
             fullWidth
             type="submit"
             disabled={loading}
           >
-            {loading ? 'Создание аккаунта...' : 'Создать аккаунт'}
+            {loading ? tr('submitting') : tr('submit')}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600 text-sm">
-            Уже есть аккаунт?{' '}
+            {tr('hasAccount')}{' '}
             <Link
               href={`/auth/login?role=${role}`}
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
-              Войти
+              {tr('loginLink')}
             </Link>
           </p>
         </div>

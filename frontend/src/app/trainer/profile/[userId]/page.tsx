@@ -21,6 +21,7 @@ import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useTranslations } from 'next-intl'
 
 // Grid cell — uses local state for guaranteed instant UI updates
 function GridCell({
@@ -30,6 +31,7 @@ function GridCell({
   postId: string
   onSelect: (postId: string) => void
 }) {
+  const t = useTranslations('posts')
   const post = usePost(postId)
   const dispatch = usePostDispatch()
   const [isLikeLoading, setIsLikeLoading] = useState(false)
@@ -122,7 +124,7 @@ function GridCell({
     return (
       <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
-        <p className="text-[10px] text-gray-600 leading-tight">Публикация удалена</p>
+        <p className="text-[10px] text-gray-600 leading-tight">{t('postDeleted')}</p>
       </div>
     )
   }
@@ -183,7 +185,7 @@ function GridCell({
           className={`flex items-center gap-1 text-white transition-all hover:scale-110 ${
             isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500'
           }`}
-          title={isLiked ? 'Убрать лайк' : 'Поставить лайк'}
+          title={isLiked ? t('removeLike') : t('addLike')}
         >
           <Heart
             className={`w-5 h-5 transition-colors ${isLiked ? 'text-red-500' : ''}`}
@@ -198,7 +200,7 @@ function GridCell({
             onSelect(postId)
           }}
           className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-blue-400"
-          title="Открыть комментарии"
+          title={t('openComments')}
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -270,6 +272,8 @@ export default function OtherUserProfilePageTrainer() {
   const params = useParams()
   const userId = params.userId as string
   const upsertPosts = useUpsertPosts()
+  const t = useTranslations('posts')
+  const tc = useTranslations('common')
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -287,7 +291,7 @@ export default function OtherUserProfilePageTrainer() {
   // Derive profile info from the first post's author data
   const firstPost = usePost(postIds[0] || '')
   const profileAuthor = firstPost?.author
-  const authorName = profileAuthor?.fullName || `${profileAuthor?.firstName ?? ''} ${profileAuthor?.lastName ?? ''}`.trim() || 'Пользователь'
+  const authorName = profileAuthor?.fullName || `${profileAuthor?.firstName ?? ''} ${profileAuthor?.lastName ?? ''}`.trim() || tc('user')
   const authorInitials = (profileAuthor?.firstName?.charAt(0) || 'U').toUpperCase()
   const authorAvatar = profileAuthor?.avatarUrl
 
@@ -377,7 +381,7 @@ export default function OtherUserProfilePageTrainer() {
               <div className="flex-1 pb-2">
                 <h1 className="text-xl font-bold text-white">{authorName}</h1>
                 {totalPosts > 0 && (
-                  <p className="text-sm text-gray-400">{totalPosts} публикаций</p>
+                  <p className="text-sm text-gray-400">{totalPosts} {t('publications')}</p>
                 )}
               </div>
             </div>
@@ -389,7 +393,7 @@ export default function OtherUserProfilePageTrainer() {
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5 text-[#FF6B35]" />
-              <h3 className="font-semibold text-white">Публикации</h3>
+              <h3 className="font-semibold text-white">{t('postsTab')}</h3>
               {totalPosts > 0 && (
                 <span className="text-xs text-gray-500">({totalPosts})</span>
               )}
@@ -426,7 +430,7 @@ export default function OtherUserProfilePageTrainer() {
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Пока нет публикаций</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">{t('noPublications')}</h3>
             </div>
           ) : viewMode === 'grid' ? (
             <div>

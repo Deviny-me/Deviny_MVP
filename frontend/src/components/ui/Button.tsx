@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'user' | 'trainer' | 'outline'
+  variant?: 'primary' | 'user' | 'trainer' | 'nutritionist' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   fullWidth?: boolean
 }
@@ -15,6 +15,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: 'bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-primary-500',
       user: 'bg-user-600 text-white hover:bg-user-700 focus-visible:ring-user-500',
       trainer: 'bg-trainer-600 text-white hover:bg-trainer-700 focus-visible:ring-trainer-500',
+      nutritionist: 'bg-nutritionist-600 text-white hover:bg-nutritionist-700 focus-visible:ring-nutritionist-500',
       outline: 'border-2 border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-500',
     }
     

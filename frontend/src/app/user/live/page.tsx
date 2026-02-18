@@ -1,8 +1,12 @@
 'use client'
 
 import { Radio, Sparkles, Clock, Calendar, Users, Zap, Play } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function LiveWorkoutsPage() {
+  const t = useTranslations('live')
+  const tc = useTranslations('common')
+
   return (
     <>
       <div className="flex items-center justify-center min-h-[calc(100vh-120px)] pb-6">
@@ -26,18 +30,18 @@ export default function LiveWorkoutsPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-6 h-6 text-[#FF6B35]" />
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-white to-gray-400 bg-clip-text text-transparent">
-                    Live Workouts
+                    {t('title')}
                   </h1>
                   <Sparkles className="w-6 h-6 text-[#FF0844]" />
                 </div>
 
                 {/* Subtitle */}
-                <p className="text-xl text-gray-400 mb-2">Coming Very Soon!</p>
+                <p className="text-xl text-gray-400 mb-2">{tc('comingVerySoon')}</p>
                 
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF6B35]/10 border border-[#FF6B35]/20 rounded-full">
                   <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-[#FF6B35]">In Development</span>
+                  <span className="text-sm font-medium text-[#FF6B35]">{tc('inDevelopment')}</span>
                 </div>
               </div>
             </div>
@@ -45,7 +49,7 @@ export default function LiveWorkoutsPage() {
             {/* Features Grid */}
             <div className="p-8 pt-6">
               <p className="text-center text-gray-400 mb-8">
-                Get ready for an amazing live training experience with your favorite trainers
+                {t('description')}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -56,8 +60,8 @@ export default function LiveWorkoutsPage() {
                       <Play className="w-6 h-6 text-[#FF6B35]" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Real-Time Streaming</h3>
-                      <p className="text-sm text-gray-400">Join live workout sessions with HD video quality</p>
+                      <h3 className="text-white font-semibold mb-1">{t('realTimeStreaming')}</h3>
+                      <p className="text-sm text-gray-400">{t('realTimeStreamingDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -69,8 +73,8 @@ export default function LiveWorkoutsPage() {
                       <Users className="w-6 h-6 text-[#FF6B35]" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Interactive Sessions</h3>
-                      <p className="text-sm text-gray-400">Chat with trainers and other participants</p>
+                      <h3 className="text-white font-semibold mb-1">{t('interactiveSessions')}</h3>
+                      <p className="text-sm text-gray-400">{t('interactiveSessionsDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -82,8 +86,8 @@ export default function LiveWorkoutsPage() {
                       <Calendar className="w-6 h-6 text-[#FF6B35]" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Scheduled Classes</h3>
-                      <p className="text-sm text-gray-400">Book your spot in upcoming live workouts</p>
+                      <h3 className="text-white font-semibold mb-1">{t('scheduledClasses')}</h3>
+                      <p className="text-sm text-gray-400">{t('scheduledClassesDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -95,8 +99,8 @@ export default function LiveWorkoutsPage() {
                       <Zap className="w-6 h-6 text-[#FF6B35]" />
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold mb-1">Instant Feedback</h3>
-                      <p className="text-sm text-gray-400">Get real-time corrections and motivation</p>
+                      <h3 className="text-white font-semibold mb-1">{t('instantFeedback')}</h3>
+                      <p className="text-sm text-gray-400">{t('instantFeedbackDesc')}</p>
                     </div>
                   </div>
                 </div>
@@ -106,13 +110,13 @@ export default function LiveWorkoutsPage() {
               <div className="bg-gradient-to-r from-[#FF6B35]/5 to-[#FF0844]/5 rounded-xl p-6 border border-[#FF6B35]/10">
                 <div className="flex items-center justify-center gap-3 mb-3">
                   <Clock className="w-5 h-5 text-[#FF6B35]" />
-                  <h3 className="text-white font-semibold">Expected Launch</h3>
+                  <h3 className="text-white font-semibold">{tc('expectedLaunch')}</h3>
                 </div>
                 <p className="text-center text-2xl font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
-                  Coming in Q2 2026
+                  {tc('comingQ2')}
                 </p>
                 <p className="text-center text-sm text-gray-400 mt-2">
-                  We&apos;re working hard to bring you the best live workout experience
+                  {t('workingHard')}
                 </p>
               </div>
 
@@ -122,9 +126,9 @@ export default function LiveWorkoutsPage() {
                   disabled
                   className="px-8 py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg opacity-50 cursor-not-allowed"
                 >
-                  Notify Me When Available
+                  {tc('notifyWhenAvailable')}
                 </button>
-                <p className="text-xs text-gray-500 mt-2">Feature coming soon</p>
+                <p className="text-xs text-gray-500 mt-2">{tc('featureComingSoon')}</p>
               </div>
             </div>
           </div>
@@ -132,7 +136,7 @@ export default function LiveWorkoutsPage() {
           {/* Additional Info */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
-              Want to be the first to know? Follow us on social media for updates!
+              {tc('wantToKnow')}
             </p>
           </div>
         </div>

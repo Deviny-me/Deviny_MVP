@@ -1,6 +1,8 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { 
   Flame, 
   MessageCircle, 
@@ -23,6 +25,8 @@ export function TopNav() {
   const router = useRouter()
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const t = useTranslations('nav')
+  const tSearch = useTranslations('search')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [trainerProfile, setTrainerProfile] = useState<TrainerProfileResponse | null>(null)
   const { unreadCount } = useUnreadMessages()
@@ -50,10 +54,10 @@ export function TopNav() {
   }
 
   const navItems = [
-    { icon: Users, label: 'Students', path: '/trainer/students', badge: undefined },
-    { icon: MessageCircle, label: 'Messages', path: '/trainer/messages', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: User, label: 'My Profile', path: '/trainer/profile', badge: undefined },
-    { icon: Settings, label: 'Settings', path: '/trainer/settings', badge: undefined },
+    { icon: Users, label: t('students'), path: '/trainer/students', badge: undefined },
+    { icon: MessageCircle, label: t('messages'), path: '/trainer/messages', badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: User, label: t('profile'), path: '/trainer/profile', badge: undefined },
+    { icon: Settings, label: t('settings'), path: '/trainer/settings', badge: undefined },
   ]
 
   // Debug logging
@@ -82,11 +86,11 @@ export function TopNav() {
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
                 <Flame className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
-              <span className="text-sm font-bold text-white hidden sm:block">TRAINER</span>
+              <span className="text-sm font-bold text-white hidden sm:block uppercase">{t('trainer')}</span>
             </button>
 
             {/* Search */}
-            <SearchBar placeholder="Search students, programs..." />
+            <SearchBar placeholder={tSearch('trainerPlaceholder')} />
           </div>
 
           {/* Center: Navigation */}
@@ -123,6 +127,8 @@ export function TopNav() {
 
           {/* Right: Notifications & Profile */}
           <div className="flex items-center gap-3 flex-1 justify-end">
+            <LanguageSwitcher compact />
+            <div className="w-px h-6 bg-white/10" />
             {/* Profile Menu */}
             <div className="relative">
               <button
@@ -143,7 +149,7 @@ export function TopNav() {
                   </div>
                 )}
                 <div className="text-left hidden lg:block">
-                  <p className="text-xs font-semibold text-white leading-tight">Me</p>
+                  <p className="text-xs font-semibold text-white leading-tight">{t('me')}</p>
                   <svg className="w-3 h-3 text-gray-400 mx-auto mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
@@ -175,7 +181,7 @@ export function TopNav() {
                         )}
                         <div>
                           <p className="font-semibold text-white">{trainerProfile?.trainer?.fullName || `${user?.firstName} ${user?.lastName}`}</p>
-                          <p className="text-xs text-gray-400">Trainer</p>
+                          <p className="text-xs text-gray-400">{t('trainer')}</p>
                         </div>
                       </div>
                       {/* Level Display */}
@@ -203,7 +209,7 @@ export function TopNav() {
                         }}
                         className="mt-3 w-full py-1.5 border border-[#FF6B35] text-[#FF6B35] rounded-lg text-sm font-semibold hover:bg-[#FF6B35]/10 transition-colors"
                       >
-                        View Profile
+                        {t('viewProfile')}
                       </button>
                     </div>
 
@@ -216,7 +222,7 @@ export function TopNav() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/5 rounded-lg transition-colors text-left"
                       >
                         <Settings className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-sm">Settings & Privacy</span>
+                        <span className="text-sm">{t('settingsPrivacy')}</span>
                       </button>
                     </div>
 
@@ -226,7 +232,7 @@ export function TopNav() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/5 rounded-lg transition-colors text-left"
                       >
                         <LogOut className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-sm">Sign Out</span>
+                        <span className="text-sm">{t('signOut')}</span>
                       </button>
                     </div>
                   </div>
