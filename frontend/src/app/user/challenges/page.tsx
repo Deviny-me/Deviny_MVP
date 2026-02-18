@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { Target, Sparkles, Clock, Trophy, Users, Flame, Medal, Crown } from 'lucide-react'
 import { useTranslations } from 'next-intl'

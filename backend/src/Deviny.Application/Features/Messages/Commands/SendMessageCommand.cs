@@ -1,6 +1,7 @@
 using FluentValidation;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Entities;
+using Deviny.Domain.Enums;
 using MediatR;
 
 namespace Deviny.Application.Features.Messages.Commands;
@@ -37,13 +38,16 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
 {
     private readonly IConversationRepository _conversationRepository;
     private readonly IMessageRepository _messageRepository;
+    private readonly IAchievementService _achievementService;
 
     public SendMessageCommandHandler(
         IConversationRepository conversationRepository,
-        IMessageRepository messageRepository)
+        IMessageRepository messageRepository,
+        IAchievementService achievementService)
     {
         _conversationRepository = conversationRepository;
         _messageRepository = messageRepository;
+        _achievementService = achievementService;
     }
 
     public async Task<MessageDto> Handle(SendMessageCommand request, CancellationToken cancellationToken)
@@ -76,6 +80,21 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
         {
             conversation.UpdatedAt = DateTime.UtcNow;
             await _conversationRepository.UpdateAsync(conversation, cancellationToken);
+        }
+
+        // Try to award achievement for first message sent
+        try
+        {
+            await _achievementService.TryAwardAchievementAsync(
+                request.SenderId,
+                "FIRST_MESSAGE_SENT",
+                AchievementSourceType.Message,
+                message.Id,
+                cancellationToken);
+        }
+        catch
+        {
+            // Silently ignore — message was already sent
         }
 
         return MapToDto(message);

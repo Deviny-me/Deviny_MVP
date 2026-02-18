@@ -17,6 +17,5 @@ public class TrainerProfile : BaseEntity
     public User? GymBro { get; set; }
     
     public ICollection<TrainerCertificate> Certificates { get; set; } = new List<TrainerCertificate>();
-    public ICollection<TrainerAchievement> Achievements { get; set; } = new List<TrainerAchievement>();
     public ICollection<TrainerSpecialization> Specializations { get; set; } = new List<TrainerSpecialization>();
 }
