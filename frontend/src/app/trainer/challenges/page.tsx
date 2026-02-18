@@ -10,8 +10,11 @@ import {
   Bell,
   Award
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function ChallengesPage() {
+  const t = useTranslations('challenges')
+  const tc = useTranslations('common')
   return (
     <>
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -63,7 +66,7 @@ export default function ChallengesPage() {
           >
             Challenges{' '}
             <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-              Coming Soon
+              {tc('comingSoon')}
             </span>
           </motion.h1>
 
@@ -74,7 +77,7 @@ export default function ChallengesPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Скоро вы сможете создавать челленджи для своих студентов, отслеживать их прогресс и награждать за достижения!
+            {t('teaser')}
           </motion.p>
 
           {/* Features coming */}
@@ -88,24 +91,24 @@ export default function ChallengesPage() {
               <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Target className="w-5 h-5 text-amber-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Цели</h3>
-              <p className="text-xs text-gray-500">Создавайте челленджи</p>
+              <h3 className="text-white font-medium mb-1">{t('goals')}</h3>
+              <p className="text-xs text-gray-500">{t('goalsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Users className="w-5 h-5 text-orange-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Группы</h3>
-              <p className="text-xs text-gray-500">Командные соревнования</p>
+              <h3 className="text-white font-medium mb-1">{t('groups')}</h3>
+              <p className="text-xs text-gray-500">{t('groupsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Award className="w-5 h-5 text-yellow-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Награды</h3>
-              <p className="text-xs text-gray-500">XP и достижения</p>
+              <h3 className="text-white font-medium mb-1">{t('rewards')}</h3>
+              <p className="text-xs text-gray-500">{t('rewardsDesc')}</p>
             </div>
           </motion.div>
 
@@ -119,7 +122,7 @@ export default function ChallengesPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Bell className="w-5 h-5" />
-            Уведомить о запуске
+            {tc('notifyOnLaunch')}
           </motion.button>
 
           {/* Progress indicator */}
@@ -131,7 +134,7 @@ export default function ChallengesPage() {
           >
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              <span>В разработке</span>
+              <span>{tc('inDevelopment')}</span>
             </div>
           </motion.div>
         </motion.div>

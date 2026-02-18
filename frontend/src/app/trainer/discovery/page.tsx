@@ -9,8 +9,11 @@ import {
   Sparkles,
   Bell
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function DiscoveryPage() {
+  const t = useTranslations('discovery')
+  const tc = useTranslations('common')
   return (
     <>
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -62,7 +65,7 @@ export default function DiscoveryPage() {
           >
             Discover{' '}
             <span className="bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
-              Coming Soon
+              {tc('comingSoon')}
             </span>
           </motion.h1>
 
@@ -73,7 +76,7 @@ export default function DiscoveryPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Мы работаем над чем-то потрясающим! Скоро вы сможете исследовать глобальное фитнес-сообщество, находить вдохновение и делиться своими достижениями.
+            {t('teaser')}
           </motion.p>
 
           {/* Features coming */}
@@ -87,24 +90,24 @@ export default function DiscoveryPage() {
               <div className="w-10 h-10 bg-[#FF6B35]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <TrendingUp className="w-5 h-5 text-[#FF6B35]" />
               </div>
-              <h3 className="text-white font-medium mb-1">Тренды</h3>
-              <p className="text-xs text-gray-500">Популярные тренировки и контент</p>
+              <h3 className="text-white font-medium mb-1">{t('trends')}</h3>
+              <p className="text-xs text-gray-500">{t('trendsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-[#FF0844]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Users className="w-5 h-5 text-[#FF0844]" />
               </div>
-              <h3 className="text-white font-medium mb-1">Сообщество</h3>
-              <p className="text-xs text-gray-500">Найдите единомышленников</p>
+              <h3 className="text-white font-medium mb-1">{t('community')}</h3>
+              <p className="text-xs text-gray-500">{t('communityDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-5 h-5 text-amber-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Вдохновение</h3>
-              <p className="text-xs text-gray-500">Истории успеха и мотивация</p>
+              <h3 className="text-white font-medium mb-1">{t('inspiration')}</h3>
+              <p className="text-xs text-gray-500">{t('inspirationDesc')}</p>
             </div>
           </motion.div>
 
@@ -118,7 +121,7 @@ export default function DiscoveryPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Bell className="w-5 h-5" />
-            Уведомить о запуске
+            {tc('notifyOnLaunch')}
           </motion.button>
 
           {/* Progress indicator */}
@@ -130,7 +133,7 @@ export default function DiscoveryPage() {
           >
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse" />
-              <span>В разработке</span>
+              <span>{tc('inDevelopment')}</span>
             </div>
           </motion.div>
         </motion.div>

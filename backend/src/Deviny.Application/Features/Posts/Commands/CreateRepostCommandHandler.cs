@@ -94,7 +94,7 @@ public class CreateRepostCommandHandler : IRequestHandler<CreateRepostCommand, R
         // Award XP for creating a repost
         try
         {
-            var xpEventType = user.Role == UserRole.Trainer 
+            var xpEventType = (user.Role == UserRole.Trainer || user.Role == UserRole.Nutritionist)
                 ? XpEventType.TrainerCreatedPost 
                 : XpEventType.UserCreatedPost;
             

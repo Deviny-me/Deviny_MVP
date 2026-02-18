@@ -59,7 +59,7 @@ export const authService = {
       body: JSON.stringify({
         email: data.email,
         password: data.password,
-        role: data.role === 'user' ? 0 : 1,
+        role: data.role === 'user' ? 0 : data.role === 'trainer' ? 1 : 3,
         rememberMe: data.rememberMe,
       }),
     })
@@ -71,7 +71,7 @@ export const authService = {
         message = error.message || message
       } catch {
         // Backend returned non-JSON (e.g. server is down)
-        message = 'Сервер недоступен. Попробуйте позже.'
+        message = 'SERVER_UNAVAILABLE'
       }
       throw new Error(message)
     }
@@ -85,7 +85,7 @@ export const authService = {
     formData.append('lastName', data.lastName)
     formData.append('email', data.email)
     formData.append('password', data.password)
-    formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '2')
+    formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '3')
     
     // Extended fields for trainers
     if (data.phone) {
@@ -115,12 +115,12 @@ export const authService = {
       try {
         const error = await response.json()
         if (response.status === 409) {
-          throw new Error('Email уже зарегистрирован')
+          throw new Error('EMAIL_ALREADY_REGISTERED')
         }
         message = error.message || message
       } catch (e) {
-        if (e instanceof Error && e.message === 'Email уже зарегистрирован') throw e
-        message = 'Сервер недоступен. Попробуйте позже.'
+        if (e instanceof Error && e.message === 'EMAIL_ALREADY_REGISTERED') throw e
+        message = 'SERVER_UNAVAILABLE'
       }
       throw new Error(message)
     }

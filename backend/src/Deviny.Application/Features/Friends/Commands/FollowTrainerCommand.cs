@@ -41,12 +41,12 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
 
     public async Task<Unit> Handle(FollowTrainerCommand request, CancellationToken cancellationToken)
     {
-        // Check if trainer exists and is a trainer
+        // Check if trainer exists and is a trainer or nutritionist
         var trainer = await _userRepository.GetByIdAsync(request.TrainerId)
             ?? throw new Exception("Trainer not found");
 
-        if (trainer.Role != UserRole.Trainer)
-            throw new Exception("User is not a trainer");
+        if (trainer.Role != UserRole.Trainer && trainer.Role != UserRole.Nutritionist)
+            throw new Exception("User is not a trainer or nutritionist");
 
         // Check for blocks
         var isBlocked = await _userBlockRepository.IsBlockedAsync(request.FollowerId, request.TrainerId);

@@ -25,7 +25,7 @@ public class TrainerScheduleController : BaseApiController
     {
         var userId = GetCurrentUserId();
         var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-        if (user == null || user.Role != UserRole.Trainer)
+        if (user == null || (user.Role != UserRole.Trainer && user.Role != UserRole.Nutritionist))
             throw new UnauthorizedAccessException();
 
         return user.Id;

@@ -10,8 +10,11 @@ import {
   Bell,
   Users
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function LeaderboardsPage() {
+  const t = useTranslations('leaderboards')
+  const tc = useTranslations('common')
   return (
     <>
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -63,7 +66,7 @@ export default function LeaderboardsPage() {
           >
             Leaderboards{' '}
             <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
-              Coming Soon
+              {tc('comingSoon')}
             </span>
           </motion.h1>
 
@@ -74,7 +77,7 @@ export default function LeaderboardsPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Скоро здесь появится рейтинг лучших тренеров! Соревнуйтесь, зарабатывайте очки и поднимайтесь в таблице лидеров.
+            {t('teaser')}
           </motion.p>
 
           {/* Features coming */}
@@ -88,24 +91,24 @@ export default function LeaderboardsPage() {
               <div className="w-10 h-10 bg-yellow-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Crown className="w-5 h-5 text-yellow-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Топ тренеров</h3>
-              <p className="text-xs text-gray-500">Глобальный рейтинг</p>
+              <h3 className="text-white font-medium mb-1">{t('topTrainers')}</h3>
+              <p className="text-xs text-gray-500">{t('topTrainersDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Star className="w-5 h-5 text-amber-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Очки XP</h3>
-              <p className="text-xs text-gray-500">За активность</p>
+              <h3 className="text-white font-medium mb-1">{t('xpPoints')}</h3>
+              <p className="text-xs text-gray-500">{t('xpPointsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Users className="w-5 h-5 text-orange-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Сезоны</h3>
-              <p className="text-xs text-gray-500">Еженедельные призы</p>
+              <h3 className="text-white font-medium mb-1">{t('seasons')}</h3>
+              <p className="text-xs text-gray-500">{t('seasonsDesc')}</p>
             </div>
           </motion.div>
 
@@ -119,7 +122,7 @@ export default function LeaderboardsPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Bell className="w-5 h-5" />
-            Уведомить о запуске
+            {tc('notifyOnLaunch')}
           </motion.button>
 
           {/* Progress indicator */}
@@ -131,7 +134,7 @@ export default function LeaderboardsPage() {
           >
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-              <span>В разработке</span>
+              <span>{tc('inDevelopment')}</span>
             </div>
           </motion.div>
         </motion.div>

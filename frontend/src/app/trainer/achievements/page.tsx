@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { 
   Award, 
   Trophy,
@@ -12,17 +13,6 @@ import {
   Zap,
   Lock
 } from 'lucide-react'
-
-const badges = [
-  { id: '1', name: 'First Steps', description: 'Complete your first workout', icon: Dumbbell, unlocked: true, date: '2025-12-01' },
-  { id: '2', name: '7-Day Streak', description: 'Work out 7 days in a row', icon: Flame, unlocked: true, date: '2025-12-08' },
-  { id: '3', name: 'Social Butterfly', description: 'Add 10 friends', icon: Heart, unlocked: true, date: '2025-12-15' },
-  { id: '4', name: 'Goal Crusher', description: 'Complete 5 challenges', icon: Target, unlocked: true, date: '2025-12-20' },
-  { id: '5', name: 'Rising Star', description: 'Reach level 10', icon: Star, unlocked: true, date: '2025-12-25' },
-  { id: '6', name: '30-Day Warrior', description: 'Work out 30 days in a row', icon: Flame, unlocked: false, progress: 65 },
-  { id: '7', name: 'Elite Trainer', description: 'Complete 100 workouts', icon: Trophy, unlocked: false, progress: 45 },
-  { id: '8', name: 'Champion', description: 'Win a group challenge', icon: Award, unlocked: false, progress: 0 },
-]
 
 const stats = {
   level: 42,
@@ -36,6 +26,19 @@ const stats = {
 }
 
 export default function AchievementsPage() {
+  const t = useTranslations('achievementsPage')
+
+  const badges = [
+    { id: '1', name: t('firstSteps'), description: t('firstStepsDesc'), icon: Dumbbell, unlocked: true, date: '2025-12-01' },
+    { id: '2', name: t('weekStreak'), description: t('weekStreakDesc'), icon: Flame, unlocked: true, date: '2025-12-08' },
+    { id: '3', name: 'Social Butterfly', description: 'Add 10 friends', icon: Heart, unlocked: true, date: '2025-12-15' },
+    { id: '4', name: 'Goal Crusher', description: 'Complete 5 challenges', icon: Target, unlocked: true, date: '2025-12-20' },
+    { id: '5', name: 'Rising Star', description: 'Reach level 10', icon: Star, unlocked: true, date: '2025-12-25' },
+    { id: '6', name: '30-Day Warrior', description: 'Work out 30 days in a row', icon: Flame, unlocked: false, progress: 65 },
+    { id: '7', name: 'Elite Trainer', description: 'Complete 100 workouts', icon: Trophy, unlocked: false, progress: 45 },
+    { id: '8', name: 'Champion', description: 'Win a group challenge', icon: Award, unlocked: false, progress: 0 },
+  ]
+
   const progressToNextLevel = ((stats.totalXp % 10000) / 10000) * 100
 
   return (
@@ -49,7 +52,7 @@ export default function AchievementsPage() {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <p className="text-white/80 text-sm mb-1">Current Level</p>
+              <p className="text-white/80 text-sm mb-1">{t('currentLevel')}</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-black">{stats.level}</span>
                 <span className="text-xl text-white/80">/ 100</span>
@@ -73,7 +76,7 @@ export default function AchievementsPage() {
               />
             </div>
             <p className="text-sm text-white/80 text-center">
-              {(stats.nextLevelXp - stats.totalXp).toLocaleString()} XP to Level {stats.level + 1}
+              {(stats.nextLevelXp - stats.totalXp).toLocaleString()} {t('xpToLevel')} {stats.level + 1}
             </p>
           </div>
         </motion.div>
@@ -83,28 +86,28 @@ export default function AchievementsPage() {
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Dumbbell className="w-8 h-8 text-[#FF6B35] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats.workoutsCompleted}</p>
-            <p className="text-xs text-gray-400">Workouts</p>
+            <p className="text-xs text-gray-400">{t('workouts')}</p>
           </div>
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Flame className="w-8 h-8 text-orange-500 mx-auto mb-2" fill="currentColor" />
             <p className="text-2xl font-bold text-white">{stats.currentStreak}</p>
-            <p className="text-xs text-gray-400">Day Streak</p>
+            <p className="text-xs text-gray-400">{t('dayStreak')}</p>
           </div>
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Trophy className="w-8 h-8 text-amber-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats.longestStreak}</p>
-            <p className="text-xs text-gray-400">Best Streak</p>
+            <p className="text-xs text-gray-400">{t('bestStreak')}</p>
           </div>
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
             <Award className="w-8 h-8 text-purple-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{stats.badgesEarned}/{stats.totalBadges}</p>
-            <p className="text-xs text-gray-400">Badges</p>
+            <p className="text-xs text-gray-400">{t('badges')}</p>
           </div>
         </div>
 
         {/* Badges */}
         <div>
-          <h2 className="text-lg font-bold text-white mb-4">Badges & Achievements</h2>
+          <h2 className="text-lg font-bold text-white mb-4">{t('badgesAndAchievements')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {badges.map((badge, index) => (
               <motion.div
@@ -144,7 +147,7 @@ export default function AchievementsPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500">Locked</p>
+                  <p className="text-xs text-gray-500">{t('locked')}</p>
                 )}
               </motion.div>
             ))}

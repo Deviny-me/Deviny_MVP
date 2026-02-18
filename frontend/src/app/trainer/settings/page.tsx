@@ -9,12 +9,15 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { fetchTrainerProfile } from '@/lib/api/trainerProfileApi'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 
 export default function SettingsPage() {
   const { logout } = useAuth()
   const router = useRouter()
+  const t = useTranslations('settings')
+  const tc = useTranslations('common')
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -43,7 +46,7 @@ export default function SettingsPage() {
     return (
       <>
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-gray-400">Загрузка...</div>
+          <div className="text-gray-400">{tc('loading')}</div>
         </div>
       </>
     )
@@ -54,8 +57,8 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto space-y-6 pb-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Настройки</h1>
-          <p className="text-gray-400">Управление настройками аккаунта</p>
+          <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+          <p className="text-gray-400">{t('description')}</p>
         </div>
 
         {/* Account Section */}
@@ -66,7 +69,7 @@ export default function SettingsPage() {
         >
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
             <User className="w-5 h-5 text-[#FF6B35]" />
-            <h2 className="font-semibold text-white">Аккаунт</h2>
+            <h2 className="font-semibold text-white">{t('account')}</h2>
           </div>
           <div className="divide-y divide-white/5">
             <button 
@@ -74,7 +77,7 @@ export default function SettingsPage() {
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5"
             >
               <div>
-                <p className="text-white">Редактировать профиль</p>
+                <p className="text-white">{t('editProfile')}</p>
                 <p className="text-sm text-gray-400">{profile?.trainer?.fullName}</p>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -91,7 +94,7 @@ export default function SettingsPage() {
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all"
         >
           <LogOut className="w-5 h-5" />
-          <span className="font-medium">Выйти</span>
+          <span className="font-medium">{tc('logout')}</span>
         </motion.button>
 
         {/* Version */}

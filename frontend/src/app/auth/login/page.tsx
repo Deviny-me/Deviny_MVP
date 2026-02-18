@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, FormEvent, Suspense } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
@@ -13,6 +14,8 @@ import { useLogin } from '@/features/auth/hooks/useLogin'
 function LoginPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const t = useTranslations('auth')
+  const tv = useTranslations('auth.validation')
   const [role, setRole] = useState<RoleType | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -27,9 +30,9 @@ function LoginPageContent() {
   useEffect(() => {
     const roleFromQuery = searchParams.get('role') as RoleType
     const roleFromStorage = getRole()
-    const validRole = ['user', 'trainer'].includes(roleFromQuery) ? roleFromQuery : roleFromStorage
+    const validRole = ['user', 'trainer', 'nutritionist'].includes(roleFromQuery) ? roleFromQuery : roleFromStorage
 
-    if (!validRole || !['user', 'trainer'].includes(validRole)) {
+    if (!validRole || !['user', 'trainer', 'nutritionist'].includes(validRole)) {
       router.push('/auth')
       return
     }
@@ -46,15 +49,15 @@ function LoginPageContent() {
     const errors: Record<string, string> = {}
 
     if (!formData.email) {
-      errors.email = 'Email обязателен'
+      errors.email = tv('emailRequired')
     } else if (!validateEmail(formData.email)) {
-      errors.email = 'Введите корректный email'
+      errors.email = tv('emailInvalid')
     }
 
     if (!formData.password) {
-      errors.password = 'Пароль обязателен'
+      errors.password = tv('passwordRequired')
     } else if (formData.password.length < 6) {
-      errors.password = 'Пароль должен содержать минимум 6 символов'
+      errors.password = tv('passwordMin')
     }
 
     setFieldErrors(errors)
@@ -86,19 +89,21 @@ function LoginPageContent() {
   }
 
   const isTrainer = role === 'trainer'
+  const isNutritionist = role === 'nutritionist'
+  const isProfessional = isTrainer || isNutritionist
 
   return (
     <div className="light w-full max-w-md mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-primary-700 mb-2">Deviny</h1>
         <p className="text-gray-600">
-          Социальная сеть для фитнеса и здорового образа жизни
+          {t('tagline')}
         </p>
       </div>
 
       <Card className="p-8 bg-white">
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          {isTrainer ? 'Вход для тренера' : 'Вход для пользователя'}
+          {isTrainer ? t('login.titleTrainer') : isNutritionist ? t('login.titleNutritionist') : t('login.titleUser')}
         </h2>
 
         {error && (
@@ -143,7 +148,7 @@ function LoginPageContent() {
                 className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   fieldErrors.password ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Пароль"
+                placeholder={t('login.password')}
                 disabled={isLoading}
               />
               <button
@@ -170,14 +175,14 @@ function LoginPageContent() {
                 className="w-4 h-4 text-primary-600 bg-white border-gray-300 rounded focus:ring-primary-500 accent-primary-600 cursor-pointer"
                 disabled={isLoading}
               />
-              <span className="ml-2 text-sm text-gray-700 select-none">Запомнить меня</span>
+              <span className="ml-2 text-sm text-gray-700 select-none">{t('login.rememberMe')}</span>
             </label>
 
             <Link
               href="#"
               className="text-sm text-primary-600 hover:text-primary-700"
             >
-              Забыли пароль?
+              {t('login.forgotPassword')}
             </Link>
           </div>
 
@@ -188,25 +193,25 @@ function LoginPageContent() {
             type="submit"
             disabled={isLoading}
           >
-            {isLoading ? 'Входим...' : 'Войти'}
+            {isLoading ? t('login.submitting') : t('login.submit')}
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-gray-600">
-            Нет аккаунта?{' '}
+            {t('login.noAccount')}{' '}
             <Link
               href={`/auth/register?role=${role}`}
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
-              Зарегистрироваться
+              {t('login.register')}
             </Link>
           </p>
           <Link
             href="/auth"
             className="block mt-4 text-sm text-gray-500 hover:text-gray-700"
           >
-            Назад к выбору роли
+            {t('login.backToRoles')}
           </Link>
         </div>
       </Card>

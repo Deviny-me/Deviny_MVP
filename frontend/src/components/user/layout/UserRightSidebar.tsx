@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { PublicProgramDto } from '@/types/program'
+import { useTranslations } from 'next-intl'
 
 // Program Detail Modal Component
 function ProgramDetailModal({ 
@@ -21,9 +22,11 @@ function ProgramDetailModal({
   onClose: () => void 
 }) {
   const router = useRouter()
+  const tp = useTranslations('userPrograms')
+  const tc = useTranslations('common')
 
   const formatPrice = (price: number) => {
-    if (price === 0) return 'Free'
+    if (price === 0) return tc('free')
     return `$${price.toFixed(2)}`
   }
 
@@ -106,7 +109,7 @@ function ProgramDetailModal({
             )}
             <div>
               <p className="text-white font-medium">{program.trainerName}</p>
-              <p className="text-xs text-gray-400">View trainer profile →</p>
+              <p className="text-xs text-gray-400">{tp('viewTrainerProfile')}</p>
             </div>
           </div>
 
@@ -115,19 +118,19 @@ function ProgramDetailModal({
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               <span className="text-white font-medium">
-                {program.averageRating > 0 ? program.averageRating.toFixed(1) : 'No ratings'}
+                {program.averageRating > 0 ? program.averageRating.toFixed(1) : tc('noRating')}
               </span>
-              <span className="text-gray-500">({program.totalReviews} reviews)</span>
+              <span className="text-gray-500">({program.totalReviews} {tc('reviews')})</span>
             </div>
             <div className="flex items-center gap-2 text-gray-400">
               <Users className="w-5 h-5" />
-              <span>{program.totalPurchases} purchases</span>
+              <span>{program.totalPurchases} {tc('purchases')}</span>
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">About this program</h3>
+            <h3 className="text-sm font-medium text-gray-400 mb-2">{tp('aboutProgram')}</h3>
             <p className="text-white leading-relaxed">{program.description}</p>
           </div>
 
@@ -136,16 +139,16 @@ function ProgramDetailModal({
             className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
             onClick={() => {
               // TODO: Implement purchase flow
-              alert('Purchase flow coming soon!')
+              alert(tp('purchaseComingSoon'))
             }}
           >
             <ShoppingCart className="w-5 h-5" />
-            {program.price === 0 ? 'Get for Free' : `Purchase for ${formatPrice(program.price)}`}
+            {program.price === 0 ? tp('getForFree') : tp('purchaseFor', { price: formatPrice(program.price) })}
           </button>
 
           {/* Program Code */}
           <p className="text-center text-xs text-gray-500">
-            Program code: <span className="text-gray-400 font-mono">{program.code}</span>
+            {tp('programCode')} <span className="text-gray-400 font-mono">{program.code}</span>
           </p>
         </div>
       </div>
@@ -154,6 +157,7 @@ function ProgramDetailModal({
 }
 
 export function UserRightSidebar() {
+  const ts = useTranslations('userRightSidebar')
   const [selectedProgram, setSelectedProgram] = useState<PublicProgramDto | null>(null)
 
   return (
@@ -161,19 +165,19 @@ export function UserRightSidebar() {
       {/* Footer */}
       <div className="px-3 py-2">
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-gray-500">
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">About</a>
+          <a href="#" className="hover:text-[#FF6B35] hover:underline">{ts('about')}</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Help Center</a>
+          <a href="#" className="hover:text-[#FF6B35] hover:underline">{ts('helpCenter')}</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Privacy</a>
+          <a href="#" className="hover:text-[#FF6B35] hover:underline">{ts('privacy')}</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Terms</a>
+          <a href="#" className="hover:text-[#FF6B35] hover:underline">{ts('terms')}</a>
         </div>
         <div className="mt-2 flex items-center gap-1.5">
           <div className="w-5 h-5 rounded bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
             <Flame className="w-3 h-3 text-white" strokeWidth={2.5} />
           </div>
-          <p className="text-[10px] text-gray-600">Deviny Fitness © 2026</p>
+          <p className="text-[10px] text-gray-600">{ts('copyright')}</p>
         </div>
       </div>
 

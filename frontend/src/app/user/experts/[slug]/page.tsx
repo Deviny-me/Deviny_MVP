@@ -17,6 +17,7 @@ import {
   X
 } from 'lucide-react'
 import { API_URL, fetchWithAuth, getMediaUrl } from '@/lib/config'
+import { useTranslations } from 'next-intl'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import ChatModal from '@/components/chat/ChatModal'
 
@@ -24,6 +25,8 @@ export default function TrainerProfilePage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
+  const t = useTranslations('experts')
+  const tc = useTranslations('common')
   
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -70,7 +73,7 @@ export default function TrainerProfilePage() {
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Back to Experts</span>
+          <span className="text-sm">{t('backToExperts')}</span>
         </button>
 
         {/* Loading State */}
@@ -86,13 +89,13 @@ export default function TrainerProfilePage() {
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Profile Not Available</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">{t('profileNotAvailable')}</h3>
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button
               onClick={() => router.push('/user/experts')}
               className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
-              Back to Experts
+              {t('backToExperts')}
             </button>
           </div>
         )}
@@ -160,25 +163,25 @@ export default function TrainerProfilePage() {
                     {profile.trainer.experienceYears ? (
                       <div className="flex items-center gap-2 text-gray-400">
                         <Briefcase className="w-4 h-4" />
-                        <span>{profile.trainer.experienceYears} years experience</span>
+                        <span>{profile.trainer.experienceYears} {t('yearsExperience')}</span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-gray-500">
                         <Briefcase className="w-4 h-4" />
-                        <span>No experience listed</span>
+                        <span>{t('noExperience')}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-gray-400">
                       <Award className="w-4 h-4" />
-                      <span>{profile.trainer.programsCount} program{profile.trainer.programsCount !== 1 ? 's' : ''}</span>
+                      <span>{profile.trainer.programsCount} {profile.trainer.programsCount !== 1 ? t('programs') : t('program')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">
                       <Users className="w-4 h-4" />
-                      <span>{profile.trainer.studentsCount} student{profile.trainer.studentsCount !== 1 ? 's' : ''}</span>
+                      <span>{profile.trainer.studentsCount} {profile.trainer.studentsCount !== 1 ? t('students') : t('student')}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">
                       <Trophy className="w-4 h-4" />
-                      <span>{profile.trainer.achievementsCount} achievement{profile.trainer.achievementsCount !== 1 ? 's' : ''}</span>
+                      <span>{profile.trainer.achievementsCount} {profile.trainer.achievementsCount !== 1 ? t('achievements') : t('achievement')}</span>
                     </div>
                   </div>
 
@@ -189,7 +192,7 @@ export default function TrainerProfilePage() {
                       <span className="text-white font-semibold">
                         {profile.trainer.ratingValue > 0 ? profile.trainer.ratingValue.toFixed(1) : '0.0'}
                       </span>
-                      <span className="text-gray-400 text-sm">({profile.trainer.reviewsCount} review{profile.trainer.reviewsCount !== 1 ? 's' : ''})</span>
+                      <span className="text-gray-400 text-sm">({profile.trainer.reviewsCount} {profile.trainer.reviewsCount !== 1 ? tc('reviews') : t('review')})</span>
                     </div>
                   </div>
 
@@ -200,7 +203,7 @@ export default function TrainerProfilePage() {
                       className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
                     >
                       <MessageCircle className="w-4 h-4" />
-                      Send Message
+                      {t('sendMessage')}
                     </button>
                     {profile.trainer.phone && (
                       <a
@@ -208,7 +211,7 @@ export default function TrainerProfilePage() {
                         className="px-4 py-2 bg-[#0A0A0A] hover:bg-white/5 rounded-lg text-sm text-gray-300 transition-colors flex items-center gap-2"
                       >
                         <Phone className="w-4 h-4" />
-                        Call
+                        {t('call')}
                       </a>
                     )}
                   </div>
@@ -219,19 +222,19 @@ export default function TrainerProfilePage() {
             {/* About */}
             {profile.about && profile.about.text ? (
               <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
-                <h2 className="text-xl font-semibold text-white mb-3">About</h2>
+                <h2 className="text-xl font-semibold text-white mb-3">{t('about')}</h2>
                 <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{profile.about.text}</p>
               </div>
             ) : (
               <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
-                <h2 className="text-xl font-semibold text-white mb-3">About</h2>
-                <p className="text-sm text-gray-500 italic">No description provided yet.</p>
+                <h2 className="text-xl font-semibold text-white mb-3">{t('about')}</h2>
+                <p className="text-sm text-gray-500 italic">{t('noDescription')}</p>
               </div>
             )}
 
             {/* Specializations */}
             <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
-              <h2 className="text-xl font-semibold text-white mb-3">Specializations</h2>
+              <h2 className="text-xl font-semibold text-white mb-3">{t('specializations')}</h2>
               {profile.specializations && profile.specializations.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {profile.specializations.map((spec) => (
@@ -244,13 +247,13 @@ export default function TrainerProfilePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 italic">No specializations listed yet.</p>
+                <p className="text-sm text-gray-500 italic">{t('noSpecializations')}</p>
               )}
             </div>
 
             {/* Certificates */}
             <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Certificates</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t('certificates')}</h2>
               {profile.certificates && profile.certificates.length > 0 ? (
                 <div className="space-y-3">
                   {profile.certificates.map((cert) => (
@@ -268,7 +271,7 @@ export default function TrainerProfilePage() {
                             onClick={() => setSelectedCertificate({ fileUrl: cert.fileUrl!, title: cert.title })}
                             className="text-xs text-[#FF6B35] hover:underline mt-1 inline-block"
                           >
-                            View Certificate →
+                            {t('viewCertificate')}
                           </button>
                         )}
                       </div>
@@ -276,13 +279,13 @@ export default function TrainerProfilePage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 italic">No certificates listed yet.</p>
+                <p className="text-sm text-gray-500 italic">{t('noCertificates')}</p>
               )}
             </div>
 
             {/* Achievements */}
             <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Achievements</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t('achievements')}</h2>
               {profile.achievements && profile.achievements.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {profile.achievements.map((achievement) => {
@@ -313,7 +316,7 @@ export default function TrainerProfilePage() {
                   })}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 italic">No achievements listed yet.</p>
+                <p className="text-sm text-gray-500 italic">{t('noAchievements')}</p>
               )}
             </div>
           </div>
@@ -356,7 +359,7 @@ export default function TrainerProfilePage() {
                 onClick={() => setSelectedCertificate(null)}
                 className="px-4 py-2 bg-[#0A0A0A] hover:bg-white/5 text-white rounded-lg text-sm transition-colors"
               >
-                Close
+                {tc('close')}
               </button>
               <a
                 href={`${API_URL.replace('/api', '')}${selectedCertificate.fileUrl}`}
@@ -364,7 +367,7 @@ export default function TrainerProfilePage() {
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
               >
-                Open in New Tab
+                {t('openInNewTab')}
               </a>
             </div>
           </div>

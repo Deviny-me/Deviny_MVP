@@ -31,6 +31,7 @@ import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useTranslations } from 'next-intl'
 
 // ─── Grid cell with optimistic likes ───
 function GridCell({
@@ -46,6 +47,7 @@ function GridCell({
   deletingPostId?: string | null
   currentUserId?: string | null
 }) {
+  const tPosts = useTranslations('posts')
   const post = usePost(postId)
   const dispatch = usePostDispatch()
   const [isLikeLoading, setIsLikeLoading] = useState(false)
@@ -123,7 +125,7 @@ function GridCell({
     return (
       <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
-        <p className="text-[10px] text-gray-600 leading-tight">Публикация удалена</p>
+        <p className="text-[10px] text-gray-600 leading-tight">{tPosts('deleted')}</p>
       </div>
     )
   }
@@ -258,6 +260,9 @@ export default function UserProfilePage() {
   const { user, updateUser } = useUser()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
+  const tp = useTranslations('profile')
+  const tPosts = useTranslations('posts')
+  const tc = useTranslations('common')
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
@@ -279,10 +284,10 @@ export default function UserProfilePage() {
   const levelProgress = (currentXp / xpToNextLevel) * 100
 
   const stats = [
-    { label: 'Workouts', value: user?.workoutsCompleted || 0, icon: Target },
-    { label: 'Day Streak', value: user?.streak || 0, icon: Flame },
-    { label: 'Achievements', value: user?.achievementsCount || 0, icon: Trophy },
-    { label: 'Following', value: user?.followingCount || 0, icon: Users },
+    { label: tp('workouts'), value: user?.workoutsCompleted || 0, icon: Target },
+    { label: tp('dayStreak'), value: user?.streak || 0, icon: Flame },
+    { label: tp('achievements'), value: user?.achievementsCount || 0, icon: Trophy },
+    { label: tp('following'), value: user?.followingCount || 0, icon: Users },
   ]
 
   const loadPosts = useCallback(async (pageNum: number, append: boolean = false) => {
@@ -339,11 +344,11 @@ export default function UserProfilePage() {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-      alert('Пожалуйста, выберите изображение')
+      alert(tp('toasts.avatarSelectImage'))
       return
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Размер файла не должен превышать 5 МБ')
+      alert(tp('toasts.avatarSizeLimit'))
       return
     }
 
@@ -355,28 +360,28 @@ export default function UserProfilePage() {
       }
     } catch (error) {
       console.error('Failed to upload avatar:', error)
-      alert('Не удалось загрузить фото')
+      alert(tp('toasts.avatarUploadError'))
     } finally {
       setUploadingAvatar(false)
     }
   }
 
   const handleAvatarDelete = async () => {
-    if (!confirm('Удалить фото профиля?')) return
+    if (!confirm(tp('toasts.avatarDeleteConfirm'))) return
     try {
       setDeletingAvatar(true)
       await deleteAvatar()
       updateUser({ avatarUrl: null })
     } catch (error) {
       console.error('Failed to delete avatar:', error)
-      alert('Не удалось удалить фото')
+      alert(tp('toasts.avatarDeleteError'))
     } finally {
       setDeletingAvatar(false)
     }
   }
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) return
+    if (!confirm(tPosts('deleteConfirm'))) return
     try {
       setDeletingPostId(postId)
       await postsApi.deletePost(postId)
@@ -470,7 +475,7 @@ export default function UserProfilePage() {
                     className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm text-gray-300 hover:bg-white/5 transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
-                    Edit Profile
+                    {tp('editProfile')}
                   </button>
                 </div>
               </div>
@@ -488,7 +493,7 @@ export default function UserProfilePage() {
                 {user?.createdAt && (
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                    <span>{tp('joined')} {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                   </div>
                 )}
               </div>
@@ -505,12 +510,12 @@ export default function UserProfilePage() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-semibold text-white">Level {user?.level || 1}</span>
-                <span className="text-xs text-gray-400">{currentXp} / {xpToNextLevel} XP</span>
+                <span className="text-xs text-gray-400">{currentXp} / {xpToNextLevel} {tp('xp')}</span>
               </div>
               <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full transition-all" style={{ width: `${levelProgress}%` }} />
               </div>
-              <p className="text-xs text-gray-400 mt-1">{xpToNextLevel - currentXp} XP to Level {(user?.level || 1) + 1}</p>
+              <p className="text-xs text-gray-400 mt-1">{xpToNextLevel - currentXp} {tp('xpToLevel')} {(user?.level || 1) + 1}</p>
             </div>
           </div>
         </div>
@@ -531,7 +536,7 @@ export default function UserProfilePage() {
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5 text-[#FF6B35]" />
-              <h3 className="font-semibold text-white">Публикации</h3>
+              <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
               {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
             </div>
             <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
@@ -558,8 +563,8 @@ export default function UserProfilePage() {
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-10 h-10 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Пока нет публикаций</h3>
-              <p className="text-sm text-gray-400">Загрузите фото или видео, чтобы поделиться прогрессом!</p>
+              <h3 className="text-lg font-semibold text-white mb-2">{tPosts('noPublications')}</h3>
+              <p className="text-sm text-gray-400">{tp('uploadPhotoOrVideo')}</p>
             </div>
           ) : viewMode === 'grid' ? (
             <div>

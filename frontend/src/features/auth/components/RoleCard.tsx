@@ -4,8 +4,9 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { RoleCardData } from '../types/role.types'
-import { User, Dumbbell } from 'lucide-react'
+import { User, Dumbbell, Apple } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { useTranslations } from 'next-intl'
 
 interface RoleCardProps {
   data: RoleCardData
@@ -15,15 +16,24 @@ interface RoleCardProps {
 }
 
 export const RoleCard = ({ data, isSelected, onSelect, onAction }: RoleCardProps) => {
-  const Icon = data.type === 'user' ? User : Dumbbell
+  const t = useTranslations('auth')
+  const tTags = useTranslations('auth.tags')
+  const Icon = data.type === 'user' ? User : data.type === 'nutritionist' ? Apple : Dumbbell
   const buttonVariant = data.accentColor
+
+  const loginLabel = data.type === 'user' 
+    ? t('loginAsUser') 
+    : data.type === 'nutritionist' 
+      ? t('loginAsNutritionist') 
+      : t('loginAsTrainer')
 
   return (
     <Card
       className={cn(
         'p-6 cursor-pointer hover:shadow-xl transition-all duration-300',
         isSelected && data.type === 'user' && 'ring-4 ring-user-500 shadow-xl',
-        isSelected && data.type === 'trainer' && 'ring-4 ring-trainer-500 shadow-xl'
+        isSelected && data.type === 'trainer' && 'ring-4 ring-trainer-500 shadow-xl',
+        isSelected && data.type === 'nutritionist' && 'ring-4 ring-trainer-500 shadow-xl'
       )}
       onClick={onSelect}
     >
@@ -42,14 +52,14 @@ export const RoleCard = ({ data, isSelected, onSelect, onAction }: RoleCardProps
           />
         </div>
 
-        <h3 className="text-2xl font-bold text-gray-900">{data.title}</h3>
+        <h3 className="text-2xl font-bold text-gray-900">{t(data.title)}</h3>
 
-        <p className="text-gray-600 text-sm leading-relaxed">{data.description}</p>
+        <p className="text-gray-600 text-sm leading-relaxed">{t(data.description)}</p>
 
         <div className="flex flex-wrap gap-2 justify-center">
-          {data.tags.map((tag) => (
-            <Badge key={tag} variant={data.accentColor}>
-              {tag}
+          {data.tags.map((tagKey) => (
+            <Badge key={tagKey} variant={buttonVariant}>
+              {tTags(tagKey)}
             </Badge>
           ))}
         </div>
@@ -63,7 +73,7 @@ export const RoleCard = ({ data, isSelected, onSelect, onAction }: RoleCardProps
             onAction()
           }}
         >
-          Войти как {data.type === 'user' ? 'пользователь' : 'тренер'}
+          {loginLabel}
         </Button>
       </div>
     </Card>

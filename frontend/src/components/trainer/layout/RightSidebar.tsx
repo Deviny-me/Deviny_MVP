@@ -3,12 +3,15 @@
 import { Flame, Users, Calendar, TrendingUp, ArrowRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { studentsApi, Student } from '@/lib/api/studentsApi'
 import { scheduleApi } from '@/lib/api/scheduleApi'
 import { getMediaUrl } from '@/lib/config'
 
 export function RightSidebar() {
   const router = useRouter()
+  const tFeed = useTranslations('feed')
+  const tCommon = useTranslations('common')
   const [students, setStudents] = useState<Student[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<number>(0)
   const [loading, setLoading] = useState(true)
@@ -53,12 +56,12 @@ export function RightSidebar() {
       {students.length > 0 && (
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-white">Недавние ученики</h3>
+            <h3 className="text-sm font-semibold text-white">{tFeed('recentStudents')}</h3>
             <button
               onClick={() => router.push('/trainer/students')}
               className="text-xs text-[#FF6B35] hover:underline flex items-center gap-1"
             >
-              Все
+              {tCommon('all')}
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>

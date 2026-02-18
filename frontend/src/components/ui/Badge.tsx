@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: 'user' | 'trainer' | 'gray'
+  variant?: 'user' | 'trainer' | 'nutritionist' | 'gray'
 }
 
 const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
@@ -10,6 +10,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const variants = {
       user: 'bg-user-100 text-user-700',
       trainer: 'bg-trainer-100 text-trainer-700',
+      nutritionist: 'bg-trainer-100 text-trainer-700',
       gray: 'bg-gray-100 text-gray-700',
     }
     

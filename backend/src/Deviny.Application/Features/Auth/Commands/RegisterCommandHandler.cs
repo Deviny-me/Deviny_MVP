@@ -76,8 +76,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         _logger.LogInformation("User registered successfully: {Email}, Id: {UserId}", 
             user.Email, user.Id);
 
-        // Handle trainer-specific setup: create profile and add verification document as certificate
-        if (request.Role == UserRole.Trainer)
+        // Handle trainer and nutritionist specific setup: create profile and add verification document as certificate
+        if (request.Role == UserRole.Trainer || request.Role == UserRole.Nutritionist)
         {
             // Generate unique slug for trainer profile
             var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
@@ -109,7 +109,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
                     request.VerificationDocument, 
                     cancellationToken);
                 
-                _logger.LogInformation("Verification document uploaded for trainer: {UserId}", user.Id);
+                _logger.LogInformation("Verification document uploaded for trainer/nutritionist: {UserId}", user.Id);
 
                 // Add document as certificate
                 var certificate = new TrainerCertificate

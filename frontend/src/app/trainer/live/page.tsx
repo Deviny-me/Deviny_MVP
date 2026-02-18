@@ -9,8 +9,11 @@ import {
   Bell,
   Play
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function LiveWorkoutsPage() {
+  const t = useTranslations('live')
+  const tc = useTranslations('common')
   return (
     <>
       <div className="min-h-[80vh] flex items-center justify-center px-4">
@@ -60,7 +63,7 @@ export default function LiveWorkoutsPage() {
           >
             Live Workouts{' '}
             <span className="bg-gradient-to-r from-red-500 to-[#FF0844] bg-clip-text text-transparent">
-              Coming Soon
+              {tc('comingSoon')}
             </span>
           </motion.h1>
 
@@ -71,7 +74,7 @@ export default function LiveWorkoutsPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Скоро вы сможете проводить живые тренировки для своих студентов в реальном времени. Интерактивные сессии, чат и многое другое!
+            {t('teaser')}
           </motion.p>
 
           {/* Features coming */}
@@ -85,24 +88,24 @@ export default function LiveWorkoutsPage() {
               <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Video className="w-5 h-5 text-red-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">HD Стриминг</h3>
-              <p className="text-xs text-gray-500">Качественная видеосвязь</p>
+              <h3 className="text-white font-medium mb-1">{t('hdStreaming')}</h3>
+              <p className="text-xs text-gray-500">{t('hdStreamingDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-[#FF6B35]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Users className="w-5 h-5 text-[#FF6B35]" />
               </div>
-              <h3 className="text-white font-medium mb-1">Группы</h3>
-              <p className="text-xs text-gray-500">До 100 участников</p>
+              <h3 className="text-white font-medium mb-1">{t('groups')}</h3>
+              <p className="text-xs text-gray-500">{t('groupsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
               <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
                 <Calendar className="w-5 h-5 text-blue-500" />
               </div>
-              <h3 className="text-white font-medium mb-1">Расписание</h3>
-              <p className="text-xs text-gray-500">Планируйте трансляции</p>
+              <h3 className="text-white font-medium mb-1">{t('scheduleLabel')}</h3>
+              <p className="text-xs text-gray-500">{t('scheduleDesc')}</p>
             </div>
           </motion.div>
 
@@ -116,7 +119,7 @@ export default function LiveWorkoutsPage() {
             whileTap={{ scale: 0.98 }}
           >
             <Bell className="w-5 h-5" />
-            Уведомить о запуске
+            {tc('notifyOnLaunch')}
           </motion.button>
 
           {/* Progress indicator */}
@@ -128,7 +131,7 @@ export default function LiveWorkoutsPage() {
           >
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span>В разработке</span>
+              <span>{tc('inDevelopment')}</span>
             </div>
           </motion.div>
         </motion.div>

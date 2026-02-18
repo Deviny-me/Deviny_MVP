@@ -5,6 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
+import { LanguageProvider } from '@/components/language/LanguageProvider'
+import { ThemeProvider } from '@/components/theme/ThemeProvider'
 
 // Routes where right sidebar should be hidden
 const HIDE_RIGHT_SIDEBAR = [
@@ -64,12 +66,16 @@ export default function TrainerDashboardLayout({
   }
 
   return (
-    <UnreadMessagesProvider>
-      <LevelProvider>
-        <MainLayout showRightSidebar={showRightSidebar}>
-          {children}
-        </MainLayout>
-      </LevelProvider>
-    </UnreadMessagesProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <UnreadMessagesProvider>
+          <LevelProvider>
+            <MainLayout showRightSidebar={showRightSidebar}>
+              {children}
+            </MainLayout>
+          </LevelProvider>
+        </UnreadMessagesProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { 
   Camera,
   MapPin,
@@ -63,6 +64,7 @@ function TrainerGridCell({
   deletingPostId?: string | null
   currentUserId?: string | null
 }) {
+  const tp = useTranslations('posts')
   const post = usePost(postId)
   const dispatch = usePostDispatch()
   const [isLikeLoading, setIsLikeLoading] = useState(false)
@@ -140,7 +142,7 @@ function TrainerGridCell({
     return (
       <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
-        <p className="text-[10px] text-gray-600 leading-tight">Публикация удалена</p>
+        <p className="text-[10px] text-gray-600 leading-tight">{tp('postDeleted')}</p>
       </div>
     )
   }
@@ -270,6 +272,9 @@ function TrainerPostDetailModal({ postId, onClose, onDelete, deletingPostId, cur
 }
 
 export default function ProfilePage() {
+  const t = useTranslations('profile')
+  const tp = useTranslations('posts')
+  const tc = useTranslations('common')
   const upsertPosts = useUpsertPosts()
   const storeDispatch = usePostDispatch()
 
@@ -337,7 +342,7 @@ export default function ProfilePage() {
       setEditGender(data.trainer?.gender || '')
     } catch (error) {
       console.error('Failed to load profile:', error)
-      toast.error('Не удалось загрузить профиль')
+      toast.error(t('toasts.profileLoadError'))
     } finally {
       setLoading(false)
     }
@@ -408,12 +413,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       await updateAbout(aboutText)
-      toast.success('Информация обновлена')
+      toast.success(t('toasts.infoUpdated'))
       setShowAboutModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update about:', error)
-      toast.error('Не удалось обновить информацию')
+      toast.error(t('toasts.infoUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -422,14 +427,14 @@ export default function ProfilePage() {
   const handleAddCertificate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!certFile || !certTitle) {
-      toast.error('Заполните все обязательные поля')
+      toast.error(t('toasts.fillRequiredFields'))
       return
     }
 
     try {
       setSaving(true)
       await uploadCertificate(certTitle, certIssuer, parseInt(certYear), certFile)
-      toast.success('Сертификат добавлен')
+      toast.success(t('toasts.certificateAdded'))
       setShowCertificateModal(false)
       setCertTitle('')
       setCertIssuer('')
@@ -438,23 +443,23 @@ export default function ProfilePage() {
       loadProfile()
     } catch (error) {
       console.error('Failed to add certificate:', error)
-      toast.error('Не удалось добавить сертификат')
+      toast.error(t('toasts.certificateAddError'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDeleteCertificate = async (id: string) => {
-    if (!confirm('Удалить этот сертификат?')) return
+    if (!confirm(t('toasts.deleteCertificateConfirm'))) return
     
     try {
       setDeleting(id)
       await deleteCertificate(id)
-      toast.success('Сертификат удалён')
+      toast.success(t('toasts.certificateDeleted'))
       loadProfile()
     } catch (error) {
       console.error('Failed to delete certificate:', error)
-      toast.error('Не удалось удалить сертификат')
+      toast.error(t('toasts.certificateDeleteError'))
     } finally {
       setDeleting(null)
     }
@@ -463,20 +468,20 @@ export default function ProfilePage() {
   const handleAddSpecialization = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!specName.trim()) {
-      toast.error('Введите название специализации')
+      toast.error(t('toasts.enterSpecializationName'))
       return
     }
 
     try {
       setSaving(true)
       await addSpecialization(specName)
-      toast.success('Специализация добавлена')
+      toast.success(t('toasts.specializationAdded'))
       setShowSpecializationModal(false)
       setSpecName('')
       loadProfile()
     } catch (error) {
       console.error('Failed to add specialization:', error)
-      toast.error('Не удалось добавить специализацию')
+      toast.error(t('toasts.specializationAddError'))
     } finally {
       setSaving(false)
     }
@@ -486,11 +491,11 @@ export default function ProfilePage() {
     try {
       setDeleting(id)
       await deleteSpecialization(id)
-      toast.success('Специализация удалена')
+      toast.success(t('toasts.specializationDeleted'))
       loadProfile()
     } catch (error) {
       console.error('Failed to delete specialization:', error)
-      toast.error('Не удалось удалить специализацию')
+      toast.error(t('toasts.specializationDeleteError'))
     } finally {
       setDeleting(null)
     }
@@ -501,7 +506,7 @@ export default function ProfilePage() {
       try {
         await navigator.clipboard.writeText(profile.trainer.profilePublicUrl)
         setCopied(true)
-        toast.success('Ссылка скопирована')
+        toast.success(t('toasts.linkCopied'))
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
         console.error('Failed to copy:', error)
@@ -515,12 +520,12 @@ export default function ProfilePage() {
       await updateTrainerProfile({
         location: editLocation,
       })
-      toast.success('Локация обновлена')
+      toast.success(t('toasts.locationUpdated'))
       setShowEditLocationModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update location:', error)
-      toast.error('Не удалось обновить локацию')
+      toast.error(t('toasts.locationUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -530,12 +535,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       // Note: Phone update might need to be added to backend API
-      toast.success('Телефон обновлен')
+      toast.success(t('toasts.phoneUpdated'))
       setShowEditPhoneModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update phone:', error)
-      toast.error('Не удалось обновить телефон')
+      toast.error(t('toasts.phoneUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -547,12 +552,12 @@ export default function ProfilePage() {
       await updateTrainerProfile({
         experienceYears: parseInt(editExperienceYears) || 0,
       })
-      toast.success('Опыт работы обновлен')
+      toast.success(t('toasts.experienceUpdated'))
       setShowEditExperienceModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update experience:', error)
-      toast.error('Не удалось обновить опыт работы')
+      toast.error(t('toasts.experienceUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -562,12 +567,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       // Note: Gender update might need to be added to backend API
-      toast.success('Пол обновлен')
+      toast.success(t('toasts.genderUpdated'))
       setShowEditGenderModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update gender:', error)
-      toast.error('Не удалось обновить пол')
+      toast.error(t('toasts.genderUpdateError'))
     } finally {
       setSaving(false)
     }
@@ -579,12 +584,12 @@ export default function ProfilePage() {
 
     // Validate file
     if (!file.type.startsWith('image/')) {
-      toast.error('Пожалуйста, выберите изображение')
+      toast.error(t('toasts.avatarSelectImage'))
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Размер файла не должен превышать 5 МБ')
+      toast.error(t('toasts.avatarSizeLimit'))
       return
     }
 
@@ -608,18 +613,18 @@ export default function ProfilePage() {
         }))
       }
       
-      toast.success('Фото профиля обновлено')
+      toast.success(t('toasts.avatarUpdated'))
       await loadProfile()
     } catch (error) {
       console.error('Failed to upload avatar:', error)
-      toast.error('Не удалось загрузить фото')
+      toast.error(t('toasts.avatarUploadError'))
     } finally {
       setUploadingAvatar(false)
     }
   }
 
   const handleAvatarDelete = async () => {
-    if (!confirm('Удалить фото профиля?')) return
+    if (!confirm(t('toasts.avatarDeleteConfirm'))) return
     try {
       setDeletingAvatar(true)
       await deleteTrainerAvatar()
@@ -638,10 +643,10 @@ export default function ProfilePage() {
         }))
       }
 
-      toast.success('Фото профиля удалено')
+      toast.success(t('toasts.avatarDeleted'))
     } catch (error) {
       console.error('Failed to delete avatar:', error)
-      toast.error('Не удалось удалить фото')
+      toast.error(t('toasts.avatarDeleteError'))
     } finally {
       setDeletingAvatar(false)
     }
@@ -656,19 +661,19 @@ export default function ProfilePage() {
         experienceYears: editExperienceYears ? parseInt(editExperienceYears) : undefined,
         location: editLocation || undefined
       })
-      toast.success('Профиль обновлён')
+      toast.success(t('toasts.profileUpdated'))
       setShowEditProfileModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update profile:', error)
-      toast.error('Не удалось обновить профиль')
+      toast.error(t('toasts.profileUpdateError'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
+    if (!confirm(tp('deleteConfirm'))) {
       return
     }
 
@@ -678,14 +683,14 @@ export default function ProfilePage() {
       storeDispatch({ type: 'REMOVE_POST', postId })
       setPostIds(prev => prev.filter(id => id !== postId))
       setSelectedPostId(null)
-      toast.success('Публикация удалена')
+      toast.success(tp('deleted'))
     } catch (error) {
       if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
-        toast.success('Публикация удалена')
+        toast.success(tp('deleted'))
         storeDispatch({ type: 'REMOVE_POST', postId })
         setPostIds(prev => prev.filter(id => id !== postId))
       } else {
-        const message = error instanceof Error ? error.message : 'Не удалось удалить публикацию'
+        const message = error instanceof Error ? error.message : tp('deleteError')
         toast.error(message)
       }
     } finally {
@@ -707,7 +712,7 @@ export default function ProfilePage() {
     return (
       <>
         <div className="text-center py-24">
-          <p className="text-gray-400">Не удалось загрузить профиль</p>
+          <p className="text-gray-400">{t('toasts.profileLoadError')}</p>
         </div>
       </>
     )
@@ -792,7 +797,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-400">{trainer.primaryTitle || 'Персональный тренер'}</p>
+                  <p className="text-gray-400">{trainer.primaryTitle || t('personalTrainer')}</p>
                   {trainer.secondaryTitle && (
                     <p className="text-sm text-gray-500">{trainer.secondaryTitle}</p>
                   )}
@@ -815,10 +820,10 @@ export default function ProfilePage() {
               </button>
               <div className="flex items-center gap-2 text-gray-400 mb-1">
                 <MapPin className="w-4 h-4" />
-                <span className="text-xs">Локация</span>
+                <span className="text-xs">{t('location')}</span>
               </div>
               <p className="text-white text-sm font-medium truncate">
-                {trainer.location || [trainer.city, trainer.country].filter(Boolean).join(', ') || 'Не указано'}
+                {trainer.location || [trainer.city, trainer.country].filter(Boolean).join(', ') || t('notSpecified')}
               </p>
             </div>
           )}
@@ -834,7 +839,7 @@ export default function ProfilePage() {
               </button>
               <div className="flex items-center gap-2 text-gray-400 mb-1">
                 <Phone className="w-4 h-4" />
-                <span className="text-xs">Телефон</span>
+                <span className="text-xs">{t('phoneLabel')}</span>
               </div>
               <p className="text-white text-sm font-medium">{trainer.phone}</p>
             </div>
@@ -851,9 +856,9 @@ export default function ProfilePage() {
               </button>
               <div className="flex items-center gap-2 text-gray-400 mb-1">
                 <Briefcase className="w-4 h-4" />
-                <span className="text-xs">Опыт работы</span>
+                <span className="text-xs">{t('experience')}</span>
               </div>
-              <p className="text-white text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? 'год' : trainer.experienceYears < 5 ? 'года' : 'лет'}</p>
+              <p className="text-white text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? t('yearSingular') : trainer.experienceYears < 5 ? t('yearFew') : t('yearMany')}</p>
             </div>
           )}
 
@@ -868,10 +873,10 @@ export default function ProfilePage() {
               </button>
               <div className="flex items-center gap-2 text-gray-400 mb-1">
                 <User className="w-4 h-4" />
-                <span className="text-xs">Пол</span>
+                <span className="text-xs">{t('genderLabel')}</span>
               </div>
               <p className="text-white text-sm font-medium">
-                {trainer.gender === 'Male' || trainer.gender === 'male' ? 'Мужской' : trainer.gender === 'Female' || trainer.gender === 'female' ? 'Женский' : trainer.gender}
+                {trainer.gender === 'Male' || trainer.gender === 'male' ? t('male') : trainer.gender === 'Female' || trainer.gender === 'female' ? t('female') : trainer.gender}
               </p>
             </div>
           )}
@@ -883,12 +888,12 @@ export default function ProfilePage() {
           {about?.text ? (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-400">О себе</h3>
+                <h3 className="text-sm font-medium text-gray-400">{t('aboutMe')}</h3>
                 <button 
                   onClick={() => setShowAboutModal(true)}
                   className="text-xs text-[#FF6B35] hover:underline"
                 >
-                  Изменить
+                  {tc('change')}
                 </button>
               </div>
               <p className="text-gray-300 leading-relaxed">{about.text}</p>
@@ -899,7 +904,7 @@ export default function ProfilePage() {
               className="w-full py-3 text-gray-500 hover:text-gray-400 flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Добавить описание профиля
+              {t('addDescription')}
             </button>
           )}
         </div>
@@ -909,22 +914,22 @@ export default function ProfilePage() {
           <div className="bg-gradient-to-br from-[#FF6B35]/10 to-[#FF0844]/10 rounded-xl border border-[#FF6B35]/20 p-4 text-center">
             <BookOpen className="w-6 h-6 text-[#FF6B35] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.programsCount}</p>
-            <p className="text-xs text-gray-400">Программ</p>
+            <p className="text-xs text-gray-400">{t('programs')}</p>
           </div>
           <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 p-4 text-center">
             <Users className="w-6 h-6 text-blue-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.studentsCount}</p>
-            <p className="text-xs text-gray-400">Учеников</p>
+            <p className="text-xs text-gray-400">{t('students')}</p>
           </div>
           <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-4 text-center">
             <Star className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.ratingValue.toFixed(1)}</p>
-            <p className="text-xs text-gray-400">{trainer.reviewsCount} отзывов</p>
+            <p className="text-xs text-gray-400">{trainer.reviewsCount} {t('reviews')}</p>
           </div>
           <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-4 text-center">
             <Award className="w-6 h-6 text-purple-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.achievementsCount}</p>
-            <p className="text-xs text-gray-400">Достижений</p>
+            <p className="text-xs text-gray-400">{t('achievements')}</p>
           </div>
         </div>
 
@@ -932,13 +937,13 @@ export default function ProfilePage() {
         {specializations.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-400">Специализации</h3>
+              <h3 className="text-sm font-medium text-gray-400">{t('specializations')}</h3>
               <button
                 onClick={() => setShowSpecializationModal(true)}
                 className="text-xs text-[#FF6B35] hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" />
-                Добавить
+                {tc('add')}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -972,7 +977,7 @@ export default function ProfilePage() {
               className="w-full py-3 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-400 hover:border-[#FF6B35]/30 transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              Добавить специализации
+              {t('addSpecialization')}
             </button>
           </div>
         )}
@@ -981,8 +986,8 @@ export default function ProfilePage() {
         {achievements.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-400">Достижения</h3>
-              <span className="text-xs text-gray-500">{achievements.length} всего</span>
+              <h3 className="text-sm font-medium text-gray-400">{t('achievements')}</h3>
+              <span className="text-xs text-gray-500">{achievements.length} {tc('total')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {achievements.slice(0, 6).map((achievement) => (
@@ -1029,7 +1034,7 @@ export default function ProfilePage() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab === 'posts' ? 'Посты' : tab === 'certificates' ? 'Сертификаты' : tab === 'specializations' ? 'Специализации' : 'Достижения'}
+              {tab === 'posts' ? t('posts') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="profileTab"
@@ -1046,7 +1051,7 @@ export default function ProfilePage() {
             <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Grid className="w-5 h-5 text-[#FF6B35]" />
-                <h3 className="font-semibold text-white">Публикации</h3>
+                <h3 className="font-semibold text-white">{t('publications')}</h3>
                 {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
               </div>
               <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
@@ -1070,8 +1075,8 @@ export default function ProfilePage() {
             {postIds.length === 0 && !isLoadingPosts ? (
               <div className="py-12 text-center">
                 <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Нет постов</p>
-                <p className="text-sm text-gray-500 mt-1">Создайте свой первый пост в ленте</p>
+                <p className="text-gray-400">{t('noPosts')}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('createFirstPost')}</p>
               </div>
             ) : viewMode === 'grid' ? (
               <div>
@@ -1119,7 +1124,7 @@ export default function ProfilePage() {
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#FF6B35]/50 transition-colors flex items-center justify-center gap-2"
             >
               <Upload className="w-5 h-5" />
-              Добавить сертификат
+              {t('addCertificate')}
             </button>
             
             {certificates.length > 0 ? (
@@ -1149,7 +1154,7 @@ export default function ProfilePage() {
                         onClick={() => setViewingCertificate(getMediaUrl(cert.fileUrl) || '')}
                         className="text-xs text-[#FF6B35] hover:underline"
                       >
-                        Просмотреть файл
+                        {t('viewFile')}
                       </button>
                     )}
                   </div>
@@ -1158,7 +1163,7 @@ export default function ProfilePage() {
             ) : (
               <div className="text-center py-8">
                 <Award className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Нет сертификатов</p>
+                <p className="text-gray-400">{t('noCertificates')}</p>
               </div>
             )}
           </div>
@@ -1171,7 +1176,7 @@ export default function ProfilePage() {
               className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#FF6B35]/50 transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
-              Добавить специализацию
+              {t('addSpecialization')}
             </button>
             
             {specializations.length > 0 ? (
@@ -1199,7 +1204,7 @@ export default function ProfilePage() {
             ) : (
               <div className="text-center py-8">
                 <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Нет специализаций</p>
+                <p className="text-gray-400">{t('noSpecializations')}</p>
               </div>
             )}
           </div>
@@ -1251,8 +1256,8 @@ export default function ProfilePage() {
             ) : (
               <div className="text-center py-12">
                 <Award className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Пока нет достижений</p>
-                <p className="text-sm text-gray-500 mt-1">Достижения появятся по мере вашей работы</p>
+                <p className="text-gray-400">{t('noAchievements')}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('achievementsWillAppear')}</p>
               </div>
             )}
           </div>
@@ -1268,7 +1273,7 @@ export default function ProfilePage() {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">О себе</h2>
+                  <h2 className="text-xl font-bold text-white">{t('aboutMe')}</h2>
                   <button onClick={() => setShowAboutModal(false)} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
@@ -1278,7 +1283,7 @@ export default function ProfilePage() {
                   onChange={(e) => setAboutText(e.target.value)}
                   rows={5}
                   className="w-full px-4 py-3 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] resize-none mb-4"
-                  placeholder="Расскажите о себе..."
+                  placeholder={t('aboutMePlaceholder')}
                 />
                 <button
                   onClick={handleSaveAbout}
@@ -1286,7 +1291,7 @@ export default function ProfilePage() {
                   className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Сохранить
+                  {tc('save')}
                 </button>
               </div>
             </motion.div>
@@ -1303,34 +1308,34 @@ export default function ProfilePage() {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">Добавить сертификат</h2>
+                  <h2 className="text-xl font-bold text-white">{t('addCertificate')}</h2>
                   <button onClick={() => setShowCertificateModal(false)} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <form onSubmit={handleAddCertificate} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Название *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('certificateName')}</label>
                     <input
                       type="text"
                       value={certTitle}
                       onChange={(e) => setCertTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Название сертификата"
+                      placeholder={t('certificateNamePlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Организация</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('organization')}</label>
                     <input
                       type="text"
                       value={certIssuer}
                       onChange={(e) => setCertIssuer(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Кто выдал сертификат"
+                      placeholder={t('organizationPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Год</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('year')}</label>
                     <input
                       type="number"
                       value={certYear}
@@ -1339,11 +1344,11 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Файл *</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('file')}</label>
                     <label className="flex items-center justify-center w-full py-4 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FF6B35]/50 transition-colors">
                       <Upload className="w-5 h-5 text-gray-400 mr-2" />
                       <span className="text-sm text-gray-400">
-                        {certFile ? certFile.name : 'Выберите файл'}
+                        {certFile ? certFile.name : t('selectFile')}
                       </span>
                       <input
                         type="file"
@@ -1359,7 +1364,7 @@ export default function ProfilePage() {
                     className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                    Добавить
+                    {tc('add')}
                   </button>
                 </form>
               </div>
@@ -1377,45 +1382,45 @@ export default function ProfilePage() {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">Добавить специализацию</h2>
+                  <h2 className="text-xl font-bold text-white">{t('addSpecialization')}</h2>
                   <button onClick={() => setShowSpecializationModal(false)} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <form onSubmit={handleAddSpecialization} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Специализация</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('specializations')}</label>
                     <select
                       value={specName}
                       onChange={(e) => setSpecName(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
                     >
-                      <option value="">Выберите специализацию</option>
-                      <option value="Силовые тренировки">Силовые тренировки</option>
-                      <option value="Кардио тренировки">Кардио тренировки</option>
-                      <option value="Функциональный тренинг">Функциональный тренинг</option>
-                      <option value="Кроссфит">Кроссфит</option>
-                      <option value="Пилатес">Пилатес</option>
-                      <option value="Йога">Йога</option>
-                      <option value="Растяжка и гибкость">Растяжка и гибкость</option>
-                      <option value="TRX тренировки">TRX тренировки</option>
-                      <option value="Бокс">Бокс</option>
-                      <option value="Единоборства">Единоборства</option>
-                      <option value="HIIT">HIIT</option>
-                      <option value="Табата">Табата</option>
-                      <option value="Бодибилдинг">Бодибилдинг</option>
-                      <option value="Пауэрлифтинг">Пауэрлифтинг</option>
-                      <option value="Тяжёлая атлетика">Тяжёлая атлетика</option>
-                      <option value="Реабилитация">Реабилитация</option>
-                      <option value="ЛФК">ЛФК</option>
-                      <option value="Работа с беременными">Работа с беременными</option>
-                      <option value="Детский фитнес">Детский фитнес</option>
-                      <option value="Фитнес для пожилых">Фитнес для пожилых</option>
-                      <option value="Похудение">Похудение</option>
-                      <option value="Набор массы">Набор массы</option>
-                      <option value="Коррекция фигуры">Коррекция фигуры</option>
-                      <option value="Спортивная подготовка">Спортивная подготовка</option>
-                      <option value="Нутрициология">Нутрициология</option>
+                      <option value="">{t('selectSpecialization')}</option>
+                      <option value={t('specializationOptions.strength')}>{t('specializationOptions.strength')}</option>
+                      <option value={t('specializationOptions.cardio')}>{t('specializationOptions.cardio')}</option>
+                      <option value={t('specializationOptions.functional')}>{t('specializationOptions.functional')}</option>
+                      <option value={t('specializationOptions.crossfit')}>{t('specializationOptions.crossfit')}</option>
+                      <option value={t('specializationOptions.pilates')}>{t('specializationOptions.pilates')}</option>
+                      <option value={t('specializationOptions.yoga')}>{t('specializationOptions.yoga')}</option>
+                      <option value={t('specializationOptions.stretching')}>{t('specializationOptions.stretching')}</option>
+                      <option value={t('specializationOptions.trx')}>{t('specializationOptions.trx')}</option>
+                      <option value={t('specializationOptions.boxing')}>{t('specializationOptions.boxing')}</option>
+                      <option value={t('specializationOptions.martialArts')}>{t('specializationOptions.martialArts')}</option>
+                      <option value={t('specializationOptions.hiit')}>{t('specializationOptions.hiit')}</option>
+                      <option value={t('specializationOptions.tabata')}>{t('specializationOptions.tabata')}</option>
+                      <option value={t('specializationOptions.bodybuilding')}>{t('specializationOptions.bodybuilding')}</option>
+                      <option value={t('specializationOptions.powerlifting')}>{t('specializationOptions.powerlifting')}</option>
+                      <option value={t('specializationOptions.weightlifting')}>{t('specializationOptions.weightlifting')}</option>
+                      <option value={t('specializationOptions.rehabilitation')}>{t('specializationOptions.rehabilitation')}</option>
+                      <option value={t('specializationOptions.therapeuticExercise')}>{t('specializationOptions.therapeuticExercise')}</option>
+                      <option value={t('specializationOptions.prenatal')}>{t('specializationOptions.prenatal')}</option>
+                      <option value={t('specializationOptions.childFitness')}>{t('specializationOptions.childFitness')}</option>
+                      <option value={t('specializationOptions.seniorFitness')}>{t('specializationOptions.seniorFitness')}</option>
+                      <option value={t('specializationOptions.weightLoss')}>{t('specializationOptions.weightLoss')}</option>
+                      <option value={t('specializationOptions.massGain')}>{t('specializationOptions.massGain')}</option>
+                      <option value={t('specializationOptions.bodyCorrection')}>{t('specializationOptions.bodyCorrection')}</option>
+                      <option value={t('specializationOptions.sportPrep')}>{t('specializationOptions.sportPrep')}</option>
+                      <option value={t('specializationOptions.nutrition')}>{t('specializationOptions.nutrition')}</option>
                     </select>
                   </div>
                   <button
@@ -1424,7 +1429,7 @@ export default function ProfilePage() {
                     className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                    Добавить
+                    {tc('add')}
                   </button>
                 </form>
               </div>
@@ -1442,34 +1447,34 @@ export default function ProfilePage() {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">Редактировать профиль</h2>
+                  <h2 className="text-xl font-bold text-white">{t('editProfile')}</h2>
                   <button onClick={() => setShowEditProfileModal(false)} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Основная специальность</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('primarySpecialty')}</label>
                     <input
                       type="text"
                       value={editPrimaryTitle}
                       onChange={(e) => setEditPrimaryTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Например: Персональный тренер"
+                      placeholder={t('primarySpecialtyPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Дополнительная специальность</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('secondarySpecialty')}</label>
                     <input
                       type="text"
                       value={editSecondaryTitle}
                       onChange={(e) => setEditSecondaryTitle(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Например: Нутрициолог"
+                      placeholder={t('secondarySpecialtyPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Опыт работы (лет)</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('experienceYears')}</label>
                     <input
                       type="number"
                       value={editExperienceYears}
@@ -1481,13 +1486,13 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Локация</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('location')}</label>
                     <input
                       type="text"
                       value={editLocation}
                       onChange={(e) => setEditLocation(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                      placeholder="Москва, Россия"
+                      placeholder={t('locationPlaceholder')}
                     />
                   </div>
                   <div className="pt-2">
@@ -1497,7 +1502,7 @@ export default function ProfilePage() {
                       className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                      Сохранить
+                      {tc('save')}
                     </button>
                   </div>
                 </div>
@@ -1515,7 +1520,7 @@ export default function ProfilePage() {
               className="relative w-full max-w-4xl max-h-[90vh] bg-[#1A1A1A] rounded-xl overflow-hidden"
             >
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#1A1A1A] border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Сертификат</h2>
+                <h2 className="text-xl font-bold text-white">{t('certificate')}</h2>
                 <button
                   onClick={() => setViewingCertificate(null)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -1526,7 +1531,7 @@ export default function ProfilePage() {
               <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
                 <img 
                   src={viewingCertificate} 
-                  alt="Сертификат" 
+                  alt={t('certificate')} 
                   className="w-full h-auto rounded-lg"
                 />
               </div>
@@ -1543,7 +1548,7 @@ export default function ProfilePage() {
               className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Изменить локацию</h2>
+                <h2 className="text-xl font-bold text-white">{t('changeLocation')}</h2>
                 <button
                   onClick={() => setShowEditLocationModal(false)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -1557,7 +1562,7 @@ export default function ProfilePage() {
                   value={editLocation}
                   onChange={(e) => setEditLocation(e.target.value)}
                   className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                  placeholder="Москва, Россия"
+                  placeholder={t('locationPlaceholder')}
                 />
                 <button
                   onClick={handleSaveLocation}
@@ -1565,7 +1570,7 @@ export default function ProfilePage() {
                   className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Сохранить
+                  {tc('save')}
                 </button>
               </div>
             </motion.div>
@@ -1581,7 +1586,7 @@ export default function ProfilePage() {
               className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Изменить телефон</h2>
+                <h2 className="text-xl font-bold text-white">{t('changePhone')}</h2>
                 <button
                   onClick={() => setShowEditPhoneModal(false)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -1595,7 +1600,7 @@ export default function ProfilePage() {
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
                   className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                  placeholder="+7 (999) 123-45-67"
+                  placeholder={t('phonePlaceholder')}
                 />
                 <button
                   onClick={handleSavePhone}
@@ -1603,7 +1608,7 @@ export default function ProfilePage() {
                   className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Сохранить
+                  {tc('save')}
                 </button>
               </div>
             </motion.div>
@@ -1619,7 +1624,7 @@ export default function ProfilePage() {
               className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Изменить опыт работы</h2>
+                <h2 className="text-xl font-bold text-white">{t('changeExperience')}</h2>
                 <button
                   onClick={() => setShowEditExperienceModal(false)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -1642,7 +1647,7 @@ export default function ProfilePage() {
                   className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Сохранить
+                  {tc('save')}
                 </button>
               </div>
             </motion.div>
@@ -1658,7 +1663,7 @@ export default function ProfilePage() {
               className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Изменить пол</h2>
+                <h2 className="text-xl font-bold text-white">{t('changeGender')}</h2>
                 <button
                   onClick={() => setShowEditGenderModal(false)}
                   className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
@@ -1672,9 +1677,9 @@ export default function ProfilePage() {
                   onChange={(e) => setEditGender(e.target.value)}
                   className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
                 >
-                  <option value="">Выберите пол</option>
-                  <option value="Male">Мужской</option>
-                  <option value="Female">Женский</option>
+                  <option value="">{t('selectGender')}</option>
+                  <option value="Male">{t('male')}</option>
+                  <option value="Female">{t('female')}</option>
                 </select>
                 <button
                   onClick={handleSaveGender}
@@ -1682,7 +1687,7 @@ export default function ProfilePage() {
                   className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  Сохранить
+                  {tc('save')}
                 </button>
               </div>
             </motion.div>

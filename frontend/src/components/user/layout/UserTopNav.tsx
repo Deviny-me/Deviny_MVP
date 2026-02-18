@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
+import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { 
   Flame, 
   MessageCircle, 
@@ -14,6 +15,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { SearchBar } from '@/components/search/SearchBar'
+import { useTranslations } from 'next-intl'
 
 export function UserTopNav() {
   const router = useRouter()
@@ -21,12 +23,13 @@ export function UserTopNav() {
   const { user, logout } = useUser()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const { unreadCount } = useUnreadMessages()
+  const t = useTranslations('nav')
 
   const navItems = [
-    { icon: Users, label: 'Friends', path: '/user/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/user/messages', badge: unreadCount > 0 ? unreadCount : undefined },
-    { icon: User, label: 'Profile', path: '/user/profile' },
-    { icon: Settings, label: 'Settings', path: '/user/settings' },
+    { icon: Users, label: t('friends'), path: '/user/friends' },
+    { icon: MessageCircle, label: t('messages'), path: '/user/messages', badge: unreadCount > 0 ? unreadCount : undefined },
+    { icon: User, label: t('profile'), path: '/user/profile' },
+    { icon: Settings, label: t('settings'), path: '/user/settings' },
   ]
 
   // Debug logging
@@ -58,7 +61,7 @@ export function UserTopNav() {
             </button>
 
             {/* Search */}
-            <SearchBar placeholder="Search trainers, programs, workouts..." />
+            <SearchBar placeholder={t('searchUserPlaceholder')} />
           </div>
 
           {/* Center: Navigation */}
@@ -95,6 +98,8 @@ export function UserTopNav() {
 
           {/* Right: Notifications & Profile */}
           <div className="flex items-center gap-3 flex-1 justify-end">
+            <LanguageSwitcher compact />
+            <div className="w-px h-6 bg-white/10" />
             {/* Notifications */}
             <button className="relative p-2 rounded hover:bg-white/5 transition-colors">
               <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
@@ -115,7 +120,7 @@ export function UserTopNav() {
                   </span>
                 </div>
                 <div className="text-left hidden lg:block">
-                  <p className="text-xs font-semibold text-white leading-tight">Me</p>
+                  <p className="text-xs font-semibold text-white leading-tight">{t('me')}</p>
                   <svg className="w-3 h-3 text-gray-400 mx-auto mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
@@ -149,7 +154,7 @@ export function UserTopNav() {
                         }}
                         className="mt-3 w-full py-1.5 border border-[#FF6B35] text-[#FF6B35] rounded-lg text-sm font-semibold hover:bg-[#FF6B35]/10 transition-colors"
                       >
-                        View Profile
+                        {t('viewProfile')}
                       </button>
                     </div>
 
@@ -162,14 +167,14 @@ export function UserTopNav() {
                         className="w-full flex items-center gap-3 p-2.5 rounded-lg text-gray-300 hover:bg-white/5 transition-colors"
                       >
                         <Settings className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-sm">Settings</span>
+                        <span className="text-sm">{t('settingsPrivacy')}</span>
                       </button>
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 p-2.5 rounded-lg text-gray-300 hover:bg-white/5 transition-colors"
                       >
                         <LogOut className="w-5 h-5" strokeWidth={1.5} />
-                        <span className="text-sm">Sign Out</span>
+                        <span className="text-sm">{t('signOut')}</span>
                       </button>
                     </div>
                   </div>

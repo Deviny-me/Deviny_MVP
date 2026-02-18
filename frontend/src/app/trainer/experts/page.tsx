@@ -8,9 +8,11 @@ import { followsApi } from '@/lib/api/friendsApi'
 import { PublicTrainerDto } from '@/types/trainer'
 import { getMediaUrl } from '@/lib/config'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export default function ExpertsPage() {
   const router = useRouter()
+  const t = useTranslations('experts')
   const [searchQuery, setSearchQuery] = useState('')
   const [trainers, setTrainers] = useState<PublicTrainerDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,8 +106,8 @@ export default function ExpertsPage() {
       <div className="space-y-6 pb-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Find Your Expert</h1>
-          <p className="text-gray-400">Connect with certified trainers and nutritionists</p>
+          <h1 className="text-2xl font-bold text-white mb-2">{t('title')}</h1>
+          <p className="text-gray-400">{t('description')}</p>
         </div>
 
         {/* Search */}
@@ -113,7 +115,7 @@ export default function ExpertsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by name or specialization..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
@@ -124,8 +126,8 @@ export default function ExpertsPage() {
         {filteredTrainers.length === 0 ? (
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-8 text-center">
             <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-white font-semibold mb-2">No trainers found</h3>
-            <p className="text-gray-400 text-sm">Try adjusting your search criteria</p>
+            <h3 className="text-white font-semibold mb-2">{t('noTrainers')}</h3>
+            <p className="text-gray-400 text-sm">{t('tryDifferentSearch')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -150,7 +152,7 @@ export default function ExpertsPage() {
                     </div>
                     
                     <p className="text-sm text-gray-400 mb-2">
-                      {trainer.primaryTitle || 'Trainer'}
+                      {trainer.primaryTitle || t('trainerRole')}
                       {trainer.location && ` • ${trainer.location}`}
                     </p>
 
@@ -168,12 +170,12 @@ export default function ExpertsPage() {
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     <div className="flex items-center gap-1">
                       <BookOpen className="w-3.5 h-3.5" />
-                      <span>{trainer.programsCount} programs</span>
+                      <span>{trainer.programsCount} {t('programs')}</span>
                     </div>
                     {trainer.experienceYears && (
                       <div className="flex items-center gap-1">
                         <Award className="w-3.5 h-3.5" />
-                        <span>{trainer.experienceYears}+ years</span>
+                        <span>{trainer.experienceYears}+ {t('years')}</span>
                       </div>
                     )}
                   </div>
@@ -188,7 +190,7 @@ export default function ExpertsPage() {
                         : 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white hover:opacity-90'
                     }`}
                   >
-                    {following.has(trainer.userId) ? '✓ Following' : 'Follow'}
+                    {following.has(trainer.userId) ? t('following') : t('follow')}
                   </button>
                 </div>
               </motion.div>

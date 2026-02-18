@@ -44,8 +44,8 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.Role)
             .IsInEnum().WithMessage("Invalid user role");
 
-        // Trainer-specific validation
-        When(x => x.Role == UserRole.Trainer, () =>
+        // Trainer and Nutritionist specific validation
+        When(x => x.Role == UserRole.Trainer || x.Role == UserRole.Nutritionist, () =>
         {
             RuleFor(x => x.Country)
                 .NotEmpty().WithMessage("Country is required for trainers");

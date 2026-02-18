@@ -9,7 +9,7 @@ interface User {
   email: string
   firstName: string
   lastName: string
-  role: 'user' | 'trainer' | 'admin'
+  role: 'user' | 'trainer' | 'nutritionist' | 'admin'
   avatar?: string
   level?: number
   xp?: number
@@ -18,15 +18,16 @@ interface User {
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (email: string, password: string, role?: 'user' | 'trainer', rememberMe?: boolean) => Promise<void>
+  login: (email: string, password: string, role?: 'user' | 'trainer' | 'nutritionist', rememberMe?: boolean) => Promise<void>
   logout: () => void
-  register: (email: string, password: string, firstName: string, lastName: string, role?: 'user' | 'trainer') => Promise<void>
+  register: (email: string, password: string, firstName: string, lastName: string, role?: 'user' | 'trainer' | 'nutritionist') => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-function normalizeRole(role: string | number | undefined): 'user' | 'trainer' {
+function normalizeRole(role: string | number | undefined): 'user' | 'trainer' | 'nutritionist' {
   if (role === 'trainer' || role === 'Trainer' || role === 1 || role === '1') return 'trainer'
+  if (role === 'nutritionist' || role === 'Nutritionist' || role === 3 || role === '3') return 'nutritionist'
   return 'user'
 }
 
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth()
   }, [])
 
-  const login = useCallback(async (email: string, password: string, role: 'user' | 'trainer' = 'trainer', rememberMe: boolean = false) => {
+  const login = useCallback(async (email: string, password: string, role: 'user' | 'trainer' | 'nutritionist' = 'trainer', rememberMe: boolean = false) => {
     setIsLoading(true)
     try {
       const response = await authService.login({
@@ -101,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/auth/login')
   }, [router])
 
-  const register = useCallback(async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'trainer' = 'trainer') => {
+  const register = useCallback(async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'trainer' | 'nutritionist' = 'trainer') => {
     setIsLoading(true)
     try {
       const response = await authService.register({
