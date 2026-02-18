@@ -59,7 +59,8 @@ export const authService = {
       body: JSON.stringify({
         email: data.email,
         password: data.password,
-        role: data.role === 'user' ? 0 : data.role === 'trainer' ? 1 : 3,
+        // Backend UserRole enum: User=0, Trainer=1, Student=2, Nutritionist=3
+        role: data.role === 'user' ? 0 : data.role === 'trainer' ? 1 : 3, // nutritionist=3
         rememberMe: data.rememberMe,
       }),
     })
@@ -85,7 +86,8 @@ export const authService = {
     formData.append('lastName', data.lastName)
     formData.append('email', data.email)
     formData.append('password', data.password)
-    formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '3')
+    // Backend UserRole enum: User=0, Trainer=1, Student=2, Nutritionist=3
+    formData.append('role', data.role === 'user' ? '0' : data.role === 'trainer' ? '1' : '3') // nutritionist=3
     
     // Extended fields for trainers
     if (data.phone) {

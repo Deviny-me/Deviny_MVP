@@ -10,7 +10,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const variants = {
       user: 'bg-user-100 text-user-700',
       trainer: 'bg-trainer-100 text-trainer-700',
-      nutritionist: 'bg-trainer-100 text-trainer-700',
+      nutritionist: 'bg-nutritionist-100 text-nutritionist-700',
       gray: 'bg-gray-100 text-gray-700',
     }
     

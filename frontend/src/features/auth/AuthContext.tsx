@@ -25,10 +25,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Maps backend UserRole enum values to frontend role strings.
+// Backend enum: User=0, Trainer=1, Student=2, Nutritionist=3
+// Note: Student (value 2) is not used in the frontend — it maps to 'user' by default.
 function normalizeRole(role: string | number | undefined): 'user' | 'trainer' | 'nutritionist' {
   if (role === 'trainer' || role === 'Trainer' || role === 1 || role === '1') return 'trainer'
   if (role === 'nutritionist' || role === 'Nutritionist' || role === 3 || role === '3') return 'nutritionist'
-  return 'user'
+  return 'user' // covers User=0 and Student=2
 }
 
 function mapUserDtoToUser(dto: UserDto): User {

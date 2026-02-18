@@ -33,7 +33,7 @@ export const RoleCard = ({ data, isSelected, onSelect, onAction }: RoleCardProps
         'p-6 cursor-pointer hover:shadow-xl transition-all duration-300',
         isSelected && data.type === 'user' && 'ring-4 ring-user-500 shadow-xl',
         isSelected && data.type === 'trainer' && 'ring-4 ring-trainer-500 shadow-xl',
-        isSelected && data.type === 'nutritionist' && 'ring-4 ring-trainer-500 shadow-xl'
+        isSelected && data.type === 'nutritionist' && 'ring-4 ring-nutritionist-500 shadow-xl'
       )}
       onClick={onSelect}
     >
@@ -41,13 +41,13 @@ export const RoleCard = ({ data, isSelected, onSelect, onAction }: RoleCardProps
         <div
           className={cn(
             'w-20 h-20 rounded-full flex items-center justify-center',
-            data.type === 'user' ? 'bg-user-100' : 'bg-trainer-100'
+            data.type === 'user' ? 'bg-user-100' : data.type === 'nutritionist' ? 'bg-nutritionist-100' : 'bg-trainer-100'
           )}
         >
           <Icon
             className={cn(
               'w-10 h-10',
-              data.type === 'user' ? 'text-user-600' : 'text-trainer-600'
+              data.type === 'user' ? 'text-user-600' : data.type === 'nutritionist' ? 'text-nutritionist-600' : 'text-trainer-600'
             )}
           />
         </div>

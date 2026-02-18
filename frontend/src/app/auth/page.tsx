@@ -14,7 +14,7 @@ export default function AuthPage() {
   const roles: { type: RoleType; icon: typeof User; colorClass: string; label: string }[] = [
     { type: 'user', icon: User, colorClass: 'bg-user-600 hover:bg-user-700 focus-visible:ring-user-500', label: t('loginAsUser') },
     { type: 'trainer', icon: Dumbbell, colorClass: 'bg-trainer-600 hover:bg-trainer-700 focus-visible:ring-trainer-500', label: t('loginAsTrainer') },
-    { type: 'nutritionist', icon: Apple, colorClass: 'bg-green-600 hover:bg-green-700 focus-visible:ring-green-500', label: t('loginAsNutritionist') },
+    { type: 'nutritionist', icon: Apple, colorClass: 'bg-nutritionist-600 hover:bg-nutritionist-700 focus-visible:ring-nutritionist-500', label: t('loginAsNutritionist') },
   ]
 
   return (
