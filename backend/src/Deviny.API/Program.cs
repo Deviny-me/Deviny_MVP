@@ -1,6 +1,7 @@
 using System.Text;
 using Deviny.API.Hubs;
 using Deviny.API.Middleware;
+using Deviny.API.Services;
 using Deviny.Application;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Infrastructure;
@@ -22,6 +23,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddScoped<IAchievementNotifier, SignalRAchievementNotifier>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] 
     ?? throw new InvalidOperationException("JWT Key is not configured. Please set Jwt:Key in appsettings.json or environment variables.");
@@ -102,6 +104,7 @@ app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
         logger.LogInformation("🌱 Starting database seed...");
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAsync(context, passwordHasher);
+        await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAchievementsAsync(context);
         logger.LogInformation("✅ Database seed completed.");
     }
     catch (Exception ex)

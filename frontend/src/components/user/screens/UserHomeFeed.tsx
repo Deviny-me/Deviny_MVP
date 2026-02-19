@@ -13,7 +13,6 @@ import { useUser } from '@/components/user/UserProvider'
 import { postsApi } from '@/lib/api/postsApi'
 import { PostType } from '@/types/post'
 import { Toast } from '@/components/ui/Toast'
-import { ComingSoonModal } from '@/components/ui/ComingSoonModal'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { PostCard } from '@/components/posts/PostCard'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
@@ -34,7 +33,6 @@ export function UserHomeFeed() {
   // State — only keep ordered IDs; actual data lives in the store
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
-  const [showAchievementModal, setShowAchievementModal] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [feedPostIds, setFeedPostIds] = useState<string[]>([])
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
@@ -177,7 +175,7 @@ export function UserHomeFeed() {
             <span className="text-sm font-medium text-gray-300">{tf('video')}</span>
           </button>
           <button 
-            onClick={() => setShowAchievementModal(true)}
+            onClick={() => router.push('/user/achievements')}
             disabled={isUploading}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -220,16 +218,6 @@ export function UserHomeFeed() {
           <h3 className="text-lg font-semibold text-white mb-2">{tf('noPosts')}</h3>
           <p className="text-sm text-gray-400">{tf('noPostsDescription')}</p>
         </div>
-      )}
-
-      {/* Modals */}
-      {showAchievementModal && (
-        <ComingSoonModal 
-          onClose={() => setShowAchievementModal(false)}
-          title="Скоро!"
-          message="Делитесь достижениями с друзьями. Эта функция будет доступна в следующем обновлении!"
-          icon={<Award className="w-8 h-8 text-amber-500" />}
-        />
       )}
 
       {/* Photo Lightbox */}

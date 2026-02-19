@@ -6,6 +6,7 @@ import { UserProvider } from '@/components/user/UserProvider'
 import { LanguageProvider } from '@/components/language/LanguageProvider'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
+import { UserAchievementBridge } from '@/components/user/UserAchievementBridge'
 import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
 
 // Routes where right sidebar should be hidden
@@ -72,9 +73,11 @@ export default function UserDashboardLayout({
       <LanguageProvider>
         <UserProvider>
           <UnreadMessagesProvider>
-            <UserMainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
-              {children}
-            </UserMainLayout>
+            <UserAchievementBridge>
+              <UserMainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
+                {children}
+              </UserMainLayout>
+            </UserAchievementBridge>
           </UnreadMessagesProvider>
         </UserProvider>
       </LanguageProvider>

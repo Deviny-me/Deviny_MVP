@@ -17,7 +17,6 @@ import { PostCard } from '@/components/posts/PostCard'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { getMediaUrl } from '@/lib/config'
 import { Toast } from '@/components/ui/Toast'
-import { ComingSoonModal } from '@/components/ui/ComingSoonModal'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -69,7 +68,6 @@ export function TrainerHomeFeed() {
   // State — only IDs; data in store
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
-  const [showAchievementModal, setShowAchievementModal] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [feedPostIds, setFeedPostIds] = useState<string[]>([])
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
@@ -213,7 +211,7 @@ export function TrainerHomeFeed() {
             <span className="text-sm font-medium text-gray-300">{t('video')}</span>
           </button>
           <button 
-            onClick={() => setShowAchievementModal(true)}
+            onClick={() => router.push('/trainer/achievements')}
             disabled={isUploading}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >

@@ -24,7 +24,6 @@ public class TrainerProfileRepository : ITrainerProfileRepository
     {
         return await _context.TrainerProfiles
             .Include(tp => tp.Certificates.OrderBy(c => c.SortOrder))
-            .Include(tp => tp.Achievements.OrderBy(a => a.SortOrder))
             .Include(tp => tp.Specializations)
                 .ThenInclude(ts => ts.Specialization)
             .FirstOrDefaultAsync(tp => tp.UserId == userId);

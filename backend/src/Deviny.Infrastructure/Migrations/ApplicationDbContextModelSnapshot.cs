@@ -22,6 +22,70 @@ namespace Deviny.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Deviny.Domain.Entities.Achievement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ColorKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IconKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Rarity")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TargetRole")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("XpReward")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("TargetRole");
+
+                    b.ToTable("Achievements");
+                });
+
             modelBuilder.Entity("Deviny.Domain.Entities.CallSession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -66,6 +130,67 @@ namespace Deviny.Infrastructure.Migrations
                     b.HasIndex("TrainerId", "Status");
 
                     b.ToTable("CallSessions", (string)null);
+                });
+
+            modelBuilder.Entity("Deviny.Domain.Entities.Challenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AchievementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TargetRole")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TargetValue")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementId")
+                        .IsUnique()
+                        .HasFilter("[AchievementId] IS NOT NULL");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("TargetRole");
+
+                    b.ToTable("Challenges");
                 });
 
             modelBuilder.Entity("Deviny.Domain.Entities.Conversation", b =>
@@ -932,6 +1057,49 @@ namespace Deviny.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Deviny.Domain.Entities.UserAchievement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AchievementId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AwardedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AchievementId");
+
+                    b.HasIndex("AwardedAt");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "AchievementId")
+                        .IsUnique();
+
+                    b.ToTable("UserAchievements");
+                });
+
             modelBuilder.Entity("Deviny.Domain.Entities.UserBlock", b =>
                 {
                     b.Property<int>("Id")
@@ -959,6 +1127,47 @@ namespace Deviny.Infrastructure.Migrations
                         .HasDatabaseName("IX_UserBlocks_Blocker_Blocked_Unique");
 
                     b.ToTable("UserBlocks", (string)null);
+                });
+
+            modelBuilder.Entity("Deviny.Domain.Entities.UserChallengeProgress", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChallengeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CurrentValue")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChallengeId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "ChallengeId")
+                        .IsUnique();
+
+                    b.ToTable("UserChallengeProgress");
                 });
 
             modelBuilder.Entity("Deviny.Domain.Entities.UserFollow", b =>
@@ -1247,6 +1456,16 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Deviny.Domain.Entities.Challenge", b =>
+                {
+                    b.HasOne("Deviny.Domain.Entities.Achievement", "Achievement")
+                        .WithOne("Challenge")
+                        .HasForeignKey("Deviny.Domain.Entities.Challenge", "AchievementId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Achievement");
+                });
+
             modelBuilder.Entity("Deviny.Domain.Entities.ConversationMember", b =>
                 {
                     b.HasOne("Deviny.Domain.Entities.Conversation", "Conversation")
@@ -1445,17 +1664,6 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
-            modelBuilder.Entity("Deviny.Domain.Entities.TrainerAchievement", b =>
-                {
-                    b.HasOne("Deviny.Domain.Entities.TrainerProfile", "Trainer")
-                        .WithMany("Achievements")
-                        .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Trainer");
-                });
-
             modelBuilder.Entity("Deviny.Domain.Entities.TrainerCertificate", b =>
                 {
                     b.HasOne("Deviny.Domain.Entities.TrainerProfile", "Trainer")
@@ -1515,6 +1723,25 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("Trainer");
                 });
 
+            modelBuilder.Entity("Deviny.Domain.Entities.UserAchievement", b =>
+                {
+                    b.HasOne("Deviny.Domain.Entities.Achievement", "Achievement")
+                        .WithMany("UserAchievements")
+                        .HasForeignKey("AchievementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Deviny.Domain.Entities.User", "User")
+                        .WithMany("Achievements")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Achievement");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Deviny.Domain.Entities.UserBlock", b =>
                 {
                     b.HasOne("Deviny.Domain.Entities.User", "BlockedUser")
@@ -1532,6 +1759,25 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("BlockedUser");
 
                     b.Navigation("Blocker");
+                });
+
+            modelBuilder.Entity("Deviny.Domain.Entities.UserChallengeProgress", b =>
+                {
+                    b.HasOne("Deviny.Domain.Entities.Challenge", "Challenge")
+                        .WithMany("UserProgress")
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Deviny.Domain.Entities.User", "User")
+                        .WithMany("ChallengeProgress")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Challenge");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Deviny.Domain.Entities.UserFollow", b =>
@@ -1615,6 +1861,18 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Deviny.Domain.Entities.Achievement", b =>
+                {
+                    b.Navigation("Challenge");
+
+                    b.Navigation("UserAchievements");
+                });
+
+            modelBuilder.Entity("Deviny.Domain.Entities.Challenge", b =>
+                {
+                    b.Navigation("UserProgress");
+                });
+
             modelBuilder.Entity("Deviny.Domain.Entities.Conversation", b =>
                 {
                     b.Navigation("Members");
@@ -1639,8 +1897,6 @@ namespace Deviny.Infrastructure.Migrations
 
             modelBuilder.Entity("Deviny.Domain.Entities.TrainerProfile", b =>
                 {
-                    b.Navigation("Achievements");
-
                     b.Navigation("Certificates");
 
                     b.Navigation("Specializations");
@@ -1655,9 +1911,13 @@ namespace Deviny.Infrastructure.Migrations
 
             modelBuilder.Entity("Deviny.Domain.Entities.User", b =>
                 {
+                    b.Navigation("Achievements");
+
                     b.Navigation("BlockedByUsers");
 
                     b.Navigation("BlockedUsers");
+
+                    b.Navigation("ChallengeProgress");
 
                     b.Navigation("ConversationMemberships");
 

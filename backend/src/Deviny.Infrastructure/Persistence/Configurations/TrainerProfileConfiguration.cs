@@ -50,11 +50,6 @@ public class TrainerProfileConfiguration : IEntityTypeConfiguration<TrainerProfi
             .HasForeignKey(c => c.TrainerId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        builder.HasMany(tp => tp.Achievements)
-            .WithOne(a => a.Trainer)
-            .HasForeignKey(a => a.TrainerId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
         builder.HasMany(tp => tp.Specializations)
             .WithOne(ts => ts.Trainer)
             .HasForeignKey(ts => ts.TrainerId)

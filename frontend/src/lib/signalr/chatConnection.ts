@@ -1,6 +1,7 @@
 import * as signalR from '@microsoft/signalr'
 import { MEDIA_BASE_URL } from '@/lib/config'
 import type { MessageDto } from '@/types/message'
+import type { AchievementAwardedEvent } from '@/types/achievement'
 
 /**
  * Singleton wrapper around the SignalR chat hub.
@@ -150,6 +151,7 @@ export class ChatConnection {
   onUserTyping(cb: (data: { conversationId: string; userId: string }) => void) { this._on('UserTyping', cb) }
   onUserStoppedTyping(cb: (data: { conversationId: string; userId: string }) => void) { this._on('UserStoppedTyping', cb) }
   onError(cb: (error: string) => void) { this._on('Error', cb) }
+  onAchievementAwarded(cb: (data: AchievementAwardedEvent) => void) { this._on('AchievementAwarded', cb) }
 
   // ─── hub invocations ───
 
