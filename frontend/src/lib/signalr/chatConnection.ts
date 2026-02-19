@@ -27,7 +27,7 @@ export class ChatConnection {
   }
 
   private async _startConnection() {
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     if (!token) throw new Error('No access token found. Please login again.')
 
     this.connection = new signalR.HubConnectionBuilder()

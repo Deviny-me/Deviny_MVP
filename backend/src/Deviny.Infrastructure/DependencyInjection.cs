@@ -17,13 +17,13 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(
+            options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
                       .EnableRetryOnFailure(
                           maxRetryCount: 10,
                           maxRetryDelay: TimeSpan.FromSeconds(30),
-                          errorNumbersToAdd: new[] { -2, 4060, 40197, 40501, 40613, 49918, 49919, 49920 }))
+                          errorCodesToAdd: Array.Empty<string>()))
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
         
         // Configuration - IOptions pattern for strongly-typed settings

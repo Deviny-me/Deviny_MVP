@@ -35,14 +35,21 @@ public class AuthController : ControllerBase
         {
             var response = await _loginHandler.Handle(request);
             
-            Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
+            var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false, // HTTP in development
                 SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
-                Expires = DateTimeOffset.UtcNow.AddDays(request.RememberMe ? 30 : 7),
                 Path = "/"
-            });
+            };
+
+            // Remember me: persistent cookie (30 days). Otherwise: session cookie (deleted on browser close).
+            if (request.RememberMe)
+            {
+                cookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
+            }
+
+            Response.Cookies.Append("refreshToken", response.RefreshToken, cookieOptions);
 
             return Ok(response);
         }
@@ -195,14 +202,21 @@ public class AuthController : ControllerBase
             });
 
             // Set new refresh token cookie
-            Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
+            var refreshCookieOptions = new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false, // HTTP in development
                 SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
-                Expires = DateTimeOffset.UtcNow.AddDays(wasRememberMe ? 30 : 7),
                 Path = "/"
-            });
+            };
+
+            // Preserve original remember-me preference: persistent cookie vs session cookie.
+            if (wasRememberMe)
+            {
+                refreshCookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(30);
+            }
+
+            Response.Cookies.Append("refreshToken", newRefreshToken, refreshCookieOptions);
 
             return Ok(new RefreshTokenResponse
             {

@@ -35,7 +35,7 @@ export default function UserDashboardLayout({
 
     if (typeof window === 'undefined') return
     
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     if (!token) {
       router.push('/auth/login?role=user')
       return

@@ -34,6 +34,7 @@ public class GetAllTrainersQueryHandler : IRequestHandler<GetAllTrainersQuery, L
             Location = t.Location,
             ExperienceYears = t.ExperienceYears,
             Slug = t.Slug,
+            Role = t.User?.Role.ToString() ?? "Trainer",
             ProgramsCount = t.ProgramsCount,
             Specializations = t.Specializations
                 .Select(s => s.Specialization?.Name ?? "")

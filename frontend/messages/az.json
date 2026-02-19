@@ -191,6 +191,7 @@
     "chat": "Çat",
     "finance": "Maliyyə",
     "trainer": "Məşqçi",
+    "nutritionist": "Dietoloq",
     "trainerPlatform": "Məşqçi platforması",
     "dashboard": "İdarə paneli",
     "me": "Mən",
@@ -246,7 +247,7 @@
 
   "profile": {
     "title": "Profil",
-    "trainerProfile": "Məşqçi profili",
+    "trainerProfile": "Profilə bax",
     "editProfile": "Profili redaktə et",
     "aboutMe": "Haqqımda",
     "aboutMePlaceholder": "Özünüz haqqında danışın...",
@@ -278,6 +279,7 @@
     "noPosts": "Paylaşım yoxdur",
     "createFirstPost": "Lentada ilk paylaşımınızı yaradın",
     "personalTrainer": "Fərdi məşqçi",
+    "personalNutritionist": "Dietoloq",
     "certificates": "Sertifikatlar",
     "noCertificates": "Sertifikat yoxdur",
     "addCertificate": "Sertifikat əlavə et",
@@ -409,7 +411,7 @@
     "addVideo": "Video əlavə et",
     "saveChanges": "Dəyişiklikləri saxla",
     "programCode": "Proqram kodu:",
-    "otherTrainerProgram": "Bu başqa məşqçinin proqramıdır",
+    "otherTrainerProgram": "Bu başqa ekspertin proqramıdır",
 
     "toasts": {
       "loadError": "Proqramlar yüklənə bilmədi",
@@ -720,7 +722,7 @@
 
   "leaderboards": {
     "teaser": "Tezliklə burada ən yaxşı məşqçilərin reytinqi görünəcək! Yarışın, xal qazanın...",
-    "topTrainers": "Top məşqçilər",
+    "topTrainers": "Top ekspertlər",
     "topTrainersDesc": "Qlobal reytinq",
     "xpPoints": "XP Xalları",
     "xpPointsDesc": "Fəaliyyət üçün",
@@ -791,9 +793,10 @@
     "title": "Ekspert tapın",
     "description": "Sertifikatlı məşqçilər və qidalanma mütəxəssisləri ilə əlaqə saxlayın",
     "searchPlaceholder": "Ad və ya ixtisaslaşma üzrə axtar...",
-    "noTrainers": "Məşqçi tapılmadı",
+    "noTrainers": "Ekspert tapılmadı",
     "tryDifferentSearch": "Axtarış kriteriyalarınızı dəyişməyə cəhd edin",
     "trainerRole": "Məşqçi",
+    "nutritionistRole": "Dietoloq",
     "programs": "proqram",
     "years": "il",
     "following": "\u2713 İzlənilir",

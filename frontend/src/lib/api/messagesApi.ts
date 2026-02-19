@@ -53,7 +53,7 @@ export const messagesApi = {
 
   /** Upload a file for a chat message. */
   uploadChatFile: async (file: File): Promise<ChatFileUploadResult> => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')) : null
     const formData = new FormData()
     formData.append('file', file)
     const response = await fetch(`${API_URL}/chat/files/upload`, {

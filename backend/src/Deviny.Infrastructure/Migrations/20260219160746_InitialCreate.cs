@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,10 +16,10 @@ namespace Deviny.Infrastructure.Migrations
                 name: "Conversations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -29,11 +30,11 @@ namespace Deviny.Infrastructure.Migrations
                 name: "LevelDefinitions",
                 columns: table => new
                 {
-                    Level = table.Column<int>(type: "int", nullable: false),
-                    RequiredXp = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    RequiredXp = table.Column<int>(type: "integer", nullable: false),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -44,10 +45,10 @@ namespace Deviny.Infrastructure.Migrations
                 name: "Specializations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,23 +59,23 @@ namespace Deviny.Infrastructure.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AvatarUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Slug = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    PushNotificationsEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false),
-                    IsEmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    AvatarUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PushNotificationsEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    IsEmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Gender = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -85,10 +86,10 @@ namespace Deviny.Infrastructure.Migrations
                 name: "ConversationMembers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    JoinedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -111,13 +112,13 @@ namespace Deviny.Infrastructure.Migrations
                 name: "FriendRequests",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReceiverId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RespondedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReceiverId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RespondedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -137,22 +138,49 @@ namespace Deviny.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MealPrograms",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CoverImagePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealPrograms", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MealPrograms_Users_TrainerId",
+                        column: x => x.TrainerId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Text = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    ReplyToMessageId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    AttachmentUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AttachmentFileName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AttachmentContentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SenderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Text = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    ReplyToMessageId = table.Column<Guid>(type: "uuid", nullable: true),
+                    AttachmentUrl = table.Column<string>(type: "text", nullable: true),
+                    AttachmentFileName = table.Column<string>(type: "text", nullable: true),
+                    AttachmentContentType = table.Column<string>(type: "text", nullable: true),
                     AttachmentSize = table.Column<long>(type: "bigint", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeliveredAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DeliveredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -181,14 +209,14 @@ namespace Deviny.Infrastructure.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsRememberMe = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    IsRememberMe = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -205,20 +233,20 @@ namespace Deviny.Infrastructure.Migrations
                 name: "ScheduleEvents",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    StartAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DurationMinutes = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProgramId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    IsCancelled = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    StartAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    DurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Location = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    ProgramId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Comment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    IsCancelled = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -241,18 +269,18 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainerProfiles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PrimaryTitle = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    SecondaryTitle = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Location = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    ExperienceYears = table.Column<int>(type: "int", nullable: true),
-                    AboutText = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    Slug = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ProgramsCount = table.Column<int>(type: "int", nullable: false),
-                    GymBroId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PrimaryTitle = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    SecondaryTitle = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Location = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    ExperienceYears = table.Column<int>(type: "integer", nullable: true),
+                    AboutText = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    Slug = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ProgramsCount = table.Column<int>(type: "integer", nullable: false),
+                    GymBroId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -274,18 +302,18 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainingPrograms",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CoverImagePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    TrainingVideosPath = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    Code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    CoverImagePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    TrainingVideosPath = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -302,11 +330,11 @@ namespace Deviny.Infrastructure.Migrations
                 name: "UserBlocks",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    BlockerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    BlockedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    BlockerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BlockedUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -329,11 +357,11 @@ namespace Deviny.Infrastructure.Migrations
                 name: "UserFollows",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FollowerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FollowerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -356,12 +384,12 @@ namespace Deviny.Infrastructure.Migrations
                 name: "UserLevels",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CurrentLevel = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    CurrentXp = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    LifetimeXp = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLevelUpAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CurrentLevel = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
+                    CurrentXp = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    LifetimeXp = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastLevelUpAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -378,16 +406,16 @@ namespace Deviny.Infrastructure.Migrations
                 name: "UserPosts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Caption = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Visibility = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    OriginalPostId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    RepostQuote = table.Column<string>(type: "nvarchar(280)", maxLength: 280, nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Caption = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Visibility = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    OriginalPostId = table.Column<Guid>(type: "uuid", nullable: true),
+                    RepostQuote = table.Column<string>(type: "character varying(280)", maxLength: 280, nullable: true),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -410,12 +438,12 @@ namespace Deviny.Infrastructure.Migrations
                 name: "UserSettings",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Theme = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false, defaultValue: "light"),
-                    Language = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Theme = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false, defaultValue: "light"),
+                    Language = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -432,18 +460,18 @@ namespace Deviny.Infrastructure.Migrations
                 name: "VerificationDocuments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    FilePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    FileType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    FileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    FilePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    FileType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RejectionReason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ReviewedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    RejectionReason = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    ReviewedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ReviewedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -460,14 +488,14 @@ namespace Deviny.Infrastructure.Migrations
                 name: "XpTransactions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EventType = table.Column<int>(type: "int", nullable: false),
-                    XpAmount = table.Column<int>(type: "int", nullable: false),
-                    IdempotencyKey = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    SourceEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventType = table.Column<int>(type: "integer", nullable: false),
+                    XpAmount = table.Column<int>(type: "integer", nullable: false),
+                    IdempotencyKey = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    SourceEntityId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -484,15 +512,15 @@ namespace Deviny.Infrastructure.Migrations
                 name: "CallSessions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StudentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CallUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    RoomId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StudentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CallUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    RoomId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -521,15 +549,15 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainerAchievements",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Subtitle = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
-                    IconKey = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Tone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SortOrder = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Subtitle = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    IconKey = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Tone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -546,16 +574,16 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainerCertificates",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Issuer = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    SortOrder = table.Column<int>(type: "int", nullable: false),
-                    FileUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
+                    Issuer = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Year = table.Column<int>(type: "integer", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
+                    FileUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    FileName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -572,8 +600,8 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainerSpecializations",
                 columns: table => new
                 {
-                    TrainerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SpecializationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SpecializationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -596,13 +624,13 @@ namespace Deviny.Infrastructure.Migrations
                 name: "ProgramPurchases",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProgramId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PurchasedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProgramId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PurchasedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -625,18 +653,18 @@ namespace Deviny.Infrastructure.Migrations
                 name: "ProgramReviews",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProgramId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProgramId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Rating = table.Column<int>(type: "integer", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProgramReviews", x => x.Id);
-                    table.CheckConstraint("CK_ProgramReview_Rating", "[Rating] >= 1 AND [Rating] <= 5");
+                    table.CheckConstraint("CK_ProgramReview_Rating", "\"Rating\" >= 1 AND \"Rating\" <= 5");
                     table.ForeignKey(
                         name: "FK_ProgramReviews_TrainingPrograms_ProgramId",
                         column: x => x.ProgramId,
@@ -655,14 +683,14 @@ namespace Deviny.Infrastructure.Migrations
                 name: "PostComments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParentCommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentCommentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Content = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -691,11 +719,11 @@ namespace Deviny.Infrastructure.Migrations
                 name: "PostLikes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -718,16 +746,16 @@ namespace Deviny.Infrastructure.Migrations
                 name: "PostMedia",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MediaType = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    FilePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    ThumbnailPath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PostId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MediaType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    FilePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    ThumbnailPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    ContentType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     SizeBytes = table.Column<long>(type: "bigint", nullable: false),
-                    DisplayOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -786,6 +814,23 @@ namespace Deviny.Infrastructure.Migrations
                 name: "IX_FriendRequests_Sender_Receiver_Status",
                 table: "FriendRequests",
                 columns: new[] { "SenderId", "ReceiverId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealPrograms_Code",
+                table: "MealPrograms",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealPrograms_IsDeleted_CreatedAt",
+                table: "MealPrograms",
+                columns: new[] { "IsDeleted", "CreatedAt" },
+                descending: new[] { false, true });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealPrograms_TrainerId",
+                table: "MealPrograms",
+                column: "TrainerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ConversationId_CreatedAt",
@@ -1017,7 +1062,7 @@ namespace Deviny.Infrastructure.Migrations
                 table: "Users",
                 column: "Slug",
                 unique: true,
-                filter: "[Slug] IS NOT NULL");
+                filter: "\"Slug\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserSettings_UserId",
@@ -1066,6 +1111,9 @@ namespace Deviny.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "LevelDefinitions");
+
+            migrationBuilder.DropTable(
+                name: "MealPrograms");
 
             migrationBuilder.DropTable(
                 name: "Messages");

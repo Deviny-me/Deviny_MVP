@@ -8,6 +8,7 @@ export interface PublicTrainerDto {
   location: string | null;
   experienceYears: number | null;
   slug: string;
+  role?: string;
   programsCount: number;
   specializations: string[];
 }

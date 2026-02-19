@@ -49,6 +49,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.HasIndex(u => u.Slug)
             .IsUnique()
-            .HasFilter("[Slug] IS NOT NULL");
+            .HasFilter("\"Slug\" IS NOT NULL");
     }
 }

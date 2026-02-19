@@ -43,6 +43,7 @@ import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useAuth } from '@/features/auth/AuthContext'
 
 // Simple toast helper
 const toast = {
@@ -275,6 +276,8 @@ export default function ProfilePage() {
   const t = useTranslations('profile')
   const tp = useTranslations('posts')
   const tc = useTranslations('common')
+  const { user } = useAuth()
+  const isNutritionist = user?.role === 'nutritionist'
   const upsertPosts = useUpsertPosts()
   const storeDispatch = usePostDispatch()
 
@@ -797,7 +800,7 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-400">{trainer.primaryTitle || t('personalTrainer')}</p>
+                  <p className="text-gray-400">{trainer.primaryTitle || (isNutritionist ? t('personalNutritionist') : t('personalTrainer'))}</p>
                   {trainer.secondaryTitle && (
                     <p className="text-sm text-gray-500">{trainer.secondaryTitle}</p>
                   )}
