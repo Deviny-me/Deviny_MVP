@@ -157,8 +157,8 @@ export const useRegister = () => {
         verificationDocument: data.verificationDocument,
       })
 
-      // Store auth data
-      localStorage.setItem('accessToken', response.accessToken)
+      // Store auth data (registration defaults to session-only)
+      sessionStorage.setItem('accessToken', response.accessToken)
 
       // Navigate to role-specific dashboard
       const dashboardRoute = role === 'user' ? '/user' : '/trainer'

@@ -152,7 +152,7 @@ export default function ExpertsPage() {
                     </div>
                     
                     <p className="text-sm text-gray-400 mb-2">
-                      {trainer.primaryTitle || t('trainerRole')}
+                      {trainer.primaryTitle || (trainer.role === 'Nutritionist' ? t('nutritionistRole') : t('trainerRole'))}
                       {trainer.location && ` • ${trainer.location}`}
                     </p>
 

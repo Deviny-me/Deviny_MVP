@@ -191,6 +191,7 @@
     "chat": "Chat",
     "finance": "Finance",
     "trainer": "Trainer",
+    "nutritionist": "Nutritionist",
     "trainerPlatform": "Trainer platform",
     "dashboard": "Dashboard",
     "me": "Me",
@@ -246,7 +247,7 @@
 
   "profile": {
     "title": "Profile",
-    "trainerProfile": "Trainer profile",
+    "trainerProfile": "View profile",
     "editProfile": "Edit profile",
     "aboutMe": "About me",
     "aboutMePlaceholder": "Tell us about yourself...",
@@ -278,6 +279,7 @@
     "noPosts": "No posts",
     "createFirstPost": "Create your first post in the feed",
     "personalTrainer": "Personal trainer",
+    "personalNutritionist": "Nutritionist",
     "certificates": "Certificates",
     "noCertificates": "No certificates",
     "addCertificate": "Add certificate",
@@ -409,7 +411,7 @@
     "addVideo": "Add video",
     "saveChanges": "Save changes",
     "programCode": "Program code:",
-    "otherTrainerProgram": "This is another trainer's program",
+    "otherTrainerProgram": "This is another expert's program",
 
     "toasts": {
       "loadError": "Failed to load programs",
@@ -720,7 +722,7 @@
 
   "leaderboards": {
     "teaser": "The top trainers leaderboard is coming soon! Compete, earn points...",
-    "topTrainers": "Top trainers",
+    "topTrainers": "Top experts",
     "topTrainersDesc": "Global ranking",
     "xpPoints": "XP Points",
     "xpPointsDesc": "For activity",
@@ -791,9 +793,10 @@
     "title": "Find Your Expert",
     "description": "Connect with certified trainers and nutritionists",
     "searchPlaceholder": "Search by name or specialization...",
-    "noTrainers": "No trainers found",
+    "noTrainers": "No experts found",
     "tryDifferentSearch": "Try adjusting your search criteria",
     "trainerRole": "Trainer",
+    "nutritionistRole": "Nutritionist",
     "programs": "programs",
     "years": "years",
     "following": "\u2713 Following",

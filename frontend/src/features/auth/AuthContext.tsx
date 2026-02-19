@@ -52,25 +52,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('accessToken')
+        const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
         if (token) {
-          const savedUser = localStorage.getItem('user')
+          const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
           if (savedUser) {
             setUser(JSON.parse(savedUser))
           }
-          // Try to refresh token
+          // Try to refresh token — if it fails the session is invalid
           const refreshResult = await authService.refreshToken()
           if (refreshResult) {
             const mappedUser = mapUserDtoToUser(refreshResult.user)
             setUser(mappedUser)
-            localStorage.setItem('accessToken', refreshResult.accessToken)
-            localStorage.setItem('user', JSON.stringify(mappedUser))
+            // Persist to the same storage that held the previous token
+            const store = localStorage.getItem('accessToken') ? localStorage : sessionStorage
+            store.setItem('accessToken', refreshResult.accessToken)
+            store.setItem('user', JSON.stringify(mappedUser))
+          } else {
+            // Refresh failed (e.g. session cookie gone after browser close) — clear stale state
+            setUser(null)
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('user')
+            sessionStorage.removeItem('accessToken')
+            sessionStorage.removeItem('user')
           }
         }
       } catch (error) {
         console.error('Auth check failed:', error)
         localStorage.removeItem('accessToken')
         localStorage.removeItem('user')
+        sessionStorage.removeItem('accessToken')
+        sessionStorage.removeItem('user')
       } finally {
         setIsLoading(false)
       }
@@ -90,8 +101,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const mappedUser = mapUserDtoToUser(response.user)
       setUser(mappedUser)
-      localStorage.setItem('accessToken', response.accessToken)
-      localStorage.setItem('user', JSON.stringify(mappedUser))
+
+      // Remember me → localStorage (persists across browser closes)
+      // No remember me → sessionStorage (cleared on browser close)
+      const store = rememberMe ? localStorage : sessionStorage
+      // Clear the other storage to avoid stale data
+      const otherStore = rememberMe ? sessionStorage : localStorage
+      otherStore.removeItem('accessToken')
+      otherStore.removeItem('user')
+
+      store.setItem('accessToken', response.accessToken)
+      store.setItem('user', JSON.stringify(mappedUser))
     } finally {
       setIsLoading(false)
     }
@@ -102,6 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
     localStorage.removeItem('accessToken')
     localStorage.removeItem('user')
+    sessionStorage.removeItem('accessToken')
+    sessionStorage.removeItem('user')
     router.push('/auth/login')
   }, [router])
 
@@ -118,8 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const mappedUser = mapUserDtoToUser(response.user)
       setUser(mappedUser)
-      localStorage.setItem('accessToken', response.accessToken)
-      localStorage.setItem('user', JSON.stringify(mappedUser))
+      // Registration defaults to session-only (no remember me)
+      sessionStorage.setItem('accessToken', response.accessToken)
+      sessionStorage.setItem('user', JSON.stringify(mappedUser))
     } finally {
       setIsLoading(false)
     }

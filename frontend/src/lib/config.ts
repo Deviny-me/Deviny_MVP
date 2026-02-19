@@ -26,7 +26,10 @@ async function refreshAccessToken(): Promise<string | null> {
 
     const data = await response.json();
     if (data.accessToken) {
-      localStorage.setItem('accessToken', data.accessToken);
+      // Preserve whichever storage the token was originally in
+      const wasInLocal = typeof window !== 'undefined' && !!localStorage.getItem('accessToken');
+      const store = wasInLocal ? localStorage : sessionStorage;
+      store.setItem('accessToken', data.accessToken);
       return data.accessToken;
     }
     return null;
@@ -38,7 +41,9 @@ async function refreshAccessToken(): Promise<string | null> {
 
 // Helper to get auth header with auto-refresh
 export async function getAuthHeaderAsync(): Promise<Record<string, string>> {
-  let token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  let token = typeof window !== 'undefined'
+    ? (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken'))
+    : null;
   
   // Try to refresh token if not available
   if (!token && typeof window !== 'undefined') {
@@ -50,7 +55,9 @@ export async function getAuthHeaderAsync(): Promise<Record<string, string>> {
 
 // Synchronous version (for backward compatibility)
 export function getAuthHeader(): Record<string, string> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken'))
+    : null
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
@@ -102,6 +109,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
       // Redirect to login if refresh failed
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
+        sessionStorage.removeItem('accessToken');
         window.location.href = '/auth/login';
       }
     }

@@ -19,6 +19,7 @@ import { getMediaUrl } from '@/lib/config'
 import { Toast } from '@/components/ui/Toast'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useAuth } from '@/features/auth/AuthContext'
 
 export function TrainerHomeFeed() {
   const router = useRouter()
@@ -27,6 +28,8 @@ export function TrainerHomeFeed() {
   const tc = useTranslations('common')
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
+  const { user } = useAuth()
+  const isNutritionist = user?.role === 'nutritionist'
   
   // Profile state
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
@@ -54,7 +57,7 @@ export function TrainerHomeFeed() {
   }
   
   // Derived values from profile
-  const trainerName = profile?.trainer?.fullName || 'Trainer'
+  const trainerName = profile?.trainer?.fullName || (isNutritionist ? 'Nutritionist' : 'Trainer')
   const trainerInitials = profile?.trainer?.initials || trainerName.charAt(0)
   const avatarUrl = getMediaUrl(profile?.trainer?.avatarUrl)
   

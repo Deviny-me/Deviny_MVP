@@ -17,8 +17,11 @@ export const useLogin = () => {
     try {
       const response = await authService.login(data)
       
-      // Only store token, user data will be loaded from API by UserProvider
-      localStorage.setItem('accessToken', response.accessToken)
+      // Remember me → localStorage (persists), otherwise → sessionStorage (cleared on browser close)
+      const store = data.rememberMe ? localStorage : sessionStorage
+      const otherStore = data.rememberMe ? sessionStorage : localStorage
+      otherStore.removeItem('accessToken')
+      store.setItem('accessToken', response.accessToken)
       
       return response
     } catch (err) {

@@ -32,6 +32,10 @@ export function TopNav() {
   const { unreadCount } = useUnreadMessages()
   const { level } = useLevel()
 
+  const isNutritionist = user?.role === 'nutritionist'
+  const roleLabel = isNutritionist ? t('nutritionist') : t('trainer')
+  const avatarFallbackInitial = isNutritionist ? 'N' : 'T'
+
   useEffect(() => {
     loadTrainerProfile()
     
@@ -86,7 +90,7 @@ export function TopNav() {
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
                 <Flame className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
-              <span className="text-sm font-bold text-white hidden sm:block uppercase">{t('trainer')}</span>
+              <span className="text-sm font-bold text-white hidden sm:block uppercase">{roleLabel}</span>
             </button>
 
             {/* Search */}
@@ -144,7 +148,7 @@ export function TopNav() {
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center border border-white/10">
                     <span className="text-white text-xs font-bold">
-                      {trainerProfile?.trainer?.initials || 'T'}
+                      {trainerProfile?.trainer?.initials || avatarFallbackInitial}
                     </span>
                   </div>
                 )}
@@ -175,13 +179,13 @@ export function TopNav() {
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
                             <span className="text-white text-lg font-bold">
-                              {trainerProfile?.trainer?.initials || 'T'}
+                            {trainerProfile?.trainer?.initials || avatarFallbackInitial}
                             </span>
                           </div>
                         )}
                         <div>
                           <p className="font-semibold text-white">{trainerProfile?.trainer?.fullName || `${user?.firstName} ${user?.lastName}`}</p>
-                          <p className="text-xs text-gray-400">{t('trainer')}</p>
+                          <p className="text-xs text-gray-400">{roleLabel}</p>
                         </div>
                       </div>
                       {/* Level Display */}

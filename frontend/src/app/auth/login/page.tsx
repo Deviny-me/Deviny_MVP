@@ -187,7 +187,7 @@ function LoginPageContent() {
           </div>
 
           <Button
-            variant={isTrainer ? 'trainer' : 'user'}
+            variant={isNutritionist ? 'nutritionist' : isTrainer ? 'trainer' : 'user'}
             size="lg"
             fullWidth
             type="submit"

@@ -34,7 +34,7 @@ export default function TrainerDashboardLayout({
 
     if (typeof window === 'undefined') return
     
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     if (!token) {
       router.push('/auth/login?role=trainer')
       return
@@ -45,7 +45,9 @@ export default function TrainerDashboardLayout({
       const payload = JSON.parse(atob(token.split('.')[1]))
       const role = payload.role ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
       
-      if (role !== 'Trainer' && role !== '1') {
+      // Allow both Trainers and Nutritionists to access this dashboard
+      const allowedRoles = ['Trainer', '1', 'Nutritionist', '3']
+      if (!allowedRoles.includes(role)) {
         router.push('/auth/login?role=trainer')
         return
       }

@@ -11,6 +11,7 @@ public class PublicTrainerDto
     public string? Location { get; set; }
     public int? ExperienceYears { get; set; }
     public string Slug { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
     public int ProgramsCount { get; set; }
     public List<string> Specializations { get; set; } = new();
 }

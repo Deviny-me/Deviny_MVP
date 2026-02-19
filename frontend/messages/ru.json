@@ -191,6 +191,7 @@
     "chat": "Чат",
     "finance": "Финансы",
     "trainer": "Тренер",
+    "nutritionist": "Нутрициолог",
     "trainerPlatform": "Платформа тренера",
     "dashboard": "Панель управления",
     "me": "Я",
@@ -246,7 +247,7 @@
 
   "profile": {
     "title": "Профиль",
-    "trainerProfile": "Профиль тренера",
+    "trainerProfile": "Профиль",
     "editProfile": "Редактировать профиль",
     "aboutMe": "О себе",
     "aboutMePlaceholder": "Расскажите о себе...",
@@ -278,6 +279,7 @@
     "noPosts": "Нет постов",
     "createFirstPost": "Создайте свой первый пост в ленте",
     "personalTrainer": "Персональный тренер",
+    "personalNutritionist": "Нутрициолог",
     "certificates": "Сертификаты",
     "noCertificates": "Нет сертификатов",
     "addCertificate": "Добавить сертификат",
@@ -409,7 +411,7 @@
     "addVideo": "Добавить видео",
     "saveChanges": "Сохранить изменения",
     "programCode": "Код программы:",
-    "otherTrainerProgram": "Это программа другого тренера",
+    "otherTrainerProgram": "Это программа другого эксперта",
 
     "toasts": {
       "loadError": "Не удалось загрузить программы",
@@ -720,7 +722,7 @@
 
   "leaderboards": {
     "teaser": "Скоро здесь появится рейтинг лучших тренеров! Соревнуйтесь, зарабатывайте очки...",
-    "topTrainers": "Топ тренеров",
+    "topTrainers": "Топ экспертов",
     "topTrainersDesc": "Глобальный рейтинг",
     "xpPoints": "Очки XP",
     "xpPointsDesc": "За активность",
@@ -791,9 +793,10 @@
     "title": "Найдите эксперта",
     "description": "Свяжитесь с сертифицированными тренерами и нутрициологами",
     "searchPlaceholder": "Поиск по имени или специализации...",
-    "noTrainers": "Тренеры не найдены",
+    "noTrainers": "Эксперты не найдены",
     "tryDifferentSearch": "Попробуйте изменить критерии поиска",
     "trainerRole": "Тренер",
+    "nutritionistRole": "Нутрициолог",
     "programs": "программ",
     "years": "лет",
     "following": "✓ Подписан",

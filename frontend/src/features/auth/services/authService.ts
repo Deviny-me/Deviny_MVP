@@ -158,5 +158,8 @@ export const authService = {
       console.error('Logout error:', error)
     }
     localStorage.removeItem('accessToken')
+    sessionStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
+    sessionStorage.removeItem('user')
   },
 }

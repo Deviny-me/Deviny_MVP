@@ -1,4 +1,5 @@
 import { authService } from '@/features/auth/services/authService'
+import { getAccessToken, setAccessToken, clearAccessToken } from '@/features/auth/utils/tokenStorage'
 
 const API_URL = 'http://localhost:5000/api'
 
@@ -20,7 +21,9 @@ class ApiClient {
       try {
         const result = await authService.refreshToken()
         if (result) {
-          localStorage.setItem('accessToken', result.accessToken)
+          // Preserve whichever storage the token was originally in
+          const wasInLocal = !!localStorage.getItem('accessToken')
+          setAccessToken(result.accessToken, wasInLocal)
           return true
         }
         return false
@@ -54,18 +57,18 @@ class ApiClient {
       })
     }
 
-    let token = localStorage.getItem('accessToken')
+    let token = getAccessToken()
     let response = await makeRequest(token)
 
     // If unauthorized, try to refresh token
     if (response.status === 401 && !skipAuth) {
       const refreshed = await this.refreshTokenIfNeeded()
       if (refreshed) {
-        token = localStorage.getItem('accessToken')
+        token = getAccessToken()
         response = await makeRequest(token)
       } else {
         // Redirect to login if refresh failed
-        localStorage.removeItem('accessToken')
+        clearAccessToken()
         if (typeof window !== 'undefined') {
           window.location.href = '/auth/login'
         }
