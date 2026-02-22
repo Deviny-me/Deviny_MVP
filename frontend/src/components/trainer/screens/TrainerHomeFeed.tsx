@@ -96,7 +96,9 @@ export function TrainerHomeFeed() {
 
     try {
       setDeletingPostId(postId)
+      console.log('[Delete] Attempting to delete post:', postId, 'userId:', user?.id)
       await postsApi.deletePost(postId)
+      console.log('[Delete] Post deleted successfully:', postId)
       dispatch({ type: 'REMOVE_POST', postId })
       setFeedPostIds(prev => prev.filter(id => id !== postId))
       setToast({ message: tp('deleted'), type: 'success' })
