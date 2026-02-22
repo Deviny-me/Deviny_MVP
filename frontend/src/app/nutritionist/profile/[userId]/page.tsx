@@ -23,6 +23,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useAuth } from '@/features/auth/AuthContext'
 
 // Grid cell — uses local state for guaranteed instant UI updates
 function NutritionistOtherGridCell({
@@ -272,6 +273,14 @@ export default function NutritionistOtherUserProfilePage() {
   const t = useTranslations('posts')
   const tc = useTranslations('common')
   const accent = useAccentColors()
+  const { user: authUser } = useAuth()
+
+  // Redirect to own profile if viewing self
+  useEffect(() => {
+    if (authUser?.id && userId.toLowerCase() === authUser.id.toLowerCase()) {
+      router.replace('/nutritionist/profile')
+    }
+  }, [authUser?.id, userId, router])
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)

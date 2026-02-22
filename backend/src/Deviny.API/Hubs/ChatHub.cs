@@ -143,6 +143,13 @@ public class ChatHub : Hub
             var senderGuid = Guid.Parse(senderId);
             var receiverGuid = Guid.Parse(receiverId);
 
+            // Prevent self-messaging
+            if (senderGuid == receiverGuid)
+            {
+                await Clients.Caller.SendAsync("Error", "Cannot send a message to yourself");
+                return;
+            }
+
             // Get or create the conversation
             var conversationId = await _mediator.Send(
                 new GetOrCreateConversationQuery(senderGuid, receiverGuid));

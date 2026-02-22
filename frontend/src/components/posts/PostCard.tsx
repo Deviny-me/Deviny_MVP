@@ -69,9 +69,35 @@ export function PostCard({
 
   const isRepost = post.type === PostType.Repost || post.isRepost
   const originalDeleted = isRepost && !post.originalPost
-  // Resolve ownership: prefer prop, fallback to auth context for robustness
-  const resolvedUserId = currentUserId ?? authUser?.id
-  const isOwner = isOwnProfile || (!!resolvedUserId && post.userId?.toLowerCase() === resolvedUserId?.toLowerCase())
+
+  // --- Robust ownership detection ---
+  // 1. Prefer explicit prop, then auth context
+  // 2. Fallback: decode JWT token from storage to cover race-condition / stale-state edge cases
+  const resolvedUserId = currentUserId ?? authUser?.id ?? (() => {
+    try {
+      const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken'))
+        : null
+      if (!token) return undefined
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return (
+        payload.sub ??
+        payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+      ) as string | undefined
+    } catch {
+      return undefined
+    }
+  })()
+
+  // Normalise IDs (trim + lowercase) before comparison to avoid format mismatches
+  const normalizeId = (id: string | undefined | null): string | undefined =>
+    id?.toString().trim().toLowerCase() || undefined
+
+  const normResolved = normalizeId(resolvedUserId)
+  const isOwner = isOwnProfile || (!!normResolved && (
+    normalizeId(post.userId) === normResolved ||
+    normalizeId(post.author?.id) === normResolved
+  ))
 
   // Determine avatar color based on author's role, not current user's role
   const authorRole = post.author?.role
@@ -95,7 +121,12 @@ export function PostCard({
       : pathname?.startsWith('/nutritionist')
         ? '/nutritionist'
         : '/user'
-    router.push(`${basePath}/profile/${post.userId}`)
+    // Navigate directly to own profile page (not [userId] route) when clicking own name
+    if (isOwner) {
+      router.push(`${basePath}/profile`)
+    } else {
+      router.push(`${basePath}/profile/${post.userId}`)
+    }
   }
 
   const isModal = variant === 'modal'

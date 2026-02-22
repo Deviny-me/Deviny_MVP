@@ -23,6 +23,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
 import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useAuth } from '@/features/auth/AuthContext'
 
 // Grid cell — uses local state for guaranteed instant UI updates
 function GridCell({
@@ -275,6 +276,14 @@ export default function OtherUserProfilePageTrainer() {
   const upsertPosts = useUpsertPosts()
   const t = useTranslations('posts')
   const tc = useTranslations('common')
+  const { user: authUser } = useAuth()
+
+  // Redirect to own profile if viewing self
+  useEffect(() => {
+    if (authUser?.id && userId.toLowerCase() === authUser.id.toLowerCase()) {
+      router.replace('/trainer/profile')
+    }
+  }, [authUser?.id, userId, router])
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
