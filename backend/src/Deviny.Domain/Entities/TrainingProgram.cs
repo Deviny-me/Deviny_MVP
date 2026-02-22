@@ -9,6 +9,7 @@ public class TrainingProgram : BaseEntity
     public string Description { get; set; } = string.Empty;
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
+    public decimal? ProPrice { get; set; }
     public string Code { get; set; } = string.Empty;
     public string CoverImagePath { get; set; } = string.Empty;
     public string TrainingVideosPath { get; set; } = string.Empty; // JSON array of video paths

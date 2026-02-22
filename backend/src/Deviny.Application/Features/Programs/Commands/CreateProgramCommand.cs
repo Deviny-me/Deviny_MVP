@@ -11,6 +11,7 @@ public class CreateProgramCommand : IRequest<ProgramDto>
     public string Description { get; set; } = string.Empty;
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
+    public decimal? ProPrice { get; set; }
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? TrainingVideos { get; set; }
 }

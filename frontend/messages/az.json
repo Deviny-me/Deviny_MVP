@@ -409,6 +409,9 @@
     "detailedDescriptionLabel": "Ətraflı təsvir (alıcılar üçün görünür)",
     "detailedDescriptionPlaceholder": "Bu proqramı alan istifadəçilərə göstəriləcək ətraflı təsvir yazın",
     "priceLabel": "Qiymət ($) *",
+    "proPriceLabel": "Pro Versiya Qiyməti ($)",
+    "proPricePlaceholder": "Pro versiya yoxdursa boş buraxın",
+    "proPriceHint": "İxtiyari. Bu proqramın premium versiyasını təklif etmək üçün pro qiymət təyin edin.",
     "trainingVideos": "Məşq videoları",
     "addVideo": "Video əlavə et",
     "saveChanges": "Dəyişiklikləri saxla",
@@ -992,6 +995,8 @@
     "aboutProgram": "Bu proqram haqqında",
     "getForFree": "Pulsuz əldə et",
     "purchaseFor": "${price} ödəyərək al",
+    "purchaseStandard": "Standart — ${price}",
+    "purchasePro": "Pro Versiya — ${price}",
     "purchaseComingSoon": "Satınalma funksiyası tezliklə!",
     "programCode": "Proqram kodu:"
   },

@@ -60,6 +60,7 @@ public class TrainerMealProgramsController : BaseApiController
                 Description = request.Description,
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
+                ProPrice = request.ProPrice,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
             };
@@ -102,6 +103,7 @@ public class TrainerMealProgramsController : BaseApiController
                 Description = request.Description,
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
+                ProPrice = request.ProPrice,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
             };

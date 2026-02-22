@@ -38,6 +38,7 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
         program.Description = request.Description;
         program.DetailedDescription = request.DetailedDescription;
         program.Price = request.Price;
+        program.ProPrice = request.ProPrice;
         program.UpdatedAt = DateTime.UtcNow;
 
         // Update cover image if provided
@@ -151,6 +152,7 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
             Description = program.Description,
             DetailedDescription = program.DetailedDescription,
             Price = program.Price,
+            ProPrice = program.ProPrice,
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             TrainingVideoUrls = videoPaths,

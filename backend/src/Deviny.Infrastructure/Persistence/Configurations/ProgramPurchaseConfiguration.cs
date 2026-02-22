@@ -21,6 +21,9 @@ public class ProgramPurchaseConfiguration : IEntityTypeConfiguration<ProgramPurc
         builder.Property(pp => pp.Status)
             .HasConversion<string>();
 
+        builder.Property(pp => pp.Tier)
+            .HasConversion<string>();
+
         builder.HasOne(pp => pp.Program)
             .WithMany(p => p.Purchases)
             .HasForeignKey(pp => pp.ProgramId)

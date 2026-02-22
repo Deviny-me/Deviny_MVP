@@ -409,6 +409,9 @@
     "detailedDescriptionLabel": "Подробное описание (видно покупателям)",
     "detailedDescriptionPlaceholder": "Укажите подробное описание, которое будет показано пользователям, купившим эту программу",
     "priceLabel": "Цена ($) *",
+    "proPriceLabel": "Цена Pro версии ($)",
+    "proPricePlaceholder": "Оставьте пустым, если нет Pro версии",
+    "proPriceHint": "Необязательно. Установите цену Pro версии для предложения премиум тарифа этой программы.",
     "trainingVideos": "Видео тренировок",
     "addVideo": "Добавить видео",
     "saveChanges": "Сохранить изменения",
@@ -992,6 +995,8 @@
     "aboutProgram": "О программе",
     "getForFree": "Получить бесплатно",
     "purchaseFor": "Купить за ${price}",
+    "purchaseStandard": "Стандарт — ${price}",
+    "purchasePro": "Pro версия — ${price}",
     "purchaseComingSoon": "Функция покупки скоро будет доступна!",
     "programCode": "Код программы:"
   },

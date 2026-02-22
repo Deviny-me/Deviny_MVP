@@ -39,6 +39,7 @@ type UnifiedProgram = {
   description: string
   detailedDescription?: string
   price: number
+  proPrice?: number
   code: string
   coverImageUrl: string
   createdAt: string
@@ -58,6 +59,7 @@ function toUnifiedFromTraining(p: ProgramDto): UnifiedProgram {
     description: p.description,
     detailedDescription: p.detailedDescription,
     price: p.price,
+    proPrice: p.proPrice,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -77,6 +79,7 @@ function toUnifiedFromMeal(p: MealProgramDto): UnifiedProgram {
     description: p.description,
     detailedDescription: p.detailedDescription,
     price: p.price,
+    proPrice: p.proPrice,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -129,6 +132,7 @@ export default function ProgramsPage() {
   const [description, setDescription] = useState('')
   const [detailedDescription, setDetailedDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [proPrice, setProPrice] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [trainingVideos, setTrainingVideos] = useState<File[]>([])
@@ -234,6 +238,7 @@ export default function ProgramsPage() {
     setDescription('')
     setDetailedDescription('')
     setPrice('')
+    setProPrice('')
     setCoverImage(null)
     setCoverPreview(null)
     setTrainingVideos([])
@@ -254,6 +259,7 @@ export default function ProgramsPage() {
     setDescription(program.description)
     setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
+    setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
   }
@@ -303,6 +309,7 @@ export default function ProgramsPage() {
             description,
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
+            proPrice: proPrice ? parseFloat(proPrice) : undefined,
             coverImage: coverImage || undefined,
             trainingVideos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -313,6 +320,7 @@ export default function ProgramsPage() {
             description,
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
+            proPrice: proPrice ? parseFloat(proPrice) : undefined,
             coverImage: coverImage!,
             trainingVideos,
           })
@@ -326,6 +334,7 @@ export default function ProgramsPage() {
             description,
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
+            proPrice: proPrice ? parseFloat(proPrice) : undefined,
             coverImage: coverImage || undefined,
             videos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -336,6 +345,7 @@ export default function ProgramsPage() {
             description,
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
+            proPrice: proPrice ? parseFloat(proPrice) : undefined,
             coverImage: coverImage!,
             videos: trainingVideos,
           })
@@ -629,6 +639,11 @@ export default function ProgramsPage() {
                   <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
                     ${selectedProgram.price}
                   </span>
+                  {selectedProgram.proPrice != null && (
+                    <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
+                      PRO ${selectedProgram.proPrice}
+                    </span>
+                  )}
                   <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
                     selectedProgram.type === 'training' ? 'bg-blue-600' : 'bg-green-600'
                   }`}>
@@ -885,6 +900,26 @@ export default function ProgramsPage() {
                         placeholder="0.00"
                       />
                     </div>
+                  </div>
+
+                  {/* Pro Price (optional) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('proPriceLabel')}
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="number"
+                        value={proPrice}
+                        onChange={(e) => setProPrice(e.target.value)}
+                        min="0"
+                        step="0.01"
+                        className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border}`}
+                        placeholder={t('proPricePlaceholder')}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
                   </div>
 
                   {/* Training Videos — for all program types */}

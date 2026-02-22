@@ -25,6 +25,10 @@ public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingPro
         builder.Property(p => p.Price)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.ProPrice)
+            .IsRequired(false)
+            .HasPrecision(18, 2);
+
         builder.Property(p => p.Code)
             .IsRequired()
             .HasMaxLength(50);

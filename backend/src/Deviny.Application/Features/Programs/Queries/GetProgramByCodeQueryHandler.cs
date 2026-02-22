@@ -35,6 +35,7 @@ public class GetProgramByCodeQueryHandler : IRequestHandler<GetProgramByCodeQuer
             Description = program.Description,
             DetailedDescription = program.DetailedDescription,
             Price = program.Price,
+            ProPrice = program.ProPrice,
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             TrainingVideoUrls = videoPaths,

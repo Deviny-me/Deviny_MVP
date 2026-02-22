@@ -28,6 +28,7 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
             Title = p.Title,
             Description = p.Description,
             Price = p.Price,
+            ProPrice = p.ProPrice,
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath)
                 ? ""

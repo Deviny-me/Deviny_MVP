@@ -38,6 +38,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
         program.Description = request.Description;
         program.DetailedDescription = request.DetailedDescription;
         program.Price = request.Price;
+        program.ProPrice = request.ProPrice;
         program.UpdatedAt = DateTime.UtcNow;
 
         if (request.CoverImage != null)
@@ -146,6 +147,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
             Description = program.Description,
             DetailedDescription = program.DetailedDescription,
             Price = program.Price,
+            ProPrice = program.ProPrice,
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             VideoUrls = videoPaths,
