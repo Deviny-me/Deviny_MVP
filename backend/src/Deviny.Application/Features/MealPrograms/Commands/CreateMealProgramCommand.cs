@@ -9,7 +9,9 @@ public class CreateMealProgramCommand : IRequest<MealProgramDto>
     public Guid TrainerId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
+    public decimal? ProPrice { get; set; }
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? Videos { get; set; }
 }

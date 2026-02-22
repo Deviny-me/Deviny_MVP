@@ -74,11 +74,18 @@ function ProgramDetailModal({
           {/* Title & Price */}
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
-            <span className={`text-2xl font-bold flex-shrink-0 ${
-              program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
-            }`}>
-              {formatPrice(program.price)}
-            </span>
+            <div className="flex flex-col items-end flex-shrink-0">
+              <span className={`text-2xl font-bold ${
+                program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+              }`}>
+                {formatPrice(program.price)}
+              </span>
+              {program.proPrice != null && (
+                <span className="text-sm font-semibold text-purple-400">
+                  PRO {formatPrice(program.proPrice)}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Trainer */}
@@ -134,17 +141,31 @@ function ProgramDetailModal({
             <p className="text-white leading-relaxed">{program.description}</p>
           </div>
 
-          {/* Purchase Button */}
-          <button
-            className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            onClick={() => {
-              // TODO: Implement purchase flow
-              alert(tp('purchaseComingSoon'))
-            }}
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {program.price === 0 ? tp('getForFree') : tp('purchaseFor', { price: formatPrice(program.price) })}
-          </button>
+          {/* Purchase Buttons */}
+          <div className="space-y-2">
+            <button
+              className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              onClick={() => {
+                // TODO: Implement purchase flow
+                alert(tp('purchaseComingSoon'))
+              }}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {program.price === 0 ? tp('getForFree') : tp('purchaseStandard', { price: formatPrice(program.price) })}
+            </button>
+            {program.proPrice != null && (
+              <button
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                onClick={() => {
+                  // TODO: Implement purchase flow
+                  alert(tp('purchaseComingSoon'))
+                }}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {tp('purchasePro', { price: formatPrice(program.proPrice) })}
+              </button>
+            )}
+          </div>
 
           {/* Program Code */}
           <p className="text-center text-xs text-gray-500">

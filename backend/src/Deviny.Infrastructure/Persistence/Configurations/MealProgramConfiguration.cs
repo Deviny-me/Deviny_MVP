@@ -18,7 +18,15 @@ public class MealProgramConfiguration : IEntityTypeConfiguration<MealProgram>
             .IsRequired()
             .HasMaxLength(2000);
 
+        builder.Property(p => p.DetailedDescription)
+            .IsRequired(false)
+            .HasMaxLength(5000);
+
         builder.Property(p => p.Price)
+            .HasPrecision(18, 2);
+
+        builder.Property(p => p.ProPrice)
+            .IsRequired(false)
             .HasPrecision(18, 2);
 
         builder.Property(p => p.Code)

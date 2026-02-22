@@ -28,6 +28,7 @@ type UnifiedPublicProgram = {
   title: string
   description: string
   price: number
+  proPrice?: number
   code: string
   coverImageUrl: string
   createdAt: string
@@ -48,6 +49,7 @@ function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
     title: p.title,
     description: p.description,
     price: p.price,
+    proPrice: p.proPrice,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -68,6 +70,7 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     title: p.title,
     description: p.description,
     price: p.price,
+    proPrice: p.proPrice,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -381,11 +384,18 @@ export default function ProgramsPage() {
                           </>
                         )}
                       </div>
-                      <span className={`text-lg font-bold ${
-                        program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
-                      }`}>
-                        {formatPrice(program.price)}
-                      </span>
+                      <div className="flex flex-col items-end">
+                        <span className={`text-lg font-bold ${
+                          program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+                        }`}>
+                          {formatPrice(program.price)}
+                        </span>
+                        {program.proPrice != null && (
+                          <span className="text-xs font-semibold text-purple-400">
+                            PRO {formatPrice(program.proPrice)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -478,11 +488,18 @@ function ProgramDetailModal({
         <div className="p-5 space-y-4">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
-            <span className={`text-2xl font-bold flex-shrink-0 ${
-              program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
-            }`}>
-              {formatPrice(program.price)}
-            </span>
+            <div className="flex flex-col items-end flex-shrink-0">
+              <span className={`text-2xl font-bold ${
+                program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+              }`}>
+                {formatPrice(program.price)}
+              </span>
+              {program.proPrice != null && (
+                <span className="text-sm font-semibold text-purple-400">
+                  PRO {formatPrice(program.proPrice)}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Trainer */}
@@ -533,14 +550,25 @@ function ProgramDetailModal({
             <p className="text-white leading-relaxed">{program.description}</p>
           </div>
 
-          {/* Purchase Button */}
-          <button
-            className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            onClick={() => alert(t('purchaseComingSoon'))}
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {program.price === 0 ? t('getForFree') : t('purchaseFor', { price: formatPrice(program.price) })}
-          </button>
+          {/* Purchase Buttons */}
+          <div className="space-y-2">
+            <button
+              className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              onClick={() => alert(t('purchaseComingSoon'))}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {program.price === 0 ? t('getForFree') : t('purchaseStandard', { price: formatPrice(program.price) })}
+            </button>
+            {program.proPrice != null && (
+              <button
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                onClick={() => alert(t('purchaseComingSoon'))}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {t('purchasePro', { price: formatPrice(program.proPrice) })}
+              </button>
+            )}
+          </div>
 
           <p className="text-center text-xs text-gray-500">
             {t('programCode')} <span className="text-gray-400 font-mono">{program.code}</span>

@@ -3,7 +3,9 @@ export interface ProgramDto {
   trainerId: string;
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   code: string;
   coverImageUrl: string;
   trainingVideoUrls: string[];
@@ -20,6 +22,7 @@ export interface PublicProgramDto {
   title: string;
   description: string;
   price: number;
+  proPrice?: number;
   code: string;
   coverImageUrl: string;
   averageRating: number;
@@ -35,7 +38,9 @@ export interface PublicProgramDto {
 export interface CreateProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   coverImage: File;
   trainingVideos: File[];
 }
@@ -43,7 +48,9 @@ export interface CreateProgramRequest {
 export interface UpdateProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   coverImage?: File;
   trainingVideos?: File[];
 }
@@ -53,7 +60,9 @@ export interface MealProgramDto {
   id: string;
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
@@ -66,6 +75,7 @@ export interface PublicMealProgramDto {
   title: string;
   description: string;
   price: number;
+  proPrice?: number;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
@@ -79,7 +89,9 @@ export interface PublicMealProgramDto {
 export interface CreateMealProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   coverImage: File;
   videos: File[];
 }
@@ -87,7 +99,9 @@ export interface CreateMealProgramRequest {
 export interface UpdateMealProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
+  proPrice?: number;
   coverImage?: File;
   videos?: File[];
 }

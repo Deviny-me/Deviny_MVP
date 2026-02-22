@@ -32,7 +32,9 @@ type UnifiedProgram = {
   id: string
   title: string
   description: string
+  detailedDescription?: string
   price: number
+  proPrice?: number
   code: string
   coverImageUrl: string
   createdAt: string
@@ -45,7 +47,9 @@ function toUnified(p: MealProgramDto): UnifiedProgram {
     id: p.id,
     title: p.title,
     description: p.description,
+    detailedDescription: p.detailedDescription,
     price: p.price,
+    proPrice: p.proPrice,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -79,7 +83,9 @@ export default function NutritionistProgramsPage() {
   // Form state
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [detailedDescription, setDetailedDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [proPrice, setProPrice] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [videos, setVideos] = useState<File[]>([])
@@ -124,7 +130,9 @@ export default function NutritionistProgramsPage() {
   const resetForm = () => {
     setTitle('')
     setDescription('')
+    setDetailedDescription('')
     setPrice('')
+    setProPrice('')
     setCoverImage(null)
     setCoverPreview(null)
     setVideos([])
@@ -140,7 +148,9 @@ export default function NutritionistProgramsPage() {
     setEditingProgram(program)
     setTitle(program.title)
     setDescription(program.description)
+    setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
+    setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
   }
@@ -187,7 +197,9 @@ export default function NutritionistProgramsPage() {
         await nutritionistProgramsApi.updateProgram(editingProgram.id, {
           title,
           description,
+          detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
+          proPrice: proPrice ? parseFloat(proPrice) : undefined,
           coverImage: coverImage || undefined,
           videos: videos.length > 0 ? videos : undefined,
         })
@@ -196,7 +208,9 @@ export default function NutritionistProgramsPage() {
         await nutritionistProgramsApi.createProgram({
           title,
           description,
+          detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
+          proPrice: proPrice ? parseFloat(proPrice) : undefined,
           coverImage: coverImage!,
           videos,
         })
@@ -398,6 +412,11 @@ export default function NutritionistProgramsPage() {
                   <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
                     ${selectedProgram.price}
                   </span>
+                  {selectedProgram.proPrice != null && (
+                    <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
+                      PRO ${selectedProgram.proPrice}
+                    </span>
+                  )}
                   <span className="px-2 py-1 text-xs font-bold rounded text-white bg-green-600">
                     {t('typeMeal')}
                   </span>
@@ -420,6 +439,13 @@ export default function NutritionistProgramsPage() {
                   <h3 className="text-sm font-medium text-gray-400 mb-2">{tp('description')}</h3>
                   <p className="text-white leading-relaxed">{selectedProgram.description}</p>
                 </div>
+
+                {selectedProgram.detailedDescription && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('detailedDescriptionLabel')}</h3>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedProgram.detailedDescription}</p>
+                  </div>
+                )}
 
                 {selectedProgram.videoUrls && selectedProgram.videoUrls.length > 0 && (
                   <div>
@@ -552,6 +578,20 @@ export default function NutritionistProgramsPage() {
                     />
                   </div>
 
+                  {/* Detailed Description (for buyers) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('detailedDescriptionLabel')}
+                    </label>
+                    <textarea
+                      value={detailedDescription}
+                      onChange={(e) => setDetailedDescription(e.target.value)}
+                      rows={5}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
+                      placeholder={t('detailedDescriptionPlaceholder')}
+                    />
+                  </div>
+
                   {/* Price */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -569,6 +609,26 @@ export default function NutritionistProgramsPage() {
                         placeholder="0.00"
                       />
                     </div>
+                  </div>
+
+                  {/* Pro Price (optional) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('proPriceLabel')}
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="number"
+                        value={proPrice}
+                        onChange={(e) => setProPrice(e.target.value)}
+                        min="0"
+                        step="0.01"
+                        className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                        placeholder={t('proPricePlaceholder')}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
                   </div>
 
                   {/* Videos */}
