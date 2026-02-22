@@ -37,8 +37,17 @@ public class ChatsController : BaseApiController
     [HttpPost("direct/{otherUserId}")]
     public async Task<ActionResult<object>> GetOrCreateConversation(Guid otherUserId)
     {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId == otherUserId)
+        {
+            return BadRequest(CreateProblemDetails(
+                "SelfMessage",
+                "Cannot start a conversation with yourself.",
+                StatusCodes.Status400BadRequest));
+        }
+
         var conversationId = await _mediator.Send(
-            new GetOrCreateConversationQuery(GetCurrentUserId(), otherUserId));
+            new GetOrCreateConversationQuery(currentUserId, otherUserId));
         return Ok(new { conversationId });
     }
 

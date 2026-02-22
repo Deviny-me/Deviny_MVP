@@ -249,6 +249,9 @@ export default function ChatInbox() {
   useEffect(() => {
     if (!userIdFromUrl || loadingConvs || creatingConvRef.current) return
 
+    // Prevent self-messaging: ignore if target is own user
+    if (currentUserId && userIdFromUrl.toLowerCase() === currentUserId.toLowerCase()) return
+
     const targetId = userIdFromUrl.toLowerCase()
     const existing = conversations.find(c => c.peerUser.id.toLowerCase() === targetId)
     if (existing) {

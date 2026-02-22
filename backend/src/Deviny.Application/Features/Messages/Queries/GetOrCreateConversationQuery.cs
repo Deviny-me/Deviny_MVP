@@ -24,6 +24,10 @@ public class GetOrCreateConversationQueryHandler : IRequestHandler<GetOrCreateCo
 
     public async Task<Guid> Handle(GetOrCreateConversationQuery request, CancellationToken cancellationToken)
     {
+        // Prevent self-messaging
+        if (request.UserId == request.OtherUserId)
+            throw new InvalidOperationException("Cannot start a conversation with yourself");
+
         // Verify other user exists
         var otherUser = await _userRepository.GetByIdAsync(request.OtherUserId);
         if (otherUser == null)
