@@ -406,6 +406,8 @@
     "namePlaceholder": "Введите название программы",
     "descriptionLabel": "Описание *",
     "descriptionPlaceholder": "Опишите вашу программу",
+    "detailedDescriptionLabel": "Подробное описание (видно покупателям)",
+    "detailedDescriptionPlaceholder": "Укажите подробное описание, которое будет показано пользователям, купившим эту программу",
     "priceLabel": "Цена ($) *",
     "trainingVideos": "Видео тренировок",
     "addVideo": "Добавить видео",

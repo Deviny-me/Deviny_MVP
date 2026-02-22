@@ -3,6 +3,7 @@ export interface ProgramDto {
   trainerId: string;
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   code: string;
   coverImageUrl: string;
@@ -35,6 +36,7 @@ export interface PublicProgramDto {
 export interface CreateProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   coverImage: File;
   trainingVideos: File[];
@@ -43,6 +45,7 @@ export interface CreateProgramRequest {
 export interface UpdateProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   coverImage?: File;
   trainingVideos?: File[];
@@ -53,6 +56,7 @@ export interface MealProgramDto {
   id: string;
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   code: string;
   coverImageUrl: string;
@@ -79,6 +83,7 @@ export interface PublicMealProgramDto {
 export interface CreateMealProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   coverImage: File;
   videos: File[];
@@ -87,6 +92,7 @@ export interface CreateMealProgramRequest {
 export interface UpdateMealProgramRequest {
   title: string;
   description: string;
+  detailedDescription?: string;
   price: number;
   coverImage?: File;
   videos?: File[];

@@ -406,6 +406,8 @@
     "namePlaceholder": "Proqram adını daxil edin",
     "descriptionLabel": "Təsvir *",
     "descriptionPlaceholder": "Proqramınızı təsvir edin",
+    "detailedDescriptionLabel": "Ətraflı təsvir (alıcılar üçün görünür)",
+    "detailedDescriptionPlaceholder": "Bu proqramı alan istifadəçilərə göstəriləcək ətraflı təsvir yazın",
     "priceLabel": "Qiymət ($) *",
     "trainingVideos": "Məşq videoları",
     "addVideo": "Video əlavə et",

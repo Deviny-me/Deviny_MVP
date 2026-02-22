@@ -37,6 +37,7 @@ type UnifiedProgram = {
   id: string
   title: string
   description: string
+  detailedDescription?: string
   price: number
   code: string
   coverImageUrl: string
@@ -55,6 +56,7 @@ function toUnifiedFromTraining(p: ProgramDto): UnifiedProgram {
     id: p.id,
     title: p.title,
     description: p.description,
+    detailedDescription: p.detailedDescription,
     price: p.price,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
@@ -73,6 +75,7 @@ function toUnifiedFromMeal(p: MealProgramDto): UnifiedProgram {
     id: p.id,
     title: p.title,
     description: p.description,
+    detailedDescription: p.detailedDescription,
     price: p.price,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
@@ -124,6 +127,7 @@ export default function ProgramsPage() {
   const [formType, setFormType] = useState<ProgramType>('training')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [detailedDescription, setDetailedDescription] = useState('')
   const [price, setPrice] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
@@ -228,6 +232,7 @@ export default function ProgramsPage() {
   const resetForm = () => {
     setTitle('')
     setDescription('')
+    setDetailedDescription('')
     setPrice('')
     setCoverImage(null)
     setCoverPreview(null)
@@ -247,6 +252,7 @@ export default function ProgramsPage() {
     setFormType(program.type)
     setTitle(program.title)
     setDescription(program.description)
+    setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
@@ -295,6 +301,7 @@ export default function ProgramsPage() {
           await programsApi.updateProgram(editingProgram.id, {
             title,
             description,
+            detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             coverImage: coverImage || undefined,
             trainingVideos: trainingVideos.length > 0 ? trainingVideos : undefined,
@@ -304,6 +311,7 @@ export default function ProgramsPage() {
           await programsApi.createProgram({
             title,
             description,
+            detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             coverImage: coverImage!,
             trainingVideos,
@@ -316,6 +324,7 @@ export default function ProgramsPage() {
           await mealProgramsApi.updateMealProgram(editingProgram.id, {
             title,
             description,
+            detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             coverImage: coverImage || undefined,
             videos: trainingVideos.length > 0 ? trainingVideos : undefined,
@@ -325,6 +334,7 @@ export default function ProgramsPage() {
           await mealProgramsApi.createMealProgram({
             title,
             description,
+            detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             coverImage: coverImage!,
             videos: trainingVideos,
@@ -668,6 +678,13 @@ export default function ProgramsPage() {
                   <p className="text-white leading-relaxed">{selectedProgram.description}</p>
                 </div>
 
+                {selectedProgram.detailedDescription && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('detailedDescriptionLabel')}</h3>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedProgram.detailedDescription}</p>
+                  </div>
+                )}
+
                 {selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-400 mb-2">{t('trainingVideos')}</h3>
@@ -834,6 +851,20 @@ export default function ProgramsPage() {
                       rows={3}
                       className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border} resize-none`}
                       placeholder={t('descriptionPlaceholder')}
+                    />
+                  </div>
+
+                  {/* Detailed Description (for buyers) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('detailedDescriptionLabel')}
+                    </label>
+                    <textarea
+                      value={detailedDescription}
+                      onChange={(e) => setDetailedDescription(e.target.value)}
+                      rows={5}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border} resize-none`}
+                      placeholder={t('detailedDescriptionPlaceholder')}
                     />
                   </div>
 

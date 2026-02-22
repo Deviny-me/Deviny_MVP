@@ -55,6 +55,7 @@ public class TrainerProgramsController : BaseApiController
                 TrainerId = trainerId.Value,
                 Title = request.Title,
                 Description = request.Description,
+                DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 CoverImage = request.CoverImage,
                 TrainingVideos = request.TrainingVideos
@@ -95,6 +96,7 @@ public class TrainerProgramsController : BaseApiController
                 TrainerId = trainerId.Value,
                 Title = request.Title,
                 Description = request.Description,
+                DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 CoverImage = request.CoverImage,
                 TrainingVideos = request.TrainingVideos

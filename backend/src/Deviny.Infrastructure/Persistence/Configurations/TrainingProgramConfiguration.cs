@@ -18,6 +18,10 @@ public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingPro
             .IsRequired()
             .HasMaxLength(2000);
 
+        builder.Property(p => p.DetailedDescription)
+            .IsRequired(false)
+            .HasMaxLength(5000);
+
         builder.Property(p => p.Price)
             .HasPrecision(18, 2);
 

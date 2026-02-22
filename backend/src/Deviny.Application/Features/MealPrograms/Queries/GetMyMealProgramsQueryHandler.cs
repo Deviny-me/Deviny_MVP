@@ -23,6 +23,7 @@ public class GetMyMealProgramsQueryHandler : IRequestHandler<GetMyMealProgramsQu
             Id = p.Id,
             Title = p.Title,
             Description = p.Description,
+            DetailedDescription = p.DetailedDescription,
             Price = p.Price,
             Code = p.Code,
             CoverImageUrl = p.CoverImagePath,

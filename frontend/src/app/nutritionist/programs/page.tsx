@@ -32,6 +32,7 @@ type UnifiedProgram = {
   id: string
   title: string
   description: string
+  detailedDescription?: string
   price: number
   code: string
   coverImageUrl: string
@@ -45,6 +46,7 @@ function toUnified(p: MealProgramDto): UnifiedProgram {
     id: p.id,
     title: p.title,
     description: p.description,
+    detailedDescription: p.detailedDescription,
     price: p.price,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
@@ -79,6 +81,7 @@ export default function NutritionistProgramsPage() {
   // Form state
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [detailedDescription, setDetailedDescription] = useState('')
   const [price, setPrice] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
@@ -124,6 +127,7 @@ export default function NutritionistProgramsPage() {
   const resetForm = () => {
     setTitle('')
     setDescription('')
+    setDetailedDescription('')
     setPrice('')
     setCoverImage(null)
     setCoverPreview(null)
@@ -140,6 +144,7 @@ export default function NutritionistProgramsPage() {
     setEditingProgram(program)
     setTitle(program.title)
     setDescription(program.description)
+    setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
@@ -187,6 +192,7 @@ export default function NutritionistProgramsPage() {
         await nutritionistProgramsApi.updateProgram(editingProgram.id, {
           title,
           description,
+          detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
           coverImage: coverImage || undefined,
           videos: videos.length > 0 ? videos : undefined,
@@ -196,6 +202,7 @@ export default function NutritionistProgramsPage() {
         await nutritionistProgramsApi.createProgram({
           title,
           description,
+          detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
           coverImage: coverImage!,
           videos,
@@ -421,6 +428,13 @@ export default function NutritionistProgramsPage() {
                   <p className="text-white leading-relaxed">{selectedProgram.description}</p>
                 </div>
 
+                {selectedProgram.detailedDescription && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('detailedDescriptionLabel')}</h3>
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedProgram.detailedDescription}</p>
+                  </div>
+                )}
+
                 {selectedProgram.videoUrls && selectedProgram.videoUrls.length > 0 && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-400 mb-2">{t('trainingVideos')}</h3>
@@ -549,6 +563,20 @@ export default function NutritionistProgramsPage() {
                       rows={3}
                       className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
                       placeholder={t('descriptionPlaceholder')}
+                    />
+                  </div>
+
+                  {/* Detailed Description (for buyers) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('detailedDescriptionLabel')}
+                    </label>
+                    <textarea
+                      value={detailedDescription}
+                      onChange={(e) => setDetailedDescription(e.target.value)}
+                      rows={5}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
+                      placeholder={t('detailedDescriptionPlaceholder')}
                     />
                   </div>
 

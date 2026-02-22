@@ -406,6 +406,8 @@
     "namePlaceholder": "Enter program name",
     "descriptionLabel": "Description *",
     "descriptionPlaceholder": "Describe your program",
+    "detailedDescriptionLabel": "Detailed Description (visible to buyers)",
+    "detailedDescriptionPlaceholder": "Provide a detailed description that will be shown to users who purchased this program",
     "priceLabel": "Price ($) *",
     "trainingVideos": "Training videos",
     "addVideo": "Add video",

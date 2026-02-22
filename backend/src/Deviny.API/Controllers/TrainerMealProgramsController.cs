@@ -58,6 +58,7 @@ public class TrainerMealProgramsController : BaseApiController
                 TrainerId = userId.Value,
                 Title = request.Title,
                 Description = request.Description,
+                DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
@@ -99,6 +100,7 @@ public class TrainerMealProgramsController : BaseApiController
                 TrainerId = userId.Value,
                 Title = request.Title,
                 Description = request.Description,
+                DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
