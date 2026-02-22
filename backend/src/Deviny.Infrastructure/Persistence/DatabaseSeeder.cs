@@ -173,12 +173,61 @@ public static class DatabaseSeeder
             Rarity = AchievementRarity.Rare,
             XpReward = 50,
             IsActive = true,
-            TargetRole = UserRole.Trainer,
+            TargetRole = null,
             CreatedAt = now,
             UpdatedAt = now
         };
 
-        context.Achievements.AddRange(firstPost, firstMessage, firstProgram);
+        // ── Nutritionist-specific achievements ──
+        var firstMealPlan = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "FIRST_MEAL_PLAN",
+            Title = "Автор рациона",
+            Description = "Создайте свою первую программу питания",
+            IconKey = "apple",
+            ColorKey = "green",
+            Rarity = AchievementRarity.Rare,
+            XpReward = 50,
+            IsActive = true,
+            TargetRole = UserRole.Nutritionist,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var nutriBlogger = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "NUTRI_FIRST_POST",
+            Title = "Нутри-блогер",
+            Description = "Опубликуйте свой первый пост как нутриолог",
+            IconKey = "pen-line",
+            ColorKey = "teal",
+            Rarity = AchievementRarity.Common,
+            XpReward = 25,
+            IsActive = true,
+            TargetRole = UserRole.Nutritionist,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var nutriMentor = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "NUTRI_FIRST_MESSAGE",
+            Title = "Забота о клиенте",
+            Description = "Отправьте первое сообщение клиенту",
+            IconKey = "message-circle",
+            ColorKey = "emerald",
+            Rarity = AchievementRarity.Common,
+            XpReward = 20,
+            IsActive = true,
+            TargetRole = UserRole.Nutritionist,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        context.Achievements.AddRange(firstPost, firstMessage, firstProgram, firstMealPlan, nutriBlogger, nutriMentor);
         await context.SaveChangesAsync();
 
         // ── Challenges (linked 1-to-1 with achievements) ──
@@ -221,8 +270,51 @@ public static class DatabaseSeeder
                 Type = ChallengeType.OneTime,
                 TargetValue = 1,
                 IsActive = true,
-                TargetRole = UserRole.Trainer,
+                TargetRole = null,
                 AchievementId = firstProgram.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            // ── Nutritionist-specific challenges ──
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_FIRST_MEAL_PLAN",
+                Title = "Создай рацион",
+                Description = "Создайте свою первую программу питания",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.Nutritionist,
+                AchievementId = firstMealPlan.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_NUTRI_FIRST_POST",
+                Title = "Поделись знаниями",
+                Description = "Опубликуйте свой первый пост как нутриолог",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.Nutritionist,
+                AchievementId = nutriBlogger.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_NUTRI_FIRST_MESSAGE",
+                Title = "Свяжись с клиентом",
+                Description = "Отправьте первое сообщение клиенту",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.Nutritionist,
+                AchievementId = nutriMentor.Id,
                 CreatedAt = now,
                 UpdatedAt = now
             }
@@ -231,6 +323,6 @@ public static class DatabaseSeeder
         context.Challenges.AddRange(challenges);
         await context.SaveChangesAsync();
 
-        Console.WriteLine("✅ Achievements & challenges seeded (3 achievements, 3 challenges).");
+        Console.WriteLine("✅ Achievements & challenges seeded (6 achievements, 6 challenges).");
     }
 }

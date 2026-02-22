@@ -1,4 +1,4 @@
-import { API_URL, getAuthHeader } from '@/lib/config'
+import { API_URL, getAuthHeader, fetchWithAuth } from '@/lib/config'
 import { 
   PostDto, 
   UserPostsResponse, 
@@ -81,26 +81,27 @@ export const postsApi = {
 
   /**
    * Delete a post by ID.
-   * Returns success even if post is already deleted (404).
+   * Uses fetchWithAuth for automatic token refresh on 401.
    */
   async deletePost(postId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/me/posts/${postId}`, {
+    const response = await fetchWithAuth(`${API_URL}/me/posts/${postId}`, {
       method: 'DELETE',
       headers: {
-        ...getAuthHeader(),
         'Content-Type': 'application/json',
       },
-      credentials: 'include',
     })
 
-    // 204 = success, 404 = already deleted (treat as success)
-    if (response.ok || response.status === 404) {
+    // 204 = success
+    if (response.ok) {
       return
     }
 
+    // 404 = post not found or not owned — do NOT treat as success
     const error = await response.json().catch(() => ({
       title: 'Delete failed',
-      detail: 'Failed to delete post',
+      detail: response.status === 404
+        ? 'Post not found or you don\'t have permission to delete it'
+        : 'Failed to delete post',
       status: response.status
     }))
     throw new Error(error.detail || error.title || 'Failed to delete post')

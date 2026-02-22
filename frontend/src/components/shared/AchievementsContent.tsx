@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Trophy, Lock, Award, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { usePathname } from 'next/navigation'
 import { getMyAchievements } from '@/lib/api/achievementApi'
 import type { AchievementDto, MyAchievementsResponse } from '@/types/achievement'
 import { getIcon, getGradient, getRarityBorder, getRarityGlow, getRarityLabelColor } from '@/components/shared/achievementUtils'
@@ -10,6 +12,12 @@ export default function AchievementsContent() {
   const [data, setData] = useState<MyAchievementsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations('achievements')
+  const pathname = usePathname()
+  const isNutritionist = pathname?.startsWith('/nutritionist')
+  const accentGradient = isNutritionist ? 'from-[#22c55e] to-[#16a34a]' : 'from-[#FF6B35] to-[#FF0844]'
+  const accentText = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
+  const spinnerColor = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
 
   useEffect(() => {
     getMyAchievements()
@@ -21,7 +29,7 @@ export default function AchievementsContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className={`w-8 h-8 ${spinnerColor} animate-spin`} />
       </div>
     )
   }
@@ -48,38 +56,40 @@ export default function AchievementsContent() {
       <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Achievements</h1>
-            <p className="text-gray-400">Unlock achievements by completing actions</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
+            <p className="text-gray-400">{t('subtitle')}</p>
           </div>
           <div className="text-right">
-            <div className="text-4xl font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
+            <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>
               {data.unlockedCount}/{data.totalCount}
             </div>
-            <p className="text-sm text-gray-400">Unlocked</p>
+            <p className="text-sm text-gray-400">{t('unlocked')}</p>
           </div>
         </div>
       </div>
 
       {/* Unlocked */}
       <Section
-        title="Unlocked"
+        title={t('unlocked')}
         count={unlocked.length}
         icon={<Trophy className="w-5 h-5 text-yellow-400" />}
         emptyIcon={<Trophy className="w-8 h-8 text-gray-400" />}
-        emptyTitle="No Achievements Yet"
-        emptyText="Complete actions to unlock achievements!"
+        emptyTitle={t('noAchievements')}
+        emptyText={t('completeToUnlock')}
         items={unlocked}
+        accentText={accentText}
       />
 
       {/* Locked */}
       <Section
-        title="Locked"
+        title={t('locked')}
         count={locked.length}
         icon={<Lock className="w-5 h-5 text-gray-500" />}
         emptyIcon={<Award className="w-8 h-8 text-yellow-400" />}
-        emptyTitle="All Unlocked!"
-        emptyText="You've earned every available achievement"
+        emptyTitle={t('allUnlocked')}
+        emptyText=""
         items={locked}
+        accentText={accentText}
       />
     </div>
   )
@@ -93,6 +103,7 @@ function Section({
   emptyTitle,
   emptyText,
   items,
+  accentText,
 }: {
   title: string
   count: number
@@ -101,6 +112,7 @@ function Section({
   emptyTitle: string
   emptyText: string
   items: AchievementDto[]
+  accentText: string
 }) {
   if (count === 0) {
     return (
@@ -126,14 +138,14 @@ function Section({
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map(a => (
-          <AchievementCard key={a.id} achievement={a} />
+          <AchievementCard key={a.id} achievement={a} accentText={accentText} />
         ))}
       </div>
     </div>
   )
 }
 
-function AchievementCard({ achievement }: { achievement: AchievementDto }) {
+function AchievementCard({ achievement, accentText }: { achievement: AchievementDto; accentText: string }) {
   const Icon = getIcon(achievement.iconKey)
   const gradient = getGradient(achievement.colorKey)
   const borderCls = achievement.isUnlocked
@@ -179,7 +191,7 @@ function AchievementCard({ achievement }: { achievement: AchievementDto }) {
         <div className="flex items-center gap-2 mt-auto">
           <span className={`text-[10px] font-medium ${rarityColor}`}>{achievement.rarity}</span>
           {achievement.xpReward > 0 && (
-            <span className="text-[10px] text-[#FF6B35]">+{achievement.xpReward} XP</span>
+            <span className={`text-[10px] ${accentText}`}>+{achievement.xpReward} XP</span>
           )}
         </div>
 

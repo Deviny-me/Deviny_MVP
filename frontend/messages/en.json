@@ -466,7 +466,23 @@
     "replaceCoverImage": "Replace cover image (optional)",
     "uploadNewCover": "Upload new cover",
     "replaceTrainingVideos": "Add/replace videos (optional)",
-    "uploadNewVideos": "Upload new videos"
+    "uploadNewVideos": "Upload new videos",
+
+    "tabTraining": "Training",
+    "tabMeal": "Nutrition",
+    "programType": "Program type *",
+    "typeTraining": "Training program",
+    "typeMeal": "Meal program",
+    "newTrainingProgram": "New training program",
+    "newMealProgram": "New meal program",
+    "editTrainingProgram": "Edit training program",
+    "editMealProgram": "Edit meal program",
+    "noTrainingPrograms": "No training programs",
+    "noMealPrograms": "No meal programs",
+    "createFirstTraining": "Create your first training program",
+    "createFirstMeal": "Create your first meal program",
+    "totalTrainingPrograms": "Training programs",
+    "totalMealPrograms": "Meal programs"
   },
 
   "schedule": {
@@ -583,7 +599,8 @@
     "uploadingVideo": "Uploading video...",
     "postUploaded": "Post uploaded!",
     "uploadError": "Upload error",
-    "recentStudents": "Recent students"
+    "recentStudents": "Recent students",
+    "recentClients": "Recent clients"
   },
 
   "posts": {
@@ -619,9 +636,11 @@
   "search": {
     "placeholder": "Search...",
     "trainerPlaceholder": "Search students, programs...",
+    "nutritionistPlaceholder": "Search clients, meal programs...",
     "noResults": "Nothing found for \"{query}\"",
     "users": "Users",
     "trainer": "Trainer",
+    "nutritionist": "Nutritionist",
     "user": "User",
     "trainingPrograms": "Training programs",
     "nutritionPrograms": "Nutrition programs"
@@ -827,7 +846,10 @@
     "adjustSearch": "Try adjusting your search",
     "sendMessage": "Send Message",
     "call": "Call",
-    "openInNewTab": "Open in New Tab"
+    "openInNewTab": "Open in New Tab",
+    "filterAll": "All",
+    "filterTrainers": "Trainers",
+    "filterNutritionists": "Nutritionists"
   },
 
   "friends": {
@@ -978,5 +1000,39 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "copyright": "Deviny Fitness © 2026"
+  },
+
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications",
+    "loading": "Loading...",
+    "loadMore": "Load more",
+    "justNow": "just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago"
+  },
+
+  "achievements": {
+    "title": "Achievements",
+    "subtitle": "Unlock achievements by completing actions",
+    "unlocked": "Unlocked",
+    "locked": "Locked",
+    "noAchievements": "No Achievements Yet",
+    "completeToUnlock": "Complete actions to unlock achievements!",
+    "allUnlocked": "All Unlocked!",
+    "xpReward": "XP"
+  },
+
+  "challenges": {
+    "title": "Challenges",
+    "noChallenges": "No Challenges Available",
+    "checkBackLater": "Check back later for new challenges!",
+    "active": "Active",
+    "completed": "Completed",
+    "progress": "Progress",
+    "reward": "Reward:",
+    "done": "Done"
   }
 }

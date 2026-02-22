@@ -35,7 +35,11 @@ public class MealProgramConfiguration : IEntityTypeConfiguration<MealProgram>
             .HasDatabaseName("IX_MealPrograms_IsDeleted_CreatedAt");
 
         builder.Property(p => p.CoverImagePath)
+            .IsRequired()
             .HasMaxLength(500);
+
+        builder.Property(p => p.VideosPath)
+            .HasMaxLength(4000); // JSON array
 
         builder.HasOne(p => p.Trainer)
             .WithMany()

@@ -3,7 +3,7 @@ import { LucideIcon } from 'lucide-react'
 /**
  * User role type for layout configuration.
  */
-export type UserRole = 'trainer' | 'user'
+export type UserRole = 'trainer' | 'user' | 'nutritionist'
 
 /**
  * Navigation link configuration.
@@ -49,5 +49,9 @@ export interface LayoutConfig {
  * Get base path for a role.
  */
 export function getBasePath(role: UserRole): string {
-  return role === 'trainer' ? '/trainer' : '/user'
+  switch (role) {
+    case 'trainer': return '/trainer'
+    case 'nutritionist': return '/nutritionist'
+    default: return '/user'
+  }
 }

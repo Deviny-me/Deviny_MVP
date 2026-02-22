@@ -1,4 +1,5 @@
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Features.Notifications.Events;
 using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
@@ -12,13 +13,22 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
     private readonly IProgramRepository _programRepository;
     private readonly ILevelService _levelService;
     private readonly IAchievementService _achievementService;
+    private readonly IMediator _mediator;
+    private readonly IUserRepository _userRepository;
     private readonly string _uploadsPath;
 
-    public CreateProgramCommandHandler(IProgramRepository programRepository, ILevelService levelService, IAchievementService achievementService)
+    public CreateProgramCommandHandler(
+        IProgramRepository programRepository,
+        ILevelService levelService,
+        IAchievementService achievementService,
+        IMediator mediator,
+        IUserRepository userRepository)
     {
         _programRepository = programRepository;
         _levelService = levelService;
         _achievementService = achievementService;
+        _mediator = mediator;
+        _userRepository = userRepository;
         _uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "programs");
         
         if (!Directory.Exists(_uploadsPath))
@@ -140,6 +150,27 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Warning: Failed to check achievement for program creation: {ex.Message}");
+        }
+
+        // Publish notification event for trainer + followers
+        try
+        {
+            var trainer = await _userRepository.GetByIdAsync(request.TrainerId);
+            var trainerName = trainer != null
+                ? $"{trainer.FirstName} {trainer.LastName}".Trim()
+                : "Тренер";
+
+            await _mediator.Publish(new TrainingProgramCreatedEvent
+            {
+                TrainerId = request.TrainerId,
+                TrainerName = trainerName,
+                ProgramId = created.Id,
+                ProgramTitle = created.Title
+            }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Warning: Failed to publish training program created event: {ex.Message}");
         }
 
         var videoPaths = string.IsNullOrEmpty(created.TrainingVideosPath) 

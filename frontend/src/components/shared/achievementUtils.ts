@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Apple,
   Award,
   Dumbbell,
   Flame,
@@ -16,6 +17,7 @@ import {
 } from 'lucide-react'
 
 const iconMap: Record<string, LucideIcon> = {
+  apple: Apple,
   award: Award,
   dumbbell: Dumbbell,
   flame: Flame,
@@ -32,6 +34,8 @@ const iconMap: Record<string, LucideIcon> = {
 const colorMap: Record<string, string> = {
   blue: 'from-blue-500 to-blue-700',
   green: 'from-emerald-500 to-emerald-700',
+  teal: 'from-teal-500 to-teal-700',
+  emerald: 'from-green-500 to-green-700',
   purple: 'from-purple-500 to-purple-700',
   orange: 'from-[#FF6B35] to-[#FF0844]',
   red: 'from-red-500 to-red-700',

@@ -6,17 +6,22 @@ import { NavSection } from './types'
 interface SharedLeftSidebarProps {
   sections: NavSection[]
   className?: string
+  accentColor?: 'orange' | 'green'
 }
 
 /**
  * Shared left sidebar navigation component.
  * Configurable via sections prop for different user roles.
  */
-export function SharedLeftSidebar({ sections, className }: SharedLeftSidebarProps) {
+export function SharedLeftSidebar({ sections, className, accentColor = 'orange' }: SharedLeftSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
   const isActivePath = (path: string) => pathname === path
+
+  const colors = accentColor === 'green'
+    ? { activeBg: 'from-[#22c55e]/10 to-[#16a34a]/10', activeBorder: 'border-[#22c55e]', activeIcon: 'text-[#22c55e]', hoverIcon: 'group-hover:text-[#22c55e]', badge: 'bg-[#16a34a]' }
+    : { activeBg: 'from-[#FF6B35]/10 to-[#FF0844]/10', activeBorder: 'border-[#FF6B35]', activeIcon: 'text-[#FF6B35]', hoverIcon: 'group-hover:text-[#FF6B35]', badge: 'bg-[#FF0844]' }
 
   return (
     <div className={`w-60 flex-shrink-0 space-y-2 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6 scrollbar-hide ${className || ''}`}>
@@ -41,15 +46,15 @@ export function SharedLeftSidebar({ sections, className }: SharedLeftSidebarProp
                     onClick={() => router.push(link.path)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded transition-all group ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#FF6B35]/10 to-[#FF0844]/10 border-l-2 border-[#FF6B35]'
+                        ? `bg-gradient-to-r ${colors.activeBg} border-l-2 ${colors.activeBorder}`
                         : 'text-gray-300 hover:bg-white/5'
                     }`}
                   >
                     <LinkIcon 
                       className={`w-5 h-5 transition-colors ${
                         isActive 
-                          ? 'text-[#FF6B35]' 
-                          : 'text-gray-400 group-hover:text-[#FF6B35]'
+                          ? colors.activeIcon 
+                          : `text-gray-400 ${colors.hoverIcon}`
                       }`} 
                       strokeWidth={isActive ? 2 : 1.5} 
                     />
@@ -59,7 +64,7 @@ export function SharedLeftSidebar({ sections, className }: SharedLeftSidebarProp
                       {link.label}
                     </span>
                     {link.badge !== undefined && link.badge > 0 && (
-                      <span className="ml-auto px-1.5 py-0.5 text-[10px] font-bold bg-[#FF0844] text-white rounded-full">
+                      <span className={`ml-auto px-1.5 py-0.5 text-[10px] font-bold ${colors.badge} text-white rounded-full`}>
                         {link.badge}
                       </span>
                     )}

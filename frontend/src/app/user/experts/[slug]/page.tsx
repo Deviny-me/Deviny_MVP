@@ -20,6 +20,8 @@ import { API_URL, fetchWithAuth, getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import ChatModal from '@/components/chat/ChatModal'
+import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useAuth } from '@/features/auth/AuthContext'
 
 export default function TrainerProfilePage() {
   const params = useParams()
@@ -27,6 +29,7 @@ export default function TrainerProfilePage() {
   const slug = params.slug as string
   const t = useTranslations('experts')
   const tc = useTranslations('common')
+  const { user: currentUser } = useAuth()
   
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -101,7 +104,9 @@ export default function TrainerProfilePage() {
         )}
 
         {/* Profile Content */}
-        {!isLoading && !error && profile && (
+        {!isLoading && !error && profile && (() => {
+          const expertAccent = getAccentColorsByRole(profile.trainer.role)
+          return (
           <div className="space-y-4">
             {/* Header Card */}
             <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
@@ -112,10 +117,10 @@ export default function TrainerProfilePage() {
                     <img
                       src={getMediaUrl(profile.trainer.avatarUrl) || ''}
                       alt={profile.trainer.fullName}
-                      className="w-32 h-32 rounded-xl object-cover"
+                      className={`w-32 h-32 rounded-xl object-cover ${getRoleRingClass(profile.trainer.role)}`}
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                    <div className={`w-32 h-32 rounded-xl bg-gradient-to-br ${getAccentColorsByRole(profile.trainer.role).gradient} flex items-center justify-center`}>
                       <span className="text-white text-4xl font-bold">{profile.trainer.initials}</span>
                     </div>
                   )}
@@ -125,7 +130,7 @@ export default function TrainerProfilePage() {
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-white">{profile.trainer.fullName}</h1>
                   {profile.trainer.primaryTitle && (
-                    <p className="text-[#FF6B35] mt-2 text-lg">{profile.trainer.primaryTitle}</p>
+                    <p className={`${expertAccent.text} mt-2 text-lg`}>{profile.trainer.primaryTitle}</p>
                   )}
                   {profile.trainer.secondaryTitle && (
                     <p className="text-sm text-gray-400 mt-1">{profile.trainer.secondaryTitle}</p>
@@ -139,7 +144,7 @@ export default function TrainerProfilePage() {
                     {profile.trainer.phone && (
                       <a
                         href={`tel:${profile.trainer.phone}`}
-                        className="flex items-center gap-1 text-sm text-gray-400 hover:text-[#FF6B35] transition-colors"
+                        className={`flex items-center gap-1 text-sm text-gray-400 ${expertAccent.hoverText} transition-colors`}
                       >
                         <Phone className="w-3.5 h-3.5" />
                         <span>{profile.trainer.phone}</span>
@@ -197,10 +202,11 @@ export default function TrainerProfilePage() {
                   </div>
 
                   {/* Contact Buttons */}
+                  {profile.trainer.userId !== currentUser?.id && (
                   <div className="flex flex-wrap items-center gap-3 mt-6">
                     <button
                       onClick={() => setIsChatOpen(true)}
-                      className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+                      className={`px-4 py-2 bg-gradient-to-r ${expertAccent.gradient} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2`}
                     >
                       <MessageCircle className="w-4 h-4" />
                       {t('sendMessage')}
@@ -215,6 +221,7 @@ export default function TrainerProfilePage() {
                       </a>
                     )}
                   </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -240,7 +247,7 @@ export default function TrainerProfilePage() {
                   {profile.specializations.map((spec) => (
                     <span
                       key={spec.id}
-                      className="px-3 py-1.5 bg-[#FF6B35]/10 text-[#FF6B35] rounded-lg text-sm font-medium"
+                      className={`px-3 py-1.5 ${expertAccent.bgMuted} ${expertAccent.text} rounded-lg text-sm font-medium`}
                     >
                       {spec.name}
                     </span>
@@ -258,7 +265,7 @@ export default function TrainerProfilePage() {
                 <div className="space-y-3">
                   {profile.certificates.map((cert) => (
                     <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center flex-shrink-0">
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center flex-shrink-0`}>
                         <Award className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1">
@@ -269,7 +276,7 @@ export default function TrainerProfilePage() {
                         {cert.fileUrl && cert.fileName && (
                           <button
                             onClick={() => setSelectedCertificate({ fileUrl: cert.fileUrl!, title: cert.title })}
-                            className="text-xs text-[#FF6B35] hover:underline mt-1 inline-block"
+                            className={`text-xs ${expertAccent.text} hover:underline mt-1 inline-block`}
                           >
                             {t('viewCertificate')}
                           </button>
@@ -298,7 +305,7 @@ export default function TrainerProfilePage() {
                       purple: 'bg-gradient-to-br from-purple-400 to-purple-600',
                       red: 'bg-gradient-to-br from-red-400 to-red-600',
                     }
-                    const bgColor = toneColors[achievement.tone.toLowerCase()] || 'bg-gradient-to-br from-[#FF6B35] to-[#FF0844]'
+                    const bgColor = toneColors[achievement.tone.toLowerCase()] || `bg-gradient-to-br ${expertAccent.gradient}`
                     
                     return (
                       <div key={achievement.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
@@ -320,7 +327,8 @@ export default function TrainerProfilePage() {
               )}
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* Certificate Modal */}
@@ -365,7 +373,7 @@ export default function TrainerProfilePage() {
                 href={`${API_URL.replace('/api', '')}${selectedCertificate.fileUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
+                className={`px-4 py-2 bg-gradient-to-r ${profile ? getAccentColorsByRole(profile.trainer.role).gradient : 'from-[#FF6B35] to-[#FF0844]'} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity`}
               >
                 {t('openInNewTab')}
               </a>
@@ -380,6 +388,7 @@ export default function TrainerProfilePage() {
           otherUserId={profile.trainer.userId}
           otherUserName={profile.trainer.fullName}
           otherUserAvatarUrl={profile.trainer.avatarUrl}
+          otherUserRole={profile.trainer.role}
           onClose={() => setIsChatOpen(false)}
         />
       )}

@@ -50,8 +50,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer or nutritionist
-            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
+            // Only Trainer role allowed — Nutritionists use NutritionistProfileController
+            if (user.Role != Domain.Enums.UserRole.Trainer)
             {
                 return Forbid();
             }
@@ -130,7 +130,8 @@ public class TrainerProfileController : BaseApiController
                     RatingValue = 0, // Placeholder for future reviews
                     ReviewsCount = 0, // Placeholder for future reviews
                     Slug = profile.Slug,
-                    ProfilePublicUrl = profilePublicUrl
+                    ProfilePublicUrl = profilePublicUrl,
+                    Role = user.Role.ToString()
                 },
                 About = new AboutDto
                 {
@@ -179,7 +180,7 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
+            if (user.Role != Domain.Enums.UserRole.Trainer)
             {
                 return Forbid();
             }
@@ -253,8 +254,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer or nutritionist
-            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
+            // Only Trainer role allowed
+            if (user.Role != Domain.Enums.UserRole.Trainer)
             {
                 return Forbid();
             }
@@ -355,8 +356,8 @@ public class TrainerProfileController : BaseApiController
                 return Unauthorized(new { message = "User not found" });
             }
 
-            // Check if user is a trainer or nutritionist
-            if (user.Role != Domain.Enums.UserRole.Trainer && user.Role != Domain.Enums.UserRole.Nutritionist)
+            // Only Trainer role allowed
+            if (user.Role != Domain.Enums.UserRole.Trainer)
             {
                 return Forbid();
             }

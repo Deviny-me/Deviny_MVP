@@ -13,15 +13,19 @@ import { useTranslations } from 'next-intl'
 import { trainersApi } from '@/lib/api/trainersApi'
 import { PublicTrainerDto } from '@/types/trainer'
 import { getMediaUrl } from '@/lib/config'
+import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useAuth } from '@/features/auth/AuthContext'
 
 export default function ExpertsPage() {
   const router = useRouter()
   const t = useTranslations('experts')
   const tc = useTranslations('common')
+  const { user: currentUser } = useAuth()
   const [trainers, setTrainers] = useState<PublicTrainerDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [roleFilter, setRoleFilter] = useState<'all' | 'Trainer' | 'Nutritionist'>('all')
 
   useEffect(() => {
     const fetchTrainers = async () => {
@@ -29,7 +33,11 @@ export default function ExpertsPage() {
         setIsLoading(true)
         setError(null)
         const data = await trainersApi.getAll()
-        setTrainers(data)
+        // Put current user first
+        const sorted = currentUser?.id
+          ? [...data].sort((a, b) => (a.userId === currentUser.id ? -1 : b.userId === currentUser.id ? 1 : 0))
+          : data
+        setTrainers(sorted)
       } catch (err) {
         console.error('Failed to fetch trainers:', err)
         setError(t('failedToLoad'))
@@ -41,11 +49,13 @@ export default function ExpertsPage() {
     fetchTrainers()
   }, [])
 
-  const filteredTrainers = trainers.filter(trainer =>
-    trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    trainer.primaryTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    trainer.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredTrainers = trainers.filter(trainer => {
+    const matchesSearch = trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trainer.primaryTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trainer.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
+    const matchesRole = roleFilter === 'all' || trainer.role === roleFilter
+    return matchesSearch && matchesRole
+  })
 
   return (
     <>
@@ -67,6 +77,29 @@ export default function ExpertsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-3 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
           />
+        </div>
+
+        {/* Role Filter */}
+        <div className="flex gap-2">
+          {(['all', 'Trainer', 'Nutritionist'] as const).map((role) => {
+            const isActive = roleFilter === role
+            const roleAccent = role === 'all' ? null : getAccentColorsByRole(role)
+            return (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? role === 'all'
+                      ? 'bg-white text-black'
+                      : `bg-gradient-to-r ${roleAccent!.gradient} text-white`
+                    : 'bg-[#1A1A1A] border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                }`}
+              >
+                {role === 'all' ? t('filterAll') : role === 'Trainer' ? t('filterTrainers') : t('filterNutritionists')}
+              </button>
+            )
+          })}
         </div>
 
         {/* Loading State */}
@@ -96,11 +129,13 @@ export default function ExpertsPage() {
         {/* Trainers Grid */}
         {!isLoading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredTrainers.map((trainer) => (
+            {filteredTrainers.map((trainer) => {
+              const trainerAccent = getAccentColorsByRole(trainer.role)
+              return (
               <div
                 key={trainer.id}
                 onClick={() => router.push(`/user/experts/${trainer.slug || trainer.id}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#FF6B35]/50 transition-all"
+                className={`bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer ${trainerAccent.hoverBorder} transition-all`}
               >
                 <div className="p-6">
                   <div className="flex items-start gap-4">
@@ -109,10 +144,10 @@ export default function ExpertsPage() {
                       <img
                         src={getMediaUrl(trainer.avatarUrl) || ''}
                         alt={trainer.name}
-                        className="w-20 h-20 rounded-xl object-cover"
+                        className={`w-20 h-20 rounded-xl object-cover ${getRoleRingClass(trainer.role)}`}
                       />
                     ) : (
-                      <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                      <div className={`w-20 h-20 rounded-xl bg-gradient-to-br ${getAccentColorsByRole(trainer.role).gradient} flex items-center justify-center`}>
                         <span className="text-white text-2xl font-bold">{trainer.name.charAt(0)}</span>
                       </div>
                     )}
@@ -121,7 +156,7 @@ export default function ExpertsPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold text-white text-lg">{trainer.name}</h3>
                       {trainer.primaryTitle && (
-                        <p className="text-sm text-[#FF6B35]">{trainer.primaryTitle}</p>
+                        <p className={`text-sm ${trainerAccent.text}`}>{trainer.primaryTitle}</p>
                       )}
                       {trainer.secondaryTitle && (
                         <p className="text-xs text-gray-400 mt-1">{trainer.secondaryTitle}</p>
@@ -157,7 +192,7 @@ export default function ExpertsPage() {
                           {trainer.specializations.slice(0, 3).map((spec, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 bg-[#FF6B35]/10 text-[#FF6B35] rounded text-xs"
+                              className={`px-2 py-0.5 ${trainerAccent.bgMuted} ${trainerAccent.text} rounded text-xs`}
                             >
                               {spec}
                             </span>
@@ -174,13 +209,14 @@ export default function ExpertsPage() {
 
                   {/* Action */}
                   <div className="mt-4 flex justify-end">
-                    <button className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
+                    <button className={`px-4 py-2 bg-gradient-to-r ${trainerAccent.gradient} text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity`}>
                       {t('viewProfile')}
                     </button>
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

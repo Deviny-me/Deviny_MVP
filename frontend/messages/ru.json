@@ -466,7 +466,23 @@
     "replaceCoverImage": "Заменить обложку (необязательно)",
     "uploadNewCover": "Загрузить новую обложку",
     "replaceTrainingVideos": "Добавить/заменить видео (необязательно)",
-    "uploadNewVideos": "Загрузить новые видео"
+    "uploadNewVideos": "Загрузить новые видео",
+
+    "tabTraining": "Тренировки",
+    "tabMeal": "Питание",
+    "programType": "Тип программы *",
+    "typeTraining": "Программа тренировок",
+    "typeMeal": "Программа питания",
+    "newTrainingProgram": "Новая программа тренировок",
+    "newMealProgram": "Новая программа питания",
+    "editTrainingProgram": "Редактировать программу тренировок",
+    "editMealProgram": "Редактировать программу питания",
+    "noTrainingPrograms": "Нет программ тренировок",
+    "noMealPrograms": "Нет программ питания",
+    "createFirstTraining": "Создайте свою первую программу тренировок",
+    "createFirstMeal": "Создайте свою первую программу питания",
+    "totalTrainingPrograms": "Программ тренировок",
+    "totalMealPrograms": "Программ питания"
   },
 
   "schedule": {
@@ -583,7 +599,8 @@
     "uploadingVideo": "Загрузка видео...",
     "postUploaded": "Публикация загружена!",
     "uploadError": "Ошибка загрузки",
-    "recentStudents": "Недавние ученики"
+    "recentStudents": "Недавние ученики",
+    "recentClients": "Последние клиенты"
   },
 
   "posts": {
@@ -619,9 +636,11 @@
   "search": {
     "placeholder": "Поиск...",
     "trainerPlaceholder": "Поиск учеников, программ...",
+    "nutritionistPlaceholder": "Поиск клиентов, программ питания...",
     "noResults": "Ничего не найдено по запросу «{query}»",
     "users": "Пользователи",
     "trainer": "Тренер",
+    "nutritionist": "Нутрициолог",
     "user": "Пользователь",
     "trainingPrograms": "Программы тренировок",
     "nutritionPrograms": "Программы питания"
@@ -827,7 +846,10 @@
     "adjustSearch": "Попробуйте изменить критерии поиска",
     "sendMessage": "Написать",
     "call": "Позвонить",
-    "openInNewTab": "Открыть в новой вкладке"
+    "openInNewTab": "Открыть в новой вкладке",
+    "filterAll": "Все",
+    "filterTrainers": "Тренеры",
+    "filterNutritionists": "Нутрициологи"
   },
 
   "friends": {
@@ -978,5 +1000,39 @@
     "privacy": "Конфиденциальность",
     "terms": "Условия",
     "copyright": "Deviny Fitness © 2026"
+  },
+
+  "notifications": {
+    "title": "Уведомления",
+    "markAllRead": "Прочитать все",
+    "noNotifications": "Нет уведомлений",
+    "loading": "Загрузка...",
+    "loadMore": "Загрузить ещё",
+    "justNow": "только что",
+    "minutesAgo": "{count} мин назад",
+    "hoursAgo": "{count} ч назад",
+    "daysAgo": "{count} д назад"
+  },
+
+  "achievements": {
+    "title": "Достижения",
+    "subtitle": "Открывайте достижения, выполняя действия",
+    "unlocked": "Открыто",
+    "locked": "Заблокировано",
+    "noAchievements": "Пока нет достижений",
+    "completeToUnlock": "Выполняйте действия, чтобы открыть достижения!",
+    "allUnlocked": "Все открыты!",
+    "xpReward": "XP"
+  },
+
+  "challenges": {
+    "title": "Челленджи",
+    "noChallenges": "Нет доступных челленджей",
+    "checkBackLater": "Загляните позже за новыми челленджами!",
+    "active": "Активные",
+    "completed": "Завершённые",
+    "progress": "Прогресс",
+    "reward": "Награда:",
+    "done": "Выполнено"
   }
 }

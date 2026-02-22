@@ -1,20 +1,23 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Search, X, Loader2, User, Dumbbell, UtensilsCrossed } from 'lucide-react'
 import { searchGlobal } from '@/lib/api/searchApi'
 import { GlobalSearchResponse, UserSearchItem, ProgramSearchItem } from '@/types/search'
-import { useAuth } from '@/features/auth/AuthContext'
 import { getMediaUrl } from '@/lib/config'
+import { useTranslations } from 'next-intl'
+import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 interface SearchBarProps {
   placeholder?: string
 }
 
 export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
+  const accent = useAccentColors()
   const router = useRouter()
-  const { user: currentUser } = useAuth()
+  const pathname = usePathname()
+  const tSearch = useTranslations('search')
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<GlobalSearchResponse | null>(null)
@@ -26,7 +29,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const basePath = currentUser?.role === 'trainer' ? '/trainer' : '/user'
+  const basePath = pathname?.startsWith('/trainer') ? '/trainer' : pathname?.startsWith('/nutritionist') ? '/nutritionist' : '/user'
 
   // Debounced search
   const performSearch = useCallback(async (searchQuery: string) => {
@@ -157,7 +160,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
         onChange={(e) => handleInputChange(e.target.value)}
         onFocus={() => { if (results) setIsOpen(true) }}
         placeholder={placeholder}
-        className="w-full pl-10 pr-8 py-1.5 bg-[#0A0A0A] border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-[#262626] focus:border-[#FF6B35]/50 transition-colors"
+        className={`w-full pl-10 pr-8 py-1.5 bg-[#0A0A0A] border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-[#262626] ${accent.focusBorder} transition-colors`}
       />
       {/* Loading / Clear */}
       {(isLoading || query) && (
@@ -177,7 +180,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
         <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[60] max-h-[400px] overflow-y-auto">
           {noResults && (
             <div className="px-4 py-6 text-center text-gray-400 text-sm">
-              Ничего не найдено по запросу «{query.trim()}»
+              {tSearch('noResults', { query: query.trim() })}
             </div>
           )}
 
@@ -186,7 +189,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
             <div>
               <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-white/5">
                 <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                Пользователи
+                {tSearch('users')}
               </div>
               {results.users.map((item) => (
                 <button
@@ -198,10 +201,10 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                     <img
                       src={getMediaUrl(item.avatarUrl) || ''}
                       alt={item.fullName}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      className={`w-8 h-8 rounded-full object-cover flex-shrink-0 ${getRoleRingClass(item.role)}`}
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAccentColorsByRole(item.role).gradient} flex items-center justify-center flex-shrink-0`}>
                       <span className="text-xs font-bold text-white">
                         {item.fullName.charAt(0).toUpperCase()}
                       </span>
@@ -210,7 +213,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-white font-medium truncate">{item.fullName}</p>
                     <p className="text-xs text-gray-400 truncate">
-                      {item.role === 'Trainer' ? 'Тренер' : 'Пользователь'}
+                      {item.role === 'Trainer' ? tSearch('trainer') : item.role === 'Nutritionist' ? tSearch('nutritionist') : tSearch('user')}
                     </p>
                   </div>
                 </button>
@@ -223,7 +226,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
             <div>
               <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-white/5">
                 <Dumbbell className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                Программы тренировок
+                {tSearch('trainingPrograms')}
               </div>
               {results.workoutPrograms.map((item) => (
                 <button
@@ -238,8 +241,8 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                       className="w-8 h-8 rounded object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded bg-[#FF6B35]/20 flex items-center justify-center flex-shrink-0">
-                      <Dumbbell className="w-4 h-4 text-[#FF6B35]" />
+                    <div className={`w-8 h-8 rounded ${accent.bgMuted20} flex items-center justify-center flex-shrink-0`}>
+                      <Dumbbell className={`w-4 h-4 ${accent.text}`} />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
@@ -258,7 +261,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
             <div>
               <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-white/5">
                 <UtensilsCrossed className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
-                Программы питания
+                {tSearch('nutritionPrograms')}
               </div>
               {results.mealPrograms.map((item) => (
                 <button

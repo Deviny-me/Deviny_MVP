@@ -4,8 +4,8 @@ import { useLevel } from '@/components/level/LevelProvider'
 import { AchievementNotificationProvider } from '@/components/shared/AchievementNotificationProvider'
 
 /**
- * Wraps AchievementNotificationProvider and wires onLevelChange to LevelProvider.refreshLevel()
- * so XP/level bar updates automatically when an achievement is awarded.
+ * @deprecated Use AchievementBridge from '@/components/shared/AchievementBridge' instead.
+ * Kept for backward compatibility with trainer layout.
  */
 export function TrainerAchievementBridge({ children }: { children: React.ReactNode }) {
   const { refreshLevel } = useLevel()

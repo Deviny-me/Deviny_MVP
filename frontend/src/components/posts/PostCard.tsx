@@ -1,23 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Video, Repeat2, Trash2, Loader2 } from 'lucide-react'
 import { PostType, MediaType } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
 import { PostActions } from './PostActions'
 import { PostCommentsPanel } from './PostCommentsPanel'
 import { usePost, usePostDispatch } from '@/contexts/PostStoreContext'
+import { useAccentColors, getAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
 
 interface PostCardProps {
   postId: string
   /** Layout variant: 'feed' expands to 2-column for comments; 'modal' stacks comments below */
   variant?: 'feed' | 'modal'
-  /** Current user ID — delete buttons are shown only for own posts */
+  /** @deprecated Use useAuth() internally. Kept for backward compat. */
   currentUserId?: string | null
   /** Show delete button in header */
   showDeleteInHeader?: boolean
+  /** Skip ownership check (e.g. on own profile where all posts are yours) */
+  isOwnProfile?: boolean
   /** Callback when delete is clicked */
   onDelete?: (postId: string) => void
   /** Post ID currently being deleted (for loading spinner) */
@@ -42,6 +45,7 @@ export function PostCard({
   variant = 'feed',
   currentUserId,
   showDeleteInHeader = false,
+  isOwnProfile = false,
   onDelete,
   deletingPostId,
   onRepostSuccess,
@@ -49,10 +53,12 @@ export function PostCard({
   onVideoToggle,
   onPhotoClick,
 }: PostCardProps) {
+  const accent = useAccentColors()
+  const { user: authUser } = useAuth()
   const post = usePost(postId)
   const dispatch = usePostDispatch()
   const router = useRouter()
-  const { user: currentAuthUser } = useAuth()
+  const pathname = usePathname()
   const [commentsOpen, setCommentsOpen] = useState(false)
 
   if (!post) return null
@@ -63,7 +69,15 @@ export function PostCard({
 
   const isRepost = post.type === PostType.Repost || post.isRepost
   const originalDeleted = isRepost && !post.originalPost
-  const isOwner = !!currentUserId && post.userId === currentUserId
+  // Resolve ownership: prefer prop, fallback to auth context for robustness
+  const resolvedUserId = currentUserId ?? authUser?.id
+  const isOwner = isOwnProfile || (!!resolvedUserId && post.userId?.toLowerCase() === resolvedUserId?.toLowerCase())
+
+  // Determine avatar color based on author's role, not current user's role
+  const authorRole = post.author?.role
+  const isAuthorNutritionist = authorRole === 'Nutritionist' || authorRole === 3 || authorRole === '3'
+  const authorAccent = getAccentColors(isAuthorNutritionist)
+  
   const displayMedia = isRepost ? post.originalPost?.media : post.media
   const displayCaption = isRepost ? post.originalPost?.caption : post.caption
 
@@ -76,7 +90,11 @@ export function PostCard({
   }
 
   const handleAuthorClick = () => {
-    const basePath = currentAuthUser?.role === 'trainer' ? '/trainer' : '/user'
+    const basePath = pathname?.startsWith('/trainer')
+      ? '/trainer'
+      : pathname?.startsWith('/nutritionist')
+        ? '/nutritionist'
+        : '/user'
     router.push(`${basePath}/profile/${post.userId}`)
   }
 
@@ -143,10 +161,10 @@ export function PostCard({
                       <img
                         src={authorAvatarUrl}
                         alt={authorName}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className={`w-8 h-8 rounded-full object-cover ${getRoleRingClass(authorRole)}`}
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                      <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${authorAccent.gradient} flex items-center justify-center`}>
                         <span className="text-white text-xs font-bold">{authorInitials}</span>
                       </div>
                     )}

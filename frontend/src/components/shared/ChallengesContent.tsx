@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Target, CheckCircle2, Loader2, Trophy } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { usePathname } from 'next/navigation'
 import { getMyChallenges } from '@/lib/api/achievementApi'
 import type { MyChallengesResponse, UserChallengeProgressDto } from '@/types/achievement'
 import { getIcon, getGradient } from '@/components/shared/achievementUtils'
@@ -10,6 +12,12 @@ export default function ChallengesContent() {
   const [data, setData] = useState<MyChallengesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations('challenges')
+  const pathname = usePathname()
+  const isNutritionist = pathname?.startsWith('/nutritionist')
+  const accentGradient = isNutritionist ? 'from-[#22c55e] to-[#16a34a]' : 'from-[#FF6B35] to-[#FF0844]'
+  const accentIcon = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
+  const spinnerColor = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
 
   useEffect(() => {
     getMyChallenges()
@@ -21,7 +29,7 @@ export default function ChallengesContent() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className={`w-8 h-8 ${spinnerColor} animate-spin`} />
       </div>
     )
   }
@@ -44,8 +52,8 @@ export default function ChallengesContent() {
           <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
             <Target className="w-10 h-10 text-gray-400" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">No Challenges Available</h2>
-          <p className="text-gray-400">Check back later for new challenges!</p>
+          <h2 className="text-xl font-bold text-white mb-2">{t('noChallenges')}</h2>
+          <p className="text-gray-400">{t('checkBackLater')}</p>
         </div>
       </div>
     )
@@ -60,14 +68,14 @@ export default function ChallengesContent() {
       <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Challenges</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
             <p className="text-gray-400">Complete challenges to earn achievements and XP</p>
           </div>
           <div className="text-right">
-            <div className="text-4xl font-bold bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
+            <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>
               {data.completedCount}/{data.totalCount}
             </div>
-            <p className="text-sm text-gray-400">Completed</p>
+            <p className="text-sm text-gray-400">{t('completed')}</p>
           </div>
         </div>
       </div>
@@ -76,12 +84,12 @@ export default function ChallengesContent() {
       {active.length > 0 && (
         <div>
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-[#FF6B35]" />
-            Active ({active.length})
+            <Target className={`w-5 h-5 ${accentIcon}`} />
+            {t('active')} ({active.length})
           </h3>
           <div className="space-y-4">
             {active.map(item => (
-              <ChallengeCard key={item.challenge.id} item={item} />
+              <ChallengeCard key={item.challenge.id} item={item} accentGradient={accentGradient} t={t} />
             ))}
           </div>
         </div>
@@ -92,11 +100,11 @@ export default function ChallengesContent() {
         <div>
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-green-400" />
-            Completed ({completed.length})
+            {t('completed')} ({completed.length})
           </h3>
           <div className="space-y-4">
             {completed.map(item => (
-              <ChallengeCard key={item.challenge.id} item={item} />
+              <ChallengeCard key={item.challenge.id} item={item} accentGradient={accentGradient} t={t} />
             ))}
           </div>
         </div>
@@ -105,11 +113,11 @@ export default function ChallengesContent() {
   )
 }
 
-function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
+function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgressDto; accentGradient: string; t: (key: string) => string }) {
   const isCompleted = item.status === 'Completed'
   const c = item.challenge
   const IconCmp = c.achievementIconKey ? getIcon(c.achievementIconKey) : Trophy
-  const gradient = c.achievementColorKey ? getGradient(c.achievementColorKey) : 'from-[#FF6B35] to-[#FF0844]'
+  const gradient = c.achievementColorKey ? getGradient(c.achievementColorKey) : accentGradient
 
   return (
     <div className={`bg-[#1A1A1A] rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-white/10'} p-5 hover:border-white/20 transition-all`}>
@@ -126,7 +134,7 @@ function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
             {isCompleted && (
               <span className="flex items-center gap-1 text-xs font-medium text-green-400">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Done
+                {t('done')}
               </span>
             )}
           </div>
@@ -135,7 +143,7 @@ function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
           {/* Progress bar */}
           <div>
             <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-              <span>Progress</span>
+              <span>{t('progress')}</span>
               <span>{item.currentValue}/{item.targetValue}</span>
             </div>
             <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
@@ -143,7 +151,7 @@ function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
                 className={`h-full rounded-full transition-all duration-500 ${
                   isCompleted
                     ? 'bg-gradient-to-r from-green-500 to-emerald-400'
-                    : 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844]'
+                    : `bg-gradient-to-r ${accentGradient}`
                 }`}
                 style={{ width: `${item.progressPercent}%` }}
               />
@@ -154,7 +162,7 @@ function ChallengeCard({ item }: { item: UserChallengeProgressDto }) {
           {c.achievementTitle && (
             <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
               <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="text-xs text-gray-300">Reward: {c.achievementTitle}</span>
+              <span className="text-xs text-gray-300">{t('reward')} {c.achievementTitle}</span>
             </div>
           )}
 

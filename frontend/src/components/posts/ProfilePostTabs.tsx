@@ -2,6 +2,7 @@
 
 import { Grid, Video, Repeat2 } from 'lucide-react'
 import type { ProfilePostTab } from '@/types/post'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 interface ProfilePostTabsProps {
   activeTab: ProfilePostTab
@@ -16,6 +17,7 @@ const tabs: { key: ProfilePostTab; label: string; icon: typeof Grid }[] = [
 ]
 
 export function ProfilePostTabs({ activeTab, onTabChange, disabled }: ProfilePostTabsProps) {
+  const accent = useAccentColors()
   return (
     <div className="flex items-center bg-[#111111] border-b border-white/10 px-2">
       {tabs.map((tab) => {
@@ -27,7 +29,7 @@ export function ProfilePostTabs({ activeTab, onTabChange, disabled }: ProfilePos
             onClick={() => onTabChange(tab.key)}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors relative ${
               isActive
-                ? 'text-[#FF6B35]'
+                ? accent.text
                 : disabled
                   ? 'text-gray-600 cursor-not-allowed'
                   : 'text-gray-400 hover:text-gray-200'
@@ -36,7 +38,7 @@ export function ProfilePostTabs({ activeTab, onTabChange, disabled }: ProfilePos
             <tab.icon className="w-4 h-4" />
             <span>{tab.label}</span>
             {isActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35] rounded-t" />
+              <span className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg} rounded-t`} />
             )}
           </button>
         )

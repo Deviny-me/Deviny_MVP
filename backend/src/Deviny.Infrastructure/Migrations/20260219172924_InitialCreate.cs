@@ -13,6 +13,28 @@ namespace Deviny.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Achievements",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    IconKey = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ColorKey = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Rarity = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    XpReward = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    TargetRole = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Achievements", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Conversations",
                 columns: table => new
                 {
@@ -80,6 +102,33 @@ namespace Deviny.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Challenges",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    TargetValue = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    TargetRole = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    AchievementId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Challenges", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Challenges_Achievements_AchievementId",
+                        column: x => x.AchievementId,
+                        principalTable: "Achievements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -327,6 +376,36 @@ namespace Deviny.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserAchievements",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AchievementId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AwardedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SourceType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    SourceId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAchievements", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserAchievements_Achievements_AchievementId",
+                        column: x => x.AchievementId,
+                        principalTable: "Achievements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserAchievements_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserBlocks",
                 columns: table => new
                 {
@@ -509,6 +588,36 @@ namespace Deviny.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserChallengeProgress",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChallengeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CurrentValue = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserChallengeProgress", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserChallengeProgress_Challenges_ChallengeId",
+                        column: x => x.ChallengeId,
+                        principalTable: "Challenges",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserChallengeProgress_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CallSessions",
                 columns: table => new
                 {
@@ -543,31 +652,6 @@ namespace Deviny.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TrainerAchievements",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TrainerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Subtitle = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    IconKey = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Tone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    SortOrder = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TrainerAchievements", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TrainerAchievements_TrainerProfiles_TrainerId",
-                        column: x => x.TrainerId,
-                        principalTable: "TrainerProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -769,6 +853,22 @@ namespace Deviny.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Achievements_Code",
+                table: "Achievements",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Achievements_IsActive",
+                table: "Achievements",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Achievements_TargetRole",
+                table: "Achievements",
+                column: "TargetRole");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CallSessions_EventId",
                 table: "CallSessions",
                 column: "EventId");
@@ -782,6 +882,28 @@ namespace Deviny.Infrastructure.Migrations
                 name: "IX_CallSessions_TrainerId_Status",
                 table: "CallSessions",
                 columns: new[] { "TrainerId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Challenges_AchievementId",
+                table: "Challenges",
+                column: "AchievementId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Challenges_Code",
+                table: "Challenges",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Challenges_IsActive",
+                table: "Challenges",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Challenges_TargetRole",
+                table: "Challenges",
+                column: "TargetRole");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ConversationMembers_ConversationId_UserId",
@@ -944,11 +1066,6 @@ namespace Deviny.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TrainerAchievements_TrainerId",
-                table: "TrainerAchievements",
-                column: "TrainerId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TrainerCertificates_TrainerId",
                 table: "TrainerCertificates",
                 column: "TrainerId");
@@ -993,6 +1110,27 @@ namespace Deviny.Infrastructure.Migrations
                 column: "TrainerId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserAchievements_AchievementId",
+                table: "UserAchievements",
+                column: "AchievementId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAchievements_AwardedAt",
+                table: "UserAchievements",
+                column: "AwardedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAchievements_UserId",
+                table: "UserAchievements",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAchievements_UserId_AchievementId",
+                table: "UserAchievements",
+                columns: new[] { "UserId", "AchievementId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserBlocks_BlockedUser",
                 table: "UserBlocks",
                 column: "BlockedUserId");
@@ -1001,6 +1139,22 @@ namespace Deviny.Infrastructure.Migrations
                 name: "IX_UserBlocks_Blocker_Blocked_Unique",
                 table: "UserBlocks",
                 columns: new[] { "BlockerId", "BlockedUserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChallengeProgress_ChallengeId",
+                table: "UserChallengeProgress",
+                column: "ChallengeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChallengeProgress_UserId",
+                table: "UserChallengeProgress",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserChallengeProgress_UserId_ChallengeId",
+                table: "UserChallengeProgress",
+                columns: new[] { "UserId", "ChallengeId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1137,16 +1291,19 @@ namespace Deviny.Infrastructure.Migrations
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "TrainerAchievements");
-
-            migrationBuilder.DropTable(
                 name: "TrainerCertificates");
 
             migrationBuilder.DropTable(
                 name: "TrainerSpecializations");
 
             migrationBuilder.DropTable(
+                name: "UserAchievements");
+
+            migrationBuilder.DropTable(
                 name: "UserBlocks");
+
+            migrationBuilder.DropTable(
+                name: "UserChallengeProgress");
 
             migrationBuilder.DropTable(
                 name: "UserFollows");
@@ -1182,7 +1339,13 @@ namespace Deviny.Infrastructure.Migrations
                 name: "TrainerProfiles");
 
             migrationBuilder.DropTable(
+                name: "Challenges");
+
+            migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Achievements");
         }
     }
 }

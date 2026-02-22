@@ -35,6 +35,7 @@ export interface PostAuthorDto {
   avatarUrl?: string | null
   slug?: string | null
   fullName?: string
+  role?: string | number
 }
 
 export interface PostMediaDto {

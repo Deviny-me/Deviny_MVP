@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { scheduleApi } from '@/lib/api/scheduleApi'
 import { ScheduleEvent, CreateScheduleEventRequest, ScheduleEventType, ScheduleStats } from '@/types/schedule'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 // Simple toast helper
 const toast = {
@@ -28,6 +29,7 @@ const toast = {
 }
 
 export default function SchedulePage() {
+  const accent = useAccentColors()
   const t = useTranslations('schedule')
   const tc = useTranslations('common')
 
@@ -265,7 +267,7 @@ export default function SchedulePage() {
           </div>
           <button 
             onClick={openCreateModal}
-            className="px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2"
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
             {t('addEvent')}
@@ -317,9 +319,9 @@ export default function SchedulePage() {
                   onClick={() => setSelectedDate(date)}
                   className={`p-3 rounded-xl text-center transition-all relative ${
                     isSelected
-                      ? 'bg-gradient-to-br from-[#FF6B35] to-[#FF0844] text-white'
+                      ? `bg-gradient-to-br ${accent.gradient} text-white`
                       : isToday
-                      ? 'bg-[#FF6B35]/20 text-white border border-[#FF6B35]/50'
+                      ? `${accent.bgMuted20} text-white border ${accent.borderMuted50}`
                       : 'bg-[#0A0A0A] text-gray-400 hover:bg-white/5'
                   }`}
                 >
@@ -328,7 +330,7 @@ export default function SchedulePage() {
                   {dayEvents.length > 0 && (
                     <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
                       {dayEvents.slice(0, 3).map((_, i) => (
-                        <div key={i} className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#FF6B35]'}`} />
+                        <div key={i} className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : accent.bg}`} />
                       ))}
                     </div>
                   )}
@@ -346,7 +348,7 @@ export default function SchedulePage() {
           
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+              <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
             </div>
           ) : todaysEvents.length === 0 ? (
             <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
@@ -354,7 +356,7 @@ export default function SchedulePage() {
               <p className="text-gray-400">{t('noEvents')}</p>
               <button 
                 onClick={openCreateModal}
-                className="mt-4 px-4 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90"
+                className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
               >
                 {t('addEvent')}
               </button>
@@ -367,14 +369,14 @@ export default function SchedulePage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 hover:border-[#FF6B35]/50 transition-all"
+                  className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-4 ${accent.hoverBorder} transition-all`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-1.5 h-16 rounded-full ${
                       event.type === 'Online' 
                         ? 'bg-gradient-to-b from-blue-500 to-blue-600' 
                         : event.type === 'Gym'
-                        ? 'bg-gradient-to-b from-[#FF6B35] to-[#FF0844]'
+                        ? `bg-gradient-to-b ${accent.gradient}`
                         : 'bg-gradient-to-b from-green-500 to-green-600'
                     }`} />
                     
@@ -385,7 +387,7 @@ export default function SchedulePage() {
                           event.type === 'Online' 
                             ? 'bg-blue-500/20 text-blue-400' 
                             : event.type === 'Gym'
-                            ? 'bg-[#FF6B35]/20 text-[#FF6B35]'
+                            ? `${accent.bgMuted20} ${accent.text}`
                             : 'bg-green-500/20 text-green-400'
                         }`}>
                           {eventTypes.find(t => t.value === event.type)?.label}
@@ -425,7 +427,7 @@ export default function SchedulePage() {
                       {event.type === 'Online' && (
                         <button 
                           onClick={() => handleStartCall(event.id)}
-                          className="p-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-lg hover:opacity-90 transition-opacity"
+                          className={`p-3 bg-gradient-to-r ${accent.gradient} rounded-lg hover:opacity-90 transition-opacity`}
                         >
                           <Video className="w-5 h-5 text-white" />
                         </button>
@@ -458,7 +460,7 @@ export default function SchedulePage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
-            <Calendar className="w-8 h-8 text-[#FF6B35] mx-auto mb-2" />
+            <Calendar className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
             <p className="text-2xl font-bold text-white">{stats?.totalEvents || 0}</p>
             <p className="text-xs text-gray-400">{t('totalEvents')}</p>
           </div>
@@ -502,7 +504,7 @@ export default function SchedulePage() {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('eventNamePlaceholder')}
                     />
                   </div>
@@ -520,7 +522,7 @@ export default function SchedulePage() {
                           onClick={() => setEventType(type.value)}
                           className={`px-4 py-2 rounded-lg font-medium transition-all ${
                             eventType === type.value
-                              ? 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white'
+                              ? `bg-gradient-to-r ${accent.gradient} text-white`
                               : 'bg-white/5 text-gray-400 hover:text-white'
                           }`}
                         >
@@ -540,7 +542,7 @@ export default function SchedulePage() {
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                        className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                       />
                     </div>
                     <div>
@@ -551,7 +553,7 @@ export default function SchedulePage() {
                         type="time"
                         value={startTime}
                         onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                        className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                       />
                     </div>
                   </div>
@@ -564,7 +566,7 @@ export default function SchedulePage() {
                     <select
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                     >
                       <option value="30">{t('duration30')}</option>
                       <option value="45">{t('duration45')}</option>
@@ -584,7 +586,7 @@ export default function SchedulePage() {
                         type="text"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                        className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                         placeholder={t('locationPlaceholder')}
                       />
                     </div>
@@ -599,7 +601,7 @@ export default function SchedulePage() {
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       rows={2}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] resize-none"
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
                       placeholder={t('commentPlaceholder')}
                     />
                   </div>
@@ -608,7 +610,7 @@ export default function SchedulePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                     {editingEvent ? t('saveChanges') : t('createEvent')}

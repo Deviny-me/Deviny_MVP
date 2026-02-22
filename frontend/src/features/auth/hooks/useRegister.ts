@@ -161,7 +161,7 @@ export const useRegister = () => {
       sessionStorage.setItem('accessToken', response.accessToken)
 
       // Navigate to role-specific dashboard
-      const dashboardRoute = role === 'user' ? '/user' : '/trainer'
+      const dashboardRoute = role === 'user' ? '/user' : role === 'nutritionist' ? '/nutritionist' : '/trainer'
       router.push(dashboardRoute)
     } catch (error) {
       if (error instanceof Error) {

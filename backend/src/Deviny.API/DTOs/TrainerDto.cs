@@ -22,4 +22,5 @@ public class TrainerDto
     public required int ReviewsCount { get; set; }
     public required string Slug { get; set; }
     public required string ProfilePublicUrl { get; set; }
+    public string? Role { get; set; }
 }

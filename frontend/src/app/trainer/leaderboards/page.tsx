@@ -11,8 +11,10 @@ import {
   Users
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function LeaderboardsPage() {
+  const accent = useAccentColors()
   const t = useTranslations('leaderboards')
   const tc = useTranslations('common')
   return (
@@ -32,10 +34,10 @@ export default function LeaderboardsPage() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
             {/* Glowing background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-full blur-2xl opacity-30 animate-pulse" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${accent.heroGlow} rounded-full blur-2xl opacity-30 animate-pulse`} />
             
             {/* Main circle */}
-            <div className="relative w-full h-full bg-gradient-to-br from-yellow-500 to-amber-600 rounded-full flex items-center justify-center">
+            <div className={`relative w-full h-full bg-gradient-to-br ${accent.heroGlow} rounded-full flex items-center justify-center`}>
               <Trophy className="w-16 h-16 text-white" />
             </div>
             
@@ -53,7 +55,7 @@ export default function LeaderboardsPage() {
               animate={{ rotate: -360 }}
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
             >
-              <Medal className="w-5 h-5 text-amber-500" />
+              <Medal className={`w-5 h-5 ${accent.featureCard1Text}`} />
             </motion.div>
           </motion.div>
 
@@ -65,7 +67,7 @@ export default function LeaderboardsPage() {
             transition={{ delay: 0.4 }}
           >
             Leaderboards{' '}
-            <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+            <span className={`bg-gradient-to-r ${accent.heroText} bg-clip-text text-transparent`}>
               {tc('comingSoon')}
             </span>
           </motion.h1>
@@ -96,16 +98,16 @@ export default function LeaderboardsPage() {
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Star className="w-5 h-5 text-amber-500" />
+              <div className={`w-10 h-10 ${accent.featureCard1Bg} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <Star className={`w-5 h-5 ${accent.featureCard1Text}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('xpPoints')}</h3>
               <p className="text-xs text-gray-500">{t('xpPointsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-orange-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Users className="w-5 h-5 text-orange-500" />
+              <div className={`w-10 h-10 ${accent.featureCard2Bg} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <Users className={`w-5 h-5 ${accent.featureCard2Text}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('seasons')}</h3>
               <p className="text-xs text-gray-500">{t('seasonsDesc')}</p>
@@ -114,7 +116,7 @@ export default function LeaderboardsPage() {
 
           {/* Notify button */}
           <motion.button
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
+            className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${accent.ctaGradient} text-white font-medium rounded-xl hover:opacity-90 transition-opacity`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
 import { PostCommentDto } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
+import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 interface PostCommentsProps {
   postId: string
@@ -22,6 +23,7 @@ export function PostComments({
   className,
   onCommentCountChange,
 }: PostCommentsProps) {
+  const accent = useAccentColors()
   const [comments, setComments] = useState<PostCommentDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
@@ -152,10 +154,10 @@ export function PostComments({
                   <img
                     src={getMediaUrl(comment.author.avatarUrl) || comment.author.avatarUrl}
                     alt={`${comment.author.firstName} ${comment.author.lastName}`}
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    className={`w-8 h-8 rounded-full object-cover flex-shrink-0 ${getRoleRingClass(comment.author.role)}`}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center flex-shrink-0">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAccentColorsByRole(comment.author.role).gradient} flex items-center justify-center flex-shrink-0`}>
                     <span className="text-[10px] font-bold text-white">
                       {getInitials(comment.author.firstName, comment.author.lastName)}
                     </span>
@@ -227,7 +229,7 @@ export function PostComments({
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Написать комментарий..."
-          className="flex-1 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#FF6B35]/50 focus:border-[#FF6B35]/50"
+          className={`flex-1 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 ${accent.focusBorder}`}
           disabled={isSubmitting}
           maxLength={1000}
         />
@@ -237,7 +239,7 @@ export function PostComments({
           className={cn(
             'p-2 rounded-full transition-colors flex-shrink-0',
             newComment.trim() && !isSubmitting
-              ? 'bg-[#FF6B35] text-white hover:bg-[#FF8555]'
+              ? `${accent.bg} text-white hover:opacity-90`
               : 'bg-white/5 text-gray-600 cursor-not-allowed'
           )}
           aria-label="Отправить"

@@ -18,6 +18,7 @@ import {
 import { messagesApi } from '@/lib/api/messagesApi'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { MEDIA_BASE_URL } from '@/lib/config'
+import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import type {
   ConversationListItemDto,
   MessageDto,
@@ -82,6 +83,7 @@ function avatarUrl(path: string | null | undefined): string | null {
 // ─── component ───
 
 export default function ChatInbox() {
+  const accent = useAccentColors()
   const searchParams = useSearchParams()
   const userIdFromUrl = searchParams.get('userId')
   const userNameFromUrl = searchParams.get('userName')
@@ -400,7 +402,7 @@ export default function ChatInbox() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
+                className={`w-full pl-10 pr-4 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
@@ -409,7 +411,7 @@ export default function ChatInbox() {
           <div className="flex-1 overflow-y-auto">
             {loadingConvs ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />
+                <Loader2 className={`w-6 h-6 ${accent.text} animate-spin`} />
               </div>
             ) : filteredConvs.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
@@ -439,6 +441,7 @@ export default function ChatInbox() {
                     url={avatarUrl(conv.peerUser.avatarUrl)}
                     name={conv.peerUser.fullName}
                     size={48}
+                    role={conv.peerUser.role}
                   />
                   <div className="flex-1 text-left min-w-0">
                     <div className="flex items-center justify-between">
@@ -454,7 +457,7 @@ export default function ChatInbox() {
                     </p>
                   </div>
                   {conv.unreadCount > 0 && (
-                    <div className="w-5 h-5 bg-[#FF6B35] rounded-full flex items-center justify-center">
+                    <div className={`w-5 h-5 ${accent.bg} rounded-full flex items-center justify-center`}>
                       <span className="text-[10px] font-bold text-white">
                         {conv.unreadCount}
                       </span>
@@ -477,7 +480,7 @@ export default function ChatInbox() {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-400" />
               </button>
-              <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={40} />
+              <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={40} role={selectedConv?.peerUser.role} />
               <p className="font-semibold text-white">{peerName}</p>
             </div>
 
@@ -485,7 +488,7 @@ export default function ChatInbox() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {loadingMsgs ? (
                 <div className="flex items-center justify-center h-full">
-                  <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+                  <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
@@ -512,6 +515,7 @@ export default function ChatInbox() {
                             url={avatarUrl(msg.senderAvatarUrl)}
                             name={msg.senderName}
                             size={32}
+                            role={msg.senderRole}
                           />
                         )}
                         <div>
@@ -520,8 +524,8 @@ export default function ChatInbox() {
                             <div
                               className={`text-xs px-3 py-1 mb-0.5 rounded-t-xl border-l-2 ${
                                 isMe
-                                  ? 'border-white/40 bg-[#FF6B35]/60 text-white/80'
-                                  : 'border-[#FF6B35] bg-white/5 text-gray-400'
+                                  ? `${accent.border} ${accent.bgMuted20} text-white/80`
+                                  : `${accent.border} bg-white/5 text-gray-400`
                               }`}
                             >
                               <span className="font-semibold">
@@ -534,7 +538,7 @@ export default function ChatInbox() {
                           <div
                             className={`group relative rounded-2xl px-4 py-2.5 ${
                               isMe
-                                ? 'bg-[#FF6B35] text-white rounded-br-sm'
+                                ? `${accent.bg} text-white rounded-br-sm`
                                 : 'border-2 border-gray-700 bg-[#1A1A1A] text-white rounded-bl-sm'
                             }`}
                           >
@@ -617,9 +621,9 @@ export default function ChatInbox() {
             {pendingFile && (
               <div className="px-4 pt-2 flex items-center gap-2 border-t border-white/5">
                 {pendingFile.contentType.startsWith('image/') ? (
-                  <ImageIcon className="w-4 h-4 text-[#FF6B35]" />
+                  <ImageIcon className={`w-4 h-4 ${accent.text}`} />
                 ) : (
-                  <FileText className="w-4 h-4 text-[#FF6B35]" />
+                  <FileText className={`w-4 h-4 ${accent.text}`} />
                 )}
                 <div className="flex-1 text-xs text-gray-400 truncate">
                   <span className="font-semibold text-white">{pendingFile.fileName}</span>
@@ -634,7 +638,7 @@ export default function ChatInbox() {
             {/* Reply preview bar */}
             {replyTo && (
               <div className="px-4 pt-2 flex items-center gap-2 border-t border-white/5">
-                <Reply className="w-4 h-4 text-[#FF6B35]" />
+                <Reply className={`w-4 h-4 ${accent.text}`} />
                 <div className="flex-1 text-xs text-gray-400 truncate">
                   <span className="font-semibold text-white">
                     {replyTo.senderName}
@@ -662,7 +666,7 @@ export default function ChatInbox() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || sending}
-                  className="p-2.5 text-gray-400 hover:text-[#FF6B35] transition-colors disabled:opacity-50"
+                  className={`p-2.5 text-gray-400 ${accent.hoverText} transition-colors disabled:opacity-50`}
                   title="Attach file"
                 >
                   {uploading ? (
@@ -679,12 +683,12 @@ export default function ChatInbox() {
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={sending}
-                  className="flex-1 bg-[#0A0A0A] border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]"
+                  className={`flex-1 bg-[#0A0A0A] border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
                 />
                 <button
                   onClick={handleSend}
                   disabled={sending || (!inputText.trim() && !pendingFile)}
-                  className="p-2.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className={`p-2.5 bg-gradient-to-r ${accent.gradient} rounded-full hover:opacity-90 transition-opacity disabled:opacity-50`}
                 >
                   {sending ? (
                     <Loader2 className="w-5 h-5 text-white animate-spin" />
@@ -721,11 +725,15 @@ function Avatar({
   url,
   name,
   size,
+  role,
 }: {
   url: string | null
   name: string
   size: number
+  role?: string | null
 }) {
+  const accent = useAccentColors()
+  const roleAccent = role ? getAccentColorsByRole(role) : accent
   const initials = name
     .split(' ')
     .map(n => n[0])
@@ -737,7 +745,7 @@ function Avatar({
     <img
       src={url}
       alt={name}
-      className="rounded-full object-cover flex-shrink-0"
+      className={`rounded-full object-cover flex-shrink-0 ${getRoleRingClass(role)}`}
       style={{ width: size, height: size }}
       onError={e => {
         ;(e.target as HTMLImageElement).style.display = 'none'
@@ -745,7 +753,7 @@ function Avatar({
     />
   ) : (
     <div
-      className="rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center flex-shrink-0"
+      className={`rounded-full bg-gradient-to-br ${roleAccent.gradient} flex items-center justify-center flex-shrink-0`}
       style={{ width: size, height: size }}
     >
       <span

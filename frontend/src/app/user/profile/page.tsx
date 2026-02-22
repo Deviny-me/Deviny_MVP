@@ -30,6 +30,7 @@ import { uploadAvatar, deleteAvatar } from '@/lib/api/userApi'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
+import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
 
@@ -39,13 +40,11 @@ function GridCell({
   onSelect,
   onDelete,
   deletingPostId,
-  currentUserId,
 }: {
   postId: string
   onSelect: (postId: string) => void
   onDelete?: (postId: string) => void
   deletingPostId?: string | null
-  currentUserId?: string | null
 }) {
   const tPosts = useTranslations('posts')
   const post = usePost(postId)
@@ -195,7 +194,7 @@ function GridCell({
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
         </button>
-        {onDelete && currentUserId && post.userId === currentUserId && (
+        {onDelete && (
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(postId) }}
@@ -215,7 +214,7 @@ function GridCell({
 }
 
 // ─── Post detail modal ───
-function PostDetailModal({ postId, onClose, onDelete, deletingPostId, currentUserId }: { postId: string; onClose: () => void; onDelete?: (postId: string) => void; deletingPostId?: string | null; currentUserId?: string | null }) {
+function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId: string; onClose: () => void; onDelete?: (postId: string) => void; deletingPostId?: string | null }) {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
 
@@ -238,7 +237,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId, currentUse
         <PostCard
           postId={postId}
           variant="modal"
-          currentUserId={currentUserId}
+          isOwnProfile
           showDeleteInHeader
           onDelete={onDelete}
           deletingPostId={deletingPostId}
@@ -275,6 +274,7 @@ export default function UserProfilePage() {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
+  const [toastData, setToastData] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -388,8 +388,11 @@ export default function UserProfilePage() {
       dispatch({ type: 'REMOVE_POST', postId })
       setPostIds(prev => prev.filter(id => id !== postId))
       setSelectedPostId(null)
+      setToastData({ message: tPosts('deleted'), type: 'success' })
     } catch (error) {
-      console.error('Failed to delete post:', error)
+      console.error('[Delete] Failed to delete post:', postId, error)
+      const message = error instanceof Error ? error.message : tPosts('deleteError')
+      setToastData({ message, type: 'error' })
     } finally {
       setDeletingPostId(null)
     }
@@ -570,7 +573,7 @@ export default function UserProfilePage() {
             <div>
               <div className="grid grid-cols-3 gap-1">
                 {postIds.map((id) => (
-                  <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} currentUserId={user?.id} />
+                  <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                 ))}
               </div>
               {(isLoadingPosts || hasMore) && (
@@ -585,7 +588,7 @@ export default function UserProfilePage() {
                 <PostCard
                   key={id}
                   postId={id}
-                  currentUserId={user?.id}
+                  isOwnProfile
                   showDeleteInHeader
                   onDelete={handleDeletePost}
                   deletingPostId={deletingPostId}
@@ -607,12 +610,21 @@ export default function UserProfilePage() {
 
       {/* Post Detail Modal */}
       {selectedPostId && (
-        <PostDetailModal postId={selectedPostId} onClose={() => setSelectedPostId(null)} onDelete={handleDeletePost} deletingPostId={deletingPostId} currentUserId={user?.id} />
+        <PostDetailModal postId={selectedPostId} onClose={() => setSelectedPostId(null)} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
       )}
 
       {/* Photo Lightbox */}
       {viewingPhoto && (
         <PhotoLightbox imageUrl={viewingPhoto.url} caption={viewingPhoto.caption} onClose={() => setViewingPhoto(null)} />
+      )}
+
+      {/* Toast Notifications */}
+      {toastData && (
+        <Toast
+          message={toastData.message}
+          type={toastData.type}
+          onClose={() => setToastData(null)}
+        />
       )}
     </>
   )

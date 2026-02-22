@@ -47,3 +47,50 @@ export interface UpdateProgramRequest {
   coverImage?: File;
   trainingVideos?: File[];
 }
+
+// Meal Program types
+export interface MealProgramDto {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  code: string;
+  coverImageUrl: string;
+  videoUrls: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PublicMealProgramDto {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  code: string;
+  coverImageUrl: string;
+  videoUrls: string[];
+  createdAt: string;
+  trainerId: string;
+  trainerName: string;
+  trainerAvatarUrl: string;
+  trainerSlug: string;
+}
+
+export interface CreateMealProgramRequest {
+  title: string;
+  description: string;
+  price: number;
+  coverImage: File;
+  videos: File[];
+}
+
+export interface UpdateMealProgramRequest {
+  title: string;
+  description: string;
+  price: number;
+  coverImage?: File;
+  videos?: File[];
+}
+
+// Union type for program type selection
+export type ProgramType = 'training' | 'meal';

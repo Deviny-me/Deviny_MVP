@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
 import { getMediaUrl } from '@/lib/config'
 import { PostDto, PostType } from '@/types/post'
+import { getRoleRingClass } from '@/lib/theme/useAccentColors'
 
 interface RepostDialogProps {
   post: PostDto
@@ -136,7 +137,7 @@ export function RepostDialog({
                 <img
                   src={author.avatarUrl}
                   alt={displayName}
-                  className="w-6 h-6 rounded-full object-cover"
+                  className={`w-6 h-6 rounded-full object-cover ${getRoleRingClass(author?.role)}`}
                 />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center">

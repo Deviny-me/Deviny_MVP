@@ -466,7 +466,23 @@
     "replaceCoverImage": "Üz qabığını əvəz et (ixtiyari)",
     "uploadNewCover": "Yeni üz qabığı yüklə",
     "replaceTrainingVideos": "Video əlavə et/əvəz et (ixtiyari)",
-    "uploadNewVideos": "Yeni videolar yüklə"
+    "uploadNewVideos": "Yeni videolar yüklə",
+
+    "tabTraining": "Məşqlər",
+    "tabMeal": "Qidalanma",
+    "programType": "Proqram növü *",
+    "typeTraining": "Məşq proqramı",
+    "typeMeal": "Qidalanma proqramı",
+    "newTrainingProgram": "Yeni məşq proqramı",
+    "newMealProgram": "Yeni qidalanma proqramı",
+    "editTrainingProgram": "Məşq proqramını redaktə et",
+    "editMealProgram": "Qidalanma proqramını redaktə et",
+    "noTrainingPrograms": "Məşq proqramı yoxdur",
+    "noMealPrograms": "Qidalanma proqramı yoxdur",
+    "createFirstTraining": "İlk məşq proqramınızı yaradın",
+    "createFirstMeal": "İlk qidalanma proqramınızı yaradın",
+    "totalTrainingPrograms": "Məşq proqramları",
+    "totalMealPrograms": "Qidalanma proqramları"
   },
 
   "schedule": {
@@ -583,7 +599,8 @@
     "uploadingVideo": "Video yüklənir...",
     "postUploaded": "Paylaşım yükləndi!",
     "uploadError": "Yükləmə xətası",
-    "recentStudents": "Son tələbələr"
+    "recentStudents": "Son tələbələr",
+    "recentClients": "Son müştərilər"
   },
 
   "posts": {
@@ -619,9 +636,11 @@
   "search": {
     "placeholder": "Axtar...",
     "trainerPlaceholder": "Tələbələr, proqramlar axtar...",
+    "nutritionistPlaceholder": "Müştərilər, qidalanma proqramları axtar...",
     "noResults": "«{query}» üçün heç nə tapılmadı",
     "users": "İstifadəçilər",
     "trainer": "Məşqçi",
+    "nutritionist": "Dietoloq",
     "user": "İstifadəçi",
     "trainingPrograms": "Məşq proqramları",
     "nutritionPrograms": "Qidalanma proqramları"
@@ -827,7 +846,10 @@
     "adjustSearch": "Axtarış meyarlarınızı dəyişdirməyə çalışın",
     "sendMessage": "Mesaj göndər",
     "call": "Zəng",
-    "openInNewTab": "Yeni sekmədə aç"
+    "openInNewTab": "Yeni sekmədə aç",
+    "filterAll": "Hamısı",
+    "filterTrainers": "Məşqçilər",
+    "filterNutritionists": "Dietoloqlar"
   },
 
   "friends": {
@@ -978,5 +1000,39 @@
     "privacy": "Məxfilik",
     "terms": "Şərtlər",
     "copyright": "Deviny Fitness © 2026"
+  },
+
+  "notifications": {
+    "title": "Bildirişlər",
+    "markAllRead": "Hamısını oxunmuş et",
+    "noNotifications": "Bildiriş yoxdur",
+    "loading": "Yüklənir...",
+    "loadMore": "Daha çox yüklə",
+    "justNow": "indicə",
+    "minutesAgo": "{count} dəq əvvəl",
+    "hoursAgo": "{count} saat əvvəl",
+    "daysAgo": "{count} gün əvvəl"
+  },
+
+  "achievements": {
+    "title": "Nailiyyətlər",
+    "subtitle": "Hərəkətlər yerinə yetirərək nailiyyətləri açın",
+    "unlocked": "Açılmış",
+    "locked": "Kilidli",
+    "noAchievements": "Hələ nailiyyət yoxdur",
+    "completeToUnlock": "Nailiyyətləri açmaq üçün hərəkətlər yerinə yetirin!",
+    "allUnlocked": "Hamısı açılmış!",
+    "xpReward": "XP"
+  },
+
+  "challenges": {
+    "title": "Çağırışlar",
+    "noChallenges": "Mövcud çağırış yoxdur",
+    "checkBackLater": "Yeni çağırışlar üçün sonra yoxlayın!",
+    "active": "Aktiv",
+    "completed": "Tamamlanmış",
+    "progress": "İrəliləyiş",
+    "reward": "Mükafat:",
+    "done": "Tamamlandı"
   }
 }

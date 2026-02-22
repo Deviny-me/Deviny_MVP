@@ -13,6 +13,7 @@ import {
   MessageCircle,
   User,
   Settings,
+  Apple,
 } from 'lucide-react'
 import { LayoutConfig } from './types'
 
@@ -103,8 +104,55 @@ export const userConfig: LayoutConfig = {
 }
 
 /**
+ * Navigation configuration for nutritionists.
+ */
+export const nutritionistConfig: LayoutConfig = {
+  role: 'nutritionist',
+  basePath: '/nutritionist',
+  logoText: 'NUTRITIONIST',
+  searchPlaceholder: 'Search clients, programs...',
+  navSections: [
+    {
+      title: null,
+      links: [
+        { icon: Home, label: 'Home', path: '/nutritionist' },
+        { icon: Compass, label: 'Discover', path: '/nutritionist/discovery' },
+        { icon: GraduationCap, label: 'Experts', path: '/nutritionist/experts' },
+      ]
+    },
+    {
+      title: 'Nutrition',
+      links: [
+        { icon: Apple, label: 'Meal Programs', path: '/nutritionist/programs' },
+        { icon: Users, label: 'Students', path: '/nutritionist/clients' },
+        { icon: Radio, label: 'Live', path: '/nutritionist/live' },
+        { icon: Calendar, label: 'Schedule', path: '/nutritionist/schedule' },
+      ]
+    },
+    {
+      title: 'Compete',
+      links: [
+        { icon: Target, label: 'Challenges', path: '/nutritionist/challenges' },
+        { icon: Trophy, label: 'Leaderboards', path: '/nutritionist/leaderboards' },
+        { icon: Award, label: 'Achievements', path: '/nutritionist/achievements' },
+      ]
+    }
+  ],
+  topNavItems: [
+    { icon: Users, label: 'Students', path: '/nutritionist/clients' },
+    { icon: MessageCircle, label: 'Messages', path: '/nutritionist/messages' },
+    { icon: User, label: 'My Profile', path: '/nutritionist/profile' },
+    { icon: Settings, label: 'Settings', path: '/nutritionist/settings' },
+  ]
+}
+
+/**
  * Get layout configuration by role.
  */
-export function getLayoutConfig(role: 'trainer' | 'user'): LayoutConfig {
-  return role === 'trainer' ? trainerConfig : userConfig
+export function getLayoutConfig(role: 'trainer' | 'user' | 'nutritionist'): LayoutConfig {
+  switch (role) {
+    case 'trainer': return trainerConfig
+    case 'nutritionist': return nutritionistConfig
+    default: return userConfig
+  }
 }
