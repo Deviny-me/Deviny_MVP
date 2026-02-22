@@ -63,14 +63,9 @@ export function UserHomeFeed() {
       setFeedPostIds(prev => prev.filter(id => id !== postId))
       setToast({ message: tPosts('deleted'), type: 'success' })
     } catch (error) {
-      if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
-        dispatch({ type: 'REMOVE_POST', postId })
-        setFeedPostIds(prev => prev.filter(id => id !== postId))
-        setToast({ message: tPosts('deleted'), type: 'success' })
-      } else {
-        const message = error instanceof Error ? error.message : tPosts('deleteError')
-        setToast({ message, type: 'error' })
-      }
+      console.error('[Delete] Failed to delete post:', postId, error)
+      const message = error instanceof Error ? error.message : tPosts('deleteError')
+      setToast({ message, type: 'error' })
     } finally {
       setDeletingPostId(null)
     }

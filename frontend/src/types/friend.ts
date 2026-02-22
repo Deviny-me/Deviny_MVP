@@ -3,6 +3,7 @@ export interface FriendDto {
   email: string;
   fullName?: string;
   avatar?: string;
+  role?: string;
   friendsSince: string;
 }
 
@@ -12,10 +13,12 @@ export interface FriendRequestDto {
   senderEmail: string;
   senderFullName?: string;
   senderAvatar?: string;
+  senderRole?: string;
   receiverId: string;
   receiverEmail: string;
   receiverFullName?: string;
   receiverAvatar?: string;
+  receiverRole?: string;
   status: FriendRequestStatus;
   createdAt: string;
   respondedAt?: string;

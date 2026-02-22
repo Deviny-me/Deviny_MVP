@@ -23,9 +23,9 @@ public class StudentsController : BaseApiController
         {
             var userId = GetCurrentUserId();
 
-            // Verify the user is a trainer or nutritionist
+            // Verify the user is a trainer
             var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null || (user.Role != UserRole.Trainer && user.Role != UserRole.Nutritionist))
+            if (user == null || user.Role != UserRole.Trainer)
             {
                 return Forbid();
             }
@@ -41,7 +41,8 @@ public class StudentsController : BaseApiController
                     FullName = u.FirstName + " " + u.LastName,
                     Email = u.Email,
                     Phone = u.Phone,
-                    AvatarUrl = u.AvatarUrl
+                    AvatarUrl = u.AvatarUrl,
+                    Role = u.Role.ToString()
                 })
                 .ToListAsync();
 

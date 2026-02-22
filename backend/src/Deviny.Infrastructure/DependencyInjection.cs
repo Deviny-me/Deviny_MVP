@@ -47,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
         services.AddScoped<IChallengeRepository, ChallengeRepository>();
         services.AddScoped<IUserChallengeProgressRepository, UserChallengeProgressRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IMealProgramRepository, MealProgramRepository>();
         
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -56,6 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IVerificationDocumentService, VerificationDocumentService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddSingleton<ISlugGenerator, SlugGenerator>();
+        services.AddScoped<INotificationService, NotificationService>();
         
         return services;
     }

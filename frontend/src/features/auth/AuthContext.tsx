@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (savedUser) {
             setUser(JSON.parse(savedUser))
           }
-          // Try to refresh token — if it fails the session is invalid
+          // Try to refresh token — if it fails, check if current access token is still valid
           const refreshResult = await authService.refreshToken()
           if (refreshResult) {
             const mappedUser = mapUserDtoToUser(refreshResult.user)
@@ -68,20 +68,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             store.setItem('accessToken', refreshResult.accessToken)
             store.setItem('user', JSON.stringify(mappedUser))
           } else {
-            // Refresh failed (e.g. session cookie gone after browser close) — clear stale state
-            setUser(null)
-            localStorage.removeItem('accessToken')
-            localStorage.removeItem('user')
-            sessionStorage.removeItem('accessToken')
-            sessionStorage.removeItem('user')
+            // Refresh failed — but access token may still be valid (e.g. cookie lost after server restart).
+            // Check if the access token is not expired before wiping everything.
+            let tokenExpired = true
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1]))
+              tokenExpired = payload.exp * 1000 < Date.now()
+            } catch { /* malformed token → treat as expired */ }
+
+            if (tokenExpired) {
+              // Token truly expired — clear stale state
+              setUser(null)
+              localStorage.removeItem('accessToken')
+              localStorage.removeItem('user')
+              sessionStorage.removeItem('accessToken')
+              sessionStorage.removeItem('user')
+            }
+            // else: keep user from storage — access token still works
           }
         }
       } catch (error) {
         console.error('Auth check failed:', error)
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('user')
-        sessionStorage.removeItem('accessToken')
-        sessionStorage.removeItem('user')
+        // Only clear if we can't recover at all
+        const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+        let tokenExpired = true
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            tokenExpired = payload.exp * 1000 < Date.now()
+          } catch { /* malformed */ }
+        }
+        if (tokenExpired) {
+          localStorage.removeItem('accessToken')
+          localStorage.removeItem('user')
+          sessionStorage.removeItem('accessToken')
+          sessionStorage.removeItem('user')
+        }
       } finally {
         setIsLoading(false)
       }

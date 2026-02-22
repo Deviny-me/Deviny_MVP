@@ -1,7 +1,9 @@
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Features.Notifications.Events;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -12,17 +14,20 @@ public class AchievementService : IAchievementService
     private readonly ApplicationDbContext _context;
     private readonly ILevelService _levelService;
     private readonly IAchievementNotifier _notifier;
+    private readonly IMediator _mediator;
     private readonly ILogger<AchievementService> _logger;
 
     public AchievementService(
         ApplicationDbContext context,
         ILevelService levelService,
         IAchievementNotifier notifier,
+        IMediator mediator,
         ILogger<AchievementService> logger)
     {
         _context = context;
         _levelService = levelService;
         _notifier = notifier;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -181,6 +186,23 @@ public class AchievementService : IAchievementService
         };
 
         await NotifyUserAsync(userId, result, ct);
+
+        // Publish domain event for notification system
+        try
+        {
+            await _mediator.Publish(new AchievementAwardedEvent
+            {
+                UserId = userId,
+                AchievementId = achievement.Id,
+                AchievementTitle = achievement.Title,
+                AchievementIconKey = achievement.IconKey
+            }, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to publish AchievementAwardedEvent for {Code}", achievementCode);
+        }
+
         return result;
     }
 

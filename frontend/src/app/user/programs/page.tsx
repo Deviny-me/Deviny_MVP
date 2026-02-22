@@ -8,72 +8,130 @@ import {
   Users,
   ShoppingCart,
   Loader2,
-  Filter,
   SortAsc,
   Dumbbell,
   Apple,
   X
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
-import { PublicProgramDto } from '@/types/program'
+import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
+import { PublicProgramDto, PublicMealProgramDto, ProgramType } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'training' | 'nutrition'
 
+// Unified type for displaying both program types
+type UnifiedPublicProgram = {
+  id: string
+  title: string
+  description: string
+  price: number
+  code: string
+  coverImageUrl: string
+  createdAt: string
+  trainerId: string
+  trainerName: string
+  trainerAvatarUrl: string
+  trainerSlug: string
+  programType: ProgramType
+  // Training-specific (optional)
+  averageRating?: number
+  totalReviews?: number
+  totalPurchases?: number
+}
+
+function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    price: p.price,
+    code: p.code,
+    coverImageUrl: p.coverImageUrl,
+    createdAt: p.createdAt,
+    trainerId: p.trainerId,
+    trainerName: p.trainerName,
+    trainerAvatarUrl: p.trainerAvatarUrl,
+    trainerSlug: p.trainerSlug,
+    programType: 'training',
+    averageRating: p.averageRating,
+    totalReviews: p.totalReviews,
+    totalPurchases: p.totalPurchases,
+  }
+}
+
+function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    price: p.price,
+    code: p.code,
+    coverImageUrl: p.coverImageUrl,
+    createdAt: p.createdAt,
+    trainerId: p.trainerId,
+    trainerName: p.trainerName,
+    trainerAvatarUrl: p.trainerAvatarUrl,
+    trainerSlug: p.trainerSlug,
+    programType: 'meal',
+    averageRating: 0,
+    totalReviews: 0,
+    totalPurchases: 0,
+  }
+}
+
 export default function ProgramsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const t = useTranslations('userPrograms')
   const tc = useTranslations('common')
-  const [programs, setPrograms] = useState<PublicProgramDto[]>([])
-  const [filteredPrograms, setFilteredPrograms] = useState<PublicProgramDto[]>([])
+
+  const [trainingPrograms, setTrainingPrograms] = useState<PublicProgramDto[]>([])
+  const [mealPrograms, setMealPrograms] = useState<PublicMealProgramDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [filterType, setFilterType] = useState<FilterType>('all')
-  const [selectedProgram, setSelectedProgram] = useState<PublicProgramDto | null>(null)
+  const [selectedProgram, setSelectedProgram] = useState<UnifiedPublicProgram | null>(null)
 
   useEffect(() => {
-    loadPrograms()
+    loadAllPrograms()
   }, [])
 
-  // Check for program query parameter to open modal
+  // Deep link: ?program=<id>
   useEffect(() => {
     const programId = searchParams.get('program')
     if (!programId) return
-
     router.replace('/user/programs', { scroll: false })
 
-    // Try to find in already loaded programs
-    if (programs.length > 0) {
-      const program = programs.find(p => p.id === programId)
-      if (program) {
-        setSelectedProgram(program)
-        return
-      }
+    const allPrograms = [
+      ...trainingPrograms.map(fromTraining),
+      ...mealPrograms.map(fromMeal),
+    ]
+    const found = allPrograms.find(p => p.id === programId)
+    if (found) {
+      setSelectedProgram(found)
+      return
     }
 
-    // Fallback: fetch from API
     programsApi.getProgramById(programId).then(prog => {
-      if (prog) {
-        setSelectedProgram(prog)
-      }
+      if (prog) setSelectedProgram(fromTraining(prog))
     })
-  }, [searchParams, programs, router])
+  }, [searchParams, trainingPrograms, mealPrograms, router])
 
-  useEffect(() => {
-    applyFiltersAndSort()
-  }, [programs, searchQuery, sortBy, filterType])
-
-  const loadPrograms = async () => {
+  const loadAllPrograms = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await programsApi.getAllPublic()
-      setPrograms(data)
+      const [training, meal] = await Promise.all([
+        programsApi.getAllPublic(),
+        mealProgramsApi.getAllPublic(),
+      ])
+      setTrainingPrograms(training)
+      setMealPrograms(meal)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load programs')
     } finally {
@@ -81,37 +139,28 @@ export default function ProgramsPage() {
     }
   }
 
-  const applyFiltersAndSort = () => {
-    let result = [...programs]
+  // Build filtered + sorted list
+  const getFilteredPrograms = (): UnifiedPublicProgram[] => {
+    let result: UnifiedPublicProgram[] = []
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(p => 
-        p.title.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.trainerName.toLowerCase().includes(query)
-      )
+    if (filterType === 'all') {
+      result = [
+        ...trainingPrograms.map(fromTraining),
+        ...mealPrograms.map(fromMeal),
+      ]
+    } else if (filterType === 'training') {
+      result = trainingPrograms.map(fromTraining)
+    } else {
+      result = mealPrograms.map(fromMeal)
     }
 
-    // Filter by type (based on title/description keywords for now)
-    if (filterType === 'training') {
-      result = result.filter(p => 
-        p.title.toLowerCase().includes('training') ||
-        p.title.toLowerCase().includes('workout') ||
-        p.title.toLowerCase().includes('fitness') ||
-        p.title.toLowerCase().includes('тренировк') ||
-        p.description.toLowerCase().includes('training') ||
-        p.description.toLowerCase().includes('workout')
-      )
-    } else if (filterType === 'nutrition') {
-      result = result.filter(p => 
-        p.title.toLowerCase().includes('nutrition') ||
-        p.title.toLowerCase().includes('diet') ||
-        p.title.toLowerCase().includes('meal') ||
-        p.title.toLowerCase().includes('питани') ||
-        p.description.toLowerCase().includes('nutrition') ||
-        p.description.toLowerCase().includes('diet')
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.trainerName.toLowerCase().includes(q)
       )
     }
 
@@ -121,10 +170,10 @@ export default function ProgramsPage() {
         result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         break
       case 'popular':
-        result.sort((a, b) => b.totalPurchases - a.totalPurchases)
+        result.sort((a, b) => (b.totalPurchases ?? 0) - (a.totalPurchases ?? 0))
         break
       case 'rating':
-        result.sort((a, b) => b.averageRating - a.averageRating)
+        result.sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0))
         break
       case 'price-low':
         result.sort((a, b) => a.price - b.price)
@@ -134,8 +183,11 @@ export default function ProgramsPage() {
         break
     }
 
-    setFilteredPrograms(result)
+    return result
   }
+
+  const filteredPrograms = getFilteredPrograms()
+  const totalCount = trainingPrograms.length + mealPrograms.length
 
   const formatPrice = (price: number) => {
     if (price === 0) return tc('free')
@@ -155,7 +207,6 @@ export default function ProgramsPage() {
 
         {/* Search and Filters */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 space-y-3">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
             <input
@@ -167,7 +218,6 @@ export default function ProgramsPage() {
             />
           </div>
 
-          {/* Filter and Sort Row */}
           <div className="flex flex-wrap gap-2">
             {/* Type Filters */}
             <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-1">
@@ -191,6 +241,7 @@ export default function ProgramsPage() {
               >
                 <Dumbbell className="w-4 h-4" />
                 {t('training')}
+                <span className="text-xs opacity-70">({trainingPrograms.length})</span>
               </button>
               <button
                 onClick={() => setFilterType('nutrition')}
@@ -202,10 +253,11 @@ export default function ProgramsPage() {
               >
                 <Apple className="w-4 h-4" />
                 {t('nutrition')}
+                <span className="text-xs opacity-70">({mealPrograms.length})</span>
               </button>
             </div>
 
-            {/* Sort Dropdown */}
+            {/* Sort */}
             <div className="flex items-center gap-2 ml-auto">
               <SortAsc className="w-4 h-4 text-gray-500" />
               <select
@@ -232,7 +284,7 @@ export default function ProgramsPage() {
           <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
             <p className="text-red-400 mb-4">{error}</p>
             <button
-              onClick={loadPrograms}
+              onClick={loadAllPrograms}
               className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
             >
               {tc('tryAgain')}
@@ -244,25 +296,23 @@ export default function ProgramsPage() {
               <Search className="w-8 h-8 text-gray-500" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              {programs.length === 0 ? t('noPrograms') : t('noProgramsFound')}
+              {totalCount === 0 ? t('noPrograms') : t('noProgramsFound')}
             </h3>
             <p className="text-sm text-gray-400">
-              {programs.length === 0 
-                ? t('checkBackLater')
-                : t('adjustSearchFilters')}
+              {totalCount === 0 ? t('checkBackLater') : t('adjustSearchFilters')}
             </p>
           </div>
         ) : (
           <div className="grid gap-4">
             {filteredPrograms.map((program) => (
               <div
-                key={program.id}
+                key={`${program.programType}-${program.id}`}
                 className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
                 onClick={() => setSelectedProgram(program)}
               >
                 <div className="flex">
                   {/* Cover Image */}
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-[#0A0A0A]">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-[#0A0A0A] relative">
                     {program.coverImageUrl ? (
                       <img
                         src={getMediaUrl(program.coverImageUrl) || ''}
@@ -271,20 +321,33 @@ export default function ProgramsPage() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Dumbbell className="w-10 h-10 text-gray-600" />
+                        {program.programType === 'training' ? (
+                          <Dumbbell className="w-10 h-10 text-gray-600" />
+                        ) : (
+                          <Apple className="w-10 h-10 text-gray-600" />
+                        )}
                       </div>
                     )}
+                    {/* Type badge */}
+                    <span className={`absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5 ${
+                      program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
+                    }`}>
+                      {program.programType === 'training' ? (
+                        <><Dumbbell className="w-2.5 h-2.5" />{t('training')}</>
+                      ) : (
+                        <><Apple className="w-2.5 h-2.5" />{t('nutrition')}</>
+                      )}
+                    </span>
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 p-4 flex flex-col">
-                    {/* Title & Trainer */}
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-white line-clamp-1">{program.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         {program.trainerAvatarUrl ? (
                           <img
-                            src={program.trainerAvatarUrl}
+                            src={getMediaUrl(program.trainerAvatarUrl) || ''}
                             alt={program.trainerName}
                             className="w-5 h-5 rounded-full object-cover"
                           />
@@ -300,20 +363,23 @@ export default function ProgramsPage() {
                       <p className="text-sm text-gray-500 mt-2 line-clamp-2">{program.description}</p>
                     </div>
 
-                    {/* Stats & Price */}
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                          <span className="text-sm text-white">
-                            {program.averageRating > 0 ? program.averageRating.toFixed(1) : '-'}
-                          </span>
-                          <span className="text-xs text-gray-500">({program.totalReviews})</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-gray-400">
-                          <Users className="w-4 h-4" />
-                          <span className="text-sm">{program.totalPurchases}</span>
-                        </div>
+                        {program.programType === 'training' && (
+                          <>
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                              <span className="text-sm text-white">
+                                {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
+                              </span>
+                              <span className="text-xs text-gray-500">({program.totalReviews ?? 0})</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <Users className="w-4 h-4" />
+                              <span className="text-sm">{program.totalPurchases ?? 0}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                       <span className={`text-lg font-bold ${
                         program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
@@ -329,9 +395,9 @@ export default function ProgramsPage() {
         )}
 
         {/* Results Count */}
-        {!isLoading && !error && programs.length > 0 && (
+        {!isLoading && !error && totalCount > 0 && (
           <p className="text-center text-sm text-gray-500">
-            {tc('showingXofY', { shown: filteredPrograms.length, total: programs.length })}
+            {tc('showingXofY', { shown: filteredPrograms.length, total: totalCount })}
           </p>
         )}
       </div>
@@ -349,14 +415,13 @@ export default function ProgramsPage() {
   )
 }
 
-// Program Detail Modal Component
 function ProgramDetailModal({ 
   program, 
   onClose,
   t,
   tc
 }: { 
-  program: PublicProgramDto
+  program: UnifiedPublicProgram
   onClose: () => void
   t: ReturnType<typeof useTranslations>
   tc: ReturnType<typeof useTranslations>
@@ -377,7 +442,7 @@ function ProgramDetailModal({
         className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with Cover */}
+        {/* Header */}
         <div className="relative">
           {program.coverImageUrl ? (
             <img
@@ -387,7 +452,11 @@ function ProgramDetailModal({
             />
           ) : (
             <div className="w-full h-48 bg-[#0A0A0A] flex items-center justify-center">
-              <Dumbbell className="w-16 h-16 text-gray-600" />
+              {program.programType === 'training' ? (
+                <Dumbbell className="w-16 h-16 text-gray-600" />
+              ) : (
+                <Apple className="w-16 h-16 text-gray-600" />
+              )}
             </div>
           )}
           <button
@@ -396,11 +465,17 @@ function ProgramDetailModal({
           >
             <X className="w-5 h-5 text-white" />
           </button>
+          <div className="absolute top-3 left-3 flex gap-2">
+            <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
+              program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
+            }`}>
+              {program.programType === 'training' ? t('training') : t('nutrition')}
+            </span>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          {/* Title & Price */}
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
             <span className={`text-2xl font-bold flex-shrink-0 ${
@@ -426,9 +501,7 @@ function ProgramDetailModal({
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
-                <span className="text-white font-bold">
-                  {program.trainerName.charAt(0)}
-                </span>
+                <span className="text-white font-bold">{program.trainerName.charAt(0)}</span>
               </div>
             )}
             <div>
@@ -437,20 +510,22 @@ function ProgramDetailModal({
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              <span className="text-white font-medium">
-                {program.averageRating > 0 ? program.averageRating.toFixed(1) : tc('noRating')}
-              </span>
-              <span className="text-gray-500">({program.totalReviews} {tc('reviews')})</span>
+          {/* Stats — training only */}
+          {program.programType === 'training' && (
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                <span className="text-white font-medium">
+                  {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
+                </span>
+                <span className="text-gray-500">({program.totalReviews ?? 0})</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400">
+                <Users className="w-5 h-5" />
+                <span>{program.totalPurchases ?? 0} {tc('purchases')}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
-              <Users className="w-5 h-5" />
-              <span>{program.totalPurchases} {tc('purchases')}</span>
-            </div>
-          </div>
+          )}
 
           {/* Description */}
           <div>
@@ -461,16 +536,12 @@ function ProgramDetailModal({
           {/* Purchase Button */}
           <button
             className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            onClick={() => {
-              // TODO: Implement purchase flow
-              alert(t('purchaseComingSoon'))
-            }}
+            onClick={() => alert(t('purchaseComingSoon'))}
           >
             <ShoppingCart className="w-5 h-5" />
             {program.price === 0 ? t('getForFree') : t('purchaseFor', { price: formatPrice(program.price) })}
           </button>
 
-          {/* Program Code */}
           <p className="text-center text-xs text-gray-500">
             {t('programCode')} <span className="text-gray-400 font-mono">{program.code}</span>
           </p>

@@ -15,6 +15,7 @@ import { useState, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { SearchBar } from '@/components/search/SearchBar'
+import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
 import { useTranslations } from 'next-intl'
 
 export function UserTopNav() {
@@ -101,10 +102,7 @@ export function UserTopNav() {
             <LanguageSwitcher compact />
             <div className="w-px h-6 bg-white/10" />
             {/* Notifications */}
-            <button className="relative p-2 rounded hover:bg-white/5 transition-colors">
-              <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
-              <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF0844] rounded-full" />
-            </button>
+            <NotificationDropdown />
 
             <div className="w-px h-6 bg-white/10" />
 

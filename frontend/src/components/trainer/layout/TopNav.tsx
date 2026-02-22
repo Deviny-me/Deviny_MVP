@@ -20,6 +20,7 @@ import { getMediaUrl } from '@/lib/config'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { useLevel } from '@/components/level/LevelProvider'
 import { SearchBar } from '@/components/search/SearchBar'
+import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
 
 export function TopNav() {
   const router = useRouter()
@@ -32,9 +33,8 @@ export function TopNav() {
   const { unreadCount } = useUnreadMessages()
   const { level } = useLevel()
 
-  const isNutritionist = user?.role === 'nutritionist'
-  const roleLabel = isNutritionist ? t('nutritionist') : t('trainer')
-  const avatarFallbackInitial = isNutritionist ? 'N' : 'T'
+  const roleLabel = t('trainer')
+  const avatarFallbackInitial = 'T'
 
   useEffect(() => {
     loadTrainerProfile()
@@ -132,6 +132,9 @@ export function TopNav() {
           {/* Right: Notifications & Profile */}
           <div className="flex items-center gap-3 flex-1 justify-end">
             <LanguageSwitcher compact />
+            <div className="w-px h-6 bg-white/10" />
+            {/* Notifications */}
+            <NotificationDropdown />
             <div className="w-px h-6 bg-white/10" />
             {/* Profile Menu */}
             <div className="relative">

@@ -97,7 +97,8 @@ public class TrainersController : BaseApiController
                     RatingValue = 0,
                     ReviewsCount = 0,
                     Slug = profile.Slug,
-                    ProfilePublicUrl = $"/trainer/{profile.Slug}"
+                    ProfilePublicUrl = $"/trainer/{profile.Slug}",
+                    Role = user.Role.ToString()
                 },
                 About = new AboutDto
                 {

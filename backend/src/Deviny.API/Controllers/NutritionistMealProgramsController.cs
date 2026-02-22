@@ -1,0 +1,154 @@
+using Deviny.Application.Features.MealPrograms.Commands;
+using Deviny.Application.Features.MealPrograms.DTOs;
+using Deviny.Application.Features.MealPrograms.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Deviny.API.Controllers;
+
+/// <summary>
+/// Meal program management for Nutritionists only.
+/// Nutritionist can only create MealProgram type programs.
+/// </summary>
+[Route("api/nutritionist/me/meal-programs")]
+public class NutritionistMealProgramsController : BaseApiController
+{
+    private readonly IMediator _mediator;
+
+    public NutritionistMealProgramsController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<MealProgramDto>>> GetMyMealPrograms()
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Nutritionist" && role != "3")
+            return Forbid();
+
+        var query = new GetMyMealProgramsQuery { TrainerId = userId.Value };
+        var programs = await _mediator.Send(query);
+
+        return Ok(programs);
+    }
+
+    [HttpPost]
+    [RequestSizeLimit(200 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 200 * 1024 * 1024)]
+    public async Task<ActionResult<MealProgramDto>> CreateMealProgram([FromForm] CreateMealProgramRequest request)
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Nutritionist" && role != "3")
+            return Forbid();
+
+        try
+        {
+            var command = new CreateMealProgramCommand
+            {
+                TrainerId = userId.Value,
+                Title = request.Title,
+                Description = request.Description,
+                Price = request.Price,
+                CoverImage = request.CoverImage,
+                Videos = request.Videos
+            };
+
+            var program = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetMyMealPrograms), new { id = program.Id }, program);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"CreateMealProgram error: {ex.GetType().Name}: {ex.Message}");
+            Console.Error.WriteLine(ex.StackTrace);
+            return StatusCode(500, new { message = "Failed to create meal program" });
+        }
+    }
+
+    [HttpPut("{id}")]
+    [RequestSizeLimit(200 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 200 * 1024 * 1024)]
+    public async Task<ActionResult<MealProgramDto>> UpdateMealProgram(Guid id, [FromForm] UpdateMealProgramRequest request)
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Nutritionist" && role != "3")
+            return Forbid();
+
+        try
+        {
+            var command = new UpdateMealProgramCommand
+            {
+                Id = id,
+                TrainerId = userId.Value,
+                Title = request.Title,
+                Description = request.Description,
+                Price = request.Price,
+                CoverImage = request.CoverImage,
+                Videos = request.Videos
+            };
+
+            var program = await _mediator.Send(command);
+            return Ok(program);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteMealProgram(Guid id)
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Nutritionist" && role != "3")
+            return Forbid();
+
+        try
+        {
+            var command = new DeleteMealProgramCommand
+            {
+                Id = id,
+                TrainerId = userId.Value
+            };
+
+            await _mediator.Send(command);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+}

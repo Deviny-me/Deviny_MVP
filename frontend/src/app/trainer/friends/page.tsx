@@ -5,8 +5,10 @@ import { Search, Users, MessageCircle, MoreVertical, Check, UserPlus, Loader2, U
 import { friendsApi } from '@/lib/api/friendsApi'
 import { useTranslations } from 'next-intl'
 import { FriendDto, FriendRequestDto, FriendRequestStatus } from '@/types/friend'
+import { useAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
 
 export default function FriendsPage() {
+  const accent = useAccentColors()
   const t = useTranslations('friends')
   const tc = useTranslations('common')
   const [activeTab, setActiveTab] = useState<'all' | 'requests'>('all')
@@ -85,7 +87,7 @@ export default function FriendsPage() {
     return (
       <>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
         </div>
       </>
     )
@@ -110,7 +112,7 @@ export default function FriendsPage() {
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 bg-[#0A0A0A] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6B35]"
+                className={`w-64 bg-[#0A0A0A] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
@@ -120,20 +122,20 @@ export default function FriendsPage() {
             <button
               onClick={() => setActiveTab('all')}
               className={`px-4 py-2.5 text-sm font-semibold transition-colors relative ${
-                activeTab === 'all' ? 'text-[#FF6B35]' : 'text-gray-400 hover:text-white'
+                activeTab === 'all' ? accent.text : 'text-gray-400 hover:text-white'
               }`}
             >
               {t('allFriends')} ({friends.length})
-              {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35]" />}
+              {activeTab === 'all' && <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg}`} />}
             </button>
             <button
               onClick={() => setActiveTab('requests')}
               className={`px-4 py-2.5 text-sm font-semibold transition-colors relative ${
-                activeTab === 'requests' ? 'text-[#FF6B35]' : 'text-gray-400 hover:text-white'
+                activeTab === 'requests' ? accent.text : 'text-gray-400 hover:text-white'
               }`}
             >
               {t('requests')} ({pendingRequestsCount})
-              {activeTab === 'requests' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35]" />}
+              {activeTab === 'requests' && <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg}`} />}
             </button>
           </div>
         </div>
@@ -158,7 +160,7 @@ export default function FriendsPage() {
                       <img
                         src={friend.avatar || '/default-avatar.png'}
                         alt={friend.fullName || friend.email}
-                        className="w-16 h-16 rounded-full object-cover"
+                        className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(friend.role)}`}
                       />
                       <div>
                         <h3 className="text-white font-semibold text-lg">{friend.fullName || tc('user')}</h3>
@@ -206,7 +208,7 @@ export default function FriendsPage() {
                         <img
                           src={request.senderAvatar || '/default-avatar.png'}
                           alt={request.senderFullName || request.senderEmail}
-                          className="w-14 h-14 rounded-full object-cover"
+                          className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.senderRole)}`}
                         />
                         <div className="flex-1">
                           <h3 className="text-white font-semibold">{request.senderFullName || tc('user')}</h3>
@@ -218,7 +220,7 @@ export default function FriendsPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
-                            className="px-3 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg transition-all flex items-center gap-2"
+                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg transition-all flex items-center gap-2`}
                           >
                             <Check className="w-4 h-4" />
                             <span className="text-sm font-medium">{t('accept')}</span>
@@ -251,7 +253,7 @@ export default function FriendsPage() {
                         <img
                           src={request.receiverAvatar || '/default-avatar.png'}
                           alt={request.receiverFullName || request.receiverEmail}
-                          className="w-14 h-14 rounded-full object-cover"
+                          className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.receiverRole)}`}
                         />
                         <div className="flex-1">
                           <h3 className="text-white font-semibold">{request.receiverFullName || tc('user')}</h3>

@@ -7,6 +7,7 @@ public class MessageDto
     public Guid SenderId { get; set; }
     public string SenderName { get; set; } = string.Empty;
     public string? SenderAvatarUrl { get; set; }
+    public string? SenderRole { get; set; }
     public string Text { get; set; } = string.Empty;
     public string? AttachmentUrl { get; set; }
     public string? AttachmentFileName { get; set; }

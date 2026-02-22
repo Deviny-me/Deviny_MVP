@@ -21,9 +21,13 @@ public class TrainerProgramsController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<ProgramDto>>> GetMyPrograms()
     {
-        var trainerId = GetTrainerId();
+        var trainerId = TryGetCurrentUserId();
         if (trainerId == null)
             return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Trainer" && role != "1")
+            return Forbid();
 
         var query = new GetMyProgramsQuery { TrainerId = trainerId.Value };
         var programs = await _mediator.Send(query);
@@ -36,9 +40,13 @@ public class TrainerProgramsController : BaseApiController
     [RequestFormLimits(MultipartBodyLengthLimit = 200 * 1024 * 1024)]
     public async Task<ActionResult<ProgramDto>> CreateProgram([FromForm] CreateProgramRequest request)
     {
-        var trainerId = GetTrainerId();
+        var trainerId = TryGetCurrentUserId();
         if (trainerId == null)
             return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Trainer" && role != "1")
+            return Forbid();
 
         try
         {
@@ -64,16 +72,20 @@ public class TrainerProgramsController : BaseApiController
             // Log the actual error for server-side debugging
             Console.Error.WriteLine($"CreateProgram error: {ex.GetType().Name}: {ex.Message}");
             Console.Error.WriteLine(ex.StackTrace);
-            return StatusCode(500, new { message = "Failed to create program", details = ex.Message });
+            return StatusCode(500, new { message = "Failed to create program" });
         }
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult<ProgramDto>> UpdateProgram(Guid id, [FromForm] UpdateProgramRequest request)
     {
-        var trainerId = GetTrainerId();
+        var trainerId = TryGetCurrentUserId();
         if (trainerId == null)
             return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Trainer" && role != "1")
+            return Forbid();
 
         try
         {
@@ -108,9 +120,13 @@ public class TrainerProgramsController : BaseApiController
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProgram(Guid id)
     {
-        var trainerId = GetTrainerId();
+        var trainerId = TryGetCurrentUserId();
         if (trainerId == null)
             return Unauthorized();
+
+        var role = GetCurrentUserRole();
+        if (role != "Trainer" && role != "1")
+            return Forbid();
 
         try
         {
@@ -133,20 +149,4 @@ public class TrainerProgramsController : BaseApiController
         }
     }
 
-    private Guid? GetTrainerId()
-    {
-        var emailClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
-            ?? User.FindFirst("email")?.Value;
-
-        if (string.IsNullOrEmpty(emailClaim))
-            return null;
-
-        var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value;
-
-        if (Guid.TryParse(idClaim, out var trainerId))
-            return trainerId;
-
-        return null;
-    }
 }

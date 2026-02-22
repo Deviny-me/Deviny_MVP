@@ -133,7 +133,8 @@ public class CreateRepostCommandHandler : IRequestHandler<CreateRepostCommand, R
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 AvatarUrl = user.AvatarUrl,
-                Slug = user.Slug
+                Slug = user.Slug,
+                Role = user.Role
             },
             Type = repost.Type,
             Caption = repost.Caption,
@@ -157,7 +158,8 @@ public class CreateRepostCommandHandler : IRequestHandler<CreateRepostCommand, R
                     FirstName = originalPost.User.FirstName,
                     LastName = originalPost.User.LastName,
                     AvatarUrl = originalPost.User.AvatarUrl,
-                    Slug = originalPost.User.Slug
+                    Slug = originalPost.User.Slug,
+                    Role = originalPost.User.Role
                 } : null,
                 Type = originalPost.Type,
                 Caption = originalPost.Caption,

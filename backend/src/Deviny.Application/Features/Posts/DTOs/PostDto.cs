@@ -12,6 +12,7 @@ public class PostAuthorDto
     public string LastName { get; set; } = string.Empty;
     public string? AvatarUrl { get; set; }
     public string? Slug { get; set; }
+    public UserRole Role { get; set; }
     
     public string FullName => $"{FirstName} {LastName}".Trim();
 }

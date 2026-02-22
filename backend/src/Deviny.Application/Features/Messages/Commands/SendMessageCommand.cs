@@ -91,6 +91,14 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
                 AchievementSourceType.Message,
                 message.Id,
                 cancellationToken);
+
+            // Nutritionist-specific achievement
+            await _achievementService.TryAwardAchievementAsync(
+                request.SenderId,
+                "NUTRI_FIRST_MESSAGE",
+                AchievementSourceType.Message,
+                message.Id,
+                cancellationToken);
         }
         catch
         {
@@ -109,6 +117,7 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
             SenderId = message.SenderId,
             SenderName = message.Sender?.FullName ?? string.Empty,
             SenderAvatarUrl = message.Sender?.AvatarUrl,
+            SenderRole = message.Sender?.Role.ToString(),
             Text = message.Text,
             AttachmentUrl = message.AttachmentUrl,
             AttachmentFileName = message.AttachmentFileName,

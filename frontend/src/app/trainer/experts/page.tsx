@@ -9,11 +9,17 @@ import { PublicTrainerDto } from '@/types/trainer'
 import { getMediaUrl } from '@/lib/config'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { useAuth } from '@/features/auth/AuthContext'
+import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 export default function ExpertsPage() {
   const router = useRouter()
+  const basePath = '/trainer'
   const t = useTranslations('experts')
+  const { user: currentUser } = useAuth()
+  const accent = { primary: '#FF6B35', secondary: '#FF0844', spinner: 'text-[#FF6B35]', focusBorder: 'focus:border-[#FF6B35]/50', hoverBorder: 'hover:border-[#FF6B35]/50', hoverText: 'group-hover:text-[#FF6B35]', gradient: 'from-[#FF6B35] to-[#FF0844]' }
   const [searchQuery, setSearchQuery] = useState('')
+  const [roleFilter, setRoleFilter] = useState<'all' | 'Trainer' | 'Nutritionist'>('all')
   const [trainers, setTrainers] = useState<PublicTrainerDto[]>([])
   const [loading, setLoading] = useState(true)
   const [following, setFollowing] = useState<Set<string>>(new Set())
@@ -27,35 +33,16 @@ export default function ExpertsPage() {
     try {
       setLoading(true)
       const data = await trainersApi.getAll()
-      
-      // Get current user ID to exclude from the list
-      const currentUserId = getCurrentUserId()
-      
-      // Filter out current user from trainers list
-      const filteredData = currentUserId 
-        ? data.filter(trainer => trainer.userId !== currentUserId)
+      // Put current user first
+      const sorted = currentUser?.id
+        ? [...data].sort((a, b) => (a.userId === currentUser.id ? -1 : b.userId === currentUser.id ? 1 : 0))
         : data
-      
-      setTrainers(filteredData)
+      setTrainers(sorted)
     } catch (error) {
       console.error('Failed to load trainers:', error)
     } finally {
       setLoading(false)
     }
-  }
-
-  const getCurrentUserId = (): string | null => {
-    if (typeof window === 'undefined') return null
-    try {
-      const token = localStorage.getItem('accessToken')
-      if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        return payload.sub || payload.userId
-      }
-    } catch (e) {
-      console.error('Failed to get user ID from token:', e)
-    }
-    return null
   }
 
   const loadFollowing = async () => {
@@ -88,14 +75,15 @@ export default function ExpertsPage() {
   const filteredTrainers = trainers.filter((trainer) => {
     const matchesSearch = trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trainer.specializations.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()))
-    return matchesSearch
+    const matchesRole = roleFilter === 'all' || trainer.role === roleFilter
+    return matchesSearch && matchesRole
   })
 
   if (loading) {
     return (
       <>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          <Loader2 className={`w-8 h-8 ${accent.spinner} animate-spin`} />
         </div>
       </>
     )
@@ -118,8 +106,31 @@ export default function ExpertsPage() {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
+            className={`w-full bg-[#1A1A1A] border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
           />
+        </div>
+
+        {/* Role Filter */}
+        <div className="flex gap-2">
+          {(['all', 'Trainer', 'Nutritionist'] as const).map((role) => {
+            const isActive = roleFilter === role
+            const roleAccent = role === 'all' ? null : getAccentColorsByRole(role)
+            return (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? role === 'all'
+                      ? 'bg-white text-black'
+                      : `bg-gradient-to-r ${roleAccent!.gradient} text-white`
+                    : 'bg-[#1A1A1A] border border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                }`}
+              >
+                {role === 'all' ? t('filterAll') : role === 'Trainer' ? t('filterTrainers') : t('filterNutritionists')}
+              </button>
+            )
+          })}
         </div>
 
         {/* Trainers Grid */}
@@ -131,24 +142,26 @@ export default function ExpertsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredTrainers.map((trainer, index) => (
+            {filteredTrainers.map((trainer, index) => {
+              const trainerAccent = getAccentColorsByRole(trainer.role)
+              return (
               <motion.div
                 key={trainer.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                onClick={() => router.push(`/trainer/experts/${trainer.slug || trainer.id}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 p-5 hover:border-[#FF6B35]/50 transition-all cursor-pointer group"
+                onClick={() => router.push(`${basePath}/experts/${trainer.slug || trainer.id}`)}
+                className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-5 ${trainerAccent.hoverBorder} transition-all cursor-pointer group`}
               >
                 <div className="flex items-start gap-4">
                   <img
                     src={getMediaUrl(trainer.avatarUrl) || '/default-avatar.png'}
                     alt={trainer.name}
-                    className="w-16 h-16 rounded-xl object-cover"
+                    className={`w-16 h-16 rounded-xl object-cover ${getRoleRingClass(trainer.role)}`}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-white group-hover:text-[#FF6B35] transition-colors">{trainer.name}</h3>
+                      <h3 className={`font-semibold text-white ${trainerAccent.groupHoverText} transition-colors`}>{trainer.name}</h3>
                     </div>
                     
                     <p className="text-sm text-gray-400 mb-2">
@@ -179,22 +192,25 @@ export default function ExpertsPage() {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleFollow(trainer.userId)
-                    }}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                      following.has(trainer.userId)
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : 'bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white hover:opacity-90'
+                  {trainer.userId !== currentUser?.id && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleFollow(trainer.userId)
+                      }}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                        following.has(trainer.userId)
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                      : `bg-gradient-to-r ${trainerAccent.gradient} text-white hover:opacity-90`
                     }`}
-                  >
-                    {following.has(trainer.userId) ? t('following') : t('follow')}
-                  </button>
+                    >
+                      {following.has(trainer.userId) ? t('following') : t('follow')}
+                    </button>
+                  )}
                 </div>
               </motion.div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

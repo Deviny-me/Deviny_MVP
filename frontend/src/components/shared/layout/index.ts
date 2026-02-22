@@ -4,7 +4,7 @@
 export { SharedMainLayout } from './SharedMainLayout'
 export { SharedLeftSidebar } from './SharedLeftSidebar'
 export { SharedTopNav } from './SharedTopNav'
-export { getLayoutConfig, trainerConfig, userConfig } from './config'
+export { getLayoutConfig, trainerConfig, userConfig, nutritionistConfig } from './config'
 export type { 
   UserRole, 
   NavLink, 

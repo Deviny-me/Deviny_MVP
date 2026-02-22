@@ -37,6 +37,7 @@ public class GetMyFriendsQueryHandler : IRequestHandler<GetMyFriendsQuery, List<
             Email = f.Friend.Email,
             FullName = f.Friend.FullName,
             Avatar = f.Friend.AvatarUrl,
+            Role = f.Friend.Role.ToString(),
             FriendsSince = f.FriendsSince
         }).ToList();
     }

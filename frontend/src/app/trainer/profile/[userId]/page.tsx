@@ -22,6 +22,7 @@ import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 // Grid cell — uses local state for guaranteed instant UI updates
 function GridCell({
@@ -294,7 +295,7 @@ export default function OtherUserProfilePageTrainer() {
   const authorName = profileAuthor?.fullName || `${profileAuthor?.firstName ?? ''} ${profileAuthor?.lastName ?? ''}`.trim() || tc('user')
   const authorInitials = (profileAuthor?.firstName?.charAt(0) || 'U').toUpperCase()
   const authorAvatar = profileAuthor?.avatarUrl
-
+  const profileAccent = getAccentColorsByRole(profileAuthor?.role)
   const loadPosts = useCallback(
     async (pageNum: number, append: boolean = false) => {
       // Abort previous request
@@ -362,7 +363,7 @@ export default function OtherUserProfilePageTrainer() {
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-[#FF6B35] to-[#FF0844]" />
+          <div className={`h-32 bg-gradient-to-r ${profileAccent.gradient}`} />
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-12">
               <div className="relative">
@@ -370,10 +371,10 @@ export default function OtherUserProfilePageTrainer() {
                   <img
                     src={authorAvatar}
                     alt={authorName}
-                    className="w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A]"
+                    className={`w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A] ${getRoleRingClass(profileAuthor?.role)}`}
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center border-4 border-[#1A1A1A]">
+                  <div className={`w-24 h-24 rounded-xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
                     <span className="text-white text-3xl font-bold">{authorInitials}</span>
                   </div>
                 )}

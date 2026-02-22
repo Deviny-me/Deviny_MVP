@@ -5,15 +5,19 @@ import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { messagesApi } from '@/lib/api/messagesApi';
 import { MessageDto } from '@/types/message';
 import { MEDIA_BASE_URL } from '@/lib/config';
+import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 interface ChatModalProps {
   otherUserId: string;
   otherUserName: string;
   otherUserAvatarUrl: string | null;
+  otherUserRole?: string | null;
   onClose: () => void;
 }
 
-export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarUrl, onClose }: ChatModalProps) {
+export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarUrl, otherUserRole, onClose }: ChatModalProps) {
+  const accent = useAccentColors()
+  const peerAccent = otherUserRole ? getAccentColorsByRole(otherUserRole) : accent
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -112,10 +116,10 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               <img
                 src={`${MEDIA_BASE_URL}${otherUserAvatarUrl}`}
                 alt={otherUserName}
-                className="w-10 h-10 rounded-full object-cover"
+                className={`w-10 h-10 rounded-full object-cover ${getRoleRingClass(otherUserRole)}`}
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${peerAccent.gradient} flex items-center justify-center`}>
                 <span className="text-white text-sm font-bold">
                   {otherUserName
                     .split(' ')
@@ -141,7 +145,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+              <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
             </div>
           ) : error ? (
             <div className="flex items-center justify-center h-full">
@@ -161,7 +165,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                   <div className={`max-w-[70%]`}>
                     {/* Reply preview */}
                     {message.replyTo && (
-                      <div className="mb-1 px-3 py-1.5 border-l-2 border-[#FF6B35] bg-white/5 rounded text-xs text-gray-400">
+                      <div className={`mb-1 px-3 py-1.5 border-l-2 ${accent.border} bg-white/5 rounded text-xs text-gray-400`}>
                         <span className="font-medium text-gray-300">{message.replyTo.senderName}</span>
                         <p className="truncate">{message.replyTo.text}</p>
                       </div>
@@ -169,7 +173,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                     <div
                       className={`rounded-2xl p-3 ${
                         isMe
-                          ? 'bg-[#FF6B35] text-white rounded-br-sm'
+                          ? `${accent.bg} text-white rounded-br-sm`
                           : 'border-2 border-gray-700 bg-[#1A1A1A] text-white rounded-bl-sm'
                       }`}
                     >
@@ -198,13 +202,13 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 bg-[#0A0A0A] text-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6B35]"
+              className={`flex-1 bg-[#0A0A0A] text-white rounded-lg px-4 py-2 text-sm focus:outline-none ${accent.focusBorder}`}
               disabled={isSending}
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || isSending}
-              className="p-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`p-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isSending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

@@ -163,6 +163,14 @@ public class CreateUserMediaPostCommandHandler
                     AchievementSourceType.Post,
                     post.Id,
                     cancellationToken);
+
+                // Nutritionist-specific achievement
+                await _achievementService.TryAwardAchievementAsync(
+                    request.UserId,
+                    "NUTRI_FIRST_POST",
+                    AchievementSourceType.Post,
+                    post.Id,
+                    cancellationToken);
             }
             catch (Exception achEx)
             {
@@ -172,7 +180,7 @@ public class CreateUserMediaPostCommandHandler
             }
             
             // Map to DTO
-            var dto = MapToDto(post);
+            var dto = MapToDto(post, user);
             return Result.Success(dto);
         }
         catch (Exception ex)
@@ -239,12 +247,21 @@ public class CreateUserMediaPostCommandHandler
         return Result.Success();
     }
 
-    private PostDto MapToDto(UserPost post)
+    private PostDto MapToDto(UserPost post, User? user = null)
     {
         return new PostDto
         {
             Id = post.Id,
             UserId = post.UserId,
+            Author = user != null ? new PostAuthorDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                AvatarUrl = user.AvatarUrl,
+                Slug = user.Slug,
+                Role = user.Role
+            } : null,
             Type = post.Type,
             Caption = post.Caption,
             Visibility = post.Visibility,

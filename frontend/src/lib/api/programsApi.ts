@@ -1,34 +1,15 @@
 import { ProgramDto, CreateProgramRequest, UpdateProgramRequest, PublicProgramDto } from '@/types/program';
-import { API_URL, getAuthHeader } from '@/lib/config';
+import { API_URL, fetchWithAuth } from '@/lib/config';
 
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const authHeader = getAuthHeader();
-  
-  if (!authHeader.Authorization) {
-    throw new Error('Not authenticated');
-  }
-
-  const response = await fetch(`${API_URL}${url}`, {
-    ...options,
-    headers: {
-      ...authHeader,
-      ...options.headers,
-    },
-    credentials: 'include',
-  });
-
-  if (response.status === 401) {
-    throw new Error('Unauthorized. Please log in again.');
-  }
-
+async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Request failed');
+    throw new Error(errorData.message || errorData.details || 'Request failed');
   }
 
   // Handle 204 No Content responses
   if (response.status === 204 || response.headers.get('content-length') === '0') {
-    return;
+    return undefined as T;
   }
 
   return response.json();
@@ -37,13 +18,15 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 export const programsApi = {
   // Get all public programs for browsing
   getAllPublic: async (): Promise<PublicProgramDto[]> => {
-    return fetchWithAuth('/programs');
+    const response = await fetchWithAuth(`${API_URL}/programs`);
+    return handleResponse<PublicProgramDto[]>(response);
   },
 
   // Get a single public program by ID
   getProgramById: async (id: string): Promise<PublicProgramDto | null> => {
     try {
-      return await fetchWithAuth(`/programs/${id}`);
+      const response = await fetchWithAuth(`${API_URL}/programs/${id}`);
+      return handleResponse<PublicProgramDto>(response);
     } catch (error) {
       return null;
     }
@@ -51,17 +34,12 @@ export const programsApi = {
 
   // Get trainer's programs
   getMyPrograms: async (): Promise<ProgramDto[]> => {
-    return fetchWithAuth('/trainer/me/programs');
+    const response = await fetchWithAuth(`${API_URL}/trainer/me/programs`);
+    return handleResponse<ProgramDto[]>(response);
   },
 
   // Create program
   createProgram: async (request: CreateProgramRequest): Promise<ProgramDto> => {
-    const authHeader = getAuthHeader();
-    
-    if (!authHeader.Authorization) {
-      throw new Error('Not authenticated');
-    }
-
     const formData = new FormData();
     formData.append('title', request.title);
     formData.append('description', request.description);
@@ -74,32 +52,16 @@ export const programsApi = {
       });
     }
 
-    const response = await fetch(`${API_URL}/trainer/me/programs`, {
+    const response = await fetchWithAuth(`${API_URL}/trainer/me/programs`, {
       method: 'POST',
-      headers: {
-        ...authHeader,
-      },
       body: formData,
-      credentials: 'include',
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Create program error:', errorData);
-      throw new Error(errorData.message || errorData.details || 'Failed to create program');
-    }
-
-    return response.json();
+    return handleResponse<ProgramDto>(response);
   },
 
   // Update program
   updateProgram: async (id: string, request: UpdateProgramRequest): Promise<ProgramDto> => {
-    const authHeader = getAuthHeader();
-    
-    if (!authHeader.Authorization) {
-      throw new Error('Not authenticated');
-    }
-
     const formData = new FormData();
     formData.append('title', request.title);
     formData.append('description', request.description);
@@ -114,35 +76,27 @@ export const programsApi = {
       });
     }
 
-    const response = await fetch(`${API_URL}/trainer/me/programs/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/trainer/me/programs/${id}`, {
       method: 'PUT',
-      headers: {
-        ...authHeader,
-      },
       body: formData,
-      credentials: 'include',
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('Update program error:', errorData);
-      throw new Error(errorData.message || errorData.details || 'Failed to update program');
-    }
-
-    return response.json();
+    return handleResponse<ProgramDto>(response);
   },
 
   // Delete program
   deleteProgram: async (id: string): Promise<void> => {
-    return fetchWithAuth(`/trainer/me/programs/${id}`, {
+    const response = await fetchWithAuth(`${API_URL}/trainer/me/programs/${id}`, {
       method: 'DELETE',
     });
+    await handleResponse<void>(response);
   },
 
   // Get program by code
   getProgramByCode: async (code: string): Promise<ProgramDto | null> => {
     try {
-      return await fetchWithAuth(`/programs/by-code/${code}`);
+      const response = await fetchWithAuth(`${API_URL}/programs/by-code/${code}`);
+      return handleResponse<ProgramDto>(response);
     } catch (error) {
       return null;
     }

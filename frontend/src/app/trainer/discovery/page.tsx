@@ -10,8 +10,10 @@ import {
   Bell
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function DiscoveryPage() {
+  const accent = useAccentColors()
   const t = useTranslations('discovery')
   const tc = useTranslations('common')
   return (
@@ -31,10 +33,10 @@ export default function DiscoveryPage() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
             {/* Glowing background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B35] to-[#FF0844] rounded-full blur-2xl opacity-30 animate-pulse" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${accent.gradient} rounded-full blur-2xl opacity-30 animate-pulse`} />
             
             {/* Main circle */}
-            <div className="relative w-full h-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] rounded-full flex items-center justify-center">
+            <div className={`relative w-full h-full bg-gradient-to-br ${accent.gradient} rounded-full flex items-center justify-center`}>
               <Compass className="w-16 h-16 text-white" />
             </div>
             
@@ -44,7 +46,7 @@ export default function DiscoveryPage() {
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             >
-              <Globe className="w-5 h-5 text-[#FF6B35]" />
+              <Globe className={`w-5 h-5 ${accent.text}`} />
             </motion.div>
             
             <motion.div 
@@ -52,7 +54,7 @@ export default function DiscoveryPage() {
               animate={{ rotate: -360 }}
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
             >
-              <Users className="w-5 h-5 text-[#FF0844]" />
+              <Users className={`w-5 h-5 ${accent.textSecondary}`} />
             </motion.div>
           </motion.div>
 
@@ -64,7 +66,7 @@ export default function DiscoveryPage() {
             transition={{ delay: 0.4 }}
           >
             Discover{' '}
-            <span className="bg-gradient-to-r from-[#FF6B35] to-[#FF0844] bg-clip-text text-transparent">
+            <span className={`bg-gradient-to-r ${accent.gradient} bg-clip-text text-transparent`}>
               {tc('comingSoon')}
             </span>
           </motion.h1>
@@ -87,24 +89,24 @@ export default function DiscoveryPage() {
             transition={{ delay: 0.6 }}
           >
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-[#FF6B35]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="w-5 h-5 text-[#FF6B35]" />
+              <div className={`w-10 h-10 ${accent.bgMuted} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <TrendingUp className={`w-5 h-5 ${accent.text}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('trends')}</h3>
               <p className="text-xs text-gray-500">{t('trendsDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-[#FF0844]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Users className="w-5 h-5 text-[#FF0844]" />
+              <div className={`w-10 h-10 ${accent.featureCard2Bg} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <Users className={`w-5 h-5 ${accent.textSecondary}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('community')}</h3>
               <p className="text-xs text-gray-500">{t('communityDesc')}</p>
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Sparkles className="w-5 h-5 text-amber-500" />
+              <div className={`w-10 h-10 ${accent.featureCard1Bg} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <Sparkles className={`w-5 h-5 ${accent.featureCard1Text}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('inspiration')}</h3>
               <p className="text-xs text-gray-500">{t('inspirationDesc')}</p>
@@ -113,7 +115,7 @@ export default function DiscoveryPage() {
 
           {/* Notify button */}
           <motion.button
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
+            className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${accent.gradient} text-white font-medium rounded-xl hover:opacity-90 transition-opacity`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
@@ -132,7 +134,7 @@ export default function DiscoveryPage() {
             transition={{ delay: 0.8 }}
           >
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse" />
+              <div className={`w-2 h-2 ${accent.bg} rounded-full animate-pulse`} />
               <span>{tc('inDevelopment')}</span>
             </div>
           </motion.div>

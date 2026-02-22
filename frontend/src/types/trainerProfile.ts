@@ -27,6 +27,7 @@ export interface TrainerDto {
   reviewsCount: number
   slug: string
   profilePublicUrl: string
+  role?: string | null
 }
 
 export interface AboutDto {

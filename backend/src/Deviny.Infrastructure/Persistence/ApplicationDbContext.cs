@@ -53,6 +53,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
     public DbSet<Challenge> Challenges { get; set; } = null!;
     public DbSet<UserChallengeProgress> UserChallengeProgress { get; set; } = null!;
+    
+    // Notifications
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

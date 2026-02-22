@@ -90,7 +90,8 @@ public class CreatePostCommentCommandHandler : IRequestHandler<CreatePostComment
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 AvatarUrl = user.AvatarUrl,
-                Slug = user.Slug
+                Slug = user.Slug,
+                Role = user.Role
             },
             Content = comment.Content,
             CreatedAt = comment.CreatedAt,

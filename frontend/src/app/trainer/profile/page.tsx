@@ -42,14 +42,9 @@ import { getMediaUrl } from '@/lib/config'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
+import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
-
-// Simple toast helper
-const toast = {
-  success: (msg: string) => console.log('Success:', msg),
-  error: (msg: string) => console.error('Error:', msg),
-}
 
 // ─── Grid cell with optimistic likes ───
 function TrainerGridCell({
@@ -57,13 +52,11 @@ function TrainerGridCell({
   onSelect,
   onDelete,
   deletingPostId,
-  currentUserId,
 }: {
   postId: string
   onSelect: (postId: string) => void
   onDelete?: (postId: string) => void
   deletingPostId?: string | null
-  currentUserId?: string | null
 }) {
   const tp = useTranslations('posts')
   const post = usePost(postId)
@@ -213,7 +206,7 @@ function TrainerGridCell({
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
         </button>
-        {onDelete && currentUserId && post.userId === currentUserId && (
+        {onDelete && (
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(postId) }}
@@ -233,7 +226,7 @@ function TrainerGridCell({
 }
 
 // ─── Post detail modal (trainer) ───
-function TrainerPostDetailModal({ postId, onClose, onDelete, deletingPostId, currentUserId }: { postId: string; onClose: () => void; onDelete?: (postId: string) => void; deletingPostId?: string | null; currentUserId?: string | null }) {
+function TrainerPostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId: string; onClose: () => void; onDelete?: (postId: string) => void; deletingPostId?: string | null }) {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
 
@@ -256,7 +249,7 @@ function TrainerPostDetailModal({ postId, onClose, onDelete, deletingPostId, cur
         <PostCard
           postId={postId}
           variant="modal"
-          currentUserId={currentUserId}
+          isOwnProfile
           showDeleteInHeader
           onDelete={onDelete}
           deletingPostId={deletingPostId}
@@ -321,6 +314,7 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [deletingAvatar, setDeletingAvatar] = useState(false)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
+  const [toastData, setToastData] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   
   // Edit profile form states
   const [editPrimaryTitle, setEditPrimaryTitle] = useState('')
@@ -345,7 +339,7 @@ export default function ProfilePage() {
       setEditGender(data.trainer?.gender || '')
     } catch (error) {
       console.error('Failed to load profile:', error)
-      toast.error(t('toasts.profileLoadError'))
+      setToastData({ message: t('toasts.profileLoadError'), type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -416,12 +410,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       await updateAbout(aboutText)
-      toast.success(t('toasts.infoUpdated'))
+      setToastData({ message: t('toasts.infoUpdated'), type: 'success' })
       setShowAboutModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update about:', error)
-      toast.error(t('toasts.infoUpdateError'))
+      setToastData({ message: t('toasts.infoUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -430,14 +424,14 @@ export default function ProfilePage() {
   const handleAddCertificate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!certFile || !certTitle) {
-      toast.error(t('toasts.fillRequiredFields'))
+      setToastData({ message: t('toasts.fillRequiredFields'), type: 'error' })
       return
     }
 
     try {
       setSaving(true)
       await uploadCertificate(certTitle, certIssuer, parseInt(certYear), certFile)
-      toast.success(t('toasts.certificateAdded'))
+      setToastData({ message: t('toasts.certificateAdded'), type: 'success' })
       setShowCertificateModal(false)
       setCertTitle('')
       setCertIssuer('')
@@ -446,7 +440,7 @@ export default function ProfilePage() {
       loadProfile()
     } catch (error) {
       console.error('Failed to add certificate:', error)
-      toast.error(t('toasts.certificateAddError'))
+      setToastData({ message: t('toasts.certificateAddError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -458,11 +452,11 @@ export default function ProfilePage() {
     try {
       setDeleting(id)
       await deleteCertificate(id)
-      toast.success(t('toasts.certificateDeleted'))
+      setToastData({ message: t('toasts.certificateDeleted'), type: 'success' })
       loadProfile()
     } catch (error) {
       console.error('Failed to delete certificate:', error)
-      toast.error(t('toasts.certificateDeleteError'))
+      setToastData({ message: t('toasts.certificateDeleteError'), type: 'error' })
     } finally {
       setDeleting(null)
     }
@@ -471,20 +465,20 @@ export default function ProfilePage() {
   const handleAddSpecialization = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!specName.trim()) {
-      toast.error(t('toasts.enterSpecializationName'))
+      setToastData({ message: t('toasts.enterSpecializationName'), type: 'error' })
       return
     }
 
     try {
       setSaving(true)
       await addSpecialization(specName)
-      toast.success(t('toasts.specializationAdded'))
+      setToastData({ message: t('toasts.specializationAdded'), type: 'success' })
       setShowSpecializationModal(false)
       setSpecName('')
       loadProfile()
     } catch (error) {
       console.error('Failed to add specialization:', error)
-      toast.error(t('toasts.specializationAddError'))
+      setToastData({ message: t('toasts.specializationAddError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -494,11 +488,11 @@ export default function ProfilePage() {
     try {
       setDeleting(id)
       await deleteSpecialization(id)
-      toast.success(t('toasts.specializationDeleted'))
+      setToastData({ message: t('toasts.specializationDeleted'), type: 'success' })
       loadProfile()
     } catch (error) {
       console.error('Failed to delete specialization:', error)
-      toast.error(t('toasts.specializationDeleteError'))
+      setToastData({ message: t('toasts.specializationDeleteError'), type: 'error' })
     } finally {
       setDeleting(null)
     }
@@ -509,7 +503,7 @@ export default function ProfilePage() {
       try {
         await navigator.clipboard.writeText(profile.trainer.profilePublicUrl)
         setCopied(true)
-        toast.success(t('toasts.linkCopied'))
+        setToastData({ message: t('toasts.linkCopied'), type: 'success' })
         setTimeout(() => setCopied(false), 2000)
       } catch (error) {
         console.error('Failed to copy:', error)
@@ -523,12 +517,12 @@ export default function ProfilePage() {
       await updateTrainerProfile({
         location: editLocation,
       })
-      toast.success(t('toasts.locationUpdated'))
+      setToastData({ message: t('toasts.locationUpdated'), type: 'success' })
       setShowEditLocationModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update location:', error)
-      toast.error(t('toasts.locationUpdateError'))
+      setToastData({ message: t('toasts.locationUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -538,12 +532,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       // Note: Phone update might need to be added to backend API
-      toast.success(t('toasts.phoneUpdated'))
+      setToastData({ message: t('toasts.phoneUpdated'), type: 'success' })
       setShowEditPhoneModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update phone:', error)
-      toast.error(t('toasts.phoneUpdateError'))
+      setToastData({ message: t('toasts.phoneUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -555,12 +549,12 @@ export default function ProfilePage() {
       await updateTrainerProfile({
         experienceYears: parseInt(editExperienceYears) || 0,
       })
-      toast.success(t('toasts.experienceUpdated'))
+      setToastData({ message: t('toasts.experienceUpdated'), type: 'success' })
       setShowEditExperienceModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update experience:', error)
-      toast.error(t('toasts.experienceUpdateError'))
+      setToastData({ message: t('toasts.experienceUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -570,12 +564,12 @@ export default function ProfilePage() {
     try {
       setSaving(true)
       // Note: Gender update might need to be added to backend API
-      toast.success(t('toasts.genderUpdated'))
+      setToastData({ message: t('toasts.genderUpdated'), type: 'success' })
       setShowEditGenderModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update gender:', error)
-      toast.error(t('toasts.genderUpdateError'))
+      setToastData({ message: t('toasts.genderUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -587,12 +581,12 @@ export default function ProfilePage() {
 
     // Validate file
     if (!file.type.startsWith('image/')) {
-      toast.error(t('toasts.avatarSelectImage'))
+      setToastData({ message: t('toasts.avatarSelectImage'), type: 'error' })
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(t('toasts.avatarSizeLimit'))
+      setToastData({ message: t('toasts.avatarSizeLimit'), type: 'error' })
       return
     }
 
@@ -616,11 +610,11 @@ export default function ProfilePage() {
         }))
       }
       
-      toast.success(t('toasts.avatarUpdated'))
+      setToastData({ message: t('toasts.avatarUpdated'), type: 'success' })
       await loadProfile()
     } catch (error) {
       console.error('Failed to upload avatar:', error)
-      toast.error(t('toasts.avatarUploadError'))
+      setToastData({ message: t('toasts.avatarUploadError'), type: 'error' })
     } finally {
       setUploadingAvatar(false)
     }
@@ -646,10 +640,10 @@ export default function ProfilePage() {
         }))
       }
 
-      toast.success(t('toasts.avatarDeleted'))
+      setToastData({ message: t('toasts.avatarDeleted'), type: 'success' })
     } catch (error) {
       console.error('Failed to delete avatar:', error)
-      toast.error(t('toasts.avatarDeleteError'))
+      setToastData({ message: t('toasts.avatarDeleteError'), type: 'error' })
     } finally {
       setDeletingAvatar(false)
     }
@@ -664,12 +658,12 @@ export default function ProfilePage() {
         experienceYears: editExperienceYears ? parseInt(editExperienceYears) : undefined,
         location: editLocation || undefined
       })
-      toast.success(t('toasts.profileUpdated'))
+      setToastData({ message: t('toasts.profileUpdated'), type: 'success' })
       setShowEditProfileModal(false)
       loadProfile()
     } catch (error) {
       console.error('Failed to update profile:', error)
-      toast.error(t('toasts.profileUpdateError'))
+      setToastData({ message: t('toasts.profileUpdateError'), type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -686,16 +680,11 @@ export default function ProfilePage() {
       storeDispatch({ type: 'REMOVE_POST', postId })
       setPostIds(prev => prev.filter(id => id !== postId))
       setSelectedPostId(null)
-      toast.success(tp('deleted'))
+      setToastData({ message: tp('deleted'), type: 'success' })
     } catch (error) {
-      if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
-        toast.success(tp('deleted'))
-        storeDispatch({ type: 'REMOVE_POST', postId })
-        setPostIds(prev => prev.filter(id => id !== postId))
-      } else {
-        const message = error instanceof Error ? error.message : tp('deleteError')
-        toast.error(message)
-      }
+      console.error('[Delete] Failed to delete post:', postId, error)
+      const message = error instanceof Error ? error.message : tp('deleteError')
+      setToastData({ message, type: 'error' })
     } finally {
       setDeletingPostId(null)
     }
@@ -721,7 +710,7 @@ export default function ProfilePage() {
     )
   }
 
-  const { trainer, about, certificates, achievements, specializations } = profile
+  const { trainer, about, certificates, achievements = [], specializations } = profile
 
   return (
     <>
@@ -1085,7 +1074,7 @@ export default function ProfilePage() {
               <div>
                 <div className="grid grid-cols-3 gap-2 p-2">
                   {postIds.map((id) => (
-                    <TrainerGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} currentUserId={profile?.trainer?.userId} />
+                    <TrainerGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                   ))}
                 </div>
                 {(isLoadingPosts || postsHasMore) && (
@@ -1100,7 +1089,7 @@ export default function ProfilePage() {
                   <PostCard
                     key={id}
                     postId={id}
-                    currentUserId={profile?.trainer?.userId}
+                    isOwnProfile
                     showDeleteInHeader
                     onDelete={handleDeletePost}
                     deletingPostId={deletingPostId}
@@ -1700,12 +1689,21 @@ export default function ProfilePage() {
 
       {/* Post Detail Modal */}
       {selectedPostId && (
-        <TrainerPostDetailModal postId={selectedPostId} onClose={() => setSelectedPostId(null)} onDelete={handleDeletePost} deletingPostId={deletingPostId} currentUserId={profile?.trainer?.userId} />
+        <TrainerPostDetailModal postId={selectedPostId} onClose={() => setSelectedPostId(null)} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
       )}
 
       {/* Photo Lightbox */}
       {viewingPhoto && (
         <PhotoLightbox imageUrl={viewingPhoto.url} caption={viewingPhoto.caption} onClose={() => setViewingPhoto(null)} />
+      )}
+
+      {/* Toast Notifications */}
+      {toastData && (
+        <Toast
+          message={toastData.message}
+          type={toastData.type}
+          onClose={() => setToastData(null)}
+        />
       )}
     </>
   )

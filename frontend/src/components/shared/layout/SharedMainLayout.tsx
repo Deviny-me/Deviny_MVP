@@ -11,6 +11,7 @@ interface SharedMainLayoutProps {
   rightSidebar?: ReactNode
   showLeftSidebar?: boolean
   showRightSidebar?: boolean
+  accentColor?: 'orange' | 'green'
   className?: string
 }
 
@@ -25,6 +26,7 @@ export function SharedMainLayout({
   rightSidebar,
   showLeftSidebar = true, 
   showRightSidebar = true,
+  accentColor = 'orange',
   className,
 }: SharedMainLayoutProps) {
   return (
@@ -36,7 +38,7 @@ export function SharedMainLayout({
           {/* Left Sidebar */}
           {showLeftSidebar && (
             <div className="hidden lg:block">
-              <SharedLeftSidebar sections={leftSidebarSections} />
+              <SharedLeftSidebar sections={leftSidebarSections} accentColor={accentColor} />
             </div>
           )}
 

@@ -207,7 +207,7 @@ public class UserPostRepository : IUserPostRepository
     {
         // Use direct SQL for faster execution (avoids updating all columns)
         await _context.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE UserPosts SET IsDeleted = 1, UpdatedAt = {DateTime.UtcNow} WHERE Id = {post.Id}",
+            $"UPDATE \"UserPosts\" SET \"IsDeleted\" = true, \"UpdatedAt\" = {DateTime.UtcNow} WHERE \"Id\" = {post.Id}",
             cancellationToken);
     }
     
@@ -215,7 +215,7 @@ public class UserPostRepository : IUserPostRepository
     {
         // Soft delete all reposts of this post
         await _context.Database.ExecuteSqlInterpolatedAsync(
-            $"UPDATE UserPosts SET IsDeleted = 1, UpdatedAt = {DateTime.UtcNow} WHERE OriginalPostId = {originalPostId} AND IsDeleted = 0",
+            $"UPDATE \"UserPosts\" SET \"IsDeleted\" = true, \"UpdatedAt\" = {DateTime.UtcNow} WHERE \"OriginalPostId\" = {originalPostId} AND \"IsDeleted\" = false",
             cancellationToken);
     }
     

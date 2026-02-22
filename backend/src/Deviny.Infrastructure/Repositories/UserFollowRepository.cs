@@ -37,6 +37,15 @@ public class UserFollowRepository : IUserFollowRepository
             .CountAsync(uf => uf.TrainerId == trainerId);
     }
 
+    public async Task<List<Guid>> GetFollowerIdsAsync(Guid trainerId, CancellationToken ct = default)
+    {
+        return await _context.UserFollows
+            .AsNoTracking()
+            .Where(uf => uf.TrainerId == trainerId)
+            .Select(uf => uf.FollowerId)
+            .ToListAsync(ct);
+    }
+
     public async Task AddAsync(UserFollow userFollow)
     {
         await _context.UserFollows.AddAsync(userFollow);

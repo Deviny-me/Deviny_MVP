@@ -1,0 +1,103 @@
+'use client'
+
+import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { 
+  User,
+  LogOut,
+  ChevronRight,
+} from 'lucide-react'
+import { useAuth } from '@/features/auth/AuthContext'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { fetchNutritionistProfile } from '@/lib/api/nutritionistProfileApi'
+import { TrainerProfileResponse } from '@/types/trainerProfile'
+
+export default function SettingsPage() {
+  const { logout } = useAuth()
+  const router = useRouter()
+  const t = useTranslations('settings')
+  const tc = useTranslations('common')
+  const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadProfile()
+  }, [])
+
+  const loadProfile = async () => {
+    try {
+      setLoading(true)
+      const data = await fetchNutritionistProfile()
+      setProfile(data)
+    } catch (error) {
+      console.error('Failed to load profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/auth/login')
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-400">{tc('loading')}</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-6 pb-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+        <p className="text-gray-400">{t('description')}</p>
+      </div>
+
+      {/* Account Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+      >
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+          <User className="w-5 h-5 text-[#22c55e]" />
+          <h2 className="font-semibold text-white">{t('account')}</h2>
+        </div>
+        <div className="divide-y divide-white/5">
+          <button 
+            onClick={() => router.push('/nutritionist/profile')}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5"
+          >
+            <div>
+              <p className="text-white">{t('editProfile')}</p>
+              <p className="text-sm text-gray-400">{profile?.trainer?.fullName}</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Logout */}
+      <motion.button
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        onClick={handleLogout}
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl transition-all"
+      >
+        <LogOut className="w-5 h-5" />
+        <span className="font-medium">{tc('logout')}</span>
+      </motion.button>
+
+      {/* Version */}
+      <p className="text-center text-xs text-gray-500">
+        Deviny v1.0.0
+      </p>
+    </div>
+  )
+}

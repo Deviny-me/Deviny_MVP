@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
+import { UnreadNotificationsProvider } from '@/contexts/UnreadNotificationsContext'
 import { TrainerAchievementBridge } from '@/components/trainer/TrainerAchievementBridge'
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
@@ -45,8 +46,8 @@ export default function TrainerDashboardLayout({
       const payload = JSON.parse(atob(token.split('.')[1]))
       const role = payload.role ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
       
-      // Allow both Trainers and Nutritionists to access this dashboard
-      const allowedRoles = ['Trainer', '1', 'Nutritionist', '3']
+      // Only allow Trainers to access this dashboard
+      const allowedRoles = ['Trainer', '1']
       if (!allowedRoles.includes(role)) {
         router.push('/auth/login?role=trainer')
         return
@@ -72,11 +73,15 @@ export default function TrainerDashboardLayout({
     <ThemeProvider>
       <LanguageProvider>
         <UnreadMessagesProvider>
-          <LevelProvider>
-            <MainLayout showRightSidebar={showRightSidebar}>
-              {children}
-            </MainLayout>
-          </LevelProvider>
+          <UnreadNotificationsProvider>
+            <LevelProvider>
+              <TrainerAchievementBridge>
+                <MainLayout showRightSidebar={showRightSidebar}>
+                  {children}
+                </MainLayout>
+              </TrainerAchievementBridge>
+            </LevelProvider>
+          </UnreadNotificationsProvider>
         </UnreadMessagesProvider>
       </LanguageProvider>
     </ThemeProvider>

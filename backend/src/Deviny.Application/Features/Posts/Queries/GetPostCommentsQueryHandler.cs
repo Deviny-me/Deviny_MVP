@@ -48,7 +48,8 @@ public class GetPostCommentsQueryHandler : IRequestHandler<GetPostCommentsQuery,
                 FirstName = c.User.FirstName,
                 LastName = c.User.LastName,
                 AvatarUrl = c.User.AvatarUrl,
-                Slug = c.User.Slug
+                Slug = c.User.Slug,
+                Role = c.User.Role
             },
             Content = c.Content,
             CreatedAt = c.CreatedAt,

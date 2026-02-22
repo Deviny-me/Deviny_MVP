@@ -38,10 +38,12 @@ public class GetIncomingRequestsQueryHandler : IRequestHandler<GetIncomingReques
             SenderEmail = r.Sender.Email,
             SenderFullName = r.Sender.FullName,
             SenderAvatar = r.Sender.AvatarUrl,
+            SenderRole = r.Sender.Role.ToString(),
             ReceiverId = r.ReceiverId,
             ReceiverEmail = r.Receiver.Email,
             ReceiverFullName = r.Receiver.FullName,
             ReceiverAvatar = r.Receiver.AvatarUrl,
+            ReceiverRole = r.Receiver.Role.ToString(),
             Status = r.Status,
             CreatedAt = r.CreatedAt,
             RespondedAt = r.RespondedAt

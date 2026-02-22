@@ -26,6 +26,7 @@ export function TrainerHomeFeed() {
   const t = useTranslations('feed')
   const tp = useTranslations('posts')
   const tc = useTranslations('common')
+  const tNav = useTranslations('nav')
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
   const { user } = useAuth()
@@ -57,7 +58,7 @@ export function TrainerHomeFeed() {
   }
   
   // Derived values from profile
-  const trainerName = profile?.trainer?.fullName || (isNutritionist ? 'Nutritionist' : 'Trainer')
+  const trainerName = profile?.trainer?.fullName || tNav(isNutritionist ? 'nutritionist' : 'trainer')
   const trainerInitials = profile?.trainer?.initials || trainerName.charAt(0)
   const avatarUrl = getMediaUrl(profile?.trainer?.avatarUrl)
   
@@ -100,14 +101,9 @@ export function TrainerHomeFeed() {
       setFeedPostIds(prev => prev.filter(id => id !== postId))
       setToast({ message: tp('deleted'), type: 'success' })
     } catch (error) {
-      if (error instanceof Error && error.message.toLowerCase().includes('not found')) {
-        dispatch({ type: 'REMOVE_POST', postId })
-        setFeedPostIds(prev => prev.filter(id => id !== postId))
-        setToast({ message: tp('deleted'), type: 'success' })
-      } else {
-        const message = error instanceof Error ? error.message : tp('deleteError')
-        setToast({ message, type: 'error' })
-      }
+      console.error('[Delete] Failed to delete post:', postId, error)
+      const message = error instanceof Error ? error.message : tp('deleteError')
+      setToast({ message, type: 'error' })
     } finally {
       setDeletingPostId(null)
     }
@@ -235,7 +231,7 @@ export function TrainerHomeFeed() {
             <PostCard
               key={id}
               postId={id}
-              currentUserId={profile?.trainer?.userId}
+              currentUserId={user?.id}
               showDeleteInHeader
               onDelete={handleDeletePost}
               deletingPostId={deletingPostId}
@@ -254,16 +250,6 @@ export function TrainerHomeFeed() {
           <h3 className="text-lg font-semibold text-white mb-2">{t('noPosts')}</h3>
           <p className="text-sm text-gray-400">{t('noPostsDescription')}</p>
         </div>
-      )}
-
-      {/* Modals */}
-      {showAchievementModal && (
-        <ComingSoonModal 
-          onClose={() => setShowAchievementModal(false)}
-          title={tc('comingSoon')}
-          message={t('achievementComingSoon')}
-          icon={<Award className="w-8 h-8 text-amber-500" />}
-        />
       )}
 
       {/* Photo Lightbox */}

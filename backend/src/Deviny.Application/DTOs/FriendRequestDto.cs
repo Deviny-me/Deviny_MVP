@@ -9,10 +9,12 @@ public class FriendRequestDto
     public string SenderEmail { get; set; } = string.Empty;
     public string? SenderFullName { get; set; }
     public string? SenderAvatar { get; set; }
+    public string? SenderRole { get; set; }
     public Guid ReceiverId { get; set; }
     public string ReceiverEmail { get; set; } = string.Empty;
     public string? ReceiverFullName { get; set; }
     public string? ReceiverAvatar { get; set; }
+    public string? ReceiverRole { get; set; }
     public FriendRequestStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? RespondedAt { get; set; }

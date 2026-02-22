@@ -10,8 +10,10 @@ import {
   Play
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function LiveWorkoutsPage() {
+  const accent = useAccentColors()
   const t = useTranslations('live')
   const tc = useTranslations('common')
   return (
@@ -31,10 +33,10 @@ export default function LiveWorkoutsPage() {
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
           >
             {/* Glowing background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-[#FF0844] rounded-full blur-2xl opacity-30 animate-pulse" />
+            <div className={`absolute inset-0 bg-gradient-to-br ${accent.gradient} rounded-full blur-2xl opacity-30 animate-pulse`} />
             
             {/* Main circle */}
-            <div className="relative w-full h-full bg-gradient-to-br from-red-500 to-[#FF0844] rounded-full flex items-center justify-center">
+            <div className={`relative w-full h-full bg-gradient-to-br ${accent.gradient} rounded-full flex items-center justify-center`}>
               <Radio className="w-16 h-16 text-white" />
             </div>
             
@@ -62,7 +64,7 @@ export default function LiveWorkoutsPage() {
             transition={{ delay: 0.4 }}
           >
             Live Workouts{' '}
-            <span className="bg-gradient-to-r from-red-500 to-[#FF0844] bg-clip-text text-transparent">
+            <span className={`bg-gradient-to-r ${accent.gradient} bg-clip-text text-transparent`}>
               {tc('comingSoon')}
             </span>
           </motion.h1>
@@ -93,8 +95,8 @@ export default function LiveWorkoutsPage() {
             </div>
             
             <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
-              <div className="w-10 h-10 bg-[#FF6B35]/10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Users className="w-5 h-5 text-[#FF6B35]" />
+              <div className={`w-10 h-10 ${accent.bgMuted} rounded-lg flex items-center justify-center mx-auto mb-3`}>
+                <Users className={`w-5 h-5 ${accent.text}`} />
               </div>
               <h3 className="text-white font-medium mb-1">{t('groups')}</h3>
               <p className="text-xs text-gray-500">{t('groupsDesc')}</p>
@@ -111,7 +113,7 @@ export default function LiveWorkoutsPage() {
 
           {/* Notify button */}
           <motion.button
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-[#FF0844] text-white font-medium rounded-xl hover:opacity-90 transition-opacity"
+            className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${accent.gradient} text-white font-medium rounded-xl hover:opacity-90 transition-opacity`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}

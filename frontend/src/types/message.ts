@@ -4,6 +4,7 @@ export interface PeerUserDto {
   id: string
   fullName: string
   avatarUrl: string | null
+  role?: string | null
 }
 
 export interface ReplyDto {
@@ -18,6 +19,7 @@ export interface MessageDto {
   senderId: string
   senderName: string
   senderAvatarUrl: string | null
+  senderRole?: string | null
   text: string
   attachmentUrl: string | null
   attachmentFileName: string | null

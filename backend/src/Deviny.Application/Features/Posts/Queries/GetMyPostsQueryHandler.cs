@@ -126,7 +126,8 @@ public class GetMyPostsQueryHandler
                 FirstName = post.User.FirstName,
                 LastName = post.User.LastName,
                 AvatarUrl = post.User.AvatarUrl,
-                Slug = post.User.Slug
+                Slug = post.User.Slug,
+                Role = post.User.Role
             } : null,
             Type = post.Type,
             Caption = post.Caption,

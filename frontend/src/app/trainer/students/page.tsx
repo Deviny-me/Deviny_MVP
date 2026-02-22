@@ -16,8 +16,10 @@ import {
 } from 'lucide-react'
 import { studentsApi, Student } from '@/lib/api/studentsApi'
 import { getMediaUrl } from '@/lib/config'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function StudentsPage() {
+  const accent = useAccentColors()
   const t = useTranslations('students')
   const tc = useTranslations('common')
   const [students, setStudents] = useState<Student[]>([])
@@ -71,7 +73,7 @@ export default function StudentsPage() {
     return (
       <>
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
         </div>
       </>
     )
@@ -92,8 +94,8 @@ export default function StudentsPage() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#FF6B35]/20 to-[#FF0844]/20 flex items-center justify-center">
-                <Users className="w-5 h-5 text-[#FF6B35]" />
+              <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${accent.gradientBg20} flex items-center justify-center`}>
+                <Users className={`w-5 h-5 ${accent.text}`} />
               </div>
               <div>
                 <p className="text-2xl font-bold text-white">{students.length}</p>
@@ -133,7 +135,7 @@ export default function StudentsPage() {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#1A1A1A]/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35] transition-colors"
+            className={`w-full pl-12 pr-4 py-3 bg-[#1A1A1A]/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder} transition-colors`}
           />
         </div>
 
@@ -168,7 +170,7 @@ export default function StudentsPage() {
                         className="w-12 h-12 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center text-white font-bold">
+                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
                         {getInitials(student.name)}
                       </div>
                     )}
@@ -196,7 +198,7 @@ export default function StudentsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button className="flex-1 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                  <button className={`flex-1 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}>
                     <MessageCircle className="w-4 h-4" />
                     {t('write')}
                   </button>
