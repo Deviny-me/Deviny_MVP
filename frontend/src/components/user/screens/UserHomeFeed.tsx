@@ -131,7 +131,7 @@ export function UserHomeFeed() {
       {/* Create Post Card */}
       <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
             <span className="text-white font-bold text-lg">
               {user?.fullName?.charAt(0) || 'U'}
             </span>
@@ -147,7 +147,7 @@ export function UserHomeFeed() {
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
           <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
-            <Loader2 className="w-4 h-4 text-[#FF6B35] animate-spin" />
+            <Loader2 className="w-4 h-4 text-[#3B82F6] animate-spin" />
             <span className="text-sm text-gray-400">{uploadProgress}</span>
           </div>
         )}
@@ -158,7 +158,7 @@ export function UserHomeFeed() {
             disabled={isUploading}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ImageIcon className="w-5 h-5 text-[#FF6B35]" strokeWidth={1.5} />
+            <ImageIcon className="w-5 h-5 text-[#3B82F6]" strokeWidth={1.5} />
             <span className="text-sm font-medium text-gray-300">{tf('photo')}</span>
           </button>
           <button 

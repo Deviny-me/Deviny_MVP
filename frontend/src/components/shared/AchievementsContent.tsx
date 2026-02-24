@@ -3,21 +3,20 @@
 import { useEffect, useState } from 'react'
 import { Trophy, Lock, Award, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import { getMyAchievements } from '@/lib/api/achievementApi'
 import type { AchievementDto, MyAchievementsResponse } from '@/types/achievement'
 import { getIcon, getGradient, getRarityBorder, getRarityGlow, getRarityLabelColor } from '@/components/shared/achievementUtils'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function AchievementsContent() {
   const [data, setData] = useState<MyAchievementsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const t = useTranslations('achievements')
-  const pathname = usePathname()
-  const isNutritionist = pathname?.startsWith('/nutritionist')
-  const accentGradient = isNutritionist ? 'from-[#22c55e] to-[#16a34a]' : 'from-[#FF6B35] to-[#FF0844]'
-  const accentText = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
-  const spinnerColor = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
+  const accent = useAccentColors()
+  const accentGradient = accent.gradient
+  const accentText = accent.text
+  const spinnerColor = accent.loader
 
   useEffect(() => {
     getMyAchievements()

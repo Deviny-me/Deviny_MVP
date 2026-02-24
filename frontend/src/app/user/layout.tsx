@@ -64,7 +64,7 @@ export default function UserDashboardLayout({
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
       </div>
     )
   }

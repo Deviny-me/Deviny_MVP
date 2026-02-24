@@ -126,14 +126,14 @@ export default function FriendsPage() {
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`px-4 py-3 font-medium transition-all flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? 'text-[#FF6B35] border-b-2 border-[#FF6B35]'
+                  ? 'text-[#3B82F6] border-b-2 border-[#3B82F6]'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               <tab.icon className="w-5 h-5" />
               {tab.label}
               {tab.count > 0 && (
-                <span className="bg-[#FF6B35]/20 text-[#FF6B35] text-xs font-semibold px-2 py-0.5 rounded-full">
+                <span className="bg-[#3B82F6]/20 text-[#3B82F6] text-xs font-semibold px-2 py-0.5 rounded-full">
                   {tab.count}
                 </span>
               )}
@@ -144,7 +144,7 @@ export default function FriendsPage() {
         {/* Content */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FF6B35]" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#3B82F6]" />
           </div>
         ) : (
           <div className="space-y-3">
@@ -162,7 +162,7 @@ export default function FriendsPage() {
                       key={friend.id}
                       className="flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-white/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center text-white font-bold">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center text-white font-bold">
                         {friend.fullName?.[0] || friend.email[0].toUpperCase()}
                       </div>
                       <div className="flex-1">
@@ -269,7 +269,7 @@ export default function FriendsPage() {
                           {request.receiverFullName || request.receiverEmail}
                         </h3>
                         <p className="text-sm text-gray-400">{request.receiverEmail}</p>
-                        <span className="text-xs text-[#FF6B35]">{t('pending')}</span>
+                        <span className="text-xs text-[#3B82F6]">{t('pending')}</span>
                       </div>
                       <button
                         onClick={() => handleCancelRequest(request.id)}

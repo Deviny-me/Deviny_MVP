@@ -33,11 +33,7 @@ export default function ExpertsPage() {
         setIsLoading(true)
         setError(null)
         const data = await trainersApi.getAll()
-        // Put current user first
-        const sorted = currentUser?.id
-          ? [...data].sort((a, b) => (a.userId === currentUser.id ? -1 : b.userId === currentUser.id ? 1 : 0))
-          : data
-        setTrainers(sorted)
+        setTrainers(data)
       } catch (err) {
         console.error('Failed to fetch trainers:', err)
         setError(t('failedToLoad'))
@@ -75,7 +71,7 @@ export default function ExpertsPage() {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
+            className="w-full px-4 py-3 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/50 transition-colors"
           />
         </div>
 
@@ -105,7 +101,7 @@ export default function ExpertsPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
           </div>
         )}
 
@@ -119,7 +115,7 @@ export default function ExpertsPage() {
             <p className="text-sm text-gray-400">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-[#FF6B35] text-white rounded-lg text-sm"
+              className="mt-4 px-4 py-2 bg-[#3B82F6] text-white rounded-lg text-sm"
             >
               {tc('tryAgain')}
             </button>

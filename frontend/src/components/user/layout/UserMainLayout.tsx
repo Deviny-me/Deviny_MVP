@@ -26,6 +26,7 @@ export function UserMainLayout({
       rightSidebar={<UserRightSidebar />}
       showLeftSidebar={showLeftSidebar}
       showRightSidebar={showRightSidebar}
+      accentColor="blue"
     >
       {children}
     </SharedMainLayout>

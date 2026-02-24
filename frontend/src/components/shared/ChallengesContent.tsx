@@ -3,21 +3,20 @@
 import { useEffect, useState } from 'react'
 import { Target, CheckCircle2, Loader2, Trophy } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import { getMyChallenges } from '@/lib/api/achievementApi'
 import type { MyChallengesResponse, UserChallengeProgressDto } from '@/types/achievement'
 import { getIcon, getGradient } from '@/components/shared/achievementUtils'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function ChallengesContent() {
   const [data, setData] = useState<MyChallengesResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const t = useTranslations('challenges')
-  const pathname = usePathname()
-  const isNutritionist = pathname?.startsWith('/nutritionist')
-  const accentGradient = isNutritionist ? 'from-[#22c55e] to-[#16a34a]' : 'from-[#FF6B35] to-[#FF0844]'
-  const accentIcon = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
-  const spinnerColor = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
+  const accent = useAccentColors()
+  const accentGradient = accent.gradient
+  const accentIcon = accent.text
+  const spinnerColor = accent.loader
 
   useEffect(() => {
     getMyChallenges()

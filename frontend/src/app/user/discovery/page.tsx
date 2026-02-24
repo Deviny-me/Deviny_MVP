@@ -31,15 +31,15 @@ export default function DiscoveryPage() {
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50 transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/50 transition-colors"
             />
           </div>
         </div>
 
         {/* Empty State */}
         <div className="text-center py-20">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#FF6B35]/20 to-[#FF0844]/20 flex items-center justify-center">
-            <Globe className="w-10 h-10 text-[#FF6B35]" />
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 flex items-center justify-center">
+            <Globe className="w-10 h-10 text-[#3B82F6]" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">{t('globalFeedTitle')}</h3>
           <p className="text-sm text-gray-400 max-w-md mx-auto">

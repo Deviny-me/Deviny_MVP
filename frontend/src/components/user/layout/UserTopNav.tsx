@@ -56,7 +56,7 @@ export function UserTopNav() {
               onClick={() => router.push('/user')}
               className="flex items-center gap-2 flex-shrink-0"
             >
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
                 <Flame className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
             </button>
@@ -75,9 +75,9 @@ export function UserTopNav() {
                   onClick={() => router.push(item.path)}
                   className={`relative flex flex-col items-center justify-center px-6 py-2 rounded transition-colors ${
                     isActive(item.path)
-                      ? 'text-[#FF6B35]'
+                      ? 'text-[#3B82F6]'
                       : hasUnread
-                      ? 'text-[#FF0844] hover:text-[#FF0844]'
+                      ? 'text-[#2563EB] hover:text-[#2563EB]'
                       : 'text-gray-400 hover:text-white'
                   }`}
                   title={item.label}
@@ -85,10 +85,10 @@ export function UserTopNav() {
                   <item.icon className="w-6 h-6" strokeWidth={1.5} />
                   <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
                   {isActive(item.path) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FF6B35]" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#3B82F6]" />
                   )}
                   {item.badge !== undefined && item.badge > 0 && (
-                    <div className="absolute top-1 right-4 w-4 h-4 bg-[#FF0844] rounded-full flex items-center justify-center animate-pulse">
+                    <div className="absolute top-1 right-4 w-4 h-4 bg-[#2563EB] rounded-full flex items-center justify-center animate-pulse">
                       <span className="text-[10px] font-bold text-white">{item.badge}</span>
                     </div>
                   )}
@@ -112,7 +112,7 @@ export function UserTopNav() {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 p-1 pr-3 rounded hover:bg-white/5 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
                   <span className="text-white text-sm font-bold">
                     {user?.fullName?.charAt(0) || 'U'}
                   </span>
@@ -135,7 +135,7 @@ export function UserTopNav() {
                   <div className="absolute right-0 top-full mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
                     <div className="p-4 border-b border-white/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
                           <span className="text-white text-lg font-bold">
                             {user?.fullName?.charAt(0) || 'U'}
                           </span>
@@ -150,7 +150,7 @@ export function UserTopNav() {
                           router.push('/user/profile')
                           setShowProfileMenu(false)
                         }}
-                        className="mt-3 w-full py-1.5 border border-[#FF6B35] text-[#FF6B35] rounded-lg text-sm font-semibold hover:bg-[#FF6B35]/10 transition-colors"
+                        className="mt-3 w-full py-1.5 border border-[#3B82F6] text-[#3B82F6] rounded-lg text-sm font-semibold hover:bg-[#3B82F6]/10 transition-colors"
                       >
                         {t('viewProfile')}
                       </button>

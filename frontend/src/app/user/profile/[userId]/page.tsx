@@ -420,7 +420,7 @@ function OtherUserProfilePageInner() {
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Grid className="w-5 h-5 text-[#FF6B35]" />
+              <Grid className="w-5 h-5 text-[#3B82F6]" />
               <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
               {totalPosts > 0 && (
                 <span className="text-xs text-gray-500">({totalPosts})</span>
@@ -431,7 +431,7 @@ function OtherUserProfilePageInner() {
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white/10 text-[#FF6B35]'
+                    ? 'bg-white/10 text-[#3B82F6]'
                     : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
@@ -441,7 +441,7 @@ function OtherUserProfilePageInner() {
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'list'
-                    ? 'bg-white/10 text-[#FF6B35]'
+                    ? 'bg-white/10 text-[#3B82F6]'
                     : 'text-gray-500 hover:text-gray-300'
                 }`}
               >
@@ -469,7 +469,7 @@ function OtherUserProfilePageInner() {
               </div>
               {(isLoading || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoading && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                  {isLoading && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
                 </div>
               )}
             </div>
@@ -486,7 +486,7 @@ function OtherUserProfilePageInner() {
               ))}
               {(isLoading || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoading && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                  {isLoading && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
                 </div>
               )}
             </div>
@@ -516,7 +516,7 @@ export default function OtherUserProfilePage() {
     <Suspense fallback={
       <>
         <div className="flex items-center justify-center min-h-[50vh]">
-          <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
         </div>
       </>
     }>
