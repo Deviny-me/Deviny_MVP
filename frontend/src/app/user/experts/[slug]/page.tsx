@@ -82,7 +82,7 @@ export default function TrainerProfilePage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
           </div>
         )}
 
@@ -96,7 +96,7 @@ export default function TrainerProfilePage() {
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button
               onClick={() => router.push('/user/experts')}
-              className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {t('backToExperts')}
             </button>
@@ -373,7 +373,7 @@ export default function TrainerProfilePage() {
                 href={`${API_URL.replace('/api', '')}${selectedCertificate.fileUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`px-4 py-2 bg-gradient-to-r ${profile ? getAccentColorsByRole(profile.trainer.role).gradient : 'from-[#FF6B35] to-[#FF0844]'} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity`}
+                className={`px-4 py-2 bg-gradient-to-r ${profile ? getAccentColorsByRole(profile.trainer.role).gradient : 'from-[#3B82F6] to-[#2563EB]'} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity`}
               >
                 {t('openInNewTab')}
               </a>

@@ -10,11 +10,22 @@ public class UserController : BaseApiController
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IUserFollowRepository _userFollowRepository;
+    private readonly IUserAchievementRepository _userAchievementRepository;
+    private readonly IUserPostRepository _userPostRepository;
 
-    public UserController(IUserRepository userRepository, IPasswordHasher passwordHasher)
+    public UserController(
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher,
+        IUserFollowRepository userFollowRepository,
+        IUserAchievementRepository userAchievementRepository,
+        IUserPostRepository userPostRepository)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
+        _userFollowRepository = userFollowRepository;
+        _userAchievementRepository = userAchievementRepository;
+        _userPostRepository = userPostRepository;
     }
 
     [HttpGet("profile")]
@@ -26,8 +37,13 @@ public class UserController : BaseApiController
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new { message = "Пользователь не найден" });
+                return NotFound(new { message = "User not found" });
             }
+
+            // Fetch social stats
+            var followingList = await _userFollowRepository.GetFollowingAsync(userId);
+            var achievements = await _userAchievementRepository.GetByUserIdAsync(userId);
+            var postsCount = await _userPostRepository.GetCountByUserIdAsync(userId);
 
             return Ok(new
             {
@@ -43,12 +59,16 @@ public class UserController : BaseApiController
                 role = user.Role,
                 country = user.Country,
                 city = user.City,
-                gender = user.Gender?.ToString()
+                gender = user.Gender?.ToString(),
+                createdAt = user.CreatedAt,
+                followingCount = followingList.Count,
+                achievementsCount = achievements.Count,
+                postsCount = postsCount
             });
         }
         catch (Exception)
         {
-            return StatusCode(500, new { message = "Ошибка при получении профиля" });
+            return StatusCode(500, new { message = "Error getting profile" });
         }
     }
 
@@ -240,6 +260,47 @@ public class UserController : BaseApiController
         catch (Exception)
         {
             return StatusCode(500, new { message = "Ошибка при удалении аватара" });
+        }
+    }
+
+    /// <summary>Get a public profile for any user by their ID.</summary>
+    [HttpGet("/api/users/{userId:guid}/profile")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetPublicProfile(Guid userId)
+    {
+        try
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found" });
+            }
+
+            var followingList = await _userFollowRepository.GetFollowingAsync(userId);
+            var followerCount = await _userFollowRepository.GetFollowerCountAsync(userId);
+            var achievements = await _userAchievementRepository.GetByUserIdAsync(userId);
+            var postsCount = await _userPostRepository.GetPublicCountByUserIdAsync(userId);
+
+            return Ok(new
+            {
+                id = user.Id,
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                fullName = user.FullName,
+                avatarUrl = user.AvatarUrl ?? "",
+                role = user.Role,
+                country = user.Country,
+                city = user.City,
+                createdAt = user.CreatedAt,
+                followingCount = followingList.Count,
+                followersCount = followerCount,
+                achievementsCount = achievements.Count,
+                postsCount = postsCount
+            });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error getting user profile" });
         }
     }
 }

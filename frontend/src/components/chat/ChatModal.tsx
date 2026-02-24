@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { messagesApi } from '@/lib/api/messagesApi';
+import { chatConnection } from '@/lib/signalr/chatConnection';
 import { MessageDto } from '@/types/message';
 import { MEDIA_BASE_URL } from '@/lib/config';
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
@@ -27,10 +28,14 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const loadingRef = useRef(false);
+  const conversationIdRef = useRef<string | null>(null);
+
+  // Keep ref in sync
+  useEffect(() => { conversationIdRef.current = conversationId }, [conversationId])
 
   // Get current user ID from token
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -74,6 +79,41 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
     loadConversation();
   }, [otherUserId]);
 
+  // ─── SignalR: real-time message receiving ───
+  useEffect(() => {
+    const handleReceiveMessage = (msg: MessageDto) => {
+      const activeConvId = conversationIdRef.current
+      if (!activeConvId || msg.conversationId.toLowerCase() !== activeConvId.toLowerCase()) return
+
+      setMessages(prev => {
+        // Deduplicate (message may come from both REST response and SignalR broadcast)
+        if (prev.some(m => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
+
+      // Auto-mark as read if from other user
+      if (msg.senderId.toLowerCase() !== currentUserId) {
+        chatConnection.markRead(msg.conversationId).catch(() => {})
+      }
+    }
+
+    chatConnection.onReceiveMessage(handleReceiveMessage)
+    chatConnection.start().catch(console.error)
+
+    return () => {
+      chatConnection.off('ReceiveMessage', handleReceiveMessage)
+    }
+  }, [currentUserId])
+
+  // Join/leave conversation group for real-time messages
+  useEffect(() => {
+    if (!conversationId) return
+    chatConnection.joinConversation(conversationId).catch(() => {})
+    return () => {
+      chatConnection.leaveConversation(conversationId).catch(() => {})
+    }
+  }, [conversationId])
+
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,7 +131,11 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
       setNewMessage('');
 
       const message = await messagesApi.sendMessage(conversationId, { text });
-      setMessages((prev) => [...prev, message]);
+      // The message will also arrive via SignalR ReceiveMessage; deduplicate above handles it
+      setMessages((prev) => {
+        if (prev.some(m => m.id === message.id)) return prev
+        return [...prev, message]
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
       setNewMessage(text);

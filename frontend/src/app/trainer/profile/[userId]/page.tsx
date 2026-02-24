@@ -14,7 +14,7 @@ import {
 import { useRouter, useParams } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { postsApi } from '@/lib/api/postsApi'
-import { PostDto, MediaType } from '@/types/post'
+import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
 import { PostCard } from '@/components/posts/PostCard'
@@ -276,6 +276,7 @@ export default function OtherUserProfilePageTrainer() {
   const upsertPosts = useUpsertPosts()
   const t = useTranslations('posts')
   const tc = useTranslations('common')
+  const tp = useTranslations('profile')
   const { user: authUser } = useAuth()
 
   // Redirect to own profile if viewing self
@@ -298,13 +299,59 @@ export default function OtherUserProfilePageTrainer() {
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Derive profile info from the first post's author data
-  const firstPost = usePost(postIds[0] || '')
-  const profileAuthor = firstPost?.author
-  const authorName = profileAuthor?.fullName || `${profileAuthor?.firstName ?? ''} ${profileAuthor?.lastName ?? ''}`.trim() || tc('user')
-  const authorInitials = (profileAuthor?.firstName?.charAt(0) || 'U').toUpperCase()
-  const authorAvatar = profileAuthor?.avatarUrl
-  const profileAccent = getAccentColorsByRole(profileAuthor?.role)
+  // ─── Fetch user profile from API ───
+  const [profileData, setProfileData] = useState<{
+    fullName: string
+    firstName: string
+    avatarUrl: string | null
+    role: string | null
+    country: string | null
+    city: string | null
+    createdAt: string | null
+    followingCount: number
+    followersCount: number
+    achievementsCount: number
+    postsCount: number
+  } | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        setProfileLoading(true)
+        const response = await fetch(`/api/users/${userId}/profile`)
+        if (response.ok && !cancelled) {
+          const data = await response.json()
+          setProfileData({
+            fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || tc('user'),
+            firstName: data.firstName || '',
+            avatarUrl: data.avatarUrl || null,
+            role: data.role || null,
+            country: data.country || null,
+            city: data.city || null,
+            createdAt: data.createdAt || null,
+            followingCount: data.followingCount ?? 0,
+            followersCount: data.followersCount ?? 0,
+            achievementsCount: data.achievementsCount ?? 0,
+            postsCount: data.postsCount ?? 0,
+          })
+        }
+      } catch (err) {
+        console.error('Failed to load user profile:', err)
+      } finally {
+        if (!cancelled) setProfileLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [userId, tc])
+
+  const authorName = profileData?.fullName || tc('user')
+  const authorInitials = (profileData?.firstName?.charAt(0) || authorName?.charAt(0) || 'U').toUpperCase()
+  const authorAvatar = profileData?.avatarUrl ? getMediaUrl(profileData.avatarUrl) : null
+  const profileAccent = getAccentColorsByRole(profileData?.role)
+
   const loadPosts = useCallback(
     async (pageNum: number, append: boolean = false) => {
       // Abort previous request
@@ -380,7 +427,7 @@ export default function OtherUserProfilePageTrainer() {
                   <img
                     src={authorAvatar}
                     alt={authorName}
-                    className={`w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A] ${getRoleRingClass(profileAuthor?.role)}`}
+                    className={`w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A] ${getRoleRingClass(profileData?.role)}`}
                   />
                 ) : (
                   <div className={`w-24 h-24 rounded-xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
@@ -390,8 +437,13 @@ export default function OtherUserProfilePageTrainer() {
               </div>
               <div className="flex-1 pb-2">
                 <h1 className="text-xl font-bold text-white">{authorName}</h1>
-                {totalPosts > 0 && (
-                  <p className="text-sm text-gray-400">{totalPosts} {t('publications')}</p>
+                {(profileData?.postsCount ?? totalPosts) > 0 && (
+                  <p className="text-sm text-gray-400">{profileData?.postsCount ?? totalPosts} {t('publications')}</p>
+                )}
+                {profileData?.createdAt && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {tp('joined')} {new Date(profileData.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </p>
                 )}
               </div>
             </div>

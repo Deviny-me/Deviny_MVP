@@ -33,11 +33,7 @@ export default function NutritionistExpertsPage() {
     try {
       setLoading(true)
       const data = await trainersApi.getAll()
-      // Put current user first
-      const sorted = currentUser?.id
-        ? [...data].sort((a, b) => (a.userId === currentUser.id ? -1 : b.userId === currentUser.id ? 1 : 0))
-        : data
-      setTrainers(sorted)
+      setTrainers(data)
     } catch (error) {
       console.error('Failed to load experts:', error)
     } finally {
@@ -192,7 +188,7 @@ export default function NutritionistExpertsPage() {
                       </div>
                     )}
                   </div>
-                  {trainer.userId !== currentUser?.id && (
+                  {currentUser?.id && trainer.userId !== currentUser.id && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation()

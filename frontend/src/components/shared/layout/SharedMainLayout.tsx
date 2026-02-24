@@ -11,7 +11,7 @@ interface SharedMainLayoutProps {
   rightSidebar?: ReactNode
   showLeftSidebar?: boolean
   showRightSidebar?: boolean
-  accentColor?: 'orange' | 'green'
+  accentColor?: 'orange' | 'green' | 'blue'
   className?: string
 }
 

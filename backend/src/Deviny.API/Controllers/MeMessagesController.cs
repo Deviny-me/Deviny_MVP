@@ -66,15 +66,54 @@ public class ChatsController : BaseApiController
         return Ok(result);
     }
 
-    /// <summary>Send a message via REST (alternative to SignalR).</summary>
+    /// <summary>Send a message via REST (alternative to SignalR). Also broadcasts via SignalR for real-time delivery.</summary>
     [HttpPost("{conversationId}/messages")]
     public async Task<ActionResult<MessageDto>> SendMessage(
         Guid conversationId,
         [FromBody] SendMessageBodyDto body)
     {
+        var currentUserId = GetCurrentUserId();
         var result = await _mediator.Send(
-            new SendMessageCommand(GetCurrentUserId(), conversationId, body.Text, body.ReplyToMessageId,
+            new SendMessageCommand(currentUserId, conversationId, body.Text, body.ReplyToMessageId,
                 body.AttachmentUrl, body.AttachmentFileName, body.AttachmentContentType, body.AttachmentSize));
+
+        // Broadcast via SignalR so the other user gets real-time notification
+        try
+        {
+            // Push to conversation group (anyone with that conv open)
+            await _hubContext.Clients.Group($"conv:{conversationId}").SendAsync("ReceiveMessage", result);
+
+            // Push ConversationUpdated to each member's personal group
+            var members = await _mediator.Send(new GetConversationMembersQuery(conversationId));
+            foreach (var memberId in members)
+            {
+                var memberGroup = $"user:{memberId.ToString().ToLowerInvariant()}";
+                await _hubContext.Clients.Group(memberGroup).SendAsync("ConversationUpdated", new
+                {
+                    conversationId,
+                    lastMessageText = result.Text,
+                    lastMessageAt = result.CreatedAt,
+                    senderId = currentUserId,
+                    messageId = result.Id
+                });
+            }
+
+            // Update unread count for receiver(s)
+            var receiverId = members.FirstOrDefault(m => m != currentUserId);
+            if (receiverId != Guid.Empty)
+            {
+                var unreadCount = await _mediator.Send(new GetUnreadMessagesCountQuery(receiverId));
+                var receiverGroup = $"user:{receiverId.ToString().ToLowerInvariant()}";
+                await _hubContext.Clients.Group(receiverGroup).SendAsync("UnreadCountUpdated", new { totalUnreadCount = unreadCount });
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log but don't fail the request — message was already saved
+            var logger = HttpContext.RequestServices.GetService<ILogger<ChatsController>>();
+            logger?.LogWarning(ex, "Failed to broadcast message via SignalR for conv {ConvId}", conversationId);
+        }
+
         return Ok(result);
     }
 
