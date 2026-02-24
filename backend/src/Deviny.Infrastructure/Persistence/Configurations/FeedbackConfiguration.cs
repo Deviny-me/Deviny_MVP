@@ -10,6 +10,11 @@ namespace Deviny.Infrastructure.Persistence.Configurations
         {
             builder.Property(f => f.StarRating).HasPrecision(2, 1);
             builder.Property(f => f.RatingScore).HasColumnType("bigint");
+
+            builder.HasOne(f => f.User)
+                   .WithOne(t => t.Feedback)
+                   .HasForeignKey<Feedback>(f => f.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

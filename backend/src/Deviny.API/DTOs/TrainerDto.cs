@@ -1,3 +1,5 @@
+using Deviny.Domain.Entities;
+
 namespace Deviny.API.DTOs;
 
 public class TrainerDto
@@ -23,4 +25,5 @@ public class TrainerDto
     public required string Slug { get; set; }
     public required string ProfilePublicUrl { get; set; }
     public string? Role { get; set; }
+    public Feedback Feedback { get; set; } = new Feedback();
 }
