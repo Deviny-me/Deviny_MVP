@@ -487,7 +487,13 @@
     "createFirstTraining": "İlk məşq proqramınızı yaradın",
     "createFirstMeal": "İlk qidalanma proqramınızı yaradın",
     "totalTrainingPrograms": "Məşq proqramları",
-    "totalMealPrograms": "Qidalanma proqramları"
+    "totalMealPrograms": "Qidalanma proqramları",
+    "visibility": "Görünürlük",
+    "visibilityPublic": "İctimai",
+    "visibilityPrivate": "Gizli",
+    "visibilityPublicHint": "Proqramlar lentində hər kəsə görünür",
+    "visibilityPrivateHint": "Yalnız siz bu proqramı görə bilərsiniz",
+    "private": "Gizli"
   },
 
   "schedule": {

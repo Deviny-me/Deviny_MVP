@@ -9,6 +9,7 @@ public class CreateMealProgramRequest
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
     public decimal? ProPrice { get; set; }
+    public bool IsPublic { get; set; } = true;
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? Videos { get; set; }
 }
@@ -20,6 +21,7 @@ public class UpdateMealProgramRequest
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
     public decimal? ProPrice { get; set; }
+    public bool IsPublic { get; set; } = true;
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? Videos { get; set; }
 }

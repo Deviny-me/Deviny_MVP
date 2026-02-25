@@ -39,6 +39,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
         program.DetailedDescription = request.DetailedDescription;
         program.Price = request.Price;
         program.ProPrice = request.ProPrice;
+        program.IsPublic = request.IsPublic;
         program.UpdatedAt = DateTime.UtcNow;
 
         if (request.CoverImage != null)
@@ -151,6 +152,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             VideoUrls = videoPaths,
+            IsPublic = program.IsPublic,
             CreatedAt = program.CreatedAt,
             UpdatedAt = program.UpdatedAt
         };

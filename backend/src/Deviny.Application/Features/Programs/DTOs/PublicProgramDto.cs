@@ -19,4 +19,5 @@ public class PublicProgramDto
     public string TrainerName { get; set; } = string.Empty;
     public string TrainerAvatarUrl { get; set; } = string.Empty;
     public string TrainerSlug { get; set; } = string.Empty;
+    public string TrainerRole { get; set; } = string.Empty;
 }

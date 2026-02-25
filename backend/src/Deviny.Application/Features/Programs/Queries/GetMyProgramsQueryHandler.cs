@@ -36,6 +36,7 @@ public class GetMyProgramsQueryHandler : IRequestHandler<GetMyProgramsQuery, Lis
                 Code = p.Code,
                 CoverImageUrl = p.CoverImagePath,
                 TrainingVideoUrls = videoPaths,
+                IsPublic = p.IsPublic,
                 AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
                 TotalReviews = p.Reviews.Count,
                 TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),

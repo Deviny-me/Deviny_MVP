@@ -487,7 +487,13 @@
     "createFirstTraining": "Create your first training program",
     "createFirstMeal": "Create your first meal program",
     "totalTrainingPrograms": "Training programs",
-    "totalMealPrograms": "Meal programs"
+    "totalMealPrograms": "Meal programs",
+    "visibility": "Visibility",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Private",
+    "visibilityPublicHint": "Visible to everyone in the programs feed",
+    "visibilityPrivateHint": "Only you can see this program",
+    "private": "Private"
   },
 
   "schedule": {

@@ -11,6 +11,7 @@ public class MealProgramDto
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> VideoUrls { get; set; } = new();
+    public bool IsPublic { get; set; } = true;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
@@ -30,4 +31,5 @@ public class PublicMealProgramDto
     public string TrainerName { get; set; } = string.Empty;
     public string TrainerAvatarUrl { get; set; } = string.Empty;
     public string TrainerSlug { get; set; } = string.Empty;
+    public string TrainerRole { get; set; } = string.Empty;
 }

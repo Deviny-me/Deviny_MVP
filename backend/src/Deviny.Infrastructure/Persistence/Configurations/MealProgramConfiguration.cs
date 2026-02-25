@@ -42,6 +42,9 @@ public class MealProgramConfiguration : IEntityTypeConfiguration<MealProgram>
             .IsDescending(false, true)
             .HasDatabaseName("IX_MealPrograms_IsDeleted_CreatedAt");
 
+        builder.Property(p => p.IsPublic)
+            .HasDefaultValue(true);
+
         builder.Property(p => p.CoverImagePath)
             .IsRequired()
             .HasMaxLength(500);
