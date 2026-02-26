@@ -58,13 +58,14 @@ public class GetRelationshipStatusQueryHandler : IRequestHandler<GetRelationship
         var isFriend = await _friendRequestRepository.AreFriendsAsync(request.CurrentUserId, request.TargetUserId);
         dto.IsFriend = isFriend;
 
+        // If friends, get the accepted request to find FriendsSince
         if (isFriend)
         {
-            var friends = await _friendRequestRepository.GetFriendsAsync(request.CurrentUserId);
-            var friendship = friends.FirstOrDefault(f => f.Friend.Id == request.TargetUserId);
-            if (friendship.Friend != null)
+            var acceptedRequest = await _friendRequestRepository.GetAcceptedRequestBetweenUsersAsync(
+                request.CurrentUserId, request.TargetUserId);
+            if (acceptedRequest != null)
             {
-                dto.FriendsSince = friendship.FriendsSince;
+                dto.FriendsSince = acceptedRequest.RespondedAt ?? acceptedRequest.CreatedAt;
             }
         }
 

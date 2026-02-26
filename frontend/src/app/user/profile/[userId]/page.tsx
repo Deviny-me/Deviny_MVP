@@ -16,7 +16,6 @@ import {
   X,
   UserPlus,
   UserCheck,
-  UserX,
   UserMinus,
   Mail,
   Ban,

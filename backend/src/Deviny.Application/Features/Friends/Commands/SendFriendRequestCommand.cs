@@ -74,6 +74,16 @@ public class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequest
             existingRequest.RespondedAt = DateTime.UtcNow;
             await _friendRequestRepository.UpdateAsync(existingRequest);
 
+            // Notify the original sender that their request was accepted
+            await _mediator.Publish(new FriendRequestAcceptedEvent
+            {
+                RequestId = existingRequest.Id,
+                AcceptorId = sender.Id,
+                AcceptorName = sender.FullName,
+                AcceptorAvatar = sender.AvatarUrl,
+                OriginalSenderId = existingRequest.SenderId
+            }, cancellationToken);
+
             return new FriendRequestDto
             {
                 Id = existingRequest.Id,

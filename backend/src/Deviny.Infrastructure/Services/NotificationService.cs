@@ -104,9 +104,25 @@ public class NotificationService : INotificationService
         await _notificationRepository.AddRangeAsync(notifications, ct);
 
         // Push real-time notifications to each user
+        // Pre-fetch unread counts per unique user to avoid N+1 queries
+        var uniqueUserIds = notifications.Select(n => n.UserId).Distinct().ToList();
+        var unreadCounts = new Dictionary<Guid, int>();
         try
         {
-            foreach (var notification in notifications)
+            foreach (var uid in uniqueUserIds)
+            {
+                unreadCounts[uid] = await _notificationRepository.GetUnreadCountAsync(uid, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to pre-fetch unread counts");
+        }
+
+        // Send notifications in parallel per user
+        var sendTasks = notifications.Select(async notification =>
+        {
+            try
             {
                 await _realtimeNotifier.SendNotificationAsync(notification.UserId, new
                 {
@@ -120,14 +136,18 @@ public class NotificationService : INotificationService
                     createdAt = notification.CreatedAt
                 }, ct);
 
-                var unreadCount = await _notificationRepository.GetUnreadCountAsync(notification.UserId, ct);
-                await _realtimeNotifier.SendUnreadCountAsync(notification.UserId, unreadCount, ct);
+                if (unreadCounts.TryGetValue(notification.UserId, out var count))
+                {
+                    await _realtimeNotifier.SendUnreadCountAsync(notification.UserId, count, ct);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to push real-time notifications");
-        }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to push real-time notification to user {UserId}", notification.UserId);
+            }
+        });
+
+        await Task.WhenAll(sendTasks);
 
         _logger.LogInformation(
             "Created {Count} notifications of type {Type} for entity {EntityType}:{EntityId}",

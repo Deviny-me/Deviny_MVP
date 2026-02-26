@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { friendsApi, followsApi } from '@/lib/api/friendsApi';
 import { FriendDto, FriendRequestDto } from '@/types/friend';
-import { Users, UserPlus, UserCheck, Loader2, Mail, Check, X, Trash2, Bell } from 'lucide-react';
+import { Users, UserPlus, UserCheck, Loader2, Mail, Check, X, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { chatConnection } from '@/lib/signalr/chatConnection';
 import { Toast } from '@/components/ui/Toast';
@@ -81,7 +81,9 @@ export default function FriendsPage() {
         setFriends(data);
       } else if (activeTab === 'requests') {
         const data = await friendsApi.getIncomingRequests();
-        setIncomingRequests(data);        setIncomingCount(data.length);      } else if (activeTab === 'sent') {
+        setIncomingRequests(data);
+        setIncomingCount(data.length);
+      } else if (activeTab === 'sent') {
         const data = await friendsApi.getOutgoingRequests();
         setOutgoingRequests(data);
       } else if (activeTab === 'following') {

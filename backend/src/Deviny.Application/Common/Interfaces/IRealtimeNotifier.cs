@@ -1,5 +1,3 @@
-using Deviny.Domain.Enums;
-
 namespace Deviny.Application.Common.Interfaces;
 
 /// <summary>
