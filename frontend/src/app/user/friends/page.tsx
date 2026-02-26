@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { friendsApi, followsApi } from '@/lib/api/friendsApi';
 import { FriendDto, FriendRequestDto } from '@/types/friend';
-import { Users, UserPlus, UserCheck, Loader2, Mail, Check, X, Trash2 } from 'lucide-react';
+import { Users, UserPlus, UserCheck, Loader2, Mail, Check, X, Trash2, Bell } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { chatConnection } from '@/lib/signalr/chatConnection';
+import { Toast } from '@/components/ui/Toast';
 
 type Tab = 'friends' | 'requests' | 'sent' | 'following';
 
 export default function FriendsPage() {
   const t = useTranslations('friends');
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [friends, setFriends] = useState<FriendDto[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<FriendRequestDto[]>([]);
@@ -17,10 +21,57 @@ export default function FriendsPage() {
   const [following, setFollowing] = useState<FriendDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [incomingCount, setIncomingCount] = useState(0);
 
   useEffect(() => {
     loadData();
   }, [activeTab]);
+
+  // Real-time friend request notifications
+  useEffect(() => {
+    const handleFriendRequestReceived = (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => {
+      console.log('[Friends] Real-time friend request received:', data);
+      setToast({ message: `${data.senderName} ${t('sentYouRequest')}`, type: 'success' });
+      setIncomingCount(prev => prev + 1);
+      // Refresh incoming requests if on that tab
+      if (activeTab === 'requests') {
+        loadData();
+      }
+    };
+
+    const handleFriendRequestAccepted = (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => {
+      console.log('[Friends] Friend request accepted:', data);
+      setToast({ message: `${data.acceptorName} ${t('acceptedYourRequest')}`, type: 'success' });
+      // Refresh current tab data
+      loadData();
+    };
+
+    const handleFriendRemoved = (data: { removedByUserId: string; removedByName: string }) => {
+      console.log('[Friends] Friend removed by:', data);
+      // Remove the friend from local list immediately
+      setFriends(prev => prev.filter(f => f.id !== data.removedByUserId));
+      // Refresh data if on friends tab
+      if (activeTab === 'friends') {
+        loadData();
+      }
+    };
+
+    chatConnection.onFriendRequestReceived(handleFriendRequestReceived);
+    chatConnection.onFriendRequestAccepted(handleFriendRequestAccepted);
+    chatConnection.onFriendRemoved(handleFriendRemoved);
+
+    return () => {
+      chatConnection.off('FriendRequestReceived', handleFriendRequestReceived);
+      chatConnection.off('FriendRequestAccepted', handleFriendRequestAccepted);
+      chatConnection.off('FriendRemoved', handleFriendRemoved);
+    };
+  }, [activeTab, t]);
+
+  // Load incoming count on mount for badge
+  useEffect(() => {
+    friendsApi.getIncomingRequests().then(data => setIncomingCount(data.length)).catch(() => {});
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -30,8 +81,7 @@ export default function FriendsPage() {
         setFriends(data);
       } else if (activeTab === 'requests') {
         const data = await friendsApi.getIncomingRequests();
-        setIncomingRequests(data);
-      } else if (activeTab === 'sent') {
+        setIncomingRequests(data);        setIncomingCount(data.length);      } else if (activeTab === 'sent') {
         const data = await friendsApi.getOutgoingRequests();
         setOutgoingRequests(data);
       } else if (activeTab === 'following') {
@@ -49,9 +99,12 @@ export default function FriendsPage() {
     setActionLoading(`accept-${requestId}`);
     try {
       await friendsApi.acceptFriendRequest(requestId);
+      setIncomingCount(prev => Math.max(0, prev - 1));
+      setToast({ message: t('requestAccepted'), type: 'success' });
       await loadData();
     } catch (error) {
       console.error('Error accepting request:', error);
+      setToast({ message: t('errorAccepting'), type: 'error' });
     } finally {
       setActionLoading(null);
     }
@@ -61,6 +114,7 @@ export default function FriendsPage() {
     setActionLoading(`decline-${requestId}`);
     try {
       await friendsApi.declineFriendRequest(requestId);
+      setIncomingCount(prev => Math.max(0, prev - 1));
       await loadData();
     } catch (error) {
       console.error('Error declining request:', error);
@@ -108,7 +162,7 @@ export default function FriendsPage() {
 
   const tabs = [
     { id: 'friends', label: t('tabs.friends'), icon: Users, count: friends.length },
-    { id: 'requests', label: t('tabs.requests'), icon: Mail, count: incomingRequests.length },
+    { id: 'requests', label: t('tabs.requests'), icon: Mail, count: incomingCount },
     { id: 'sent', label: t('tabs.sent'), icon: UserPlus, count: outgoingRequests.length },
     { id: 'following', label: t('tabs.following'), icon: UserCheck, count: following.length },
   ];
@@ -162,14 +216,19 @@ export default function FriendsPage() {
                       key={friend.id}
                       className="flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-white/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center text-white font-bold">
-                        {friend.fullName?.[0] || friend.email[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">
-                          {friend.fullName || friend.email}
-                        </h3>
-                        <p className="text-sm text-gray-400">{friend.email}</p>
+                      <div
+                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                        onClick={() => router.push(`/user/profile/${friend.id}`)}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center text-white font-bold">
+                          {friend.fullName?.[0] || friend.email[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-white hover:underline">
+                            {friend.fullName || friend.email}
+                          </h3>
+                          <p className="text-sm text-gray-400">{friend.email}</p>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleRemoveFriend(friend.id)}
@@ -202,14 +261,19 @@ export default function FriendsPage() {
                       key={request.id}
                       className="flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-white/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                        {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">
-                          {request.senderFullName || request.senderEmail}
-                        </h3>
-                        <p className="text-sm text-gray-400">{request.senderEmail}</p>
+                      <div
+                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                        onClick={() => router.push(`/user/profile/${request.senderId}`)}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                          {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-white hover:underline">
+                            {request.senderFullName || request.senderEmail}
+                          </h3>
+                          <p className="text-sm text-gray-400">{request.senderEmail}</p>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -261,15 +325,20 @@ export default function FriendsPage() {
                       key={request.id}
                       className="flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-white/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold">
-                        {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">
-                          {request.receiverFullName || request.receiverEmail}
-                        </h3>
-                        <p className="text-sm text-gray-400">{request.receiverEmail}</p>
-                        <span className="text-xs text-[#3B82F6]">{t('pending')}</span>
+                      <div
+                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                        onClick={() => router.push(`/user/profile/${request.receiverId}`)}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold">
+                          {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-white hover:underline">
+                            {request.receiverFullName || request.receiverEmail}
+                          </h3>
+                          <p className="text-sm text-gray-400">{request.receiverEmail}</p>
+                          <span className="text-xs text-[#3B82F6]">{t('pending')}</span>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleCancelRequest(request.id)}
@@ -302,15 +371,20 @@ export default function FriendsPage() {
                       key={trainer.id}
                       className="flex items-center gap-4 p-4 bg-[#1A1A1A] rounded-lg border border-white/10 hover:border-white/20 transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold">
-                        {trainer.fullName?.[0] || trainer.email[0].toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white">
-                          {trainer.fullName || trainer.email}
-                        </h3>
-                        <p className="text-sm text-gray-400">{trainer.email}</p>
-                        <span className="text-xs text-green-500">{t('trainer')}</span>
+                      <div
+                        className="flex items-center gap-4 flex-1 cursor-pointer"
+                        onClick={() => router.push(`/user/profile/${trainer.id}`)}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold">
+                          {trainer.fullName?.[0] || trainer.email[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-white hover:underline">
+                            {trainer.fullName || trainer.email}
+                          </h3>
+                          <p className="text-sm text-gray-400">{trainer.email}</p>
+                          <span className="text-xs text-green-500">{t('trainer')}</span>
+                        </div>
                       </div>
                       <button
                         onClick={() => handleUnfollow(trainer.id)}
@@ -331,6 +405,15 @@ export default function FriendsPage() {
           </div>
         )}
       </div>
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 }

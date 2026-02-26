@@ -6,12 +6,17 @@ import {
   Users,
   Award,
   MapPin,
-  Loader2
+  Loader2,
+  MessageCircle,
+  UserCheck,
+  UserPlus,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { trainersApi } from '@/lib/api/trainersApi'
+import { followsApi } from '@/lib/api/friendsApi'
 import { PublicTrainerDto } from '@/types/trainer'
+import { FriendDto } from '@/types/friend'
 import { getMediaUrl } from '@/lib/config'
 import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -26,14 +31,20 @@ export default function ExpertsPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'Trainer' | 'Nutritionist'>('all')
+  const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
+  const [followLoading, setFollowLoading] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchTrainers = async () => {
       try {
         setIsLoading(true)
         setError(null)
-        const data = await trainersApi.getAll()
+        const [data, followingData] = await Promise.all([
+          trainersApi.getAll(),
+          followsApi.getMyFollowing().catch(() => [] as FriendDto[]),
+        ])
         setTrainers(data)
+        setFollowedIds(new Set(followingData.map((f) => f.id)))
       } catch (err) {
         console.error('Failed to fetch trainers:', err)
         setError(t('failedToLoad'))
@@ -44,6 +55,33 @@ export default function ExpertsPage() {
 
     fetchTrainers()
   }, [])
+
+  const handleFollow = async (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation()
+    if (followLoading) return
+    setFollowLoading(userId)
+    try {
+      if (followedIds.has(userId)) {
+        await followsApi.unfollowTrainer(userId)
+        setFollowedIds(prev => { const s = new Set(prev); s.delete(userId); return s })
+      } else {
+        await followsApi.followTrainer(userId)
+        setFollowedIds(prev => new Set(prev).add(userId))
+      }
+    } catch (err) {
+      console.error('Follow/unfollow failed:', err)
+    } finally {
+      setFollowLoading(null)
+    }
+  }
+
+  const handleMessage = (e: React.MouseEvent, trainer: PublicTrainerDto) => {
+    e.stopPropagation()
+    const params = new URLSearchParams({ userId: trainer.userId })
+    if (trainer.name) params.set('userName', trainer.name)
+    if (trainer.avatarUrl) params.set('userAvatar', trainer.avatarUrl)
+    router.push(`/user/messages?${params.toString()}`)
+  }
 
   const filteredTrainers = trainers.filter(trainer => {
     const matchesSearch = trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -203,9 +241,41 @@ export default function ExpertsPage() {
                     </div>
                   </div>
 
-                  {/* Action */}
-                  <div className="mt-4 flex justify-end">
-                    <button className={`px-4 py-2 bg-gradient-to-r ${trainerAccent.gradient} text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity`}>
+                  {/* Actions */}
+                  <div className="mt-4 flex items-center justify-end gap-2">
+                    {trainer.userId !== currentUser?.id && (
+                      <>
+                        <button
+                          onClick={(e) => handleMessage(e, trainer)}
+                          className="flex items-center gap-1.5 px-3 py-2 bg-white/10 text-gray-300 text-xs font-medium rounded-lg hover:bg-white/20 transition-all"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          {t('write')}
+                        </button>
+                        <button
+                          onClick={(e) => handleFollow(e, trainer.userId)}
+                          disabled={followLoading === trainer.userId}
+                          className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-all disabled:opacity-50 ${
+                            followedIds.has(trainer.userId)
+                              ? `${trainerAccent.bgMuted} ${trainerAccent.text} hover:opacity-80`
+                              : `bg-gradient-to-r ${trainerAccent.gradient} text-white hover:opacity-90`
+                          }`}
+                        >
+                          {followLoading === trainer.userId ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : followedIds.has(trainer.userId) ? (
+                            <UserCheck className="w-3.5 h-3.5" />
+                          ) : (
+                            <UserPlus className="w-3.5 h-3.5" />
+                          )}
+                          {followedIds.has(trainer.userId) ? t('following') : t('follow')}
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); router.push(`/user/experts/${trainer.slug || trainer.id}`) }}
+                      className={`px-4 py-2 bg-gradient-to-r ${trainerAccent.gradient} text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity`}
+                    >
                       {t('viewProfile')}
                     </button>
                   </div>

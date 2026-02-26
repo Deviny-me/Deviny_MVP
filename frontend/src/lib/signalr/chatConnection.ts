@@ -153,6 +153,13 @@ export class ChatConnection {
   onError(cb: (error: string) => void) { this._on('Error', cb) }
   onAchievementAwarded(cb: (data: AchievementAwardedEvent) => void) { this._on('AchievementAwarded', cb) }
 
+  // ─── notification events ───
+  onNotificationReceived(cb: (data: { id: string; type: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => void) { this._on('NotificationReceived', cb) }
+  onNotificationCountUpdated(cb: (data: { unreadCount: number }) => void) { this._on('NotificationCountUpdated', cb) }
+  onFriendRequestReceived(cb: (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => void) { this._on('FriendRequestReceived', cb) }
+  onFriendRequestAccepted(cb: (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => void) { this._on('FriendRequestAccepted', cb) }
+  onFriendRemoved(cb: (data: { removedByUserId: string; removedByName: string }) => void) { this._on('FriendRemoved', cb) }
+
   // ─── hub invocations ───
 
   async joinConversation(conversationId: string) {
