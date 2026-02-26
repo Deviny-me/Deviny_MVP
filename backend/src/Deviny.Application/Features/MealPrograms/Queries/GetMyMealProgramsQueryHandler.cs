@@ -31,6 +31,7 @@ public class GetMyMealProgramsQueryHandler : IRequestHandler<GetMyMealProgramsQu
             VideoUrls = string.IsNullOrEmpty(p.VideosPath)
                 ? new List<string>()
                 : JsonSerializer.Deserialize<List<string>>(p.VideosPath) ?? new List<string>(),
+            IsPublic = p.IsPublic,
             CreatedAt = p.CreatedAt,
             UpdatedAt = p.UpdatedAt
         }).ToList();

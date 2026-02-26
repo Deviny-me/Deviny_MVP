@@ -487,7 +487,13 @@
     "createFirstTraining": "Создайте свою первую программу тренировок",
     "createFirstMeal": "Создайте свою первую программу питания",
     "totalTrainingPrograms": "Программ тренировок",
-    "totalMealPrograms": "Программ питания"
+    "totalMealPrograms": "Программ питания",
+    "visibility": "Видимость",
+    "visibilityPublic": "Публичная",
+    "visibilityPrivate": "Приватная",
+    "visibilityPublicHint": "Видна всем в ленте программ",
+    "visibilityPrivateHint": "Только вы можете видеть эту программу",
+    "private": "Приватная"
   },
 
   "schedule": {

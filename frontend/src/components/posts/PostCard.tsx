@@ -8,7 +8,7 @@ import { getMediaUrl } from '@/lib/config'
 import { PostActions } from './PostActions'
 import { PostCommentsPanel } from './PostCommentsPanel'
 import { usePost, usePostDispatch } from '@/contexts/PostStoreContext'
-import { useAccentColors, getAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
+import { useAccentColors, getAccentColorsByRole, getRoleRingClass } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
 
 interface PostCardProps {
@@ -101,8 +101,7 @@ export function PostCard({
 
   // Determine avatar color based on author's role, not current user's role
   const authorRole = post.author?.role
-  const isAuthorNutritionist = authorRole === 'Nutritionist' || authorRole === 3 || authorRole === '3'
-  const authorAccent = getAccentColors(isAuthorNutritionist)
+  const authorAccent = getAccentColorsByRole(authorRole)
   
   const displayMedia = isRepost ? post.originalPost?.media : post.media
   const displayCaption = isRepost ? post.originalPost?.caption : post.caption

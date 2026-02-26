@@ -18,6 +18,7 @@ import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
 import { PublicProgramDto, PublicMealProgramDto, ProgramType } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
+import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'training' | 'nutrition'
@@ -36,6 +37,7 @@ type UnifiedPublicProgram = {
   trainerName: string
   trainerAvatarUrl: string
   trainerSlug: string
+  trainerRole: string
   programType: ProgramType
   // Training-specific (optional)
   averageRating?: number
@@ -57,6 +59,7 @@ function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
     trainerName: p.trainerName,
     trainerAvatarUrl: p.trainerAvatarUrl,
     trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
     programType: 'training',
     averageRating: p.averageRating,
     totalReviews: p.totalReviews,
@@ -78,6 +81,7 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     trainerName: p.trainerName,
     trainerAvatarUrl: p.trainerAvatarUrl,
     trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
     programType: 'meal',
     averageRating: 0,
     totalReviews: 0,
@@ -332,9 +336,7 @@ export default function ProgramsPage() {
                       </div>
                     )}
                     {/* Type badge */}
-                    <span className={`absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5 ${
-                      program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
-                    }`}>
+                    <span className={`absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5`} style={{ backgroundColor: getAccentColorsByRole(program.trainerRole).primary }}>
                       {program.programType === 'training' ? (
                         <><Dumbbell className="w-2.5 h-2.5" />{t('training')}</>
                       ) : (
@@ -355,7 +357,7 @@ export default function ProgramsPage() {
                             className="w-5 h-5 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})` }}>
                             <span className="text-white text-[10px] font-bold">
                               {program.trainerName.charAt(0)}
                             </span>
@@ -476,9 +478,7 @@ function ProgramDetailModal({
             <X className="w-5 h-5 text-white" />
           </button>
           <div className="absolute top-3 left-3 flex gap-2">
-            <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-              program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
-            }`}>
+            <span className="px-2 py-1 text-xs font-bold rounded text-white" style={{ backgroundColor: getAccentColorsByRole(program.trainerRole).primary }}>
               {program.programType === 'training' ? t('training') : t('nutrition')}
             </span>
           </div>
@@ -517,7 +517,7 @@ function ProgramDetailModal({
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})` }}>
                 <span className="text-white font-bold">{program.trainerName.charAt(0)}</span>
               </div>
             )}

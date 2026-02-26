@@ -91,6 +91,7 @@ public class CreateMealProgramCommandHandler : IRequestHandler<CreateMealProgram
             DetailedDescription = request.DetailedDescription,
             Price = request.Price,
             ProPrice = request.ProPrice,
+            IsPublic = request.IsPublic,
             Code = code,
             CoverImagePath = $"/uploads/meal-programs/{coverFileName}",
             VideosPath = JsonSerializer.Serialize(videoUrls),
@@ -173,6 +174,7 @@ public class CreateMealProgramCommandHandler : IRequestHandler<CreateMealProgram
             Code = created.Code,
             CoverImageUrl = created.CoverImagePath,
             VideoUrls = videoPaths,
+            IsPublic = created.IsPublic,
             CreatedAt = created.CreatedAt,
             UpdatedAt = created.UpdatedAt
         };

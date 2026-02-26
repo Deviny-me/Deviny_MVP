@@ -16,7 +16,9 @@ import {
   Loader2,
   Video,
   DollarSign,
-  Apple
+  Apple,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { nutritionistProgramsApi } from '@/lib/api/nutritionistProgramsApi'
 import { MealProgramDto } from '@/types/program'
@@ -39,6 +41,7 @@ type UnifiedProgram = {
   coverImageUrl: string
   createdAt: string
   updatedAt: string
+  isPublic: boolean
   videoUrls?: string[]
 }
 
@@ -54,6 +57,7 @@ function toUnified(p: MealProgramDto): UnifiedProgram {
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
+    isPublic: p.isPublic ?? true,
     videoUrls: p.videoUrls,
   }
 }
@@ -89,6 +93,7 @@ export default function NutritionistProgramsPage() {
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [videos, setVideos] = useState<File[]>([])
+  const [isPublic, setIsPublic] = useState(true)
 
   useEffect(() => {
     loadMealPrograms()
@@ -136,6 +141,7 @@ export default function NutritionistProgramsPage() {
     setCoverImage(null)
     setCoverPreview(null)
     setVideos([])
+    setIsPublic(true)
     setEditingProgram(null)
   }
 
@@ -151,6 +157,7 @@ export default function NutritionistProgramsPage() {
     setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
     setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
+    setIsPublic(program.isPublic ?? true)
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
   }
@@ -200,6 +207,7 @@ export default function NutritionistProgramsPage() {
           detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
+          isPublic,
           coverImage: coverImage || undefined,
           videos: videos.length > 0 ? videos : undefined,
         })
@@ -211,6 +219,7 @@ export default function NutritionistProgramsPage() {
           detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
+          isPublic,
           coverImage: coverImage!,
           videos,
         })
@@ -330,6 +339,11 @@ export default function NutritionistProgramsPage() {
                     <span className="px-2 py-1 text-xs font-bold rounded text-white bg-green-600 flex items-center gap-1">
                       <Apple className="w-3 h-3" />{t('tabMeal')}
                     </span>
+                    {!program.isPublic && (
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-yellow-600 text-white flex items-center gap-1">
+                        <EyeOff className="w-3 h-3" />{t('private')}
+                      </span>
+                    )}
                   </div>
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
@@ -629,6 +643,41 @@ export default function NutritionistProgramsPage() {
                       />
                     </div>
                     <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
+                  </div>
+
+                  {/* Visibility Toggle */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('visibility')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsPublic(!isPublic)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
+                        isPublic
+                          ? 'border-green-500/50 bg-green-500/10'
+                          : 'border-yellow-500/50 bg-yellow-500/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {isPublic ? (
+                          <Eye className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <EyeOff className="w-5 h-5 text-yellow-400" />
+                        )}
+                        <div className="text-left">
+                          <p className={`text-sm font-medium ${isPublic ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {isPublic ? t('visibilityPublic') : t('visibilityPrivate')}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {isPublic ? t('visibilityPublicHint') : t('visibilityPrivateHint')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full relative transition-colors ${isPublic ? 'bg-green-500' : 'bg-gray-600'}`}>
+                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </div>
+                    </button>
                   </div>
 
                   {/* Videos */}
