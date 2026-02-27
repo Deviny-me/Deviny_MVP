@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '@/components/user/UserProvider'
+import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
   MapPin,
@@ -257,6 +258,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 export default function UserProfilePage() {
   const router = useRouter()
   const { user, updateUser } = useUser()
+  const { level } = useLevel()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
   const tp = useTranslations('profile')
@@ -278,10 +280,11 @@ export default function UserProfilePage() {
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Calculate level progress
-  const currentXp = user?.xp || 0
-  const xpToNextLevel = user?.xpToNextLevel || 1000
-  const levelProgress = (currentXp / xpToNextLevel) * 100
+  // Calculate level progress from LevelProvider
+  const currentXp = level?.currentXp ?? user?.xp ?? 0
+  const xpToNextLevel = level?.requiredXpForNextLevel ?? user?.xpToNextLevel ?? 1000
+  const levelProgress = level?.progressPercent ?? (currentXp / xpToNextLevel) * 100
+  const currentLevel = level?.currentLevel ?? user?.level ?? 1
 
   const stats = [
     { label: tp('workouts'), value: user?.workoutsCompleted || 0, icon: Target },
@@ -508,17 +511,27 @@ export default function UserProfilePage() {
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{user?.level || 1}</span>
+              <span className="text-2xl font-bold text-white">{currentLevel}</span>
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold text-white">Level {user?.level || 1}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">Level {currentLevel}</span>
+                  {level?.levelTitle && (
+                    <span className="text-xs text-blue-400 font-medium">{level.levelTitle}</span>
+                  )}
+                </div>
                 <span className="text-xs text-gray-400">{currentXp} / {xpToNextLevel} {tp('xp')}</span>
               </div>
               <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full transition-all" style={{ width: `${levelProgress}%` }} />
               </div>
-              <p className="text-xs text-gray-400 mt-1">{xpToNextLevel - currentXp} {tp('xpToLevel')} {(user?.level || 1) + 1}</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-gray-400">{xpToNextLevel - currentXp} {tp('xpToLevel')} {currentLevel + 1}</p>
+                {level?.nextLevelTitle && (
+                  <p className="text-xs text-gray-500">Следующий: {level.nextLevelTitle}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>

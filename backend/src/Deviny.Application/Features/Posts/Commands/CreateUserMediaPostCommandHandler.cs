@@ -171,6 +171,14 @@ public class CreateUserMediaPostCommandHandler
                     AchievementSourceType.Post,
                     post.Id,
                     cancellationToken);
+
+                // User-specific achievement
+                await _achievementService.TryAwardAchievementAsync(
+                    request.UserId,
+                    "USER_FIRST_POST",
+                    AchievementSourceType.Post,
+                    post.Id,
+                    cancellationToken);
             }
             catch (Exception achEx)
             {

@@ -212,7 +212,7 @@ function NutritionistGridCell({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(postId) }}
-          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-blue-400"
+          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-green-400"
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -899,8 +899,8 @@ export default function NutritionistProfilePage() {
             <p className="text-2xl font-bold text-white">{trainer.programsCount}</p>
             <p className="text-xs text-gray-400">{t('programs')}</p>
           </div>
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 p-4 text-center">
-            <Users className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 p-4 text-center">
+            <Users className="w-6 h-6 text-green-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.studentsCount}</p>
             <p className="text-xs text-gray-400">{t('students')}</p>
           </div>

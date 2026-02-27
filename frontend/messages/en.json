@@ -752,6 +752,12 @@
 
   "leaderboards": {
     "teaser": "The top trainers leaderboard is coming soon! Compete, earn points...",
+    "trends": "Trends",
+    "trendsDesc": "Top results of the week",
+    "community": "Community",
+    "communityDesc": "Compete with other members",
+    "inspiration": "Inspiration",
+    "inspirationDesc": "Stories from leaderboard champions",
     "topTrainers": "Top experts",
     "topTrainersDesc": "Global ranking",
     "xpPoints": "XP Points",
@@ -775,6 +781,12 @@
 
   "live": {
     "teaser": "Soon you'll be able to host live training sessions for your students...",
+    "trends": "Trends",
+    "trendsDesc": "Popular live streams",
+    "community": "Community",
+    "communityDesc": "Train together in real time",
+    "inspiration": "Inspiration",
+    "inspirationDesc": "Live workouts from top trainers",
     "hdStreaming": "HD Streaming",
     "hdStreamingDesc": "High quality video",
     "groups": "Groups",

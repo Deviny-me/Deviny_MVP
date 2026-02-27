@@ -752,6 +752,12 @@
 
   "leaderboards": {
     "teaser": "Tezliklə burada ən yaxşı məşqçilərin reytinqi görünəcək! Yarışın, xal qazanın...",
+    "trends": "Trendlər",
+    "trendsDesc": "Həftənin ən yaxşı nəticələri",
+    "community": "İcma",
+    "communityDesc": "Digər üzvlərlə yarışın",
+    "inspiration": "İlham",
+    "inspirationDesc": "Reytinq liderlərinin hekayələri",
     "topTrainers": "Top ekspertlər",
     "topTrainersDesc": "Qlobal reytinq",
     "xpPoints": "XP Xalları",
@@ -775,6 +781,12 @@
 
   "live": {
     "teaser": "Tezliklə tələbələriniz üçün canlı məşqlər keçirə biləcəksiniz...",
+    "trends": "Trendlər",
+    "trendsDesc": "Populyar canlı yayımlar",
+    "community": "İcma",
+    "communityDesc": "Real vaxtda birlikdə məşq edin",
+    "inspiration": "İlham",
+    "inspirationDesc": "Ən yaxşı məşqçilərdən canlı məşqlər",
     "hdStreaming": "HD Yayım",
     "hdStreamingDesc": "Keyfiyyətli video əlaqə",
     "groups": "Qruplar",

@@ -108,6 +108,7 @@ export default function ChatInbox() {
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const creatingConvRef = useRef(false)
+  const deepLinkHandledRef = useRef(false)
 
   // Keep ref in sync
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
@@ -246,8 +247,9 @@ export default function ChatInbox() {
   }, [loadConversations])
 
   // ─── handle userId from URL (deep link into a DM) ───
+  // Runs ONLY once per deep-link to prevent overriding manual contact selection
   useEffect(() => {
-    if (!userIdFromUrl || loadingConvs || creatingConvRef.current) return
+    if (!userIdFromUrl || loadingConvs || creatingConvRef.current || deepLinkHandledRef.current) return
 
     // Prevent self-messaging: ignore if target is own user
     if (currentUserId && userIdFromUrl.toLowerCase() === currentUserId.toLowerCase()) return
@@ -256,6 +258,7 @@ export default function ChatInbox() {
     const existing = conversations.find(c => c.peerUser.id.toLowerCase() === targetId)
     if (existing) {
       setSelectedConvId(existing.id)
+      deepLinkHandledRef.current = true
       return
     }
 
@@ -266,6 +269,7 @@ export default function ChatInbox() {
         const { conversationId } = await messagesApi.getOrCreateConversation(userIdFromUrl)
         await loadConversations()
         setSelectedConvId(conversationId)
+        deepLinkHandledRef.current = true
       } catch (err) {
         console.error('Failed to create conversation', err)
       } finally {
@@ -278,6 +282,11 @@ export default function ChatInbox() {
   // ─── when selected conv changes → load messages + join group ───
   useEffect(() => {
     if (!selectedConvId) return
+
+    // Clear previous messages immediately to prevent stale flash
+    setMessages([])
+    setReplyTo(null)
+    setPendingFile(null)
 
     loadMessages(selectedConvId)
     chatConnection.joinConversation(selectedConvId).catch(() => {})

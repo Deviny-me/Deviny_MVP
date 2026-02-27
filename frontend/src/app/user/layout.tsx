@@ -7,6 +7,7 @@ import { LanguageProvider } from '@/components/language/LanguageProvider'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
 import { UnreadNotificationsProvider } from '@/contexts/UnreadNotificationsContext'
+import { LevelProvider } from '@/components/level/LevelProvider'
 import { UserAchievementBridge } from '@/components/user/UserAchievementBridge'
 import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
 
@@ -14,6 +15,7 @@ import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
 const HIDE_RIGHT_SIDEBAR = [
   '/user/challenges', '/user/settings', '/user/schedule',
   '/user/leaderboards', '/user/live', '/user/experts', '/user/discovery',
+  '/user/achievements',
 ]
 // Routes where both sidebars should be hidden
 const HIDE_ALL_SIDEBARS = ['/user/messages']
@@ -75,11 +77,13 @@ export default function UserDashboardLayout({
         <UserProvider>
           <UnreadMessagesProvider>
             <UnreadNotificationsProvider>
-              <UserAchievementBridge>
-                <UserMainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
-                  {children}
-                </UserMainLayout>
-              </UserAchievementBridge>
+              <LevelProvider>
+                <UserAchievementBridge>
+                  <UserMainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
+                    {children}
+                  </UserMainLayout>
+                </UserAchievementBridge>
+              </LevelProvider>
             </UnreadNotificationsProvider>
           </UnreadMessagesProvider>
         </UserProvider>

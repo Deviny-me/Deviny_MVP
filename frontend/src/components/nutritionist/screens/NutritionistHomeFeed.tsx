@@ -165,35 +165,15 @@ export function NutritionistHomeFeed() {
 
       {/* Create Post Card */}
       <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-4">
-        <div className="flex items-center gap-3">
-          {avatarUrl ? (
-            <img 
-              src={avatarUrl} 
-              alt={nutritionistName}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{nutritionistInitials}</span>
-            </div>
-          )}
-          <button 
-            className="flex-1 px-4 py-3 bg-[#0A0A0A] hover:bg-[#262626] border border-white/10 rounded-full text-left text-sm text-gray-400 transition-colors"
-            onClick={() => router.push('/nutritionist/profile')}
-          >
-            {t('shareProgress')}
-          </button>
-        </div>
-        
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
-          <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
+          <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
             <Loader2 className="w-4 h-4 text-[#22c55e] animate-spin" />
             <span className="text-sm text-gray-400">{uploadProgress}</span>
           </div>
         )}
         
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => photoInputRef.current?.click()}
             disabled={isUploading}

@@ -99,6 +99,14 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
                 AchievementSourceType.Message,
                 message.Id,
                 cancellationToken);
+
+            // User-specific achievement
+            await _achievementService.TryAwardAchievementAsync(
+                request.SenderId,
+                "USER_FIRST_MESSAGE",
+                AchievementSourceType.Message,
+                message.Id,
+                cancellationToken);
         }
         catch
         {

@@ -13,21 +13,21 @@ public class AchievementService : IAchievementService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILevelService _levelService;
-    private readonly IAchievementNotifier _notifier;
     private readonly IMediator _mediator;
+    private readonly IAchievementNotifier _achievementNotifier;
     private readonly ILogger<AchievementService> _logger;
 
     public AchievementService(
         ApplicationDbContext context,
         ILevelService levelService,
-        IAchievementNotifier notifier,
         IMediator mediator,
+        IAchievementNotifier achievementNotifier,
         ILogger<AchievementService> logger)
     {
         _context = context;
         _levelService = levelService;
-        _notifier = notifier;
         _mediator = mediator;
+        _achievementNotifier = achievementNotifier;
         _logger = logger;
     }
 
@@ -185,9 +185,8 @@ public class AchievementService : IAchievementService
             }
         };
 
-        await NotifyUserAsync(userId, result, ct);
-
-        // Publish domain event for notification system
+        // Publish domain event — this creates a persistent Notification record
+        // AND sends a real-time SignalR push via NotificationService → IRealtimeNotifier.
         try
         {
             await _mediator.Publish(new AchievementAwardedEvent
@@ -203,21 +202,24 @@ public class AchievementService : IAchievementService
             _logger.LogWarning(ex, "Failed to publish AchievementAwardedEvent for {Code}", achievementCode);
         }
 
-        return result;
-    }
-
-    /// <summary>Sends a real-time SignalR notification after awarding.</summary>
-    private async Task NotifyUserAsync(Guid userId, AwardResult result, CancellationToken ct)
-    {
-        if (!result.Awarded || result.Achievement == null) return;
-
+        // Send real-time "AchievementAwarded" SignalR event so the frontend can
+        // show a toast and trigger an XP/level refresh without a page reload.
         try
         {
-            await _notifier.NotifyAchievementAwardedAsync(userId, result.Achievement, ct);
+            await _achievementNotifier.NotifyAchievementAwardedAsync(
+                userId, result.Achievement!, ct);
+
+            _logger.LogInformation(
+                "Sent AchievementAwarded SignalR event for {Code} to user {UserId}",
+                achievementCode, userId);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to send achievement notification for {Code}", result.Achievement.Code);
+            _logger.LogWarning(ex,
+                "Failed to send AchievementAwarded SignalR event for {Code}",
+                achievementCode);
         }
+
+        return result;
     }
 }
