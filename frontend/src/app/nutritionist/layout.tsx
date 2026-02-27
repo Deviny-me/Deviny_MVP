@@ -14,7 +14,7 @@ import { AchievementBridge } from '@/components/shared/AchievementBridge'
 const HIDE_RIGHT_SIDEBAR = [
   '/nutritionist/profile', '/nutritionist/clients', '/nutritionist/settings',
   '/nutritionist/messages', '/nutritionist/leaderboards', '/nutritionist/live',
-  '/nutritionist/discovery', '/nutritionist/challenges',
+  '/nutritionist/discovery', '/nutritionist/challenges', '/nutritionist/achievements',
 ]
 
 export default function NutritionistDashboardLayout({

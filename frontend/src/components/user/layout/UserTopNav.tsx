@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
+import { useLevel } from '@/components/level/LevelProvider'
 import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { SearchBar } from '@/components/search/SearchBar'
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
@@ -24,6 +25,7 @@ export function UserTopNav() {
   const { user, logout } = useUser()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const { unreadCount } = useUnreadMessages()
+  const { level } = useLevel()
   const t = useTranslations('nav')
 
   const navItems = [
@@ -142,9 +144,27 @@ export function UserTopNav() {
                         </div>
                         <div>
                           <p className="font-semibold text-white">{user?.fullName || 'User'}</p>
-                          <p className="text-xs text-gray-400">Level {user?.level || 1} • {user?.xp || 0} XP</p>
+                          <p className="text-xs text-gray-400">{t('user') || 'Пользователь'}</p>
                         </div>
                       </div>
+                      {/* Level Display */}
+                      {level && (
+                        <div className="mt-3 p-2.5 bg-gradient-to-r from-[#3B82F6]/10 to-[#2563EB]/10 border border-[#3B82F6]/20 rounded-lg">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-xs font-semibold text-white">Level {level.currentLevel}</span>
+                            <span className="text-xs text-gray-400">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full transition-all duration-300"
+                              style={{ width: `${(level.currentXp / level.requiredXpForNextLevel) * 100}%` }}
+                            />
+                          </div>
+                          {level.levelTitle && (
+                            <p className="text-[10px] text-blue-400 font-medium mt-1">{level.levelTitle}</p>
+                          )}
+                        </div>
+                      )}
                       <button
                         onClick={() => {
                           router.push('/user/profile')

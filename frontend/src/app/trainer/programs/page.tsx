@@ -185,6 +185,7 @@ export default function ProgramsPage() {
           averageRating: pub.averageRating,
           totalReviews: pub.totalReviews,
           totalPurchases: pub.totalPurchases,
+          isPublic: true,
         })
       }
     })
@@ -549,7 +550,7 @@ export default function ProgramsPage() {
                       ${program.price}
                     </span>
                     <span className={`px-2 py-1 text-xs font-bold rounded text-white flex items-center gap-1 ${
-                      program.type === 'training' ? accent.bg : 'bg-green-600'
+                      program.type === 'training' ? accent.bg : 'bg-[#FF0844]'
                     }`}>
                       {program.type === 'training' ? (
                         <><Dumbbell className="w-3 h-3" />{t('tabTraining')}</>
@@ -662,7 +663,7 @@ export default function ProgramsPage() {
                     </span>
                   )}
                   <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-                    selectedProgram.type === 'training' ? accent.bg : 'bg-green-600'
+                    selectedProgram.type === 'training' ? accent.bg : 'bg-[#FF0844]'
                   }`}>
                     {selectedProgram.type === 'training' ? t('typeTraining') : t('typeMeal')}
                   </span>
@@ -799,7 +800,7 @@ export default function ProgramsPage() {
                             onClick={() => setFormType('training')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                               formType === 'training'
-                                ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                                ? 'border-[#FF6B35] bg-[#FF6B35]/10 text-[#FF6B35]'
                                 : 'border-white/10 text-gray-400 hover:border-white/20'
                             }`}
                           >
@@ -811,7 +812,7 @@ export default function ProgramsPage() {
                           onClick={() => setFormType('meal')}
                           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                             formType === 'meal'
-                              ? 'border-green-500 bg-green-500/10 text-green-400'
+                              ? 'border-[#FF0844] bg-[#FF0844]/10 text-[#FF0844]'
                               : 'border-white/10 text-gray-400 hover:border-white/20'
                           }`}
                         >

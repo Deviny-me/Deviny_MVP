@@ -24,6 +24,7 @@ builder.Services.AddSignalR();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IAchievementNotifier, SignalRAchievementNotifier>();
+builder.Services.AddScoped<ILevelNotifier, SignalRLevelNotifier>();
 builder.Services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
 
 var jwtKey = builder.Configuration["Jwt:Key"] 

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, ReactNode, useCallback } from 'react'
 import { UserLevelDto } from '@/types/level'
 import { getMyLevel } from '@/lib/api/levelApi'
+import { chatConnection } from '@/lib/signalr/chatConnection'
 
 interface LevelContextType {
   level: UserLevelDto | null
@@ -34,6 +35,21 @@ export function LevelProvider({ children }: { children: ReactNode }) {
 
     fetchLevel()
   }, [refreshLevel])
+
+  // Listen for real-time XP updates via SignalR
+  useEffect(() => {
+    const handleXpUpdated = (data: { xpAdded: number; leveledUp: boolean; newLevel: number; currentState: UserLevelDto }) => {
+      console.log('[LevelProvider] XpUpdated:', data.xpAdded, 'XP, leveledUp:', data.leveledUp)
+      // Directly update from the payload — no extra API call needed
+      setLevel(data.currentState)
+    }
+
+    chatConnection.onXpUpdated(handleXpUpdated)
+
+    return () => {
+      chatConnection.off('XpUpdated', handleXpUpdated)
+    }
+  }, [])
 
   const value = useMemo(() => ({ level, loading, refreshLevel }), [level, loading, refreshLevel])
 

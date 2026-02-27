@@ -21,6 +21,8 @@ interface AuthContextType {
   login: (email: string, password: string, role?: 'user' | 'trainer' | 'nutritionist', rememberMe?: boolean) => Promise<void>
   logout: () => void
   register: (email: string, password: string, firstName: string, lastName: string, role?: 'user' | 'trainer' | 'nutritionist') => Promise<void>
+  /** Update the in-memory user state (and persist to storage). Useful for hooks that manage their own API calls. */
+  setAuthUser: (user: User | null, storage?: 'local' | 'session') => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -44,8 +46,20 @@ function mapUserDtoToUser(dto: UserDto): User {
   }
 }
 
+// Read cached user from storage synchronously so the very first render
+// already has the correct role/colors (no flash of default 'user' theme).
+function getStoredUser(): User | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem('user') || sessionStorage.getItem('user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<User | null>(getStoredUser)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
@@ -54,10 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
         if (token) {
-          const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
-          if (savedUser) {
-            setUser(JSON.parse(savedUser))
-          }
+          // User is already initialized from storage in useState(getStoredUser).
           // Try to refresh token — if it fails, check if current access token is still valid
           const refreshResult = await authService.refreshToken()
           if (refreshResult) {
@@ -170,7 +181,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value = useMemo(() => ({ user, isLoading, login, logout, register }), [user, isLoading, login, logout, register])
+  const setAuthUser = useCallback((newUser: User | null, storage: 'local' | 'session' = 'session') => {
+    setUser(newUser)
+    const store = storage === 'local' ? localStorage : sessionStorage
+    if (newUser) {
+      store.setItem('user', JSON.stringify(newUser))
+    } else {
+      localStorage.removeItem('user')
+      sessionStorage.removeItem('user')
+    }
+  }, [])
+
+  const value = useMemo(() => ({ user, isLoading, login, logout, register, setAuthUser }), [user, isLoading, login, logout, register, setAuthUser])
 
   return (
     <AuthContext.Provider value={value}>

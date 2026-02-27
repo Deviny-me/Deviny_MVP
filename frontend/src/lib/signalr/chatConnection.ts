@@ -2,6 +2,7 @@ import * as signalR from '@microsoft/signalr'
 import { MEDIA_BASE_URL } from '@/lib/config'
 import type { MessageDto } from '@/types/message'
 import type { AchievementAwardedEvent } from '@/types/achievement'
+import type { UserLevelDto } from '@/types/level'
 
 /**
  * Singleton wrapper around the SignalR chat hub.
@@ -152,6 +153,7 @@ export class ChatConnection {
   onUserStoppedTyping(cb: (data: { conversationId: string; userId: string }) => void) { this._on('UserStoppedTyping', cb) }
   onError(cb: (error: string) => void) { this._on('Error', cb) }
   onAchievementAwarded(cb: (data: AchievementAwardedEvent) => void) { this._on('AchievementAwarded', cb) }
+  onXpUpdated(cb: (data: { xpAdded: number; leveledUp: boolean; newLevel: number; currentState: UserLevelDto }) => void) { this._on('XpUpdated', cb) }
 
   // ─── notification events ───
   onNotificationReceived(cb: (data: { id: string; type: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => void) { this._on('NotificationReceived', cb) }

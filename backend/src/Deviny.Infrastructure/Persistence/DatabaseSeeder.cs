@@ -129,19 +129,19 @@ public static class DatabaseSeeder
 
         var now = DateTime.UtcNow;
 
-        // ── Achievements ──
+        // ── Trainer-specific achievements ──
         var firstPost = new Achievement
         {
             Id = Guid.NewGuid(),
             Code = "FIRST_POST",
             Title = "Первый пост",
-            Description = "Опубликуйте свой первый пост",
+            Description = "Опубликуйте свой первый пост как тренер",
             IconKey = "pen-line",
             ColorKey = "blue",
             Rarity = AchievementRarity.Common,
             XpReward = 25,
             IsActive = true,
-            TargetRole = null, // available to all roles
+            TargetRole = UserRole.Trainer,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -151,13 +151,13 @@ public static class DatabaseSeeder
             Id = Guid.NewGuid(),
             Code = "FIRST_MESSAGE_SENT",
             Title = "Первое сообщение",
-            Description = "Отправьте своё первое сообщение",
+            Description = "Отправьте своё первое сообщение как тренер",
             IconKey = "message-circle",
             ColorKey = "green",
             Rarity = AchievementRarity.Common,
             XpReward = 15,
             IsActive = true,
-            TargetRole = null,
+            TargetRole = UserRole.Trainer,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -227,7 +227,40 @@ public static class DatabaseSeeder
             UpdatedAt = now
         };
 
-        context.Achievements.AddRange(firstPost, firstMessage, firstProgram, firstMealPlan, nutriBlogger, nutriMentor);
+        // ── User-specific achievements ──
+        var userFirstPost = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "USER_FIRST_POST",
+            Title = "Начало пути!",
+            Description = "Опубликуйте свой первый пост как пользователь",
+            IconKey = "pen-line",
+            ColorKey = "indigo",
+            Rarity = AchievementRarity.Common,
+            XpReward = 25,
+            IsActive = true,
+            TargetRole = UserRole.User,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        var userFirstMessage = new Achievement
+        {
+            Id = Guid.NewGuid(),
+            Code = "USER_FIRST_MESSAGE",
+            Title = "Знакомство!",
+            Description = "Отправьте своё первое сообщение в чат",
+            IconKey = "message-circle",
+            ColorKey = "cyan",
+            Rarity = AchievementRarity.Common,
+            XpReward = 20,
+            IsActive = true,
+            TargetRole = UserRole.User,
+            CreatedAt = now,
+            UpdatedAt = now
+        };
+
+        context.Achievements.AddRange(firstPost, firstMessage, firstProgram, firstMealPlan, nutriBlogger, nutriMentor, userFirstPost, userFirstMessage);
         await context.SaveChangesAsync();
 
         // ── Challenges (linked 1-to-1 with achievements) ──
@@ -242,7 +275,7 @@ public static class DatabaseSeeder
                 Type = ChallengeType.OneTime,
                 TargetValue = 1,
                 IsActive = true,
-                TargetRole = null,
+                TargetRole = UserRole.Trainer,
                 AchievementId = firstPost.Id,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -256,7 +289,7 @@ public static class DatabaseSeeder
                 Type = ChallengeType.OneTime,
                 TargetValue = 1,
                 IsActive = true,
-                TargetRole = null,
+                TargetRole = UserRole.Trainer,
                 AchievementId = firstMessage.Id,
                 CreatedAt = now,
                 UpdatedAt = now
@@ -317,12 +350,41 @@ public static class DatabaseSeeder
                 AchievementId = nutriMentor.Id,
                 CreatedAt = now,
                 UpdatedAt = now
+            },
+            // ── User-specific challenges ──
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_USER_FIRST_POST",
+                Title = "Начало пути",
+                Description = "Опубликуйте свой первый пост",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.User,
+                AchievementId = userFirstPost.Id,
+                CreatedAt = now,
+                UpdatedAt = now
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Code = "CHALLENGE_USER_FIRST_MESSAGE",
+                Title = "Первое знакомство",
+                Description = "Отправьте своё первое сообщение в чат",
+                Type = ChallengeType.OneTime,
+                TargetValue = 1,
+                IsActive = true,
+                TargetRole = UserRole.User,
+                AchievementId = userFirstMessage.Id,
+                CreatedAt = now,
+                UpdatedAt = now
             }
         };
 
         context.Challenges.AddRange(challenges);
         await context.SaveChangesAsync();
 
-        Console.WriteLine("✅ Achievements & challenges seeded (6 achievements, 6 challenges).");
+        Console.WriteLine("✅ Achievements & challenges seeded (8 achievements, 8 challenges).");
     }
 }

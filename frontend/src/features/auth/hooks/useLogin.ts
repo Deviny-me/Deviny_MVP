@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { authService, LoginRequestDto } from '../services/authService'
-import { RoleType } from '../types/role.types'
+import { LoginRequestDto } from '../services/authService'
+import { useAuth } from '../AuthContext'
 
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { login: authLogin } = useAuth()
   const t = useTranslations('auth.validation')
 
   const login = async (data: LoginRequestDto) => {
@@ -15,15 +16,14 @@ export const useLogin = () => {
     setError(null)
 
     try {
-      const response = await authService.login(data)
-      
-      // Remember me → localStorage (persists), otherwise → sessionStorage (cleared on browser close)
-      const store = data.rememberMe ? localStorage : sessionStorage
-      const otherStore = data.rememberMe ? sessionStorage : localStorage
-      otherStore.removeItem('accessToken')
-      store.setItem('accessToken', response.accessToken)
-      
-      return response
+      // Delegate to AuthContext.login — it calls the API, updates user state,
+      // and persists both token + user to the correct storage.
+      await authLogin(
+        data.email,
+        data.password,
+        (data.role as 'user' | 'trainer' | 'nutritionist') || 'trainer',
+        data.rememberMe ?? false,
+      )
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred'
       const errorMap: Record<string, string> = {
