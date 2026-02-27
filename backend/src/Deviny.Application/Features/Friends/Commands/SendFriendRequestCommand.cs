@@ -1,6 +1,7 @@
 using FluentValidation;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.DTOs;
+using Deviny.Application.Features.Notifications.Events;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using MediatR;
@@ -29,15 +30,18 @@ public class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequest
     private readonly IFriendRequestRepository _friendRequestRepository;
     private readonly IUserBlockRepository _userBlockRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IMediator _mediator;
 
     public SendFriendRequestCommandHandler(
         IFriendRequestRepository friendRequestRepository,
         IUserBlockRepository userBlockRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IMediator mediator)
     {
         _friendRequestRepository = friendRequestRepository;
         _userBlockRepository = userBlockRepository;
         _userRepository = userRepository;
+        _mediator = mediator;
     }
 
     public async Task<FriendRequestDto> Handle(SendFriendRequestCommand request, CancellationToken cancellationToken)
@@ -70,6 +74,16 @@ public class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequest
             existingRequest.RespondedAt = DateTime.UtcNow;
             await _friendRequestRepository.UpdateAsync(existingRequest);
 
+            // Notify the original sender that their request was accepted
+            await _mediator.Publish(new FriendRequestAcceptedEvent
+            {
+                RequestId = existingRequest.Id,
+                AcceptorId = sender.Id,
+                AcceptorName = sender.FullName,
+                AcceptorAvatar = sender.AvatarUrl,
+                OriginalSenderId = existingRequest.SenderId
+            }, cancellationToken);
+
             return new FriendRequestDto
             {
                 Id = existingRequest.Id,
@@ -99,6 +113,16 @@ public class SendFriendRequestCommandHandler : IRequestHandler<SendFriendRequest
         };
 
         await _friendRequestRepository.AddAsync(friendRequest);
+
+        // Publish real-time notification event
+        await _mediator.Publish(new FriendRequestReceivedEvent
+        {
+            RequestId = friendRequest.Id,
+            SenderId = sender.Id,
+            SenderName = sender.FullName,
+            SenderAvatar = sender.AvatarUrl,
+            ReceiverId = receiver.Id
+        }, cancellationToken);
 
         return new FriendRequestDto
         {

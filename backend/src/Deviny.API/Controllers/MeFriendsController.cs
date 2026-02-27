@@ -113,4 +113,18 @@ public class MeFriendsController : BaseApiController
         await _mediator.Send(command);
         return NoContent();
     }
+
+    [HttpGet("relationship/{targetUserId}")]
+    public async Task<ActionResult<RelationshipStatusDto>> GetRelationshipStatus(Guid targetUserId)
+    {
+        var userId = GetCurrentUserId();
+        var query = new GetRelationshipStatusQuery
+        {
+            CurrentUserId = userId,
+            TargetUserId = targetUserId
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
 }

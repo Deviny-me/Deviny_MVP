@@ -14,17 +14,28 @@ import {
   Video,
   Image as ImageIcon,
   X,
+  UserPlus,
+  UserCheck,
+  UserMinus,
+  Mail,
+  Ban,
+  Clock,
+  Check,
 } from 'lucide-react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { postsApi } from '@/lib/api/postsApi'
+import { friendsApi, followsApi, blocksApi } from '@/lib/api/friendsApi'
+import { chatConnection } from '@/lib/signalr/chatConnection'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
+import type { RelationshipStatus } from '@/types/friend'
 import { getMediaUrl } from '@/lib/config'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
+import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
 
@@ -282,6 +293,7 @@ function OtherUserProfilePageInner() {
   const tPosts = useTranslations('posts')
   const tc = useTranslations('common')
   const tp = useTranslations('profile')
+  const tUp = useTranslations('userProfile')
 
   // Tab state from URL
   const tabParam = (searchParams.get('tab') || 'all') as ProfilePostTab
@@ -360,6 +372,234 @@ function OtherUserProfilePageInner() {
       router.replace('/user/profile')
     }
   }, [currentUser?.id, userId, router])
+
+  // ─── Relationship status ───
+  const [relationship, setRelationship] = useState<RelationshipStatus | null>(null)
+  const [relationshipLoading, setRelationshipLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+
+  useEffect(() => {
+    if (!userId || !currentUser?.id || userId === currentUser.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        setRelationshipLoading(true)
+        const status = await friendsApi.getRelationshipStatus(userId)
+        if (!cancelled) setRelationship(status)
+      } catch (err) {
+        console.error('Failed to load relationship status:', err)
+      } finally {
+        if (!cancelled) setRelationshipLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [userId, currentUser?.id])
+
+  // ─── Real-time relationship updates via SignalR ───
+  useEffect(() => {
+    if (!userId || !currentUser?.id) return
+
+    // When the user we're viewing accepts OUR friend request
+    const handleFriendRequestAccepted = (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => {
+      if (data.acceptorId === userId) {
+        setRelationship(prev => prev ? {
+          ...prev,
+          isFriend: true,
+          friendsSince: new Date().toISOString(),
+          hasPendingRequest: false,
+          pendingRequestId: undefined,
+          isRequestSender: false,
+        } : prev)
+        setToast({ message: `${data.acceptorName} ${tUp('requestAccepted')}`, type: 'success' })
+      }
+    }
+
+    // When the user we're viewing removes us as a friend
+    const handleFriendRemoved = (data: { removedByUserId: string; removedByName: string }) => {
+      if (data.removedByUserId === userId) {
+        setRelationship(prev => prev ? {
+          ...prev,
+          isFriend: false,
+          friendsSince: undefined,
+        } : prev)
+      }
+    }
+
+    // When the user we're viewing sends us a friend request
+    const handleFriendRequestReceived = (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => {
+      if (data.senderId === userId) {
+        setRelationship(prev => prev ? {
+          ...prev,
+          hasPendingRequest: true,
+          pendingRequestId: data.requestId,
+          isRequestSender: false,
+        } : prev)
+      }
+    }
+
+    chatConnection.onFriendRequestAccepted(handleFriendRequestAccepted)
+    chatConnection.onFriendRemoved(handleFriendRemoved)
+    chatConnection.onFriendRequestReceived(handleFriendRequestReceived)
+
+    return () => {
+      chatConnection.off('FriendRequestAccepted', handleFriendRequestAccepted)
+      chatConnection.off('FriendRemoved', handleFriendRemoved)
+      chatConnection.off('FriendRequestReceived', handleFriendRequestReceived)
+    }
+  }, [userId, currentUser?.id, tUp])
+
+  const handleSendFriendRequest = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      const request = await friendsApi.sendFriendRequest(userId)
+      setRelationship(prev => prev ? {
+        ...prev,
+        hasPendingRequest: true,
+        pendingRequestId: request.id,
+        isRequestSender: true,
+      } : prev)
+      setToast({ message: tUp('friendRequestSent'), type: 'success' })
+    } catch (err) {
+      setToast({ message: tUp('friendRequestError'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
+
+  const handleCancelFriendRequest = useCallback(async () => {
+    if (actionLoading || !relationship?.pendingRequestId) return
+    setActionLoading(true)
+    try {
+      await friendsApi.cancelFriendRequest(relationship.pendingRequestId)
+      setRelationship(prev => prev ? {
+        ...prev,
+        hasPendingRequest: false,
+        pendingRequestId: undefined,
+        isRequestSender: false,
+      } : prev)
+      setToast({ message: tUp('requestCancelled'), type: 'info' })
+    } catch (err) {
+      setToast({ message: tUp('errorCancellingRequest'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [actionLoading, relationship?.pendingRequestId, tUp])
+
+  const handleAcceptFriendRequest = useCallback(async () => {
+    if (actionLoading || !relationship?.pendingRequestId) return
+    setActionLoading(true)
+    try {
+      await friendsApi.acceptFriendRequest(relationship.pendingRequestId)
+      setRelationship(prev => prev ? {
+        ...prev,
+        isFriend: true,
+        friendsSince: new Date().toISOString(),
+        hasPendingRequest: false,
+        pendingRequestId: undefined,
+        isRequestSender: false,
+      } : prev)
+      setToast({ message: tUp('requestAccepted'), type: 'success' })
+    } catch (err) {
+      setToast({ message: tUp('errorAccepting'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [actionLoading, relationship?.pendingRequestId, tUp])
+
+  const handleDeclineFriendRequest = useCallback(async () => {
+    if (actionLoading || !relationship?.pendingRequestId) return
+    setActionLoading(true)
+    try {
+      await friendsApi.declineFriendRequest(relationship.pendingRequestId)
+      setRelationship(prev => prev ? {
+        ...prev,
+        hasPendingRequest: false,
+        pendingRequestId: undefined,
+        isRequestSender: false,
+      } : prev)
+      setToast({ message: tUp('requestDeclined'), type: 'info' })
+    } catch (err) {
+      setToast({ message: tUp('errorDeclining'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [actionLoading, relationship?.pendingRequestId, tUp])
+
+  const handleRemoveFriend = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      await friendsApi.removeFriend(userId)
+      setRelationship(prev => prev ? {
+        ...prev,
+        isFriend: false,
+        friendsSince: undefined,
+      } : prev)
+      setToast({ message: tUp('friendRemoved'), type: 'info' })
+    } catch (err) {
+      setToast({ message: tUp('errorRemovingFriend'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
+
+  const handleFollow = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      await followsApi.followTrainer(userId)
+      setRelationship(prev => prev ? { ...prev, isFollowing: true } : prev)
+      setToast({ message: tUp('nowFollowing'), type: 'success' })
+    } catch (err) {
+      setToast({ message: tUp('errorFollowing'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
+
+  const handleUnfollow = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      await followsApi.unfollowTrainer(userId)
+      setRelationship(prev => prev ? { ...prev, isFollowing: false } : prev)
+      setToast({ message: tUp('unfollowed'), type: 'info' })
+    } catch (err) {
+      setToast({ message: tUp('errorUnfollowing'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
+
+  const handleBlock = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      await blocksApi.blockUser(userId)
+      setRelationship(prev => prev ? { ...prev, isBlocked: true } : prev)
+      setToast({ message: tUp('userBlocked'), type: 'info' })
+    } catch (err) {
+      setToast({ message: tUp('errorBlocking'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
+
+  const handleUnblock = useCallback(async () => {
+    if (actionLoading) return
+    setActionLoading(true)
+    try {
+      await blocksApi.unblockUser(userId)
+      setRelationship(prev => prev ? { ...prev, isBlocked: false } : prev)
+      setToast({ message: tUp('userUnblocked'), type: 'success' })
+    } catch (err) {
+      setToast({ message: tUp('errorUnblocking'), type: 'error' })
+    } finally {
+      setActionLoading(false)
+    }
+  }, [userId, actionLoading, tUp])
 
   const loadPosts = useCallback(
     async (pageNum: number, append: boolean = false) => {
@@ -464,6 +704,115 @@ function OtherUserProfilePageInner() {
                 )}
               </div>
             </div>
+
+            {/* Social Action Buttons */}
+            {!relationshipLoading && relationship && !relationship.isBlockedByThem && (
+              <div className="flex flex-wrap items-center gap-2 mt-4">
+                {/* Friend button */}
+                {relationship.isFriend ? (
+                  <button
+                    onClick={handleRemoveFriend}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-green-400 hover:bg-red-500/20 hover:text-red-400 transition-all group disabled:opacity-50"
+                  >
+                    <UserCheck className="w-4 h-4 group-hover:hidden" />
+                    <UserMinus className="w-4 h-4 hidden group-hover:block" />
+                    <span className="group-hover:hidden">{tUp('friends')}</span>
+                    <span className="hidden group-hover:inline">{tUp('removeFriend')}</span>
+                  </button>
+                ) : relationship.hasPendingRequest ? (
+                  relationship.isRequestSender ? (
+                    <button
+                      onClick={handleCancelFriendRequest}
+                      disabled={actionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-yellow-400 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>{tUp('requestPending')}</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={handleAcceptFriendRequest}
+                        disabled={actionLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all disabled:opacity-50"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span>{tUp('accept')}</span>
+                      </button>
+                      <button
+                        onClick={handleDeclineFriendRequest}
+                        disabled={actionLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50"
+                      >
+                        <X className="w-4 h-4" />
+                        <span>{tUp('decline')}</span>
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <button
+                    onClick={handleSendFriendRequest}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all disabled:opacity-50"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>{tUp('addFriend')}</span>
+                  </button>
+                )}
+
+                {/* Follow button (for trainers/nutritionists) */}
+                {profileData?.role && ['Trainer', 'Nutritionist'].includes(profileData.role) && (
+                  relationship.isFollowing ? (
+                    <button
+                      onClick={handleUnfollow}
+                      disabled={actionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-purple-400 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
+                    >
+                      <span>{tUp('following')}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleFollow}
+                      disabled={actionLoading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-all disabled:opacity-50"
+                    >
+                      <span>{tUp('follow')}</span>
+                    </button>
+                  )
+                )}
+
+                {/* Message button */}
+                <button
+                  onClick={() => router.push(`/user/messages?userId=${userId}`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>{tUp('message')}</span>
+                </button>
+
+                {/* Block button */}
+                {relationship.isBlocked ? (
+                  <button
+                    onClick={handleUnblock}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50"
+                  >
+                    <Ban className="w-4 h-4" />
+                    <span>{tUp('unblock')}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleBlock}
+                    disabled={actionLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
+                  >
+                    <Ban className="w-4 h-4" />
+                    <span>{tUp('block')}</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -556,6 +905,13 @@ function OtherUserProfilePageInner() {
           imageUrl={viewingPhoto.url}
           caption={viewingPhoto.caption}
           onClose={() => setViewingPhoto(null)}
+        />
+      )}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </>

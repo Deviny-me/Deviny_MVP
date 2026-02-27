@@ -7,6 +7,7 @@ public interface IFriendRequestRepository
 {
     Task<FriendRequest?> GetByIdAsync(int id);
     Task<FriendRequest?> GetActiveRequestBetweenUsersAsync(Guid userId1, Guid userId2);
+    Task<FriendRequest?> GetAcceptedRequestBetweenUsersAsync(Guid userId1, Guid userId2);
     Task<bool> AreFriendsAsync(Guid userId1, Guid userId2);
     Task<List<FriendRequest>> GetIncomingRequestsAsync(Guid userId);
     Task<List<FriendRequest>> GetOutgoingRequestsAsync(Guid userId);

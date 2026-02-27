@@ -5,5 +5,8 @@ public enum NotificationType
     AchievementUnlocked,
     TrainingProgramCreated,
     MealProgramCreated,
-    System
+    System,
+    FriendRequestReceived,
+    FriendRequestAccepted,
+    NewFollower
 }
