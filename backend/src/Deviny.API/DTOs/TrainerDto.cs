@@ -21,6 +21,7 @@ public class TrainerDto
     public required int StudentsCount { get; set; }
     public required int AchievementsCount { get; set; }
     public required decimal RatingValue { get; set; }
+    public required decimal ActivityRatingValue { get; set; } = 0;
     public required int ReviewsCount { get; set; }
     public required string Slug { get; set; }
     public required string ProfilePublicUrl { get; set; }

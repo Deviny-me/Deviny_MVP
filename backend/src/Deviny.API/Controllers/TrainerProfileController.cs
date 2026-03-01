@@ -133,6 +133,7 @@ public class TrainerProfileController : BaseApiController
                     ProfilePublicUrl = profilePublicUrl,
                     Role = user.Role.ToString(),
                     Feedback = user.Feedback,
+                    ActivityRatingValue = 0
                 },
                 About = new AboutDto
                 {
