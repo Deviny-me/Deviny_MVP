@@ -131,7 +131,9 @@ public class TrainerProfileController : BaseApiController
                     ReviewsCount = 0, // Placeholder for future reviews
                     Slug = profile.Slug,
                     ProfilePublicUrl = profilePublicUrl,
-                    Role = user.Role.ToString()
+                    Role = user.Role.ToString(),
+                    Feedback = user.Feedback,
+                    ActivityRatingValue = 0
                 },
                 About = new AboutDto
                 {

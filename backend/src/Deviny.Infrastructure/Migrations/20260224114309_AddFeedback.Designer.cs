@@ -3,6 +3,7 @@ using System;
 using Deviny.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Deviny.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260224114309_AddFeedback")]
+    partial class AddFeedback
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,13 +261,7 @@ namespace Deviny.Infrastructure.Migrations
                         .HasPrecision(2, 1)
                         .HasColumnType("numeric(2,1)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
 
                     b.ToTable("Feedbacks");
                 });
@@ -362,11 +359,6 @@ namespace Deviny.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPublic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
@@ -1010,11 +1002,6 @@ namespace Deviny.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsPublic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
@@ -1559,17 +1546,6 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Deviny.Domain.Entities.Feedback", b =>
-                {
-                    b.HasOne("Deviny.Domain.Entities.User", "User")
-                        .WithOne("Feedback")
-                        .HasForeignKey("Deviny.Domain.Entities.Feedback", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Deviny.Domain.Entities.FriendRequest", b =>
                 {
                     b.HasOne("Deviny.Domain.Entities.User", "Receiver")
@@ -2016,9 +1992,6 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("ChallengeProgress");
 
                     b.Navigation("ConversationMemberships");
-
-                    b.Navigation("Feedback")
-                        .IsRequired();
 
                     b.Navigation("Followers");
 

@@ -14,4 +14,8 @@ public class PublicTrainerDto
     public string Role { get; set; } = string.Empty;
     public int ProgramsCount { get; set; }
     public List<string> Specializations { get; set; } = new();
+    public double RatingValue { get; set; }
+    public int ReviewsCount { get; set; }
+    public int TotalSales { get; set; }
+    public double ActivityRatingValue { get; set; }
 }
