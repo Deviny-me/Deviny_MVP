@@ -29,6 +29,12 @@ public class MealProgramConfiguration : IEntityTypeConfiguration<MealProgram>
             .IsRequired(false)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.Category)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(Deviny.Domain.Enums.ProgramCategory.Diet);
+
         builder.Property(p => p.Code)
             .IsRequired()
             .HasMaxLength(50);

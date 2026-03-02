@@ -5,7 +5,11 @@ export interface ProgramDto {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   trainingVideoUrls: string[];
@@ -23,12 +27,18 @@ export interface PublicProgramDto {
   title: string;
   description: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   averageRating: number;
   totalReviews: number;
   totalPurchases: number;
+  standardSpotsRemaining?: number;
+  proSpotsRemaining?: number;
   createdAt: string;
   trainerId: string;
   trainerName: string;
@@ -42,7 +52,11 @@ export interface CreateProgramRequest {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   isPublic?: boolean;
   coverImage: File;
   trainingVideos: File[];
@@ -53,7 +67,11 @@ export interface UpdateProgramRequest {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   isPublic?: boolean;
   coverImage?: File;
   trainingVideos?: File[];
@@ -66,7 +84,11 @@ export interface MealProgramDto {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
@@ -80,10 +102,16 @@ export interface PublicMealProgramDto {
   title: string;
   description: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
+  standardSpotsRemaining?: number;
+  proSpotsRemaining?: number;
   createdAt: string;
   trainerId: string;
   trainerName: string;
@@ -97,7 +125,11 @@ export interface CreateMealProgramRequest {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   isPublic?: boolean;
   coverImage: File;
   videos: File[];
@@ -108,11 +140,18 @@ export interface UpdateMealProgramRequest {
   description: string;
   detailedDescription?: string;
   price: number;
+  standardPrice?: number;
   proPrice?: number;
+  maxStandardSpots?: number;
+  maxProSpots?: number;
+  category?: string;
   isPublic?: boolean;
   coverImage?: File;
   videos?: File[];
 }
 
-// Union type for program type selection
+// Union type for program type selection (which API/entity to use)
 export type ProgramType = 'training' | 'meal';
+
+// Semantic program category
+export type ProgramCategory = 'Training' | 'Diet' | 'Consultation';

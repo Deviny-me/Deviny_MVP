@@ -45,6 +45,22 @@ export const mealProgramsApi = {
       formData.append('proPrice', request.proPrice.toString());
     }
 
+    if (request.standardPrice != null) {
+      formData.append('standardPrice', request.standardPrice.toString());
+    }
+
+    if (request.maxStandardSpots != null) {
+      formData.append('maxStandardSpots', request.maxStandardSpots.toString());
+    }
+
+    if (request.maxProSpots != null) {
+      formData.append('maxProSpots', request.maxProSpots.toString());
+    }
+
+    if (request.category) {
+      formData.append('category', request.category);
+    }
+
     if (request.videos && request.videos.length > 0) {
       request.videos.forEach(video => {
         formData.append('videos', video);
@@ -73,6 +89,22 @@ export const mealProgramsApi = {
 
     if (request.proPrice != null) {
       formData.append('proPrice', request.proPrice.toString());
+    }
+
+    if (request.standardPrice != null) {
+      formData.append('standardPrice', request.standardPrice.toString());
+    }
+
+    if (request.maxStandardSpots != null) {
+      formData.append('maxStandardSpots', request.maxStandardSpots.toString());
+    }
+
+    if (request.maxProSpots != null) {
+      formData.append('maxProSpots', request.maxProSpots.toString());
+    }
+
+    if (request.category) {
+      formData.append('category', request.category);
     }
 
     if (request.coverImage) {

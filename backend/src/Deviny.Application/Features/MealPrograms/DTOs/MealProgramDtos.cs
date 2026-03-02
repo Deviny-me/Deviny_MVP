@@ -7,7 +7,11 @@ public class MealProgramDto
     public string Description { get; set; } = string.Empty;
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
+    public decimal? StandardPrice { get; set; }
     public decimal? ProPrice { get; set; }
+    public int? MaxStandardSpots { get; set; }
+    public int? MaxProSpots { get; set; }
+    public string Category { get; set; } = "Diet";
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> VideoUrls { get; set; } = new();
@@ -22,7 +26,13 @@ public class PublicMealProgramDto
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
+    public decimal? StandardPrice { get; set; }
     public decimal? ProPrice { get; set; }
+    public int? MaxStandardSpots { get; set; }
+    public int? MaxProSpots { get; set; }
+    public int StandardSpotsRemaining { get; set; }
+    public int ProSpotsRemaining { get; set; }
+    public string Category { get; set; } = "Diet";
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> VideoUrls { get; set; } = new();

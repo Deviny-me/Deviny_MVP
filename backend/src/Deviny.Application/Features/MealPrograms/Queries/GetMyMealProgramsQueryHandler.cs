@@ -25,7 +25,11 @@ public class GetMyMealProgramsQueryHandler : IRequestHandler<GetMyMealProgramsQu
             Description = p.Description,
             DetailedDescription = p.DetailedDescription,
             Price = p.Price,
+            StandardPrice = p.StandardPrice,
             ProPrice = p.ProPrice,
+            MaxStandardSpots = p.MaxStandardSpots,
+            MaxProSpots = p.MaxProSpots,
+            Category = p.Category.ToString(),
             Code = p.Code,
             CoverImageUrl = p.CoverImagePath,
             VideoUrls = string.IsNullOrEmpty(p.VideosPath)

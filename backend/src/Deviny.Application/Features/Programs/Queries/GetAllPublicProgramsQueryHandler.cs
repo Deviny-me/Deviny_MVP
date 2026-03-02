@@ -28,7 +28,17 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
             Title = p.Title,
             Description = p.Description,
             Price = p.Price,
+            StandardPrice = p.StandardPrice,
             ProPrice = p.ProPrice,
+            MaxStandardSpots = p.MaxStandardSpots,
+            MaxProSpots = p.MaxProSpots,
+            Category = p.Category.ToString(),
+            StandardSpotsRemaining = (p.MaxStandardSpots ?? 0) > 0
+                ? Math.Max(0, p.MaxStandardSpots!.Value - p.Purchases.Count(pu => pu.Tier == ProgramTier.Standard && pu.Status == ProgramPurchaseStatus.Active))
+                : 0,
+            ProSpotsRemaining = (p.MaxProSpots ?? 0) > 0
+                ? Math.Max(0, p.MaxProSpots!.Value - p.Purchases.Count(pu => pu.Tier == ProgramTier.Pro && pu.Status == ProgramPurchaseStatus.Active))
+                : 0,
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath) 
                 ? "" 

@@ -59,7 +59,11 @@ public class NutritionistMealProgramsController : BaseApiController
                 Description = request.Description,
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
+                StandardPrice = request.StandardPrice,
                 ProPrice = request.ProPrice,
+                MaxStandardSpots = request.MaxStandardSpots,
+                MaxProSpots = request.MaxProSpots,
+                Category = request.Category,
                 IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
@@ -103,7 +107,11 @@ public class NutritionistMealProgramsController : BaseApiController
                 Description = request.Description,
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
+                StandardPrice = request.StandardPrice,
                 ProPrice = request.ProPrice,
+                MaxStandardSpots = request.MaxStandardSpots,
+                MaxProSpots = request.MaxProSpots,
+                Category = request.Category,
                 IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
