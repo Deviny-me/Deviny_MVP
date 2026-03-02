@@ -33,6 +33,7 @@ public class GetMyProgramsQueryHandler : IRequestHandler<GetMyProgramsQuery, Lis
                 DetailedDescription = p.DetailedDescription,
                 Price = p.Price,
                 ProPrice = p.ProPrice,
+                Category = p.Category.ToString(),
                 Code = p.Code,
                 CoverImageUrl = p.CoverImagePath,
                 TrainingVideoUrls = videoPaths,

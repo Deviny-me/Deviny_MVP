@@ -32,6 +32,7 @@ public class GetPublicProgramByIdQueryHandler : IRequestHandler<GetPublicProgram
             Description = p.Description,
             Price = p.Price,
             ProPrice = p.ProPrice,
+            Category = p.Category.ToString(),
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath)
                 ? ""

@@ -475,19 +475,27 @@
 
     "tabTraining": "Training",
     "tabMeal": "Nutrition",
+    "tabConsultation": "Consultation",
     "programType": "Program type *",
+    "categoryLabel": "Program category *",
     "typeTraining": "Training program",
     "typeMeal": "Meal program",
+    "typeConsultation": "Consultation",
     "newTrainingProgram": "New training program",
     "newMealProgram": "New meal program",
+    "newConsultation": "New consultation",
     "editTrainingProgram": "Edit training program",
     "editMealProgram": "Edit meal program",
+    "editConsultation": "Edit consultation",
     "noTrainingPrograms": "No training programs",
     "noMealPrograms": "No meal programs",
+    "noConsultations": "No consultations",
     "createFirstTraining": "Create your first training program",
     "createFirstMeal": "Create your first meal program",
+    "createFirstConsultation": "Create your first consultation",
     "totalTrainingPrograms": "Training programs",
-    "totalMealPrograms": "Meal programs"
+    "totalMealPrograms": "Meal programs",
+    "totalConsultations": "Consultations"
   },
 
   "schedule": {
@@ -982,6 +990,7 @@
     "searchPlaceholder": "Search programs, trainers...",
     "training": "Training",
     "nutrition": "Nutrition",
+    "consultation": "Consultation",
     "newest": "Newest",
     "mostPopular": "Most Popular",
     "highestRated": "Highest Rated",

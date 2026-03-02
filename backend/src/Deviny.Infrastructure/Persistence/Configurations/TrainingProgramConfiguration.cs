@@ -29,6 +29,12 @@ public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingPro
             .IsRequired(false)
             .HasPrecision(18, 2);
 
+        builder.Property(p => p.Category)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(Deviny.Domain.Enums.ProgramCategory.Training);
+
         builder.Property(p => p.Code)
             .IsRequired()
             .HasMaxLength(50);

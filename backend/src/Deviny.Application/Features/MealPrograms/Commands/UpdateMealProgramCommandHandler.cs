@@ -148,6 +148,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
             DetailedDescription = program.DetailedDescription,
             Price = program.Price,
             ProPrice = program.ProPrice,
+            Category = program.Category.ToString(),
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             VideoUrls = videoPaths,

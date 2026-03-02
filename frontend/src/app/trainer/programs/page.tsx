@@ -19,11 +19,12 @@ import {
   Video,
   DollarSign,
   Dumbbell,
-  Apple
+  Apple,
+  MessageSquare
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
-import { ProgramDto, MealProgramDto, ProgramType } from '@/types/program'
+import { ProgramDto, MealProgramDto, ProgramType, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useAuth } from '@/features/auth/AuthContext'
 
@@ -40,6 +41,7 @@ type UnifiedProgram = {
   detailedDescription?: string
   price: number
   proPrice?: number
+  category: ProgramCategory
   code: string
   coverImageUrl: string
   createdAt: string
@@ -60,6 +62,7 @@ function toUnifiedFromTraining(p: ProgramDto): UnifiedProgram {
     detailedDescription: p.detailedDescription,
     price: p.price,
     proPrice: p.proPrice,
+    category: (p.category as ProgramCategory) || 'Training',
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -80,6 +83,7 @@ function toUnifiedFromMeal(p: MealProgramDto): UnifiedProgram {
     detailedDescription: p.detailedDescription,
     price: p.price,
     proPrice: p.proPrice,
+    category: (p.category as ProgramCategory) || 'Diet',
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -107,8 +111,8 @@ export default function ProgramsPage() {
     hoverText: 'group-hover:text-[#FF6B35]',
   }
 
-  // Active tab
-  const [activeTab, setActiveTab] = useState<ProgramType>('meal')
+  // Active tab — now based on category
+  const [activeTab, setActiveTab] = useState<ProgramCategory>('Training')
 
   // Data
   const [trainingPrograms, setTrainingPrograms] = useState<ProgramDto[]>([])
@@ -127,7 +131,7 @@ export default function ProgramsPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
 
   // Form state
-  const [formType, setFormType] = useState<ProgramType>('training')
+  const [formCategory, setFormCategory] = useState<ProgramCategory>('Training')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [detailedDescription, setDetailedDescription] = useState('')
@@ -140,7 +144,7 @@ export default function ProgramsPage() {
   // Load data when currentUser is ready
   useEffect(() => {
     if (!currentUser) return
-    setActiveTab('training')
+    setActiveTab('Training')
     loadTrainingPrograms()
     loadMealPrograms()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,6 +180,7 @@ export default function ProgramsPage() {
           createdAt: pub.createdAt,
           updatedAt: '',
           type: 'training',
+          category: (pub.category as ProgramCategory) || 'Training',
           averageRating: pub.averageRating,
           totalReviews: pub.totalReviews,
           totalPurchases: pub.totalPurchases,
@@ -210,17 +215,20 @@ export default function ProgramsPage() {
     }
   }
 
-  // Current list based on active tab
-  const currentPrograms: UnifiedProgram[] = activeTab === 'training'
-    ? trainingPrograms.map(toUnifiedFromTraining)
-    : mealPrograms.map(toUnifiedFromMeal)
+  // All unified programs
+  const allTrainingUnified = trainingPrograms.map(toUnifiedFromTraining)
+  const allMealUnified = mealPrograms.map(toUnifiedFromMeal)
+  const allPrograms = [...allTrainingUnified, ...allMealUnified]
+
+  // Current list based on active tab (filter by category)
+  const currentPrograms: UnifiedProgram[] = allPrograms.filter(p => p.category === activeTab)
 
   const filteredPrograms = currentPrograms.filter(p => {
     if (!searchQuery) return true
     return p.title.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
-  const isLoading = activeTab === 'training' ? loadingTraining : loadingMeal
+  const isLoading = loadingTraining || loadingMeal
 
   // Stats
   const trainingStats = {
@@ -243,18 +251,18 @@ export default function ProgramsPage() {
     setCoverPreview(null)
     setTrainingVideos([])
     setEditingProgram(null)
-    setFormType(activeTab)
+    setFormCategory(activeTab)
   }
 
   const openCreateModal = () => {
     resetForm()
-    setFormType(activeTab)
+    setFormCategory(activeTab)
     setShowCreateModal(true)
   }
 
   const openEditModal = (program: UnifiedProgram) => {
     setEditingProgram(program)
-    setFormType(program.type)
+    setFormCategory(program.category)
     setTitle(program.title)
     setDescription(program.description)
     setDetailedDescription(program.detailedDescription || '')
@@ -302,7 +310,8 @@ export default function ProgramsPage() {
     try {
       setSaving(true)
 
-      if (formType === 'training') {
+      // Training & Consultation use TrainingProgram API; Diet uses MealProgram API
+      if (formCategory === 'Training' || formCategory === 'Consultation') {
         if (editingProgram) {
           await programsApi.updateProgram(editingProgram.id, {
             title,
@@ -310,6 +319,7 @@ export default function ProgramsPage() {
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
+            category: formCategory,
             coverImage: coverImage || undefined,
             trainingVideos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -321,6 +331,7 @@ export default function ProgramsPage() {
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
+            category: formCategory,
             coverImage: coverImage!,
             trainingVideos,
           })
@@ -328,6 +339,7 @@ export default function ProgramsPage() {
         }
         loadTrainingPrograms()
       } else {
+        // Diet
         if (editingProgram) {
           await mealProgramsApi.updateMealProgram(editingProgram.id, {
             title,
@@ -335,6 +347,7 @@ export default function ProgramsPage() {
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
+            category: formCategory,
             coverImage: coverImage || undefined,
             videos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -346,6 +359,7 @@ export default function ProgramsPage() {
             detailedDescription: detailedDescription || undefined,
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
+            category: formCategory,
             coverImage: coverImage!,
             videos: trainingVideos,
           })
@@ -406,9 +420,9 @@ export default function ProgramsPage() {
         {/* Tabs */}
         <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-xl p-1 w-fit border border-white/10">
           <button
-              onClick={() => setActiveTab('training')}
+              onClick={() => setActiveTab('Training')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'training'
+                activeTab === 'Training'
                   ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
                   : 'text-gray-400 hover:text-white'
               }`}
@@ -416,15 +430,15 @@ export default function ProgramsPage() {
               <Dumbbell className="w-4 h-4" />
               {t('tabTraining')}
               <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                activeTab === 'training' ? 'bg-white/20' : 'bg-white/10'
+                activeTab === 'Training' ? 'bg-white/20' : 'bg-white/10'
               }`}>
-                {trainingPrograms.length}
+                {allPrograms.filter(p => p.category === 'Training').length}
               </span>
             </button>
           <button
-            onClick={() => setActiveTab('meal')}
+            onClick={() => setActiveTab('Diet')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'meal'
+              activeTab === 'Diet'
                 ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
                 : 'text-gray-400 hover:text-white'
             }`}
@@ -432,15 +446,31 @@ export default function ProgramsPage() {
             <Apple className="w-4 h-4" />
             {t('tabMeal')}
             <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-              activeTab === 'meal' ? 'bg-white/20' : 'bg-white/10'
+              activeTab === 'Diet' ? 'bg-white/20' : 'bg-white/10'
             }`}>
-              {mealPrograms.length}
+              {allPrograms.filter(p => p.category === 'Diet').length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('Consultation')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'Consultation'
+                ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            {t('tabConsultation')}
+            <span className={`px-1.5 py-0.5 rounded-full text-xs ${
+              activeTab === 'Consultation' ? 'bg-white/20' : 'bg-white/10'
+            }`}>
+              {allPrograms.filter(p => p.category === 'Consultation').length}
             </span>
           </button>
         </div>
 
         {/* Stats */}
-        {activeTab === 'training' && (
+        {activeTab === 'Training' && (
           <div className="grid grid-cols-4 gap-4">
             {[
               { label: t('totalTrainingPrograms'), value: trainingStats.total.toString(), icon: BookOpen },
@@ -462,7 +492,7 @@ export default function ProgramsPage() {
             ))}
           </div>
         )}
-        {activeTab === 'meal' && (
+        {activeTab === 'Diet' && (
           <div className="grid grid-cols-4 gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -470,8 +500,21 @@ export default function ProgramsPage() {
               className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
             >
               <Apple className={`w-6 h-6 ${accent.text} mb-2`} />
-              <p className="text-2xl font-bold text-white">{mealPrograms.length}</p>
+              <p className="text-2xl font-bold text-white">{allPrograms.filter(p => p.category === 'Diet').length}</p>
               <p className="text-xs text-gray-400">{t('totalMealPrograms')}</p>
+            </motion.div>
+          </div>
+        )}
+        {activeTab === 'Consultation' && (
+          <div className="grid grid-cols-4 gap-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
+            >
+              <MessageSquare className={`w-6 h-6 ${accent.text} mb-2`} />
+              <p className="text-2xl font-bold text-white">{allPrograms.filter(p => p.category === 'Consultation').length}</p>
+              <p className="text-xs text-gray-400">{t('totalConsultations')}</p>
             </motion.div>
           </div>
         )}
@@ -497,16 +540,18 @@ export default function ProgramsPage() {
           </div>
         ) : filteredPrograms.length === 0 ? (
           <div className="text-center py-12">
-            {activeTab === 'training' ? (
+            {activeTab === 'Training' ? (
               <Dumbbell className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            ) : (
+            ) : activeTab === 'Diet' ? (
               <Apple className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            ) : (
+              <MessageSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             )}
             <h3 className="text-xl font-semibold text-white mb-2">
-              {activeTab === 'training' ? t('noTrainingPrograms') : t('noMealPrograms')}
+              {activeTab === 'Training' ? t('noTrainingPrograms') : activeTab === 'Diet' ? t('noMealPrograms') : t('noConsultations')}
             </h3>
             <p className="text-gray-400 mb-4">
-              {activeTab === 'training' ? t('createFirstTraining') : t('createFirstMeal')}
+              {activeTab === 'Training' ? t('createFirstTraining') : activeTab === 'Diet' ? t('createFirstMeal') : t('createFirstConsultation')}
             </p>
             <button 
               onClick={openCreateModal}
@@ -537,12 +582,14 @@ export default function ProgramsPage() {
                       ${program.price}
                     </span>
                     <span className={`px-2 py-1 text-xs font-bold rounded text-white flex items-center gap-1 ${
-                      program.type === 'training' ? 'bg-blue-600' : 'bg-green-600'
+                      program.category === 'Training' ? 'bg-blue-600' : program.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
                     }`}>
-                      {program.type === 'training' ? (
+                      {program.category === 'Training' ? (
                         <><Dumbbell className="w-3 h-3" />{t('tabTraining')}</>
-                      ) : (
+                      ) : program.category === 'Diet' ? (
                         <><Apple className="w-3 h-3" />{t('tabMeal')}</>
+                      ) : (
+                        <><MessageSquare className="w-3 h-3" />{t('tabConsultation')}</>
                       )}
                     </span>
                   </div>
@@ -572,7 +619,7 @@ export default function ProgramsPage() {
                   </h3>
                   <p className="text-sm text-gray-400 mb-3 line-clamp-2">{program.description}</p>
                   <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
-                    {program.type === 'training' && (
+                    {program.category === 'Training' && (
                       <>
                         <div className="flex items-center gap-1">
                           <Users className="w-3.5 h-3.5" />
@@ -645,9 +692,9 @@ export default function ProgramsPage() {
                     </span>
                   )}
                   <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-                    selectedProgram.type === 'training' ? 'bg-blue-600' : 'bg-green-600'
+                    selectedProgram.category === 'Training' ? 'bg-blue-600' : selectedProgram.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
                   }`}>
-                    {selectedProgram.type === 'training' ? t('typeTraining') : t('typeMeal')}
+                    {selectedProgram.category === 'Training' ? t('typeTraining') : selectedProgram.category === 'Diet' ? t('typeMeal') : t('typeConsultation')}
                   </span>
                 </div>
               </div>
@@ -655,7 +702,7 @@ export default function ProgramsPage() {
               <div className="p-5 space-y-4">
                 <h2 className="text-xl font-bold text-white">{selectedProgram.title}</h2>
 
-                {selectedProgram.type === 'training' && (
+                {selectedProgram.category === 'Training' && (
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                       <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
@@ -679,7 +726,7 @@ export default function ProgramsPage() {
                   </div>
                 )}
 
-                {selectedProgram.type === 'meal' && selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
+                {selectedProgram.category === 'Diet' && selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
                   <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2 text-gray-400">
                       <Video className="w-5 h-5" />
@@ -760,8 +807,8 @@ export default function ProgramsPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-white">
                     {editingProgram 
-                      ? (formType === 'training' ? t('editTrainingProgram') : t('editMealProgram'))
-                      : (formType === 'training' ? t('newTrainingProgram') : t('newMealProgram'))
+                      ? (formCategory === 'Training' ? t('editTrainingProgram') : formCategory === 'Diet' ? t('editMealProgram') : t('editConsultation'))
+                      : (formCategory === 'Training' ? t('newTrainingProgram') : formCategory === 'Diet' ? t('newMealProgram') : t('newConsultation'))
                     }
                   </h2>
                   <button onClick={closeModal} className="text-gray-400 hover:text-white">
@@ -770,7 +817,7 @@ export default function ProgramsPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Program Type Selector — only for new programs */}
+                  {/* Program Category Selector — only for new programs */}
                   {!editingProgram && (
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -779,9 +826,9 @@ export default function ProgramsPage() {
                       <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={() => setFormType('training')}
+                            onClick={() => setFormCategory('Training')}
                             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                              formType === 'training'
+                              formCategory === 'Training'
                                 ? 'border-blue-500 bg-blue-500/10 text-blue-400'
                                 : 'border-white/10 text-gray-400 hover:border-white/20'
                             }`}
@@ -791,15 +838,27 @@ export default function ProgramsPage() {
                           </button>
                         <button
                           type="button"
-                          onClick={() => setFormType('meal')}
+                          onClick={() => setFormCategory('Diet')}
                           className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                            formType === 'meal'
+                            formCategory === 'Diet'
                               ? 'border-green-500 bg-green-500/10 text-green-400'
                               : 'border-white/10 text-gray-400 hover:border-white/20'
                           }`}
                         >
                           <Apple className="w-5 h-5" />
                           {t('typeMeal')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormCategory('Consultation')}
+                          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                            formCategory === 'Consultation'
+                              ? 'border-violet-500 bg-violet-500/10 text-violet-400'
+                              : 'border-white/10 text-gray-400 hover:border-white/20'
+                          }`}
+                        >
+                          <MessageSquare className="w-5 h-5" />
+                          {t('typeConsultation')}
                         </button>
                       </div>
                     </div>
@@ -922,8 +981,9 @@ export default function ProgramsPage() {
                     <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
                   </div>
 
-                  {/* Training Videos — for all program types */}
-                  <div>
+                  {/* Training Videos — hide for consultations */}
+                  {formCategory !== 'Consultation' && (
+                    <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         {t('trainingVideos')}
                       </label>
@@ -955,6 +1015,7 @@ export default function ProgramsPage() {
                         </div>
                       )}
                     </div>
+                  )}
 
                   {/* Submit */}
                   <button

@@ -7,6 +7,7 @@ public class PublicProgramDto
     public string Description { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public decimal? ProPrice { get; set; }
+    public string Category { get; set; } = "Training";
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public double AverageRating { get; set; }

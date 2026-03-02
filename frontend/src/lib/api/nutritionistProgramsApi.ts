@@ -48,6 +48,10 @@ export const nutritionistProgramsApi = {
       formData.append('proPrice', request.proPrice.toString());
     }
 
+    if (request.category) {
+      formData.append('category', request.category);
+    }
+
     if (request.videos && request.videos.length > 0) {
       request.videos.forEach(video => {
         formData.append('videos', video);
@@ -75,6 +79,10 @@ export const nutritionistProgramsApi = {
 
     if (request.proPrice != null) {
       formData.append('proPrice', request.proPrice.toString());
+    }
+
+    if (request.category) {
+      formData.append('category', request.category);
     }
 
     if (request.coverImage) {

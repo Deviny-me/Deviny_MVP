@@ -54,6 +54,10 @@ export const programsApi = {
       formData.append('proPrice', request.proPrice.toString());
     }
 
+    if (request.category) {
+      formData.append('category', request.category);
+    }
+
     if (request.trainingVideos && request.trainingVideos.length > 0) {
       request.trainingVideos.forEach((video) => {
         formData.append('trainingVideos', video);
@@ -81,6 +85,10 @@ export const programsApi = {
 
     if (request.proPrice != null) {
       formData.append('proPrice', request.proPrice.toString());
+    }
+
+    if (request.category) {
+      formData.append('category', request.category);
     }
 
     if (request.coverImage) {

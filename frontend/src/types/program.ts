@@ -6,6 +6,7 @@ export interface ProgramDto {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   trainingVideoUrls: string[];
@@ -23,6 +24,7 @@ export interface PublicProgramDto {
   description: string;
   price: number;
   proPrice?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   averageRating: number;
@@ -41,6 +43,7 @@ export interface CreateProgramRequest {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   coverImage: File;
   trainingVideos: File[];
 }
@@ -51,6 +54,7 @@ export interface UpdateProgramRequest {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   coverImage?: File;
   trainingVideos?: File[];
 }
@@ -63,6 +67,7 @@ export interface MealProgramDto {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
@@ -76,6 +81,7 @@ export interface PublicMealProgramDto {
   description: string;
   price: number;
   proPrice?: number;
+  category?: string;
   code: string;
   coverImageUrl: string;
   videoUrls: string[];
@@ -92,6 +98,7 @@ export interface CreateMealProgramRequest {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   coverImage: File;
   videos: File[];
 }
@@ -102,9 +109,13 @@ export interface UpdateMealProgramRequest {
   detailedDescription?: string;
   price: number;
   proPrice?: number;
+  category?: string;
   coverImage?: File;
   videos?: File[];
 }
 
-// Union type for program type selection
+// Union type for program type selection (which API/entity to use)
 export type ProgramType = 'training' | 'meal';
+
+// Semantic program category
+export type ProgramCategory = 'Training' | 'Diet' | 'Consultation';

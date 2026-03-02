@@ -475,19 +475,27 @@
 
     "tabTraining": "Тренировки",
     "tabMeal": "Питание",
+    "tabConsultation": "Консультация",
     "programType": "Тип программы *",
+    "categoryLabel": "Категория программы *",
     "typeTraining": "Программа тренировок",
     "typeMeal": "Программа питания",
+    "typeConsultation": "Консультация",
     "newTrainingProgram": "Новая программа тренировок",
     "newMealProgram": "Новая программа питания",
+    "newConsultation": "Новая консультация",
     "editTrainingProgram": "Редактировать программу тренировок",
     "editMealProgram": "Редактировать программу питания",
+    "editConsultation": "Редактировать консультацию",
     "noTrainingPrograms": "Нет программ тренировок",
     "noMealPrograms": "Нет программ питания",
+    "noConsultations": "Нет консультаций",
     "createFirstTraining": "Создайте свою первую программу тренировок",
     "createFirstMeal": "Создайте свою первую программу питания",
+    "createFirstConsultation": "Создайте свою первую консультацию",
     "totalTrainingPrograms": "Программ тренировок",
-    "totalMealPrograms": "Программ питания"
+    "totalMealPrograms": "Программ питания",
+    "totalConsultations": "Консультаций"
   },
 
   "schedule": {
@@ -982,6 +990,7 @@
     "searchPlaceholder": "Поиск программ, тренеров...",
     "training": "Тренировки",
     "nutrition": "Питание",
+    "consultation": "Консультация",
     "newest": "Новейшие",
     "mostPopular": "Самые популярные",
     "highestRated": "С лучшим рейтингом",

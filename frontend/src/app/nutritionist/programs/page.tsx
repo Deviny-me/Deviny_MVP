@@ -16,10 +16,11 @@ import {
   Loader2,
   Video,
   DollarSign,
-  Apple
+  Apple,
+  MessageSquare
 } from 'lucide-react'
 import { nutritionistProgramsApi } from '@/lib/api/nutritionistProgramsApi'
-import { MealProgramDto } from '@/types/program'
+import { MealProgramDto, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 
@@ -40,6 +41,7 @@ type UnifiedProgram = {
   createdAt: string
   updatedAt: string
   videoUrls?: string[]
+  category: ProgramCategory
 }
 
 function toUnified(p: MealProgramDto): UnifiedProgram {
@@ -55,6 +57,7 @@ function toUnified(p: MealProgramDto): UnifiedProgram {
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
     videoUrls: p.videoUrls,
+    category: (p.category as ProgramCategory) || 'Diet',
   }
 }
 
@@ -69,6 +72,10 @@ export default function NutritionistProgramsPage() {
   // Data
   const [mealPrograms, setMealPrograms] = useState<MealProgramDto[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Tabs & category
+  const [activeTab, setActiveTab] = useState<ProgramCategory>('Diet')
+  const [formCategory, setFormCategory] = useState<ProgramCategory>('Diet')
 
   // Search
   const [searchQuery, setSearchQuery] = useState('')
@@ -119,12 +126,16 @@ export default function NutritionistProgramsPage() {
     }
   }
 
-  const currentPrograms = mealPrograms.map(toUnified)
+  const allPrograms = mealPrograms.map(toUnified)
 
-  const filteredPrograms = currentPrograms.filter(p => {
+  const filteredPrograms = allPrograms.filter(p => {
+    if (p.category !== activeTab) return false
     if (!searchQuery) return true
     return p.title.toLowerCase().includes(searchQuery.toLowerCase())
   })
+
+  const dietCount = allPrograms.filter(p => p.category === 'Diet').length
+  const consultationCount = allPrograms.filter(p => p.category === 'Consultation').length
 
   // Form helpers
   const resetForm = () => {
@@ -137,15 +148,18 @@ export default function NutritionistProgramsPage() {
     setCoverPreview(null)
     setVideos([])
     setEditingProgram(null)
+    setFormCategory('Diet')
   }
 
   const openCreateModal = () => {
     resetForm()
+    setFormCategory(activeTab)
     setShowCreateModal(true)
   }
 
   const openEditModal = (program: UnifiedProgram) => {
     setEditingProgram(program)
+    setFormCategory(program.category)
     setTitle(program.title)
     setDescription(program.description)
     setDetailedDescription(program.detailedDescription || '')
@@ -202,6 +216,7 @@ export default function NutritionistProgramsPage() {
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
           coverImage: coverImage || undefined,
           videos: videos.length > 0 ? videos : undefined,
+          category: formCategory,
         })
         toast.success(t('toasts.updated'))
       } else {
@@ -213,6 +228,7 @@ export default function NutritionistProgramsPage() {
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
           coverImage: coverImage!,
           videos,
+          category: formCategory,
         })
         toast.success(t('toasts.created'))
       }
@@ -264,15 +280,47 @@ export default function NutritionistProgramsPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
-          >
-            <Apple className={`w-6 h-6 ${accent.text} mb-2`} />
-            <p className="text-2xl font-bold text-white">{mealPrograms.length}</p>
-            <p className="text-xs text-gray-400">{t('totalMealPrograms')}</p>
-          </motion.div>
+          {[
+            { cat: 'Diet' as ProgramCategory, count: dietCount, icon: Apple, label: t('totalMealPrograms'), color: 'text-green-400' },
+            { cat: 'Consultation' as ProgramCategory, count: consultationCount, icon: MessageSquare, label: t('totalConsultations'), color: 'text-violet-400' },
+          ].map(({ cat, count, icon: Icon, label, color }) => (
+            <motion.div
+              key={cat}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
+            >
+              <Icon className={`w-6 h-6 ${color} mb-2`} />
+              <p className="text-2xl font-bold text-white">{count}</p>
+              <p className="text-xs text-gray-400">{label}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2">
+          {([
+            { cat: 'Diet' as ProgramCategory, icon: Apple, label: t('tabMeal'), count: dietCount, color: 'green' },
+            { cat: 'Consultation' as ProgramCategory, icon: MessageSquare, label: t('tabConsultation'), count: consultationCount, color: 'violet' },
+          ] as const).map(({ cat, icon: Icon, label, count, color }) => (
+            <button
+              key={cat}
+              onClick={() => setActiveTab(cat)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === cat
+                  ? `bg-${color}-500/20 text-${color}-400 border border-${color}-500/30`
+                  : 'bg-[#1A1A1A] text-gray-400 border border-white/10 hover:border-white/20'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              <span className={`ml-1 px-1.5 py-0.5 rounded text-xs ${
+                activeTab === cat ? `bg-${color}-500/30` : 'bg-white/10'
+              }`}>
+                {count}
+              </span>
+            </button>
+          ))}
         </div>
 
         {/* Search */}
@@ -296,9 +344,17 @@ export default function NutritionistProgramsPage() {
           </div>
         ) : filteredPrograms.length === 0 ? (
           <div className="text-center py-12">
-            <Apple className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">{t('noMealPrograms')}</h3>
-            <p className="text-gray-400 mb-4">{t('createFirstMeal')}</p>
+            {activeTab === 'Diet' ? (
+              <Apple className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            ) : (
+              <MessageSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            )}
+            <h3 className="text-xl font-semibold text-white mb-2">
+              {activeTab === 'Diet' ? t('noMealPrograms') : t('noConsultations')}
+            </h3>
+            <p className="text-gray-400 mb-4">
+              {activeTab === 'Diet' ? t('createFirstMeal') : t('createFirstConsultation')}
+            </p>
             <button 
               onClick={openCreateModal}
               className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
@@ -327,8 +383,14 @@ export default function NutritionistProgramsPage() {
                     <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
                       ${program.price}
                     </span>
-                    <span className="px-2 py-1 text-xs font-bold rounded text-white bg-green-600 flex items-center gap-1">
-                      <Apple className="w-3 h-3" />{t('tabMeal')}
+                    <span className={`px-2 py-1 text-xs font-bold rounded text-white flex items-center gap-1 ${
+                      program.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
+                    }`}>
+                      {program.category === 'Diet' ? (
+                        <><Apple className="w-3 h-3" />{t('tabMeal')}</>
+                      ) : (
+                        <><MessageSquare className="w-3 h-3" />{t('tabConsultation')}</>
+                      )}
                     </span>
                   </div>
                   <div className="absolute top-3 right-3 flex gap-2">
@@ -417,8 +479,10 @@ export default function NutritionistProgramsPage() {
                       PRO ${selectedProgram.proPrice}
                     </span>
                   )}
-                  <span className="px-2 py-1 text-xs font-bold rounded text-white bg-green-600">
-                    {t('typeMeal')}
+                  <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
+                    selectedProgram.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
+                  }`}>
+                    {selectedProgram.category === 'Diet' ? t('typeMeal') : t('typeConsultation')}
                   </span>
                 </div>
               </div>
@@ -506,7 +570,10 @@ export default function NutritionistProgramsPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-white">
-                    {editingProgram ? t('editMealProgram') : t('newMealProgram')}
+                    {editingProgram
+                      ? (formCategory === 'Diet' ? t('editMealProgram') : t('editConsultation'))
+                      : (formCategory === 'Diet' ? t('newMealProgram') : t('newConsultation'))
+                    }
                   </h2>
                   <button onClick={closeModal} className="text-gray-400 hover:text-white">
                     <X className="w-6 h-6" />
@@ -514,6 +581,35 @@ export default function NutritionistProgramsPage() {
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Category Selector */}
+                  {!editingProgram && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        {t('categoryLabel')}
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { cat: 'Diet' as ProgramCategory, icon: Apple, label: t('tabMeal'), color: 'green' },
+                          { cat: 'Consultation' as ProgramCategory, icon: MessageSquare, label: t('tabConsultation'), color: 'violet' },
+                        ]).map(({ cat, icon: Icon, label, color }) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setFormCategory(cat)}
+                            className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all border ${
+                              formCategory === cat
+                                ? `bg-${color}-500/20 text-${color}-400 border-${color}-500/50`
+                                : 'bg-[#0A0A0A] text-gray-400 border-white/10 hover:border-white/20'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Cover Image */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -631,7 +727,8 @@ export default function NutritionistProgramsPage() {
                     <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
                   </div>
 
-                  {/* Videos */}
+                  {/* Videos (hidden for Consultation) */}
+                  {formCategory !== 'Consultation' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                       {t('trainingVideos')}
@@ -664,6 +761,7 @@ export default function NutritionistProgramsPage() {
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* Submit */}
                   <button

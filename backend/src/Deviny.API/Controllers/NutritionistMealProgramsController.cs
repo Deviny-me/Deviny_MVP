@@ -60,6 +60,7 @@ public class NutritionistMealProgramsController : BaseApiController
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 ProPrice = request.ProPrice,
+                Category = request.Category,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
             };
@@ -103,6 +104,7 @@ public class NutritionistMealProgramsController : BaseApiController
                 DetailedDescription = request.DetailedDescription,
                 Price = request.Price,
                 ProPrice = request.ProPrice,
+                Category = request.Category,
                 CoverImage = request.CoverImage,
                 Videos = request.Videos
             };

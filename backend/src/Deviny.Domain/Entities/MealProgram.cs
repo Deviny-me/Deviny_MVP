@@ -1,3 +1,5 @@
+using Deviny.Domain.Enums;
+
 namespace Deviny.Domain.Entities;
 
 public class MealProgram : BaseEntity
@@ -8,6 +10,7 @@ public class MealProgram : BaseEntity
     public string? DetailedDescription { get; set; }
     public decimal Price { get; set; }
     public decimal? ProPrice { get; set; }
+    public ProgramCategory Category { get; set; } = ProgramCategory.Diet;
     public string Code { get; set; } = string.Empty;
     public string CoverImagePath { get; set; } = string.Empty;
     public string VideosPath { get; set; } = string.Empty; // JSON array of video paths

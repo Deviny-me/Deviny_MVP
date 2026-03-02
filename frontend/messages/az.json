@@ -475,19 +475,27 @@
 
     "tabTraining": "Məşqlər",
     "tabMeal": "Qidalanma",
+    "tabConsultation": "Konsultasiya",
     "programType": "Proqram növü *",
+    "categoryLabel": "Proqram kateqoriyası *",
     "typeTraining": "Məşq proqramı",
     "typeMeal": "Qidalanma proqramı",
+    "typeConsultation": "Konsultasiya",
     "newTrainingProgram": "Yeni məşq proqramı",
     "newMealProgram": "Yeni qidalanma proqramı",
+    "newConsultation": "Yeni konsultasiya",
     "editTrainingProgram": "Məşq proqramını redaktə et",
     "editMealProgram": "Qidalanma proqramını redaktə et",
+    "editConsultation": "Konsultasiyanı redaktə et",
     "noTrainingPrograms": "Məşq proqramı yoxdur",
     "noMealPrograms": "Qidalanma proqramı yoxdur",
+    "noConsultations": "Konsultasiya yoxdur",
     "createFirstTraining": "İlk məşq proqramınızı yaradın",
     "createFirstMeal": "İlk qidalanma proqramınızı yaradın",
+    "createFirstConsultation": "İlk konsultasiyanızı yaradın",
     "totalTrainingPrograms": "Məşq proqramları",
-    "totalMealPrograms": "Qidalanma proqramları"
+    "totalMealPrograms": "Qidalanma proqramları",
+    "totalConsultations": "Konsultasiyalar"
   },
 
   "schedule": {
@@ -982,6 +990,7 @@
     "searchPlaceholder": "Proqram, məşqçi axtarın...",
     "training": "Məşq",
     "nutrition": "Qidalanma",
+    "consultation": "Konsultasiya",
     "newest": "Ən yeni",
     "mostPopular": "Ən populyar",
     "highestRated": "Ən yüksək reytinqli",
