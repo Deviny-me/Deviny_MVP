@@ -28,8 +28,13 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
             Title = p.Title,
             Description = p.Description,
             Price = p.Price,
+            StandardPrice = p.StandardPrice,
             ProPrice = p.ProPrice,
+            MaxStandardSpots = p.MaxStandardSpots,
+            MaxProSpots = p.MaxProSpots,
             Category = p.Category.ToString(),
+            StandardSpotsRemaining = 0,
+            ProSpotsRemaining = 0,
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath)
                 ? ""
@@ -45,10 +50,7 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
                 ? ""
                 : _fileStorage.GetPublicUrl(p.Trainer.AvatarUrl),
             TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? "",
-            TrainerRole = p.Trainer?.Role.ToString() ?? "",
-            AverageRating = 0,
-            TotalReviews = 0,
-            TotalPurchases = 0
+            TrainerRole = p.Trainer?.Role.ToString() ?? ""
         }).ToList();
     }
 }

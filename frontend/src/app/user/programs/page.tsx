@@ -30,7 +30,12 @@ type UnifiedPublicProgram = {
   title: string
   description: string
   price: number
+  standardPrice?: number
   proPrice?: number
+  maxStandardSpots?: number
+  maxProSpots?: number
+  standardSpotsRemaining?: number
+  proSpotsRemaining?: number
   code: string
   coverImageUrl: string
   createdAt: string
@@ -52,7 +57,12 @@ function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
     title: p.title,
     description: p.description,
     price: p.price,
+    standardPrice: p.standardPrice,
     proPrice: p.proPrice,
+    maxStandardSpots: p.maxStandardSpots,
+    maxProSpots: p.maxProSpots,
+    standardSpotsRemaining: p.standardSpotsRemaining,
+    proSpotsRemaining: p.proSpotsRemaining,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -74,7 +84,12 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     title: p.title,
     description: p.description,
     price: p.price,
+    standardPrice: p.standardPrice,
     proPrice: p.proPrice,
+    maxStandardSpots: p.maxStandardSpots,
+    maxProSpots: p.maxProSpots,
+    standardSpotsRemaining: p.standardSpotsRemaining,
+    proSpotsRemaining: p.proSpotsRemaining,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -386,6 +401,11 @@ export default function ProgramsPage() {
                         }`}>
                           {formatPrice(program.price)}
                         </span>
+                        {program.standardPrice != null && (
+                          <span className="text-xs font-semibold text-blue-400">
+                            STD {formatPrice(program.standardPrice)}
+                          </span>
+                        )}
                         {program.proPrice != null && (
                           <span className="text-xs font-semibold text-purple-400">
                             PRO {formatPrice(program.proPrice)}
@@ -492,6 +512,11 @@ function ProgramDetailModal({
               }`}>
                 {formatPrice(program.price)}
               </span>
+              {program.standardPrice != null && (
+                <span className="text-sm font-semibold text-blue-400">
+                  STD {formatPrice(program.standardPrice)}
+                </span>
+              )}
               {program.proPrice != null && (
                 <span className="text-sm font-semibold text-purple-400">
                   PRO {formatPrice(program.proPrice)}
@@ -548,22 +573,66 @@ function ProgramDetailModal({
 
           {/* Purchase Buttons */}
           <div className="space-y-2">
+            {/* Basic Tier */}
             <button
               className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               onClick={() => alert(t('purchaseComingSoon'))}
             >
               <ShoppingCart className="w-5 h-5" />
-              {program.price === 0 ? t('getForFree') : t('purchaseStandard', { price: formatPrice(program.price) })}
+              {program.price === 0 ? t('getForFree') : `${t('basicTier')} — ${formatPrice(program.price)}`}
             </button>
-            {program.proPrice != null && (
-              <button
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                onClick={() => alert(t('purchaseComingSoon'))}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {t('purchasePro', { price: formatPrice(program.proPrice) })}
-              </button>
-            )}
+
+            {/* Standard Tier */}
+            {program.standardPrice != null && (() => {
+              const soldOut = program.maxStandardSpots != null && program.maxStandardSpots > 0 && (program.standardSpotsRemaining ?? 0) <= 0
+              return (
+                <button
+                  disabled={soldOut}
+                  className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                    soldOut
+                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90'
+                  }`}
+                  onClick={() => !soldOut && alert(t('purchaseComingSoon'))}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {soldOut
+                    ? t('soldOut')
+                    : `${t('standardTier')} — ${formatPrice(program.standardPrice!)}`}
+                  {!soldOut && program.maxStandardSpots != null && program.maxStandardSpots > 0 && (
+                    <span className="text-xs opacity-75">
+                      ({program.standardSpotsRemaining} {t('spotsLeft')})
+                    </span>
+                  )}
+                </button>
+              )
+            })()}
+
+            {/* Pro Tier */}
+            {program.proPrice != null && (() => {
+              const soldOut = program.maxProSpots != null && program.maxProSpots > 0 && (program.proSpotsRemaining ?? 0) <= 0
+              return (
+                <button
+                  disabled={soldOut}
+                  className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                    soldOut
+                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90'
+                  }`}
+                  onClick={() => !soldOut && alert(t('purchaseComingSoon'))}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {soldOut
+                    ? t('soldOut')
+                    : `${t('proTier')} — ${formatPrice(program.proPrice!)}`}
+                  {!soldOut && program.maxProSpots != null && program.maxProSpots > 0 && (
+                    <span className="text-xs opacity-75">
+                      ({program.proSpotsRemaining} {t('spotsLeft')})
+                    </span>
+                  )}
+                </button>
+              )
+            })()}
           </div>
 
           <p className="text-center text-xs text-gray-500">

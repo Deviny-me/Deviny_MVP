@@ -38,7 +38,10 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
         program.Description = request.Description;
         program.DetailedDescription = request.DetailedDescription;
         program.Price = request.Price;
+        program.StandardPrice = request.StandardPrice;
         program.ProPrice = request.ProPrice;
+        program.MaxStandardSpots = request.MaxStandardSpots;
+        program.MaxProSpots = request.MaxProSpots;
         program.IsPublic = request.IsPublic;
         program.UpdatedAt = DateTime.UtcNow;
 
@@ -148,7 +151,10 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
             Description = program.Description,
             DetailedDescription = program.DetailedDescription,
             Price = program.Price,
+            StandardPrice = program.StandardPrice,
             ProPrice = program.ProPrice,
+            MaxStandardSpots = program.MaxStandardSpots,
+            MaxProSpots = program.MaxProSpots,
             Category = program.Category.ToString(),
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,

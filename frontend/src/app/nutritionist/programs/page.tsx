@@ -37,7 +37,10 @@ type UnifiedProgram = {
   description: string
   detailedDescription?: string
   price: number
+  standardPrice?: number
   proPrice?: number
+  maxStandardSpots?: number
+  maxProSpots?: number
   code: string
   coverImageUrl: string
   createdAt: string
@@ -54,7 +57,10 @@ function toUnified(p: MealProgramDto): UnifiedProgram {
     description: p.description,
     detailedDescription: p.detailedDescription,
     price: p.price,
+    standardPrice: p.standardPrice,
     proPrice: p.proPrice,
+    maxStandardSpots: p.maxStandardSpots,
+    maxProSpots: p.maxProSpots,
     code: p.code,
     coverImageUrl: p.coverImageUrl,
     createdAt: p.createdAt,
@@ -96,7 +102,10 @@ export default function NutritionistProgramsPage() {
   const [description, setDescription] = useState('')
   const [detailedDescription, setDetailedDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [standardPrice, setStandardPrice] = useState('')
   const [proPrice, setProPrice] = useState('')
+  const [maxStandardSpots, setMaxStandardSpots] = useState('')
+  const [maxProSpots, setMaxProSpots] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [videos, setVideos] = useState<File[]>([])
@@ -148,7 +157,10 @@ export default function NutritionistProgramsPage() {
     setDescription('')
     setDetailedDescription('')
     setPrice('')
+    setStandardPrice('')
     setProPrice('')
+    setMaxStandardSpots('')
+    setMaxProSpots('')
     setCoverImage(null)
     setCoverPreview(null)
     setVideos([])
@@ -170,7 +182,10 @@ export default function NutritionistProgramsPage() {
     setDescription(program.description)
     setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
+    setStandardPrice(program.standardPrice != null ? program.standardPrice.toString() : '')
     setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
+    setMaxStandardSpots(program.maxStandardSpots != null ? program.maxStandardSpots.toString() : '')
+    setMaxProSpots(program.maxProSpots != null ? program.maxProSpots.toString() : '')
     setIsPublic(program.isPublic ?? true)
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
@@ -220,7 +235,10 @@ export default function NutritionistProgramsPage() {
           description,
           detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
+          standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
+          maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
+          maxProSpots: maxProSpots ? parseInt(maxProSpots) : undefined,
           isPublic,
           coverImage: coverImage || undefined,
           videos: videos.length > 0 ? videos : undefined,
@@ -233,7 +251,10 @@ export default function NutritionistProgramsPage() {
           description,
           detailedDescription: detailedDescription || undefined,
           price: parseFloat(price),
+          standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
+          maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
+          maxProSpots: maxProSpots ? parseInt(maxProSpots) : undefined,
           isPublic,
           coverImage: coverImage!,
           videos,
@@ -388,10 +409,20 @@ export default function NutritionistProgramsPage() {
                     alt={program.title}
                     className="w-full h-40 object-cover"
                   />
-                  <div className="absolute top-3 left-3 flex gap-2">
+                  <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                     <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
                       ${program.price}
                     </span>
+                    {program.standardPrice != null && (
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">
+                        STD ${program.standardPrice}
+                      </span>
+                    )}
+                    {program.proPrice != null && (
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
+                        PRO ${program.proPrice}
+                      </span>
+                    )}
                     <span className={`px-2 py-1 text-xs font-bold rounded text-white flex items-center gap-1 ${
                       program.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
                     }`}>
@@ -484,10 +515,15 @@ export default function NutritionistProgramsPage() {
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
-                <div className="absolute top-3 left-3 flex gap-2">
+                <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
                   <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
                     ${selectedProgram.price}
                   </span>
+                  {selectedProgram.standardPrice != null && (
+                    <span className="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">
+                      STD ${selectedProgram.standardPrice}
+                    </span>
+                  )}
                   {selectedProgram.proPrice != null && (
                     <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
                       PRO ${selectedProgram.proPrice}
@@ -702,10 +738,10 @@ export default function NutritionistProgramsPage() {
                     />
                   </div>
 
-                  {/* Price */}
+                  {/* Price — Basic Tier */}
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('priceLabel')}
+                      {t('basicPriceLabel')}
                     </label>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -719,26 +755,85 @@ export default function NutritionistProgramsPage() {
                         placeholder="0.00"
                       />
                     </div>
+                    <p className="mt-1 text-xs text-gray-500">{t('basicPriceHint')}</p>
                   </div>
 
-                  {/* Pro Price (optional) */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('proPriceLabel')}
-                    </label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="number"
-                        value={proPrice}
-                        onChange={(e) => setProPrice(e.target.value)}
-                        min="0"
-                        step="0.01"
-                        className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
-                        placeholder={t('proPricePlaceholder')}
-                      />
+                  {/* Standard Tier */}
+                  <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
+                    <h4 className="text-sm font-semibold text-blue-400">{t('standardTierLabel')}</h4>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                        {t('standardPriceLabel')}
+                      </label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="number"
+                          value={standardPrice}
+                          onChange={(e) => setStandardPrice(e.target.value)}
+                          min="0"
+                          step="0.01"
+                          className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
+                          placeholder={t('standardPricePlaceholder')}
+                        />
+                      </div>
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
+                    {standardPrice && (
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                          {t('maxStandardSpotsLabel')}
+                        </label>
+                        <input
+                          type="number"
+                          value={maxStandardSpots}
+                          onChange={(e) => setMaxStandardSpots(e.target.value)}
+                          min="1"
+                          step="1"
+                          className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
+                          placeholder={t('maxSpotsPlaceholder')}
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500">{t('standardTierHint')}</p>
+                  </div>
+
+                  {/* Pro Tier */}
+                  <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
+                    <h4 className="text-sm font-semibold text-purple-400">{t('proTierLabel')}</h4>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                        {t('proPriceLabel')}
+                      </label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          type="number"
+                          value={proPrice}
+                          onChange={(e) => setProPrice(e.target.value)}
+                          min="0"
+                          step="0.01"
+                          className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
+                          placeholder={t('proPricePlaceholder')}
+                        />
+                      </div>
+                    </div>
+                    {proPrice && (
+                      <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">
+                          {t('maxProSpotsLabel')}
+                        </label>
+                        <input
+                          type="number"
+                          value={maxProSpots}
+                          onChange={(e) => setMaxProSpots(e.target.value)}
+                          min="1"
+                          step="1"
+                          className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
+                          placeholder={t('maxSpotsPlaceholder')}
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500">{t('proTierHint')}</p>
                   </div>
 
                   {/* Visibility Toggle */}

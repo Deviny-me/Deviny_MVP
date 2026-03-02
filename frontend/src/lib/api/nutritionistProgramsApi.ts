@@ -49,6 +49,18 @@ export const nutritionistProgramsApi = {
       formData.append('proPrice', request.proPrice.toString());
     }
 
+    if (request.standardPrice != null) {
+      formData.append('standardPrice', request.standardPrice.toString());
+    }
+
+    if (request.maxStandardSpots != null) {
+      formData.append('maxStandardSpots', request.maxStandardSpots.toString());
+    }
+
+    if (request.maxProSpots != null) {
+      formData.append('maxProSpots', request.maxProSpots.toString());
+    }
+
     if (request.category) {
       formData.append('category', request.category);
     }
@@ -81,6 +93,18 @@ export const nutritionistProgramsApi = {
 
     if (request.proPrice != null) {
       formData.append('proPrice', request.proPrice.toString());
+    }
+
+    if (request.standardPrice != null) {
+      formData.append('standardPrice', request.standardPrice.toString());
+    }
+
+    if (request.maxStandardSpots != null) {
+      formData.append('maxStandardSpots', request.maxStandardSpots.toString());
+    }
+
+    if (request.maxProSpots != null) {
+      formData.append('maxProSpots', request.maxProSpots.toString());
     }
 
     if (request.category) {
