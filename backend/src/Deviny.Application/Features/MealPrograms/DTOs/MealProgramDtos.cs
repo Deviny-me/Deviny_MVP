@@ -34,4 +34,7 @@ public class PublicMealProgramDto
     public string TrainerAvatarUrl { get; set; } = string.Empty;
     public string TrainerSlug { get; set; } = string.Empty;
     public string TrainerRole { get; set; } = string.Empty;
+    public double AverageRating { get; set; }
+    public int TotalReviews { get; set; }
+    public int TotalPurchases { get; set; }
 }

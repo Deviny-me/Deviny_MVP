@@ -45,7 +45,10 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
                 ? ""
                 : _fileStorage.GetPublicUrl(p.Trainer.AvatarUrl),
             TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? "",
-            TrainerRole = p.Trainer?.Role.ToString() ?? ""
+            TrainerRole = p.Trainer?.Role.ToString() ?? "",
+            AverageRating = 0,
+            TotalReviews = 0,
+            TotalPurchases = 0
         }).ToList();
     }
 }

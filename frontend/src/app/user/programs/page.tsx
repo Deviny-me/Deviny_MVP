@@ -368,21 +368,17 @@ export default function ProgramsPage() {
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
                       <div className="flex items-center gap-4">
-                        {program.category === 'Training' && (
-                          <>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                              <span className="text-sm text-white">
-                                {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
-                              </span>
-                              <span className="text-xs text-gray-500">({program.totalReviews ?? 0})</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-gray-400">
-                              <Users className="w-4 h-4" />
-                              <span className="text-sm">{program.totalPurchases ?? 0}</span>
-                            </div>
-                          </>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                          <span className="text-sm text-white">
+                            {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
+                          </span>
+                          <span className="text-xs text-gray-500">({program.totalReviews ?? 0})</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-400">
+                          <Users className="w-4 h-4" />
+                          <span className="text-sm">{program.totalPurchases ?? 0}</span>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end">
                         <span className={`text-lg font-bold ${
@@ -529,22 +525,20 @@ function ProgramDetailModal({
             </div>
           </div>
 
-          {/* Stats — training only */}
-          {program.category === 'Training' && (
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                <span className="text-white font-medium">
-                  {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
-                </span>
-                <span className="text-gray-500">({program.totalReviews ?? 0})</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <Users className="w-5 h-5" />
-                <span>{program.totalPurchases ?? 0} {tc('purchases')}</span>
-              </div>
+          {/* Stats */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+              <span className="text-white font-medium">
+                {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
+              </span>
+              <span className="text-gray-500">({program.totalReviews ?? 0})</span>
             </div>
-          )}
+            <div className="flex items-center gap-2 text-gray-400">
+              <Users className="w-5 h-5" />
+              <span>{program.totalPurchases ?? 0} {tc('purchases')}</span>
+            </div>
+          </div>
 
           {/* Description */}
           <div>

@@ -94,6 +94,9 @@ function toUnifiedFromMeal(p: MealProgramDto): UnifiedProgram {
     updatedAt: p.updatedAt,
     type: 'meal',
     isPublic: p.isPublic ?? true,
+    averageRating: 0,
+    totalReviews: 0,
+    totalPurchases: 0,
     trainingVideoUrls: p.videoUrls,
   }
 }
@@ -245,6 +248,26 @@ export default function ProgramsPage() {
       ? (trainingPrograms.reduce((a, p) => a + p.averageRating, 0) / trainingPrograms.length).toFixed(1)
       : '0',
     reviews: trainingPrograms.reduce((a, p) => a + p.totalReviews, 0),
+  }
+
+  const dietPrograms = allMealUnified.filter(p => p.category === 'Diet')
+  const dietStats = {
+    total: dietPrograms.length,
+    purchases: dietPrograms.reduce((acc, p) => acc + (p.totalPurchases ?? 0), 0),
+    avgRating: dietPrograms.length > 0
+      ? (dietPrograms.reduce((a, p) => a + (p.averageRating ?? 0), 0) / dietPrograms.length).toFixed(1)
+      : '0',
+    reviews: dietPrograms.reduce((a, p) => a + (p.totalReviews ?? 0), 0),
+  }
+
+  const consultationPrograms = allMealUnified.filter(p => p.category === 'Consultation')
+  const consultationStats = {
+    total: consultationPrograms.length,
+    purchases: consultationPrograms.reduce((acc, p) => acc + (p.totalPurchases ?? 0), 0),
+    avgRating: consultationPrograms.length > 0
+      ? (consultationPrograms.reduce((a, p) => a + (p.averageRating ?? 0), 0) / consultationPrograms.length).toFixed(1)
+      : '0',
+    reviews: consultationPrograms.reduce((a, p) => a + (p.totalReviews ?? 0), 0),
   }
 
   // Form helpers
@@ -507,28 +530,46 @@ export default function ProgramsPage() {
         )}
         {activeTab === 'Diet' && (
           <div className="grid grid-cols-4 gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
-            >
-              <Apple className={`w-6 h-6 ${accent.text} mb-2`} />
-              <p className="text-2xl font-bold text-white">{allPrograms.filter(p => p.category === 'Diet').length}</p>
-              <p className="text-xs text-gray-400">{t('totalMealPrograms')}</p>
-            </motion.div>
+            {[
+              { label: t('totalMealPrograms'), value: dietStats.total.toString(), icon: Apple },
+              { label: t('totalPurchases'), value: dietStats.purchases.toString(), icon: Users },
+              { label: t('averageRating'), value: dietStats.avgRating, icon: Star },
+              { label: t('totalReviews'), value: dietStats.reviews.toString(), icon: TrendingUp },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
+              >
+                <stat.icon className={`w-6 h-6 ${accent.text} mb-2`} />
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-xs text-gray-400">{stat.label}</p>
+              </motion.div>
+            ))}
           </div>
         )}
         {activeTab === 'Consultation' && (
           <div className="grid grid-cols-4 gap-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
-            >
-              <MessageSquare className={`w-6 h-6 ${accent.text} mb-2`} />
-              <p className="text-2xl font-bold text-white">{allPrograms.filter(p => p.category === 'Consultation').length}</p>
-              <p className="text-xs text-gray-400">{t('totalConsultations')}</p>
-            </motion.div>
+            {[
+              { label: t('totalConsultations'), value: consultationStats.total.toString(), icon: MessageSquare },
+              { label: t('totalPurchases'), value: consultationStats.purchases.toString(), icon: Users },
+              { label: t('averageRating'), value: consultationStats.avgRating, icon: Star },
+              { label: t('totalReviews'), value: consultationStats.reviews.toString(), icon: TrendingUp },
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
+              >
+                <stat.icon className={`w-6 h-6 ${accent.text} mb-2`} />
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-xs text-gray-400">{stat.label}</p>
+              </motion.div>
+            ))}
           </div>
         )}
 
@@ -637,18 +678,14 @@ export default function ProgramsPage() {
                   </h3>
                   <p className="text-sm text-gray-400 mb-3 line-clamp-2">{program.description}</p>
                   <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
-                    {program.category === 'Training' && (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5" />
-                          {program.totalPurchases ?? 0} {tc('purchases')}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-yellow-500" />
-                          {(program.averageRating ?? 0).toFixed(1)} ({program.totalReviews ?? 0})
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      {program.totalPurchases ?? 0} {tc('purchases')}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3.5 h-3.5 text-yellow-500" />
+                      {(program.averageRating ?? 0).toFixed(1)} ({program.totalReviews ?? 0})
+                    </div>
                     {program.trainingVideoUrls && program.trainingVideoUrls.length > 0 && (
                       <div className="flex items-center gap-1">
                         <Video className="w-3.5 h-3.5" />
@@ -720,29 +757,27 @@ export default function ProgramsPage() {
               <div className="p-5 space-y-4">
                 <h2 className="text-xl font-bold text-white">{selectedProgram.title}</h2>
 
-                {selectedProgram.category === 'Training' && (
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                      <span className="text-white font-medium">
-                        {(selectedProgram.averageRating ?? 0) > 0
-                          ? (selectedProgram.averageRating ?? 0).toFixed(1)
-                          : tp('noRating')}
-                      </span>
-                      <span className="text-gray-500">({selectedProgram.totalReviews ?? 0})</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Users className="w-5 h-5" />
-                      <span>{selectedProgram.totalPurchases ?? 0} {tc('purchases')}</span>
-                    </div>
-                    {selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
-                      <div className="flex items-center gap-2 text-gray-400">
-                        <Video className="w-5 h-5" />
-                        <span>{selectedProgram.trainingVideoUrls.length} {tc('videos')}</span>
-                      </div>
-                    )}
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                    <span className="text-white font-medium">
+                      {(selectedProgram.averageRating ?? 0) > 0
+                        ? (selectedProgram.averageRating ?? 0).toFixed(1)
+                        : tp('noRating')}
+                    </span>
+                    <span className="text-gray-500">({selectedProgram.totalReviews ?? 0})</span>
                   </div>
-                )}
+                  <div className="flex items-center gap-2 text-gray-400">
+                    <Users className="w-5 h-5" />
+                    <span>{selectedProgram.totalPurchases ?? 0} {tc('purchases')}</span>
+                  </div>
+                  {selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Video className="w-5 h-5" />
+                      <span>{selectedProgram.trainingVideoUrls.length} {tc('videos')}</span>
+                    </div>
+                  )}
+                </div>
 
                 {selectedProgram.category === 'Diet' && selectedProgram.trainingVideoUrls && selectedProgram.trainingVideoUrls.length > 0 && (
                   <div className="flex items-center gap-6">
