@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { authService } from '@/features/auth/services/authService'
-
+import { useAuth } from '@/features/auth/AuthContext'
 import { RoleType } from '@/features/auth/types/role.types'
 
 export type GenderType = 'Male' | 'Female' | 'Other'
@@ -43,6 +43,7 @@ export const useRegister = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<ValidationErrors>({})
+  const { setAuthUser } = useAuth()
   const t = useTranslations('auth.validation')
 
   const validateForm = (data: RegisterFormData, role: RoleType): boolean => {
@@ -159,6 +160,20 @@ export const useRegister = () => {
 
       // Store auth data (registration defaults to session-only)
       sessionStorage.setItem('accessToken', response.accessToken)
+
+      // Map user and update AuthContext so role-based colors work immediately
+      const roleStr = String(response.user.role).toLowerCase()
+      const normalizedRole: 'user' | 'trainer' | 'nutritionist' =
+        roleStr === 'trainer' || roleStr === '1' ? 'trainer'
+        : roleStr === 'nutritionist' || roleStr === '3' ? 'nutritionist'
+        : 'user'
+      setAuthUser({
+        id: response.user.id,
+        email: response.user.email,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        role: normalizedRole,
+      }, 'session')
 
       // Navigate to role-specific dashboard
       const dashboardRoute = role === 'user' ? '/user' : role === 'nutritionist' ? '/nutritionist' : '/trainer'

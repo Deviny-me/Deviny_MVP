@@ -60,7 +60,7 @@ public class ProgramRepository : IProgramRepository
             .Include(p => p.Purchases)
             .Include(p => p.Trainer)
                 .ThenInclude(u => u.TrainerProfile)
-            .Where(p => !p.IsDeleted)
+            .Where(p => !p.IsDeleted && p.IsPublic)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
     }

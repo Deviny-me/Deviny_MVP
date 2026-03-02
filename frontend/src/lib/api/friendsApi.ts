@@ -1,5 +1,5 @@
 import { API_URL, fetchWithAuth } from '@/lib/config';
-import { FriendDto, FriendRequestDto } from '@/types/friend';
+import { FriendDto, FriendRequestDto, RelationshipStatus } from '@/types/friend';
 
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetchWithAuth(`${API_URL}${endpoint}`, options);
@@ -66,6 +66,11 @@ export const friendsApi = {
     return apiRequest<void>(`/me/friends/${friendId}`, {
       method: 'DELETE',
     });
+  },
+
+  // Get relationship status with another user
+  getRelationshipStatus: async (userId: string): Promise<RelationshipStatus> => {
+    return apiRequest<RelationshipStatus>(`/me/friends/relationship/${userId}`);
   },
 };
 

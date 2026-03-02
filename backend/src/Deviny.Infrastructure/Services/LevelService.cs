@@ -4,16 +4,24 @@ using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Deviny.Infrastructure.Services;
 
 public class LevelService : ILevelService
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILevelNotifier _levelNotifier;
+    private readonly ILogger<LevelService> _logger;
 
-    public LevelService(ApplicationDbContext context)
+    public LevelService(
+        ApplicationDbContext context,
+        ILevelNotifier levelNotifier,
+        ILogger<LevelService> logger)
     {
         _context = context;
+        _levelNotifier = levelNotifier;
+        _logger = logger;
     }
 
     public async Task<AddXpResult> AddXpAsync(Guid userId, XpEventType eventType, int xpAmount, string idempotencyKey, Guid? sourceEntityId = null)
@@ -84,7 +92,7 @@ public class LevelService : ILevelService
 
         var finalState = await GetUserLevelAsync(userId);
 
-        return new AddXpResult
+        var result = new AddXpResult
         {
             Success = true,
             WasAlreadyProcessed = false,
@@ -93,6 +101,31 @@ public class LevelService : ILevelService
             XpAdded = xpAmount,
             CurrentState = finalState
         };
+
+        // Push real-time XP update to the user via SignalR
+        await NotifyXpChangeAsync(userId, result);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Sends a real-time XP update notification to the user.
+    /// Call this AFTER AddXpAsync to push the new XP/level state to the frontend.
+    /// </summary>
+    public async Task NotifyXpChangeAsync(Guid userId, AddXpResult result, CancellationToken ct = default)
+    {
+        // Only notify if XP actually changed (not idempotent duplicate)
+        if (result is { Success: true, WasAlreadyProcessed: false })
+        {
+            try
+            {
+                await _levelNotifier.NotifyXpUpdatedAsync(userId, result, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to send XpUpdated SignalR event for user {UserId}", userId);
+            }
+        }
     }
 
     public async Task<UserLevelDto> GetUserLevelAsync(Guid userId)

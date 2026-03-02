@@ -59,6 +59,7 @@ public class TrainerProgramsController : BaseApiController
                 Price = request.Price,
                 ProPrice = request.ProPrice,
                 Category = request.Category,
+                IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
                 TrainingVideos = request.TrainingVideos
             };
@@ -102,6 +103,7 @@ public class TrainerProgramsController : BaseApiController
                 Price = request.Price,
                 ProPrice = request.ProPrice,
                 Category = request.Category,
+                IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
                 TrainingVideos = request.TrainingVideos
             };

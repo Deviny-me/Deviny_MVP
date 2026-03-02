@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react'
 import { notificationsApi } from '@/lib/api/notificationsApi'
+import { chatConnection } from '@/lib/signalr/chatConnection'
 
 interface UnreadNotificationsContextType {
   unreadCount: number
@@ -30,7 +31,21 @@ export function UnreadNotificationsProvider({ children }: { children: ReactNode 
     fetchUnreadCount()
   }, [fetchUnreadCount])
 
-  // Polling every 30 seconds
+  // Real-time unread count updates via SignalR
+  useEffect(() => {
+    const handleCountUpdate = (data: { unreadCount: number }) => {
+      console.log('[Notifications] Real-time count update:', data.unreadCount)
+      setUnreadCount(data.unreadCount)
+    }
+
+    chatConnection.onNotificationCountUpdated(handleCountUpdate)
+
+    return () => {
+      chatConnection.off('NotificationCountUpdated', handleCountUpdate)
+    }
+  }, [])
+
+  // Fallback polling (keeps working even if SignalR disconnects)
   useEffect(() => {
     intervalRef.current = setInterval(fetchUnreadCount, POLLING_INTERVAL)
     return () => {

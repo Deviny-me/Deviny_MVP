@@ -59,6 +59,8 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddSingleton<ISlugGenerator, SlugGenerator>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<ITrainerRatingService, TrainerRatingService>();
+        services.AddScoped<IUserRatingService, UserRatingService>();
         
         return services;
     }

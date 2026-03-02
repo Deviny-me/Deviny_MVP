@@ -71,7 +71,7 @@ export default function MyJourneyPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
           </div>
         )}
 
@@ -85,7 +85,7 @@ export default function MyJourneyPage() {
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {tc('tryAgain')}
             </button>
@@ -99,7 +99,7 @@ export default function MyJourneyPage() {
               <div
                 key={program.id}
                 onClick={() => router.push(`/user/programs/${program.code}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#FF6B35]/50 transition-all"
+                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#3B82F6]/50 transition-all"
               >
                 <div className="flex">
                   {/* Cover */}
@@ -111,7 +111,7 @@ export default function MyJourneyPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-[#FF6B35]/20 to-[#FF0844]/20 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 flex items-center justify-center">
                         <span className="text-4xl">🏋️</span>
                       </div>
                     )}
@@ -132,11 +132,11 @@ export default function MyJourneyPage() {
                       <div className="mt-4">
                         <div className="flex items-center justify-between text-xs mb-1">
                           <span className="text-gray-400">{t('progress')}</span>
-                          <span className="text-[#FF6B35] font-medium">{program.progress}%</span>
+                          <span className="text-[#3B82F6] font-medium">{program.progress}%</span>
                         </div>
                         <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full transition-all"
+                            className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full transition-all"
                             style={{ width: `${program.progress}%` }}
                           />
                         </div>
@@ -145,7 +145,7 @@ export default function MyJourneyPage() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-3 mt-3">
-                      <button className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
+                      <button className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity">
                         <PlayCircle className="w-4 h-4" />
                         {program.progress && program.progress > 0 ? t('continue') : t('start')}
                       </button>
@@ -172,7 +172,7 @@ export default function MyJourneyPage() {
             </p>
             <button
               onClick={() => router.push('/user/programs')}
-              className="px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {t('browsePrograms')}
             </button>

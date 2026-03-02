@@ -3,21 +3,21 @@
 import { useEffect, useState } from 'react'
 import { Trophy, Lock, Award, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import { getMyAchievements } from '@/lib/api/achievementApi'
 import type { AchievementDto, MyAchievementsResponse } from '@/types/achievement'
-import { getIcon, getGradient, getRarityBorder, getRarityGlow, getRarityLabelColor } from '@/components/shared/achievementUtils'
+import { getIcon, getRarityBorder, getRarityGlow, getRarityLabelColor } from '@/components/shared/achievementUtils'
+import { useAccentColors } from '@/lib/theme/useAccentColors'
 
 export default function AchievementsContent() {
   const [data, setData] = useState<MyAchievementsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const t = useTranslations('achievements')
-  const pathname = usePathname()
-  const isNutritionist = pathname?.startsWith('/nutritionist')
-  const accentGradient = isNutritionist ? 'from-[#22c55e] to-[#16a34a]' : 'from-[#FF6B35] to-[#FF0844]'
-  const accentText = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
-  const spinnerColor = isNutritionist ? 'text-[#22c55e]' : 'text-[#FF6B35]'
+  const accent = useAccentColors()
+  const accentGradient = accent.gradient
+  const accentText = accent.text
+  const spinnerColor = accent.loader
+  const accentCtaGradient = accent.ctaGradient
 
   useEffect(() => {
     getMyAchievements()
@@ -78,6 +78,7 @@ export default function AchievementsContent() {
         emptyText={t('completeToUnlock')}
         items={unlocked}
         accentText={accentText}
+        accentCardGradient={accentCtaGradient}
       />
 
       {/* Locked */}
@@ -90,6 +91,7 @@ export default function AchievementsContent() {
         emptyText=""
         items={locked}
         accentText={accentText}
+        accentCardGradient={accentCtaGradient}
       />
     </div>
   )
@@ -104,6 +106,7 @@ function Section({
   emptyText,
   items,
   accentText,
+  accentCardGradient,
 }: {
   title: string
   count: number
@@ -113,6 +116,7 @@ function Section({
   emptyText: string
   items: AchievementDto[]
   accentText: string
+  accentCardGradient: string
 }) {
   if (count === 0) {
     return (
@@ -138,16 +142,16 @@ function Section({
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map(a => (
-          <AchievementCard key={a.id} achievement={a} accentText={accentText} />
+          <AchievementCard key={a.id} achievement={a} accentText={accentText} accentCardGradient={accentCardGradient} />
         ))}
       </div>
     </div>
   )
 }
 
-function AchievementCard({ achievement, accentText }: { achievement: AchievementDto; accentText: string }) {
+function AchievementCard({ achievement, accentText, accentCardGradient }: { achievement: AchievementDto; accentText: string; accentCardGradient: string }) {
   const Icon = getIcon(achievement.iconKey)
-  const gradient = getGradient(achievement.colorKey)
+  const gradient = accentCardGradient
   const borderCls = achievement.isUnlocked
     ? getRarityBorder(achievement.rarity)
     : 'border-white/5'

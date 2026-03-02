@@ -34,6 +34,15 @@ public class FriendRequestRepository : IFriendRequestRepository
                  (fr.SenderId == userId2 && fr.ReceiverId == userId1)));
     }
 
+    public async Task<FriendRequest?> GetAcceptedRequestBetweenUsersAsync(Guid userId1, Guid userId2)
+    {
+        return await _context.FriendRequests
+            .FirstOrDefaultAsync(fr =>
+                fr.Status == FriendRequestStatus.Accepted &&
+                ((fr.SenderId == userId1 && fr.ReceiverId == userId2) ||
+                 (fr.SenderId == userId2 && fr.ReceiverId == userId1)));
+    }
+
     public async Task<bool> AreFriendsAsync(Guid userId1, Guid userId2)
     {
         return await _context.FriendRequests

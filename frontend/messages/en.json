@@ -495,7 +495,13 @@
     "createFirstConsultation": "Create your first consultation",
     "totalTrainingPrograms": "Training programs",
     "totalMealPrograms": "Meal programs",
-    "totalConsultations": "Consultations"
+    "totalConsultations": "Consultations",
+    "visibility": "Visibility",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Private",
+    "visibilityPublicHint": "Visible to everyone in the programs feed",
+    "visibilityPrivateHint": "Only you can see this program",
+    "private": "Private"
   },
 
   "schedule": {
@@ -754,6 +760,12 @@
 
   "leaderboards": {
     "teaser": "The top trainers leaderboard is coming soon! Compete, earn points...",
+    "trends": "Trends",
+    "trendsDesc": "Top results of the week",
+    "community": "Community",
+    "communityDesc": "Compete with other members",
+    "inspiration": "Inspiration",
+    "inspirationDesc": "Stories from leaderboard champions",
     "topTrainers": "Top experts",
     "topTrainersDesc": "Global ranking",
     "xpPoints": "XP Points",
@@ -777,6 +789,12 @@
 
   "live": {
     "teaser": "Soon you'll be able to host live training sessions for your students...",
+    "trends": "Trends",
+    "trendsDesc": "Popular live streams",
+    "community": "Community",
+    "communityDesc": "Train together in real time",
+    "inspiration": "Inspiration",
+    "inspirationDesc": "Live workouts from top trainers",
     "hdStreaming": "HD Streaming",
     "hdStreamingDesc": "High quality video",
     "groups": "Groups",
@@ -896,7 +914,43 @@
     "cancel": "Cancel",
     "notFollowingYet": "Not following any trainers yet",
     "trainer": "Trainer",
-    "unfollow": "Unfollow"
+    "unfollow": "Unfollow",
+    "sentYouRequest": "sent you a friend request",
+    "acceptedYourRequest": "accepted your friend request",
+    "requestAccepted": "Friend request accepted!",
+    "errorAccepting": "Failed to accept request"
+  },
+
+  "userProfile": {
+    "addFriend": "Add Friend",
+    "friends": "Friends",
+    "removeFriend": "Remove",
+    "requestPending": "Request Sent",
+    "accept": "Accept",
+    "decline": "Decline",
+    "follow": "Follow",
+    "following": "Following",
+    "message": "Message",
+    "block": "Block",
+    "unblock": "Unblock",
+    "friendRequestSent": "Friend request sent!",
+    "friendRequestError": "Failed to send friend request",
+    "requestCancelled": "Friend request cancelled",
+    "errorCancellingRequest": "Failed to cancel request",
+    "requestAccepted": "Friend request accepted!",
+    "errorAccepting": "Failed to accept request",
+    "requestDeclined": "Friend request declined",
+    "errorDeclining": "Failed to decline request",
+    "friendRemoved": "Friend removed",
+    "errorRemovingFriend": "Failed to remove friend",
+    "nowFollowing": "Now following!",
+    "errorFollowing": "Failed to follow",
+    "unfollowed": "Unfollowed",
+    "errorUnfollowing": "Failed to unfollow",
+    "userBlocked": "User blocked",
+    "errorBlocking": "Failed to block user",
+    "userUnblocked": "User unblocked",
+    "errorUnblocking": "Failed to unblock user"
   },
 
   "achievementsPage": {

@@ -14,6 +14,7 @@ public class MealProgram : BaseEntity
     public string Code { get; set; } = string.Empty;
     public string CoverImagePath { get; set; } = string.Empty;
     public string VideosPath { get; set; } = string.Empty; // JSON array of video paths
+    public bool IsPublic { get; set; } = true;
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
 

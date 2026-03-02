@@ -8,7 +8,7 @@ import { getMediaUrl } from '@/lib/config'
 import { PostActions } from './PostActions'
 import { PostCommentsPanel } from './PostCommentsPanel'
 import { usePost, usePostDispatch } from '@/contexts/PostStoreContext'
-import { useAccentColors, getAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
+import { useAccentColors, getAccentColorsByRole, getRoleRingClass } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
 
 interface PostCardProps {
@@ -69,14 +69,39 @@ export function PostCard({
 
   const isRepost = post.type === PostType.Repost || post.isRepost
   const originalDeleted = isRepost && !post.originalPost
-  // Resolve ownership: prefer prop, fallback to auth context for robustness
-  const resolvedUserId = currentUserId ?? authUser?.id
-  const isOwner = isOwnProfile || (!!resolvedUserId && post.userId?.toLowerCase() === resolvedUserId?.toLowerCase())
+
+  // --- Robust ownership detection ---
+  // 1. Prefer explicit prop, then auth context
+  // 2. Fallback: decode JWT token from storage to cover race-condition / stale-state edge cases
+  const resolvedUserId = currentUserId ?? authUser?.id ?? (() => {
+    try {
+      const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken'))
+        : null
+      if (!token) return undefined
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return (
+        payload.sub ??
+        payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier']
+      ) as string | undefined
+    } catch {
+      return undefined
+    }
+  })()
+
+  // Normalise IDs (trim + lowercase) before comparison to avoid format mismatches
+  const normalizeId = (id: string | undefined | null): string | undefined =>
+    id?.toString().trim().toLowerCase() || undefined
+
+  const normResolved = normalizeId(resolvedUserId)
+  const isOwner = isOwnProfile || (!!normResolved && (
+    normalizeId(post.userId) === normResolved ||
+    normalizeId(post.author?.id) === normResolved
+  ))
 
   // Determine avatar color based on author's role, not current user's role
   const authorRole = post.author?.role
-  const isAuthorNutritionist = authorRole === 'Nutritionist' || authorRole === 3 || authorRole === '3'
-  const authorAccent = getAccentColors(isAuthorNutritionist)
+  const authorAccent = getAccentColorsByRole(authorRole)
   
   const displayMedia = isRepost ? post.originalPost?.media : post.media
   const displayCaption = isRepost ? post.originalPost?.caption : post.caption
@@ -95,7 +120,12 @@ export function PostCard({
       : pathname?.startsWith('/nutritionist')
         ? '/nutritionist'
         : '/user'
-    router.push(`${basePath}/profile/${post.userId}`)
+    // Navigate directly to own profile page (not [userId] route) when clicking own name
+    if (isOwner) {
+      router.push(`${basePath}/profile`)
+    } else {
+      router.push(`${basePath}/profile/${post.userId}`)
+    }
   }
 
   const isModal = variant === 'modal'

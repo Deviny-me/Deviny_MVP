@@ -21,6 +21,14 @@ public class MeFollowsController : BaseApiController
     public async Task<IActionResult> FollowTrainer(Guid trainerId)
     {
         var userId = GetCurrentUserId();
+        if (userId == trainerId)
+        {
+            return BadRequest(CreateProblemDetails(
+                "SelfFollow",
+                "Cannot follow yourself.",
+                StatusCodes.Status400BadRequest));
+        }
+
         var command = new FollowTrainerCommand
         {
             FollowerId = userId,

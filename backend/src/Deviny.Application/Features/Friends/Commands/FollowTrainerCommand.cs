@@ -1,5 +1,6 @@
 using FluentValidation;
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Features.Notifications.Events;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using MediatR;
@@ -28,15 +29,18 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
     private readonly IUserFollowRepository _userFollowRepository;
     private readonly IUserBlockRepository _userBlockRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IMediator _mediator;
 
     public FollowTrainerCommandHandler(
         IUserFollowRepository userFollowRepository,
         IUserBlockRepository userBlockRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        IMediator mediator)
     {
         _userFollowRepository = userFollowRepository;
         _userBlockRepository = userBlockRepository;
         _userRepository = userRepository;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(FollowTrainerCommand request, CancellationToken cancellationToken)
@@ -58,6 +62,9 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
         if (existingFollow != null)
             throw new Exception("Already following");
 
+        var follower = await _userRepository.GetByIdAsync(request.FollowerId)
+            ?? throw new Exception("Follower not found");
+
         // Create follow
         var userFollow = new UserFollow
         {
@@ -67,6 +74,15 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
         };
 
         await _userFollowRepository.AddAsync(userFollow);
+
+        // Publish real-time notification event
+        await _mediator.Publish(new NewFollowerEvent
+        {
+            FollowerId = follower.Id,
+            FollowerName = follower.FullName,
+            FollowerAvatar = follower.AvatarUrl,
+            TrainerId = trainer.Id
+        }, cancellationToken);
 
         return Unit.Value;
     }

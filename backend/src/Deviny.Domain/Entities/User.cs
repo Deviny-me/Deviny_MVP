@@ -52,4 +52,7 @@ public class User : BaseEntity
     // Achievements & Challenges navigation properties
     public ICollection<UserAchievement> Achievements { get; set; } = new List<UserAchievement>();
     public ICollection<UserChallengeProgress> ChallengeProgress { get; set; } = new List<UserChallengeProgress>();
+
+    // Feedback navigation property (one-to-one with Trainer)
+    public Feedback Feedback { get; set; } = new Feedback(); 
 }

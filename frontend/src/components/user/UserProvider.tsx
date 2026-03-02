@@ -3,6 +3,8 @@
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode, useEffect } from 'react'
 import { authService } from '@/features/auth/services/authService'
 import { API_URL } from '@/lib/config'
+import { chatConnection } from '@/lib/signalr/chatConnection'
+import type { UserLevelDto } from '@/types/level'
 
 interface UserData {
   id: string
@@ -49,7 +51,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return
     }
     
-    const accessToken = token || localStorage.getItem('accessToken')
+    const accessToken = token || localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     if (!accessToken) {
       setIsLoading(false)
       return
@@ -82,11 +84,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         setUser({
           id: data.id,
-          fullName: data.name || data.fullName,
-          name: data.name,
+          fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'User',
+          name: data.name || data.fullName,
           email: data.email,
           phone: data.phone,
-          avatarUrl: data.avatarUrl,
+          avatarUrl: data.avatarUrl || null,
           role: data.role,
           gender: data.gender,
           country: data.country,
@@ -96,21 +98,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
           level: levelData.currentLevel || 1,
           xp: levelData.currentXp || 0,
           xpToNextLevel: levelData.xpToNextLevel || levelData.requiredXpForNextLevel || 1000,
-          streak: 0, // Will be fetched from separate endpoint
-          workoutsCompleted: 0, // Will be fetched from separate endpoint
-          // Social stats (placeholders for future features)
-          achievementsCount: 0,
-          followingCount: 0,
-          postsCount: 0,
+          streak: 0,
+          workoutsCompleted: 0,
+          achievementsCount: data.achievementsCount ?? 0,
+          followingCount: data.followingCount ?? 0,
+          postsCount: data.postsCount ?? 0,
         })
       } else if (response.status === 401) {
         const refreshResult = await authService.refreshToken()
         if (refreshResult) {
-          localStorage.setItem('accessToken', refreshResult.accessToken)
+          // Preserve whichever storage the token was originally in
+          const store = localStorage.getItem('accessToken') ? localStorage : sessionStorage
+          store.setItem('accessToken', refreshResult.accessToken)
           await loadUserFromAPI(refreshResult.accessToken)
           return
         } else {
           localStorage.removeItem('accessToken')
+          sessionStorage.removeItem('accessToken')
           setUser(null)
         }
       } else {
@@ -130,9 +134,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return
     }
     
-    let token = localStorage.getItem('accessToken')
+    let token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     
-    // If no token in localStorage, try to refresh from cookie
+    // If no token in either storage, try to refresh from cookie
     if (!token) {
       const refreshResult = await authService.refreshToken()
       if (refreshResult) {
@@ -152,6 +156,26 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void initializeAuth()
   }, [initializeAuth])
+
+  // Listen for real-time XP updates via SignalR to keep user.level/xp in sync
+  useEffect(() => {
+    const handleXpUpdated = (data: { xpAdded: number; leveledUp: boolean; newLevel: number; currentState: UserLevelDto }) => {
+      setUser(prev => {
+        if (!prev) return null
+        return {
+          ...prev,
+          level: data.currentState.currentLevel,
+          xp: data.currentState.currentXp,
+          xpToNextLevel: data.currentState.requiredXpForNextLevel,
+        }
+      })
+    }
+
+    chatConnection.onXpUpdated(handleXpUpdated)
+    return () => {
+      chatConnection.off('XpUpdated', handleXpUpdated)
+    }
+  }, [])
 
   const updateUser = useCallback((data: Partial<UserData>) => {
     setUser(prev => {
@@ -173,6 +197,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       console.error('Logout failed:', error)
     } finally {
       localStorage.removeItem('accessToken')
+      sessionStorage.removeItem('accessToken')
       setUser(null)
     }
   }, [])

@@ -10,6 +10,7 @@ public class UpdateProgramRequest
     public decimal Price { get; set; }
     public decimal? ProPrice { get; set; }
     public string? Category { get; set; }
+    public bool IsPublic { get; set; } = true;
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? TrainingVideos { get; set; }
 }

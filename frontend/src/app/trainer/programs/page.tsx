@@ -20,7 +20,9 @@ import {
   DollarSign,
   Dumbbell,
   Apple,
-  MessageSquare
+  MessageSquare,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
@@ -47,6 +49,7 @@ type UnifiedProgram = {
   createdAt: string
   updatedAt: string
   type: ProgramType
+  isPublic: boolean
   // Training-specific
   averageRating?: number
   totalReviews?: number
@@ -68,6 +71,7 @@ function toUnifiedFromTraining(p: ProgramDto): UnifiedProgram {
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
     type: 'training',
+    isPublic: p.isPublic ?? true,
     averageRating: p.averageRating,
     totalReviews: p.totalReviews,
     totalPurchases: p.totalPurchases,
@@ -89,6 +93,7 @@ function toUnifiedFromMeal(p: MealProgramDto): UnifiedProgram {
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
     type: 'meal',
+    isPublic: p.isPublic ?? true,
     trainingVideoUrls: p.videoUrls,
   }
 }
@@ -140,6 +145,7 @@ export default function ProgramsPage() {
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
   const [trainingVideos, setTrainingVideos] = useState<File[]>([])
+  const [isPublic, setIsPublic] = useState(true)
 
   // Load data when currentUser is ready
   useEffect(() => {
@@ -184,6 +190,7 @@ export default function ProgramsPage() {
           averageRating: pub.averageRating,
           totalReviews: pub.totalReviews,
           totalPurchases: pub.totalPurchases,
+          isPublic: true,
         })
       }
     })
@@ -250,6 +257,7 @@ export default function ProgramsPage() {
     setCoverImage(null)
     setCoverPreview(null)
     setTrainingVideos([])
+    setIsPublic(true)
     setEditingProgram(null)
     setFormCategory(activeTab)
   }
@@ -268,6 +276,7 @@ export default function ProgramsPage() {
     setDetailedDescription(program.detailedDescription || '')
     setPrice(program.price.toString())
     setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
+    setIsPublic(program.isPublic ?? true)
     setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
     setShowCreateModal(true)
   }
@@ -320,6 +329,7 @@ export default function ProgramsPage() {
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             category: formCategory,
+            isPublic,
             coverImage: coverImage || undefined,
             trainingVideos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -332,6 +342,7 @@ export default function ProgramsPage() {
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             category: formCategory,
+            isPublic,
             coverImage: coverImage!,
             trainingVideos,
           })
@@ -348,6 +359,7 @@ export default function ProgramsPage() {
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             category: formCategory,
+            isPublic,
             coverImage: coverImage || undefined,
             videos: trainingVideos.length > 0 ? trainingVideos : undefined,
           })
@@ -360,6 +372,7 @@ export default function ProgramsPage() {
             price: parseFloat(price),
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             category: formCategory,
+            isPublic,
             coverImage: coverImage!,
             videos: trainingVideos,
           })
@@ -592,6 +605,11 @@ export default function ProgramsPage() {
                         <><MessageSquare className="w-3 h-3" />{t('tabConsultation')}</>
                       )}
                     </span>
+                    {!program.isPublic && (
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-yellow-600 text-white flex items-center gap-1">
+                        <EyeOff className="w-3 h-3" />{t('private')}
+                      </span>
+                    )}
                   </div>
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
@@ -979,6 +997,41 @@ export default function ProgramsPage() {
                       />
                     </div>
                     <p className="mt-1 text-xs text-gray-500">{t('proPriceHint')}</p>
+                  </div>
+
+                  {/* Visibility Toggle */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {t('visibility')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsPublic(!isPublic)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
+                        isPublic
+                          ? 'border-green-500/50 bg-green-500/10'
+                          : 'border-yellow-500/50 bg-yellow-500/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {isPublic ? (
+                          <Eye className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <EyeOff className="w-5 h-5 text-yellow-400" />
+                        )}
+                        <div className="text-left">
+                          <p className={`text-sm font-medium ${isPublic ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {isPublic ? t('visibilityPublic') : t('visibilityPrivate')}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {isPublic ? t('visibilityPublicHint') : t('visibilityPrivateHint')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full relative transition-colors ${isPublic ? 'bg-green-500' : 'bg-gray-600'}`}>
+                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </div>
+                    </button>
                   </div>
 
                   {/* Training Videos — hide for consultations */}

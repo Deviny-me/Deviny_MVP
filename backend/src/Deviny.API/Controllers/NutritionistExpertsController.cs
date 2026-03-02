@@ -121,7 +121,8 @@ public class NutritionistExpertsController : BaseApiController
                     ReviewsCount = 0,
                     Slug = profile.Slug,
                     ProfilePublicUrl = $"/nutritionist/{profile.Slug}",
-                    Role = user.Role.ToString()
+                    Role = user.Role.ToString(),
+                    ActivityRatingValue = 0
                 },
                 About = new AboutDto
                 {

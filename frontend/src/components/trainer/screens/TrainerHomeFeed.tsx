@@ -96,7 +96,9 @@ export function TrainerHomeFeed() {
 
     try {
       setDeletingPostId(postId)
+      console.log('[Delete] Attempting to delete post:', postId, 'userId:', user?.id)
       await postsApi.deletePost(postId)
+      console.log('[Delete] Post deleted successfully:', postId)
       dispatch({ type: 'REMOVE_POST', postId })
       setFeedPostIds(prev => prev.filter(id => id !== postId))
       setToast({ message: tp('deleted'), type: 'success' })
@@ -161,35 +163,15 @@ export function TrainerHomeFeed() {
 
       {/* Create Post Card */}
       <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-4">
-        <div className="flex items-center gap-3">
-          {avatarUrl ? (
-            <img 
-              src={avatarUrl} 
-              alt={trainerName}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{trainerInitials}</span>
-            </div>
-          )}
-          <button 
-            className="flex-1 px-4 py-3 bg-[#0A0A0A] hover:bg-[#262626] border border-white/10 rounded-full text-left text-sm text-gray-400 transition-colors"
-            onClick={() => router.push('/trainer/profile')}
-          >
-            {t('shareProgress')}
-          </button>
-        </div>
-        
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
-          <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
+          <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
             <Loader2 className="w-4 h-4 text-[#FF6B35] animate-spin" />
             <span className="text-sm text-gray-400">{uploadProgress}</span>
           </div>
         )}
         
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => photoInputRef.current?.click()}
             disabled={isUploading}
@@ -203,7 +185,7 @@ export function TrainerHomeFeed() {
             disabled={isUploading}
             className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Video className="w-5 h-5 text-green-500" strokeWidth={1.5} />
+            <Video className="w-5 h-5 text-[#FF0844]" strokeWidth={1.5} />
             <span className="text-sm font-medium text-gray-300">{t('video')}</span>
           </button>
           <button 

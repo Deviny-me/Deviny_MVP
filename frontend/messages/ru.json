@@ -495,7 +495,13 @@
     "createFirstConsultation": "Создайте свою первую консультацию",
     "totalTrainingPrograms": "Программ тренировок",
     "totalMealPrograms": "Программ питания",
-    "totalConsultations": "Консультаций"
+    "totalConsultations": "Консультаций",
+    "visibility": "Видимость",
+    "visibilityPublic": "Публичная",
+    "visibilityPrivate": "Приватная",
+    "visibilityPublicHint": "Видна всем в ленте программ",
+    "visibilityPrivateHint": "Только вы можете видеть эту программу",
+    "private": "Приватная"
   },
 
   "schedule": {
@@ -754,6 +760,12 @@
 
   "leaderboards": {
     "teaser": "Скоро здесь появится рейтинг лучших тренеров! Соревнуйтесь, зарабатывайте очки...",
+    "trends": "Тренды",
+    "trendsDesc": "Лучшие результаты недели",
+    "community": "Сообщество",
+    "communityDesc": "Соревнуйтесь с другими участниками",
+    "inspiration": "Вдохновение",
+    "inspirationDesc": "Истории лидеров рейтинга",
     "topTrainers": "Топ экспертов",
     "topTrainersDesc": "Глобальный рейтинг",
     "xpPoints": "Очки XP",
@@ -777,6 +789,12 @@
 
   "live": {
     "teaser": "Скоро вы сможете проводить живые тренировки для своих студентов...",
+    "trends": "Тренды",
+    "trendsDesc": "Популярные прямые эфиры",
+    "community": "Сообщество",
+    "communityDesc": "Тренируйтесь вместе в реальном времени",
+    "inspiration": "Вдохновение",
+    "inspirationDesc": "Живые тренировки от лучших тренеров",
     "hdStreaming": "HD Стриминг",
     "hdStreamingDesc": "Качественная видеосвязь",
     "groups": "Группы",
@@ -896,7 +914,43 @@
     "cancel": "Отменить",
     "notFollowingYet": "Вы ещё ни на кого не подписаны",
     "trainer": "Тренер",
-    "unfollow": "Отписаться"
+    "unfollow": "Отписаться",
+    "sentYouRequest": "отправил(а) вам запрос в друзья",
+    "acceptedYourRequest": "принял(а) ваш запрос в друзья",
+    "requestAccepted": "Запрос в друзья принят",
+    "errorAccepting": "Ошибка при принятии запроса"
+  },
+
+  "userProfile": {
+    "addFriend": "Добавить в друзья",
+    "friends": "Друзья",
+    "removeFriend": "Удалить",
+    "requestPending": "Запрос отправлен",
+    "accept": "Принять",
+    "decline": "Отклонить",
+    "follow": "Подписаться",
+    "following": "Подписан(а)",
+    "message": "Сообщение",
+    "block": "Заблокировать",
+    "unblock": "Разблокировать",
+    "friendRequestSent": "Запрос в друзья отправлен!",
+    "friendRequestError": "Не удалось отправить запрос в друзья",
+    "requestCancelled": "Запрос в друзья отменён",
+    "errorCancellingRequest": "Не удалось отменить запрос",
+    "requestAccepted": "Запрос в друзья принят!",
+    "errorAccepting": "Не удалось принять запрос",
+    "requestDeclined": "Запрос в друзья отклонён",
+    "errorDeclining": "Не удалось отклонить запрос",
+    "friendRemoved": "Друг удалён",
+    "errorRemovingFriend": "Не удалось удалить друга",
+    "nowFollowing": "Вы подписались!",
+    "errorFollowing": "Не удалось подписаться",
+    "unfollowed": "Вы отписались",
+    "errorUnfollowing": "Не удалось отписаться",
+    "userBlocked": "Пользователь заблокирован",
+    "errorBlocking": "Не удалось заблокировать",
+    "userUnblocked": "Пользователь разблокирован",
+    "errorUnblocking": "Не удалось разблокировать"
   },
 
   "achievementsPage": {

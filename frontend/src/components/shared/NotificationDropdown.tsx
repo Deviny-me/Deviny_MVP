@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck } from 'lucide-react'
+import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck, UserPlus, UserCheck, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useUnreadNotifications } from '@/contexts/UnreadNotificationsContext'
 import { notificationsApi } from '@/lib/api/notificationsApi'
 import { Notification } from '@/types/notification'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
+import { chatConnection } from '@/lib/signalr/chatConnection'
 
 function getNotificationIcon(type: string) {
   switch (type) {
@@ -16,6 +17,12 @@ function getNotificationIcon(type: string) {
       return <Dumbbell className="w-4 h-4 text-blue-400" />
     case 'MealProgramCreated':
       return <UtensilsCrossed className="w-4 h-4 text-green-400" />
+    case 'FriendRequestReceived':
+      return <UserPlus className="w-4 h-4 text-purple-400" />
+    case 'FriendRequestAccepted':
+      return <UserCheck className="w-4 h-4 text-green-400" />
+    case 'NewFollower':
+      return <Users className="w-4 h-4 text-blue-400" />
     default:
       return <Bell className="w-4 h-4 text-gray-400" />
   }
@@ -85,7 +92,38 @@ export function NotificationDropdown() {
     if (opening && !hasLoaded) {
       loadNotifications()
     }
+    // Refresh when opening if already loaded (to catch any missed items)
+    if (opening && hasLoaded) {
+      loadNotifications()
+    }
   }
+
+  // Real-time notification listener
+  useEffect(() => {
+    const handleNewNotification = (data: { id: string; type: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
+      console.log('[Notifications] Real-time notification received:', data)
+      // Prepend to notifications list if already loaded
+      if (hasLoaded) {
+        setNotifications(prev => [{
+          id: data.id,
+          type: data.type,
+          title: data.title,
+          message: data.message,
+          relatedEntityType: data.relatedEntityType,
+          relatedEntityId: data.relatedEntityId,
+          isRead: data.isRead,
+          createdAt: data.createdAt,
+          readAt: null
+        }, ...prev])
+      }
+    }
+
+    chatConnection.onNotificationReceived(handleNewNotification)
+
+    return () => {
+      chatConnection.off('NotificationReceived', handleNewNotification)
+    }
+  }, [hasLoaded])
 
   const handleMarkAsRead = async (id: string) => {
     try {

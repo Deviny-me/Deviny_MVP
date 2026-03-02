@@ -6,7 +6,13 @@ import { NavSection } from './types'
 interface SharedLeftSidebarProps {
   sections: NavSection[]
   className?: string
-  accentColor?: 'orange' | 'green'
+  accentColor?: 'orange' | 'green' | 'blue'
+}
+
+const colorMap = {
+  green:  { activeBg: 'from-[#22c55e]/10 to-[#16a34a]/10', activeBorder: 'border-[#22c55e]', activeIcon: 'text-[#22c55e]', hoverIcon: 'group-hover:text-[#22c55e]', badge: 'bg-[#16a34a]' },
+  orange: { activeBg: 'from-[#FF6B35]/10 to-[#FF0844]/10', activeBorder: 'border-[#FF6B35]', activeIcon: 'text-[#FF6B35]', hoverIcon: 'group-hover:text-[#FF6B35]', badge: 'bg-[#FF0844]' },
+  blue:   { activeBg: 'from-[#3B82F6]/10 to-[#2563EB]/10', activeBorder: 'border-[#3B82F6]', activeIcon: 'text-[#3B82F6]', hoverIcon: 'group-hover:text-[#3B82F6]', badge: 'bg-[#2563EB]' },
 }
 
 /**
@@ -19,9 +25,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
 
   const isActivePath = (path: string) => pathname === path
 
-  const colors = accentColor === 'green'
-    ? { activeBg: 'from-[#22c55e]/10 to-[#16a34a]/10', activeBorder: 'border-[#22c55e]', activeIcon: 'text-[#22c55e]', hoverIcon: 'group-hover:text-[#22c55e]', badge: 'bg-[#16a34a]' }
-    : { activeBg: 'from-[#FF6B35]/10 to-[#FF0844]/10', activeBorder: 'border-[#FF6B35]', activeIcon: 'text-[#FF6B35]', hoverIcon: 'group-hover:text-[#FF6B35]', badge: 'bg-[#FF0844]' }
+  const colors = colorMap[accentColor]
 
   return (
     <div className={`w-60 flex-shrink-0 space-y-2 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6 scrollbar-hide ${className || ''}`}>

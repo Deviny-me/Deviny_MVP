@@ -30,3 +30,14 @@ export enum FriendRequestStatus {
   Declined = 2,
   Cancelled = 3,
 }
+
+export interface RelationshipStatus {
+  isFriend: boolean;
+  friendsSince?: string;
+  hasPendingRequest: boolean;
+  pendingRequestId?: number;
+  isRequestSender: boolean;
+  isFollowing: boolean;
+  isBlocked: boolean;
+  isBlockedByThem: boolean;
+}

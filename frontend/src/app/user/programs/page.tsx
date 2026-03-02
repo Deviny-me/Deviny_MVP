@@ -19,6 +19,7 @@ import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
 import { PublicProgramDto, PublicMealProgramDto, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
+import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'Training' | 'Diet' | 'Consultation'
@@ -37,6 +38,7 @@ type UnifiedPublicProgram = {
   trainerName: string
   trainerAvatarUrl: string
   trainerSlug: string
+  trainerRole: string
   category: ProgramCategory
   // Training-specific (optional)
   averageRating?: number
@@ -58,6 +60,7 @@ function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
     trainerName: p.trainerName,
     trainerAvatarUrl: p.trainerAvatarUrl,
     trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
     category: (p.category as ProgramCategory) || 'Training',
     averageRating: p.averageRating,
     totalReviews: p.totalReviews,
@@ -79,6 +82,7 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     trainerName: p.trainerName,
     trainerAvatarUrl: p.trainerAvatarUrl,
     trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
     category: (p.category as ProgramCategory) || 'Diet',
     averageRating: 0,
     totalReviews: 0,
@@ -214,7 +218,7 @@ export default function ProgramsPage() {
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#FF6B35]/50"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/50"
             />
           </div>
 
@@ -225,7 +229,7 @@ export default function ProgramsPage() {
                 onClick={() => setFilterType('all')}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   filterType === 'all' 
-                    ? 'bg-[#FF6B35] text-white' 
+                    ? 'bg-[#3B82F6] text-white' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -241,7 +245,7 @@ export default function ProgramsPage() {
                   onClick={() => setFilterType(cat)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     filterType === cat 
-                      ? 'bg-[#FF6B35] text-white' 
+                      ? 'bg-[#3B82F6] text-white' 
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -258,7 +262,7 @@ export default function ProgramsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF6B35]/50"
+                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#3B82F6]/50"
               >
                 <option value="newest">{t('newest')}</option>
                 <option value="popular">{t('mostPopular')}</option>
@@ -273,14 +277,14 @@ export default function ProgramsPage() {
         {/* Programs List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
           </div>
         ) : error ? (
           <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
             <p className="text-red-400 mb-4">{error}</p>
             <button
               onClick={loadAllPrograms}
-              className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
+              className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
             >
               {tc('tryAgain')}
             </button>
@@ -351,7 +355,7 @@ export default function ProgramsPage() {
                             className="w-5 h-5 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})` }}>
                             <span className="text-white text-[10px] font-bold">
                               {program.trainerName.charAt(0)}
                             </span>
@@ -382,7 +386,7 @@ export default function ProgramsPage() {
                       </div>
                       <div className="flex flex-col items-end">
                         <span className={`text-lg font-bold ${
-                          program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+                          program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
                         }`}>
                           {formatPrice(program.price)}
                         </span>
@@ -488,7 +492,7 @@ function ProgramDetailModal({
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
             <div className="flex flex-col items-end flex-shrink-0">
               <span className={`text-2xl font-bold ${
-                program.price === 0 ? 'text-green-400' : 'text-[#FF6B35]'
+                program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
               }`}>
                 {formatPrice(program.price)}
               </span>
@@ -515,7 +519,7 @@ function ProgramDetailModal({
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})` }}>
                 <span className="text-white font-bold">{program.trainerName.charAt(0)}</span>
               </div>
             )}
@@ -551,7 +555,7 @@ function ProgramDetailModal({
           {/* Purchase Buttons */}
           <div className="space-y-2">
             <button
-              className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               onClick={() => alert(t('purchaseComingSoon'))}
             >
               <ShoppingCart className="w-5 h-5" />

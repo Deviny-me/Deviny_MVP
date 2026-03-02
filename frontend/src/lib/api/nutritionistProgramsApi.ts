@@ -39,6 +39,7 @@ export const nutritionistProgramsApi = {
     formData.append('description', request.description);
     formData.append('price', request.price.toString());
     formData.append('coverImage', request.coverImage);
+    formData.append('isPublic', (request.isPublic ?? true).toString());
 
     if (request.detailedDescription) {
       formData.append('detailedDescription', request.detailedDescription);
@@ -72,6 +73,7 @@ export const nutritionistProgramsApi = {
     formData.append('title', request.title);
     formData.append('description', request.description);
     formData.append('price', request.price.toString());
+    formData.append('isPublic', (request.isPublic ?? true).toString());
 
     if (request.detailedDescription) {
       formData.append('detailedDescription', request.detailedDescription);

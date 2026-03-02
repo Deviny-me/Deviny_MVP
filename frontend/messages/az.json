@@ -495,7 +495,13 @@
     "createFirstConsultation": "İlk konsultasiyanızı yaradın",
     "totalTrainingPrograms": "Məşq proqramları",
     "totalMealPrograms": "Qidalanma proqramları",
-    "totalConsultations": "Konsultasiyalar"
+    "totalConsultations": "Konsultasiyalar",
+    "visibility": "Görünürlük",
+    "visibilityPublic": "İctimai",
+    "visibilityPrivate": "Gizli",
+    "visibilityPublicHint": "Proqramlar lentində hər kəsə görünür",
+    "visibilityPrivateHint": "Yalnız siz bu proqramı görə bilərsiniz",
+    "private": "Gizli"
   },
 
   "schedule": {
@@ -754,6 +760,12 @@
 
   "leaderboards": {
     "teaser": "Tezliklə burada ən yaxşı məşqçilərin reytinqi görünəcək! Yarışın, xal qazanın...",
+    "trends": "Trendlər",
+    "trendsDesc": "Həftənin ən yaxşı nəticələri",
+    "community": "İcma",
+    "communityDesc": "Digər üzvlərlə yarışın",
+    "inspiration": "İlham",
+    "inspirationDesc": "Reytinq liderlərinin hekayələri",
     "topTrainers": "Top ekspertlər",
     "topTrainersDesc": "Qlobal reytinq",
     "xpPoints": "XP Xalları",
@@ -777,6 +789,12 @@
 
   "live": {
     "teaser": "Tezliklə tələbələriniz üçün canlı məşqlər keçirə biləcəksiniz...",
+    "trends": "Trendlər",
+    "trendsDesc": "Populyar canlı yayımlar",
+    "community": "İcma",
+    "communityDesc": "Real vaxtda birlikdə məşq edin",
+    "inspiration": "İlham",
+    "inspirationDesc": "Ən yaxşı məşqçilərdən canlı məşqlər",
     "hdStreaming": "HD Yayım",
     "hdStreamingDesc": "Keyfiyyətli video əlaqə",
     "groups": "Qruplar",
@@ -896,7 +914,43 @@
     "cancel": "Ləğv et",
     "notFollowingYet": "Hələ heç bir məşqçini izləmirsiniz",
     "trainer": "Məşqçi",
-    "unfollow": "İzləməyi dayandır"
+    "unfollow": "İzləməyi dayandır",
+    "sentYouRequest": "sizə dostluq sorğusu göndərdi",
+    "acceptedYourRequest": "dostluq sorğunuzu qəbul etdi",
+    "requestAccepted": "Dostluq sorğusu qəbul edildi",
+    "errorAccepting": "Sorğunu qəbul edərkən xəta baş verdi"
+  },
+
+  "userProfile": {
+    "addFriend": "Dost əlavə et",
+    "friends": "Dostlar",
+    "removeFriend": "Sil",
+    "requestPending": "Sorğu göndərildi",
+    "accept": "Qəbul et",
+    "decline": "Rədd et",
+    "follow": "İzlə",
+    "following": "İzləyirsiniz",
+    "message": "Mesaj",
+    "block": "Blokla",
+    "unblock": "Bloku aç",
+    "friendRequestSent": "Dostluq sorğusu göndərildi!",
+    "friendRequestError": "Dostluq sorğusu göndərilə bilmədi",
+    "requestCancelled": "Dostluq sorğusu ləğv edildi",
+    "errorCancellingRequest": "Sorğunu ləğv etmək mümkün olmadı",
+    "requestAccepted": "Dostluq sorğusu qəbul edildi!",
+    "errorAccepting": "Sorğunu qəbul etmək mümkün olmadı",
+    "requestDeclined": "Dostluq sorğusu rədd edildi",
+    "errorDeclining": "Sorğunu rədd etmək mümkün olmadı",
+    "friendRemoved": "Dost silindi",
+    "errorRemovingFriend": "Dostu silmək mümkün olmadı",
+    "nowFollowing": "İzləyirsiniz!",
+    "errorFollowing": "İzləmək mümkün olmadı",
+    "unfollowed": "İzləmə dayandırıldı",
+    "errorUnfollowing": "İzləməni dayandırmaq mümkün olmadı",
+    "userBlocked": "İstifadəçi bloklandı",
+    "errorBlocking": "Bloklamaq mümkün olmadı",
+    "userUnblocked": "İstifadəçi blokdan çıxarıldı",
+    "errorUnblocking": "Bloku açmaq mümkün olmadı"
   },
 
   "achievementsPage": {

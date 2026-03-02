@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '@/components/user/UserProvider'
+import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
   MapPin,
@@ -257,6 +258,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 export default function UserProfilePage() {
   const router = useRouter()
   const { user, updateUser } = useUser()
+  const { level } = useLevel()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
   const tp = useTranslations('profile')
@@ -278,10 +280,11 @@ export default function UserProfilePage() {
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Calculate level progress
-  const currentXp = user?.xp || 0
-  const xpToNextLevel = user?.xpToNextLevel || 1000
-  const levelProgress = (currentXp / xpToNextLevel) * 100
+  // Calculate level progress from LevelProvider
+  const currentXp = level?.currentXp ?? user?.xp ?? 0
+  const xpToNextLevel = level?.requiredXpForNextLevel ?? user?.xpToNextLevel ?? 1000
+  const levelProgress = level?.progressPercent ?? (currentXp / xpToNextLevel) * 100
+  const currentLevel = level?.currentLevel ?? user?.level ?? 1
 
   const stats = [
     { label: tp('workouts'), value: user?.workoutsCompleted || 0, icon: Target },
@@ -414,7 +417,7 @@ export default function UserProfilePage() {
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] relative">
+          <div className="h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] relative">
             <button className="absolute bottom-3 right-3 p-2 bg-black/30 backdrop-blur-sm rounded-lg text-white hover:bg-black/50 transition-colors">
               <Camera className="w-4 h-4" />
             </button>
@@ -430,7 +433,7 @@ export default function UserProfilePage() {
                     className="w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A]"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center border-4 border-[#1A1A1A]">
+                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center border-4 border-[#1A1A1A]">
                     <span className="text-white text-3xl font-bold">
                       {user?.fullName?.charAt(0) || 'U'}
                     </span>
@@ -507,18 +510,28 @@ export default function UserProfilePage() {
         {/* Level Card */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{user?.level || 1}</span>
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+              <span className="text-2xl font-bold text-white">{currentLevel}</span>
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold text-white">Level {user?.level || 1}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-white">Level {currentLevel}</span>
+                  {level?.levelTitle && (
+                    <span className="text-xs text-blue-400 font-medium">{level.levelTitle}</span>
+                  )}
+                </div>
                 <span className="text-xs text-gray-400">{currentXp} / {xpToNextLevel} {tp('xp')}</span>
               </div>
               <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full transition-all" style={{ width: `${levelProgress}%` }} />
+                <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full transition-all" style={{ width: `${levelProgress}%` }} />
               </div>
-              <p className="text-xs text-gray-400 mt-1">{xpToNextLevel - currentXp} {tp('xpToLevel')} {(user?.level || 1) + 1}</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-gray-400">{xpToNextLevel - currentXp} {tp('xpToLevel')} {currentLevel + 1}</p>
+                {level?.nextLevelTitle && (
+                  <p className="text-xs text-gray-500">Следующий: {level.nextLevelTitle}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -527,7 +540,7 @@ export default function UserProfilePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {stats.map((stat, index) => (
             <div key={index} className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
-              <stat.icon className="w-5 h-5 text-[#FF6B35] mx-auto mb-2" />
+              <stat.icon className="w-5 h-5 text-[#3B82F6] mx-auto mb-2" />
               <p className="text-2xl font-bold text-white">{stat.value}</p>
               <p className="text-xs text-gray-400">{stat.label}</p>
             </div>
@@ -538,20 +551,20 @@ export default function UserProfilePage() {
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Grid className="w-5 h-5 text-[#FF6B35]" />
+              <Grid className="w-5 h-5 text-[#3B82F6]" />
               <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
               {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
             </div>
             <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#FF6B35]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#3B82F6]' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#FF6B35]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#3B82F6]' : 'text-gray-500 hover:text-gray-300'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -578,7 +591,7 @@ export default function UserProfilePage() {
               </div>
               {(isLoadingPosts || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
                 </div>
               )}
             </div>
@@ -600,7 +613,7 @@ export default function UserProfilePage() {
               ))}
               {(isLoadingPosts || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
                 </div>
               )}
             </div>

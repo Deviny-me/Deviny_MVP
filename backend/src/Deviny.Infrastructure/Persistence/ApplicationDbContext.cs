@@ -57,6 +57,9 @@ public class ApplicationDbContext : DbContext
     // Notifications
     public DbSet<Notification> Notifications { get; set; } = null!;
 
+    // Feedback
+     public DbSet<Feedback> Feedbacks { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

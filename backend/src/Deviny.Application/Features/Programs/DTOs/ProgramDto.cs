@@ -12,6 +12,7 @@ public class ProgramDto
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> TrainingVideoUrls { get; set; } = new List<string>();
+    public bool IsPublic { get; set; } = true;
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalPurchases { get; set; }

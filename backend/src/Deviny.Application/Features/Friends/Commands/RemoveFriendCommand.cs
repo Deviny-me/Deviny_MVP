@@ -1,5 +1,6 @@
 using FluentValidation;
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Features.Notifications.Events;
 using MediatR;
 
 namespace Deviny.Application.Features.Friends.Commands;
@@ -24,10 +25,17 @@ public class RemoveFriendCommandValidator : AbstractValidator<RemoveFriendComman
 public class RemoveFriendCommandHandler : IRequestHandler<RemoveFriendCommand, Unit>
 {
     private readonly IFriendRequestRepository _friendRequestRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IMediator _mediator;
 
-    public RemoveFriendCommandHandler(IFriendRequestRepository friendRequestRepository)
+    public RemoveFriendCommandHandler(
+        IFriendRequestRepository friendRequestRepository,
+        IUserRepository userRepository,
+        IMediator mediator)
     {
         _friendRequestRepository = friendRequestRepository;
+        _userRepository = userRepository;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(RemoveFriendCommand request, CancellationToken cancellationToken)
@@ -37,6 +45,15 @@ public class RemoveFriendCommandHandler : IRequestHandler<RemoveFriendCommand, U
             throw new Exception("Not friends");
 
         await _friendRequestRepository.DeleteFriendshipAsync(request.UserId, request.FriendId);
+
+        // Publish real-time event so the other user's UI updates
+        var user = await _userRepository.GetByIdAsync(request.UserId);
+        await _mediator.Publish(new FriendRemovedEvent
+        {
+            RemovedByUserId = request.UserId,
+            RemovedByName = user?.FullName ?? "Someone",
+            RemovedFriendId = request.FriendId
+        }, cancellationToken);
 
         return Unit.Value;
     }
