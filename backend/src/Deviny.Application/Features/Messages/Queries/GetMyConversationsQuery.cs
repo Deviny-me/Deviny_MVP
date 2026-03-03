@@ -1,11 +1,12 @@
+using Deviny.Application.Common;
 using Deviny.Application.Common.Interfaces;
 using MediatR;
 
 namespace Deviny.Application.Features.Messages.Queries;
 
-public record GetMyConversationsQuery(Guid UserId) : IRequest<List<ConversationListItemDto>>;
+public record GetMyConversationsQuery(Guid UserId, int Page = 1, int PageSize = 30) : IRequest<PagedResponse<ConversationListItemDto>>;
 
-public class GetMyConversationsQueryHandler : IRequestHandler<GetMyConversationsQuery, List<ConversationListItemDto>>
+public class GetMyConversationsQueryHandler : IRequestHandler<GetMyConversationsQuery, PagedResponse<ConversationListItemDto>>
 {
     private readonly IConversationRepository _conversationRepository;
     private readonly IMessageRepository _messageRepository;
@@ -18,9 +19,10 @@ public class GetMyConversationsQueryHandler : IRequestHandler<GetMyConversations
         _messageRepository = messageRepository;
     }
 
-    public async Task<List<ConversationListItemDto>> Handle(GetMyConversationsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<ConversationListItemDto>> Handle(GetMyConversationsQuery request, CancellationToken cancellationToken)
     {
-        var conversations = await _conversationRepository.GetUserConversationsAsync(request.UserId, cancellationToken);
+        var (conversations, totalCount) = await _conversationRepository.GetUserConversationsPagedAsync(
+            request.UserId, request.Page, request.PageSize, cancellationToken);
 
         var result = new List<ConversationListItemDto>();
 
@@ -52,6 +54,6 @@ public class GetMyConversationsQueryHandler : IRequestHandler<GetMyConversations
             });
         }
 
-        return result;
+        return new PagedResponse<ConversationListItemDto>(result, totalCount, request.Page, request.PageSize);
     }
 }

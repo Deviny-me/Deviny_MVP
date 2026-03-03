@@ -11,4 +11,6 @@ export interface PublicTrainerDto {
   role?: string;
   programsCount: number;
   specializations: string[];
+  ratingValue: number;
+  reviewsCount: number;
 }

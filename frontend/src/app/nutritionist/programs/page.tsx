@@ -216,7 +216,7 @@ export default function NutritionistProgramsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title || !description || !price) {
+    if (!title || !description) {
       toast.error(t('toasts.fillRequired'))
       return
     }
@@ -234,7 +234,7 @@ export default function NutritionistProgramsPage() {
           title,
           description,
           detailedDescription: detailedDescription || undefined,
-          price: parseFloat(price),
+          price: price ? parseFloat(price) : 0,
           standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
           maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -250,7 +250,7 @@ export default function NutritionistProgramsPage() {
           title,
           description,
           detailedDescription: detailedDescription || undefined,
-          price: parseFloat(price),
+          price: price ? parseFloat(price) : 0,
           standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
           proPrice: proPrice ? parseFloat(proPrice) : undefined,
           maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -264,7 +264,7 @@ export default function NutritionistProgramsPage() {
       }
 
       closeModal()
-      loadMealPrograms()
+      await loadMealPrograms()
     } catch (error) {
       console.error('Failed to save program:', error)
       const message = error instanceof Error ? error.message : 'Unknown error'
@@ -280,7 +280,7 @@ export default function NutritionistProgramsPage() {
     try {
       setDeleting(program.id)
       await nutritionistProgramsApi.deleteProgram(program.id)
-      loadMealPrograms()
+      await loadMealPrograms()
       toast.success(t('toasts.deleted'))
     } catch (error) {
       console.error('Failed to delete program:', error)

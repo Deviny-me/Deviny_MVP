@@ -118,8 +118,8 @@ export default function ChatInbox() {
   const loadConversations = useCallback(async () => {
     try {
       setLoadingConvs(true)
-      const data = await messagesApi.getMyConversations()
-      setConversations(data)
+      const data = await messagesApi.getMyConversations(1, 100)
+      setConversations(data.items)
     } catch (err) {
       console.error('Failed to load conversations', err)
     } finally {

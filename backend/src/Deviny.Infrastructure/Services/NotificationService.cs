@@ -104,15 +104,12 @@ public class NotificationService : INotificationService
         await _notificationRepository.AddRangeAsync(notifications, ct);
 
         // Push real-time notifications to each user
-        // Pre-fetch unread counts per unique user to avoid N+1 queries
+        // Batch-fetch unread counts in a single DB query instead of N+1 loop
         var uniqueUserIds = notifications.Select(n => n.UserId).Distinct().ToList();
         var unreadCounts = new Dictionary<Guid, int>();
         try
         {
-            foreach (var uid in uniqueUserIds)
-            {
-                unreadCounts[uid] = await _notificationRepository.GetUnreadCountAsync(uid, ct);
-            }
+            unreadCounts = await _notificationRepository.GetUnreadCountsAsync(uniqueUserIds, ct);
         }
         catch (Exception ex)
         {

@@ -31,6 +31,31 @@ public class UserFollowRepository : IUserFollowRepository
             .ToListAsync();
     }
 
+    public async Task<(List<(User Trainer, DateTime FollowedAt)> Items, int TotalCount)> GetFollowingPagedAsync(Guid userId, int page, int pageSize)
+    {
+        var query = _context.UserFollows
+            .AsNoTracking()
+            .Where(uf => uf.FollowerId == userId);
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Include(uf => uf.Trainer)
+            .OrderByDescending(uf => uf.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(uf => new ValueTuple<User, DateTime>(uf.Trainer, uf.CreatedAt))
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    public async Task<int> GetFollowingCountAsync(Guid userId)
+    {
+        return await _context.UserFollows
+            .CountAsync(uf => uf.FollowerId == userId);
+    }
+
     public async Task<int> GetFollowerCountAsync(Guid trainerId)
     {
         return await _context.UserFollows

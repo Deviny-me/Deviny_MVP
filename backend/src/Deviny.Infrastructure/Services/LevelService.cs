@@ -28,6 +28,7 @@ public class LevelService : ILevelService
     {
         // Check idempotency - soft fail if already processed
         var existingTransaction = await _context.XpTransactions
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.IdempotencyKey == idempotencyKey);
 
         if (existingTransaction != null)
@@ -84,6 +85,7 @@ public class LevelService : ILevelService
 
         // Calculate CurrentXp (XP within current level)
         var currentLevelDef = await _context.LevelDefinitions
+            .AsNoTracking()
             .FirstOrDefaultAsync(ld => ld.Level == userLevel.CurrentLevel);
         
         userLevel.CurrentXp = userLevel.LifetimeXp - (currentLevelDef?.RequiredXp ?? 0);
@@ -133,13 +135,17 @@ public class LevelService : ILevelService
         await EnsureUserLevelExistsAsync(userId);
 
         var userLevel = await _context.UserLevels
+            .AsNoTracking()
             .FirstAsync(ul => ul.UserId == userId);
 
-        var currentLevelDef = await _context.LevelDefinitions
-            .FirstOrDefaultAsync(ld => ld.Level == userLevel.CurrentLevel);
+        // Single query for both current and next level definitions
+        var levelDefs = await _context.LevelDefinitions
+            .AsNoTracking()
+            .Where(ld => ld.Level == userLevel.CurrentLevel || ld.Level == userLevel.CurrentLevel + 1)
+            .ToDictionaryAsync(ld => ld.Level);
 
-        var nextLevelDef = await _context.LevelDefinitions
-            .FirstOrDefaultAsync(ld => ld.Level == userLevel.CurrentLevel + 1);
+        var currentLevelDef = levelDefs.GetValueOrDefault(userLevel.CurrentLevel);
+        var nextLevelDef = levelDefs.GetValueOrDefault(userLevel.CurrentLevel + 1);
 
         int xpToNextLevel = 0;
         int requiredXpForNextLevel = 0;

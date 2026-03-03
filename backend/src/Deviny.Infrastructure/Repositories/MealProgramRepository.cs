@@ -41,6 +41,25 @@ public class MealProgramRepository : IMealProgramRepository
             .ToListAsync(ct);
     }
 
+    public async Task<(List<MealProgram> Items, int TotalCount)> GetAllPublicPagedAsync(int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = _context.MealPrograms
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted && p.IsPublic);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .Include(p => p.Trainer)
+                .ThenInclude(u => u.TrainerProfile)
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
     public async Task<MealProgram> CreateAsync(MealProgram program, CancellationToken ct = default)
     {
         _context.MealPrograms.Add(program);

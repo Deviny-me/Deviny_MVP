@@ -20,23 +20,27 @@ public class UserRatingService : IUserRatingService
     public async Task<UserRatingDto> GetUserRatingAsync(Guid userId, UserRole role, CancellationToken ct = default)
     {
         // Level (already encapsulates XP, challenges, etc.)
-        var levelInfo = await _levelService.GetUserLevelAsync(userId);
-        var level = levelInfo.CurrentLevel;
+        var levelInfoTask = _levelService.GetUserLevelAsync(userId);
 
-        // Completed training programs
-        var completedProgramsCount = await _context.ProgramPurchases
+        // Run all three counts in parallel
+        var completedProgramsTask = _context.ProgramPurchases
             .AsNoTracking()
             .CountAsync(pp => pp.UserId == userId && pp.Status == ProgramPurchaseStatus.Completed, ct);
 
-        // Completed challenges
-        var completedChallengesCount = await _context.UserChallengeProgress
+        var completedChallengesTask = _context.UserChallengeProgress
             .AsNoTracking()
             .CountAsync(cp => cp.UserId == userId && cp.Status == ChallengeStatus.Completed, ct);
 
-        // Achievements
-        var achievementsCount = await _context.UserAchievements
+        var achievementsTask = _context.UserAchievements
             .AsNoTracking()
             .CountAsync(ua => ua.UserId == userId, ct);
+
+        await Task.WhenAll(levelInfoTask, completedProgramsTask, completedChallengesTask, achievementsTask);
+
+        var level = levelInfoTask.Result.CurrentLevel;
+        var completedProgramsCount = completedProgramsTask.Result;
+        var completedChallengesCount = completedChallengesTask.Result;
+        var achievementsCount = achievementsTask.Result;
 
         // Aggregate rating on a 0-100 scale using simple weighted components
         var levelScore = Math.Min(level * 2, 40);                    // up to 40 points (level 20+)

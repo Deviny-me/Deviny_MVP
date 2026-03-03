@@ -36,56 +36,59 @@ public class GetPostByIdQueryHandler : IRequestHandler<GetPostByIdQuery, Result<
             return Result.Failure<PostDto>(new Error("Post.NotFound", "The post was not found"));
         }
 
-        // Get counts
-        var likeCount = await _likeRepository.GetCountAsync(post.Id, cancellationToken);
-        var commentCount = await _commentRepository.GetCountByPostIdAsync(post.Id, cancellationToken);
-        var repostCount = await _postRepository.GetRepostCountAsync(post.Id, cancellationToken);
-
-        // Get user interactions
-        var isLikedByMe = false;
-        var isRepostedByMe = false;
-        
-        if (request.CurrentUserId.HasValue)
+        // Collect all post IDs we need stats for (main + optional original)
+        var postIds = new List<Guid> { post.Id };
+        if (post.OriginalPost != null && !post.OriginalPost.IsDeleted)
         {
-            isLikedByMe = await _likeRepository.ExistsAsync(post.Id, request.CurrentUserId.Value, cancellationToken);
-            isRepostedByMe = await _postRepository.HasUserRepostedAsync(post.Id, request.CurrentUserId.Value, cancellationToken);
+            postIds.Add(post.OriginalPost.Id);
         }
 
-        // Get original post data if this is a repost
+        // Batch-fetch all counts in parallel (2-3 queries total instead of 6-10)
+        var likeCountsTask = _likeRepository.GetLikeCountsForPostsAsync(postIds, cancellationToken);
+        var commentCountsTask = _commentRepository.GetCountsForPostsAsync(postIds, cancellationToken);
+        var repostCountsTask = _postRepository.GetRepostCountsForPostsAsync(postIds, cancellationToken);
+
+        await Task.WhenAll(likeCountsTask, commentCountsTask, repostCountsTask);
+
+        var likeCounts = likeCountsTask.Result;
+        var commentCounts = commentCountsTask.Result;
+        var repostCounts = repostCountsTask.Result;
+
+        // Batch-fetch user interactions
+        HashSet<Guid> likedIds = new();
+        HashSet<Guid> repostedIds = new();
+        if (request.CurrentUserId.HasValue)
+        {
+            var likedTask = _likeRepository.GetLikedPostIdsAsync(postIds, request.CurrentUserId.Value, cancellationToken);
+            var repostedTask = _postRepository.GetRepostedPostIdsByUserAsync(postIds, request.CurrentUserId.Value, cancellationToken);
+            await Task.WhenAll(likedTask, repostedTask);
+            likedIds = likedTask.Result;
+            repostedIds = repostedTask.Result;
+        }
+
+        // Build original post DTO if needed
         PostDto? originalPostDto = null;
         if (post.OriginalPost != null && !post.OriginalPost.IsDeleted)
         {
-            var originalLikeCount = await _likeRepository.GetCountAsync(post.OriginalPost.Id, cancellationToken);
-            var originalCommentCount = await _commentRepository.GetCountByPostIdAsync(post.OriginalPost.Id, cancellationToken);
-            var originalRepostCount = await _postRepository.GetRepostCountAsync(post.OriginalPost.Id, cancellationToken);
-            
-            var originalIsLikedByMe = false;
-            var originalIsRepostedByMe = false;
-            
-            if (request.CurrentUserId.HasValue)
-            {
-                originalIsLikedByMe = await _likeRepository.ExistsAsync(post.OriginalPost.Id, request.CurrentUserId.Value, cancellationToken);
-                originalIsRepostedByMe = await _postRepository.HasUserRepostedAsync(post.OriginalPost.Id, request.CurrentUserId.Value, cancellationToken);
-            }
-
+            var opId = post.OriginalPost.Id;
             originalPostDto = MapToDto(
                 post.OriginalPost,
-                originalLikeCount,
-                originalCommentCount,
-                originalRepostCount,
-                originalIsLikedByMe,
-                originalIsRepostedByMe,
+                likeCounts.GetValueOrDefault(opId),
+                commentCounts.GetValueOrDefault(opId),
+                repostCounts.GetValueOrDefault(opId),
+                likedIds.Contains(opId),
+                repostedIds.Contains(opId),
                 null
             );
         }
 
         return Result.Success(MapToDto(
             post,
-            likeCount,
-            commentCount,
-            repostCount,
-            isLikedByMe,
-            isRepostedByMe,
+            likeCounts.GetValueOrDefault(post.Id),
+            commentCounts.GetValueOrDefault(post.Id),
+            repostCounts.GetValueOrDefault(post.Id),
+            likedIds.Contains(post.Id),
+            repostedIds.Contains(post.Id),
             originalPostDto
         ));
     }

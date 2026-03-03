@@ -30,6 +30,12 @@ public class UserAchievementRepository : IUserAchievementRepository
             .ToListAsync(ct);
     }
 
+    public async Task<int> GetCountByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        return await _context.UserAchievements
+            .CountAsync(ua => ua.UserId == userId, ct);
+    }
+
     public async Task AddAsync(UserAchievement entity, CancellationToken ct = default)
     {
         _context.UserAchievements.Add(entity);

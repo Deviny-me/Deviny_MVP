@@ -1,7 +1,10 @@
 using Deviny.API.DTOs;
 using Deviny.Application.Common.Interfaces;
+using Deviny.Domain.Enums;
+using Deviny.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Deviny.API.Controllers;
 
@@ -13,19 +16,22 @@ public class UserController : BaseApiController
     private readonly IUserFollowRepository _userFollowRepository;
     private readonly IUserAchievementRepository _userAchievementRepository;
     private readonly IUserPostRepository _userPostRepository;
+    private readonly ApplicationDbContext _context;
 
     public UserController(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IUserFollowRepository userFollowRepository,
         IUserAchievementRepository userAchievementRepository,
-        IUserPostRepository userPostRepository)
+        IUserPostRepository userPostRepository,
+        ApplicationDbContext context)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _userFollowRepository = userFollowRepository;
         _userAchievementRepository = userAchievementRepository;
         _userPostRepository = userPostRepository;
+        _context = context;
     }
 
     [HttpGet("profile")]
@@ -40,9 +46,10 @@ public class UserController : BaseApiController
                 return NotFound(new { message = "User not found" });
             }
 
-            // Fetch social stats
-            var followingList = await _userFollowRepository.GetFollowingAsync(userId);
-            var achievements = await _userAchievementRepository.GetByUserIdAsync(userId);
+            // Fetch social stats — use count-only queries instead of loading entities
+            var followingCount = await _userFollowRepository.GetFollowingCountAsync(userId);
+            var followersCount = await _userFollowRepository.GetFollowerCountAsync(userId);
+            var achievementsCount = await _userAchievementRepository.GetCountByUserIdAsync(userId);
             var postsCount = await _userPostRepository.GetCountByUserIdAsync(userId);
 
             return Ok(new
@@ -61,8 +68,9 @@ public class UserController : BaseApiController
                 city = user.City,
                 gender = user.Gender?.ToString(),
                 createdAt = user.CreatedAt,
-                followingCount = followingList.Count,
-                achievementsCount = achievements.Count,
+                followingCount = followingCount,
+                followersCount = followersCount,
+                achievementsCount = achievementsCount,
                 postsCount = postsCount
             });
         }
@@ -276,10 +284,53 @@ public class UserController : BaseApiController
                 return NotFound(new { message = "User not found" });
             }
 
-            var followingList = await _userFollowRepository.GetFollowingAsync(userId);
+            var followingCount = await _userFollowRepository.GetFollowingCountAsync(userId);
             var followerCount = await _userFollowRepository.GetFollowerCountAsync(userId);
-            var achievements = await _userAchievementRepository.GetByUserIdAsync(userId);
+            var achievementsCount = await _userAchievementRepository.GetCountByUserIdAsync(userId);
             var postsCount = await _userPostRepository.GetPublicCountByUserIdAsync(userId);
+
+            // Load expert profile data for trainers/nutritionists
+            object? expertProfile = null;
+            if (user.Role is UserRole.Trainer or UserRole.Nutritionist)
+            {
+                var trainerProfile = await _context.TrainerProfiles
+                    .AsNoTracking()
+                    .Include(p => p.Certificates.OrderBy(c => c.SortOrder))
+                    .Include(p => p.Specializations)
+                        .ThenInclude(ts => ts.Specialization)
+                    .FirstOrDefaultAsync(p => p.UserId == userId);
+
+                if (trainerProfile != null)
+                {
+                    expertProfile = new
+                    {
+                        primaryTitle = trainerProfile.PrimaryTitle,
+                        secondaryTitle = trainerProfile.SecondaryTitle,
+                        aboutText = trainerProfile.AboutText,
+                        experienceYears = trainerProfile.ExperienceYears,
+                        slug = trainerProfile.Slug,
+                        programsCount = trainerProfile.ProgramsCount,
+                        gender = user.Gender?.ToString()?.ToLower(),
+                        phone = user.Phone,
+                        specializations = trainerProfile.Specializations.Select(s => new
+                        {
+                            id = s.Specialization.Id,
+                            name = s.Specialization.Name,
+                        }).ToList(),
+                        certificates = trainerProfile.Certificates.Select(c => new
+                        {
+                            id = c.Id,
+                            title = c.Title,
+                            issuer = c.Issuer,
+                            year = c.Year,
+                            fileUrl = c.FileUrl,
+                            fileName = c.FileName,
+                        }).ToList(),
+                        ratingValue = 0.0,
+                        reviewsCount = 0,
+                    };
+                }
+            }
 
             return Ok(new
             {
@@ -292,10 +343,11 @@ public class UserController : BaseApiController
                 country = user.Country,
                 city = user.City,
                 createdAt = user.CreatedAt,
-                followingCount = followingList.Count,
+                followingCount = followingCount,
                 followersCount = followerCount,
-                achievementsCount = achievements.Count,
-                postsCount = postsCount
+                achievementsCount = achievementsCount,
+                postsCount = postsCount,
+                expertProfile = expertProfile,
             });
         }
         catch (Exception)

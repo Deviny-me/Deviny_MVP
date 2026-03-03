@@ -28,6 +28,7 @@ interface UserData {
   // Social stats (placeholders for future features)
   achievementsCount?: number
   followingCount?: number
+  followersCount?: number
   postsCount?: number
 }
 
@@ -102,6 +103,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           workoutsCompleted: 0,
           achievementsCount: data.achievementsCount ?? 0,
           followingCount: data.followingCount ?? 0,
+          followersCount: data.followersCount ?? 0,
           postsCount: data.postsCount ?? 0,
         })
       } else if (response.status === 401) {

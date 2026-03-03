@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Search,
   Star,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
+import { purchasesApi } from '@/lib/api/purchasesApi'
 import { PublicProgramDto, PublicMealProgramDto, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
@@ -108,6 +109,7 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
 export default function ProgramsPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const t = useTranslations('userPrograms')
   const tc = useTranslations('common')
 
@@ -119,10 +121,47 @@ export default function ProgramsPage() {
   const [sortBy, setSortBy] = useState<SortOption>('newest')
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [selectedProgram, setSelectedProgram] = useState<UnifiedPublicProgram | null>(null)
+  const [trainingPage, setTrainingPage] = useState(1)
+  const [mealPage, setMealPage] = useState(1)
+  const [hasMoreTraining, setHasMoreTraining] = useState(false)
+  const [hasMoreMeal, setHasMoreMeal] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const PAGE_SIZE = 20
 
+  const loadAllPrograms = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const [trainingRes, mealRes] = await Promise.all([
+        programsApi.getAllPublic(1, PAGE_SIZE),
+        mealProgramsApi.getAllPublic(1, PAGE_SIZE),
+      ])
+      setTrainingPrograms(trainingRes.items)
+      setMealPrograms(mealRes.items)
+      setTrainingPage(1)
+      setMealPage(1)
+      setHasMoreTraining(trainingRes.items.length < trainingRes.totalCount)
+      setHasMoreMeal(mealRes.items.length < mealRes.totalCount)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load programs')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Reload programs on every navigation to this page
   useEffect(() => {
     loadAllPrograms()
-  }, [])
+  }, [loadAllPrograms, pathname])
+
+  // Reload when tab/window regains focus (user switched back from trainer page)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadAllPrograms()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [loadAllPrograms])
 
   // Deep link: ?program=<id>
   useEffect(() => {
@@ -145,20 +184,31 @@ export default function ProgramsPage() {
     })
   }, [searchParams, trainingPrograms, mealPrograms, router])
 
-  const loadAllPrograms = async () => {
+  const loadMore = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const [training, meal] = await Promise.all([
-        programsApi.getAllPublic(),
-        mealProgramsApi.getAllPublic(),
+      setLoadingMore(true)
+      const nextTrainingPage = hasMoreTraining ? trainingPage + 1 : trainingPage
+      const nextMealPage = hasMoreMeal ? mealPage + 1 : mealPage
+
+      const [trainingRes, mealRes] = await Promise.all([
+        hasMoreTraining ? programsApi.getAllPublic(nextTrainingPage, PAGE_SIZE) : null,
+        hasMoreMeal ? mealProgramsApi.getAllPublic(nextMealPage, PAGE_SIZE) : null,
       ])
-      setTrainingPrograms(training)
-      setMealPrograms(meal)
+
+      if (trainingRes) {
+        setTrainingPrograms(prev => [...prev, ...trainingRes.items])
+        setTrainingPage(nextTrainingPage)
+        setHasMoreTraining(trainingPrograms.length + trainingRes.items.length < trainingRes.totalCount)
+      }
+      if (mealRes) {
+        setMealPrograms(prev => [...prev, ...mealRes.items])
+        setMealPage(nextMealPage)
+        setHasMoreMeal(mealPrograms.length + mealRes.items.length < mealRes.totalCount)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load programs')
+      console.error('Failed to load more programs:', err)
     } finally {
-      setIsLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -344,10 +394,11 @@ export default function ProgramsPage() {
                         )}
                       </div>
                     )}
-                    {/* Category badge */}
-                    <span className={`absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5 ${
-                      program.category === 'Training' ? 'bg-blue-600' : program.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
-                    }`}>
+                    {/* Category badge — color based on creator role */}
+                    <span
+                      className="absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5"
+                      style={{ backgroundColor: getAccentColorsByRole(program.trainerRole).primary }}
+                    >
                       {program.category === 'Training' ? (
                         <><Dumbbell className="w-2.5 h-2.5" />{t('training')}</>
                       ) : program.category === 'Diet' ? (
@@ -396,27 +447,49 @@ export default function ProgramsPage() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end">
-                        <span className={`text-lg font-bold ${
-                          program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
-                        }`}>
-                          {formatPrice(program.price)}
-                        </span>
-                        {program.standardPrice != null && (
-                          <span className="text-xs font-semibold text-blue-400">
-                            STD {formatPrice(program.standardPrice)}
-                          </span>
-                        )}
-                        {program.proPrice != null && (
-                          <span className="text-xs font-semibold text-purple-400">
-                            PRO {formatPrice(program.proPrice)}
-                          </span>
-                        )}
+                        {(() => {
+                          // Collect all available tier prices (only non-null tiers)
+                          const availablePrices: number[] = []
+                          if (program.price > 0) availablePrices.push(program.price)
+                          if (program.standardPrice != null && program.standardPrice > 0) availablePrices.push(program.standardPrice)
+                          if (program.proPrice != null && program.proPrice > 0) availablePrices.push(program.proPrice)
+
+                          // If no tier has a price > 0, show $0.00
+                          if (availablePrices.length === 0) {
+                            return <span className="text-lg font-bold text-[#3B82F6]">$0.00</span>
+                          }
+
+                          const minPrice = Math.min(...availablePrices)
+                          const hasMultiplePrices = availablePrices.length > 1
+                          return (
+                            <span className="text-lg font-bold text-[#3B82F6]">
+                              {hasMultiplePrices && (
+                                <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
+                              )}
+                              {`$${minPrice.toFixed(2)}`}
+                            </span>
+                          )
+                        })()}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Load More */}
+        {!isLoading && !error && (hasMoreTraining || hasMoreMeal) && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="px-6 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/20 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loadingMore ? tc('loading') : tc('loadMore')}
+            </button>
           </div>
         )}
 
@@ -453,6 +526,28 @@ function ProgramDetailModal({
   tc: ReturnType<typeof useTranslations>
 }) {
   const router = useRouter()
+  const [purchasing, setPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState<string | null>(null)
+
+  const programType = program.category === 'Diet' ? 'meal' as const : 'training' as const
+
+  const handlePurchase = async (tier: string) => {
+    setPurchasing(true)
+    setPurchaseError(null)
+    try {
+      await purchasesApi.purchase({
+        programId: program.id,
+        programType,
+        tier,
+      })
+      router.push('/user/journey')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Purchase failed'
+      setPurchaseError(message)
+    } finally {
+      setPurchasing(false)
+    }
+  }
 
   const formatPrice = (price: number) => {
     if (price === 0) return tc('free')
@@ -507,21 +602,27 @@ function ProgramDetailModal({
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
             <div className="flex flex-col items-end flex-shrink-0">
-              <span className={`text-2xl font-bold ${
-                program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
-              }`}>
-                {formatPrice(program.price)}
-              </span>
-              {program.standardPrice != null && (
-                <span className="text-sm font-semibold text-blue-400">
-                  STD {formatPrice(program.standardPrice)}
-                </span>
-              )}
-              {program.proPrice != null && (
-                <span className="text-sm font-semibold text-purple-400">
-                  PRO {formatPrice(program.proPrice)}
-                </span>
-              )}
+              {(() => {
+                const availablePrices: number[] = []
+                if (program.price > 0) availablePrices.push(program.price)
+                if (program.standardPrice != null && program.standardPrice > 0) availablePrices.push(program.standardPrice)
+                if (program.proPrice != null && program.proPrice > 0) availablePrices.push(program.proPrice)
+
+                if (availablePrices.length === 0) {
+                  return <span className="text-2xl font-bold text-[#3B82F6]">$0.00</span>
+                }
+
+                const minPrice = Math.min(...availablePrices)
+                const hasMultiple = availablePrices.length > 1
+                return (
+                  <span className="text-2xl font-bold text-[#3B82F6]">
+                    {hasMultiple && (
+                      <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
+                    )}
+                    {`$${minPrice.toFixed(2)}`}
+                  </span>
+                )
+              })()}
             </div>
           </div>
 
@@ -530,7 +631,7 @@ function ProgramDetailModal({
             className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg cursor-pointer hover:bg-[#141414] transition-colors"
             onClick={() => {
               onClose()
-              router.push(`/user/experts/${program.trainerSlug || program.trainerId}`)
+              router.push(`/user/profile/${program.trainerId}`)
             }}
           >
             {program.trainerAvatarUrl ? (
@@ -546,7 +647,11 @@ function ProgramDetailModal({
             )}
             <div>
               <p className="text-white font-medium">{program.trainerName}</p>
-              <p className="text-xs text-gray-400">{t('viewTrainerProfile')}</p>
+              <p className="text-xs text-gray-400">
+                {program.trainerRole?.toLowerCase() === 'nutritionist' || program.trainerRole === '2'
+                  ? t('viewNutritionistProfile')
+                  : t('viewTrainerProfile')}
+              </p>
             </div>
           </div>
 
@@ -572,65 +677,83 @@ function ProgramDetailModal({
           </div>
 
           {/* Purchase Buttons */}
-          <div className="space-y-2">
-            {/* Basic Tier */}
-            <button
-              className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-              onClick={() => alert(t('purchaseComingSoon'))}
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {program.price === 0 ? t('getForFree') : `${t('basicTier')} — ${formatPrice(program.price)}`}
-            </button>
+          <div className="space-y-3">
+            {purchaseError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
+                {purchaseError}
+              </div>
+            )}
 
-            {/* Standard Tier */}
-            {program.standardPrice != null && (() => {
+            {/* Basic Tier — only if price > 0 */}
+            {program.price > 0 && (
+              <div>
+                <button
+                  disabled={purchasing}
+                  className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  onClick={() => handlePurchase('Basic')}
+                >
+                  {purchasing ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShoppingCart className="w-5 h-5" />}
+                  {`${t('basicTier')} \u2014 ${formatPrice(program.price)}`}
+                </button>
+                <p className="text-xs text-gray-500 mt-1 text-center">{t('basicTierDesc')}</p>
+              </div>
+            )}
+
+            {/* Standard Tier — only if price > 0 */}
+            {program.standardPrice != null && program.standardPrice > 0 && (() => {
               const soldOut = program.maxStandardSpots != null && program.maxStandardSpots > 0 && (program.standardSpotsRemaining ?? 0) <= 0
               return (
-                <button
-                  disabled={soldOut}
-                  className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
-                    soldOut
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90'
-                  }`}
-                  onClick={() => !soldOut && alert(t('purchaseComingSoon'))}
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {soldOut
-                    ? t('soldOut')
-                    : `${t('standardTier')} — ${formatPrice(program.standardPrice!)}`}
-                  {!soldOut && program.maxStandardSpots != null && program.maxStandardSpots > 0 && (
-                    <span className="text-xs opacity-75">
-                      ({program.standardSpotsRemaining} {t('spotsLeft')})
-                    </span>
-                  )}
-                </button>
+                <div>
+                  <button
+                    disabled={soldOut || purchasing}
+                    className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                      soldOut
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90 disabled:opacity-50'
+                    }`}
+                    onClick={() => !soldOut && handlePurchase('Standard')}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {soldOut
+                      ? t('soldOut')
+                      : `${t('standardTier')} — ${formatPrice(program.standardPrice!)}`}
+                    {!soldOut && program.maxStandardSpots != null && program.maxStandardSpots > 0 && (
+                      <span className="text-xs opacity-75">
+                        ({program.standardSpotsRemaining} {t('spotsLeft')})
+                      </span>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1 text-center">{t('standardTierDesc')}</p>
+                </div>
               )
             })()}
 
-            {/* Pro Tier */}
-            {program.proPrice != null && (() => {
+            {/* Pro Tier — only if price > 0 */}
+            {program.proPrice != null && program.proPrice > 0 && (() => {
               const soldOut = program.maxProSpots != null && program.maxProSpots > 0 && (program.proSpotsRemaining ?? 0) <= 0
               return (
-                <button
-                  disabled={soldOut}
-                  className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
-                    soldOut
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90'
-                  }`}
-                  onClick={() => !soldOut && alert(t('purchaseComingSoon'))}
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {soldOut
-                    ? t('soldOut')
-                    : `${t('proTier')} — ${formatPrice(program.proPrice!)}`}
-                  {!soldOut && program.maxProSpots != null && program.maxProSpots > 0 && (
-                    <span className="text-xs opacity-75">
-                      ({program.proSpotsRemaining} {t('spotsLeft')})
-                    </span>
-                  )}
-                </button>
+                <div>
+                  <button
+                    disabled={soldOut}
+                    className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                      soldOut
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90 disabled:opacity-50'
+                    }`}
+                    onClick={() => !soldOut && handlePurchase('Pro')}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {soldOut
+                      ? t('soldOut')
+                      : `${t('proTier')} — ${formatPrice(program.proPrice!)}`}
+                    {!soldOut && program.maxProSpots != null && program.maxProSpots > 0 && (
+                      <span className="text-xs opacity-75">
+                        ({program.proSpotsRemaining} {t('spotsLeft')})
+                      </span>
+                    )}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1 text-center">{t('proTierDesc')}</p>
+                </div>
               )
             })()}
           </div>

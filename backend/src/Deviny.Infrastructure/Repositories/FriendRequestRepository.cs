@@ -26,6 +26,7 @@ public class FriendRequestRepository : IFriendRequestRepository
     public async Task<FriendRequest?> GetActiveRequestBetweenUsersAsync(Guid userId1, Guid userId2)
     {
         return await _context.FriendRequests
+            .AsNoTracking()
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
             .FirstOrDefaultAsync(fr =>
@@ -37,6 +38,7 @@ public class FriendRequestRepository : IFriendRequestRepository
     public async Task<FriendRequest?> GetAcceptedRequestBetweenUsersAsync(Guid userId1, Guid userId2)
     {
         return await _context.FriendRequests
+            .AsNoTracking()
             .FirstOrDefaultAsync(fr =>
                 fr.Status == FriendRequestStatus.Accepted &&
                 ((fr.SenderId == userId1 && fr.ReceiverId == userId2) ||
@@ -93,6 +95,34 @@ public class FriendRequestRepository : IFriendRequestRepository
             .ToList();
 
         return friends;
+    }
+
+    public async Task<(List<(User Friend, DateTime FriendsSince)> Items, int TotalCount)> GetFriendsPagedAsync(Guid userId, int page, int pageSize)
+    {
+        var query = _context.FriendRequests
+            .AsNoTracking()
+            .Where(fr =>
+                fr.Status == FriendRequestStatus.Accepted &&
+                (fr.SenderId == userId || fr.ReceiverId == userId));
+
+        var totalCount = await query.CountAsync();
+
+        var friendRequests = await query
+            .Include(fr => fr.Sender)
+            .Include(fr => fr.Receiver)
+            .OrderByDescending(fr => fr.RespondedAt ?? fr.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var friends = friendRequests
+            .Select(fr => (
+                Friend: fr.SenderId == userId ? fr.Receiver : fr.Sender,
+                FriendsSince: fr.RespondedAt ?? fr.CreatedAt
+            ))
+            .ToList();
+
+        return (friends, totalCount);
     }
 
     public async Task AddAsync(FriendRequest friendRequest)

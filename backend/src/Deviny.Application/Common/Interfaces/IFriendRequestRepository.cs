@@ -12,6 +12,7 @@ public interface IFriendRequestRepository
     Task<List<FriendRequest>> GetIncomingRequestsAsync(Guid userId);
     Task<List<FriendRequest>> GetOutgoingRequestsAsync(Guid userId);
     Task<List<(User Friend, DateTime FriendsSince)>> GetFriendsAsync(Guid userId);
+    Task<(List<(User Friend, DateTime FriendsSince)> Items, int TotalCount)> GetFriendsPagedAsync(Guid userId, int page, int pageSize);
     Task AddAsync(FriendRequest friendRequest);
     Task UpdateAsync(FriendRequest friendRequest);
     Task DeleteAsync(FriendRequest friendRequest);

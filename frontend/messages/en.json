@@ -43,7 +43,9 @@
     "wantToKnow": "Want to be the first to know? Stay tuned!",
     "showingXofY": "Showing {shown} of {total} programs",
     "noRating": "No ratings",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "loadMore": "Load more",
+    "from": "From"
   },
 
   "metadata": {
@@ -317,6 +319,7 @@
     "description": "Description",
     "workouts": "Workouts",
     "dayStreak": "Day Streak",
+    "followers": "Followers",
     "following": "Following",
     "joined": "Joined",
     "xp": "XP",
@@ -409,7 +412,7 @@
     "detailedDescriptionLabel": "Detailed Description (visible to buyers)",
     "detailedDescriptionPlaceholder": "Provide a detailed description that will be shown to users who purchased this program",
     "priceLabel": "Price ($) *",
-    "basicPriceLabel": "Basic Tier Price ($) *",
+    "basicPriceLabel": "Basic Tier Price ($)",
     "basicPriceHint": "Basic tier — no direct contact with coach. No sales limit.",
     "standardTierLabel": "Standard Tier (Chat Only)",
     "standardPriceLabel": "Standard Price ($)",
@@ -897,7 +900,9 @@
     "openInNewTab": "Open in New Tab",
     "filterAll": "All",
     "filterTrainers": "Trainers",
-    "filterNutritionists": "Nutritionists"
+    "filterNutritionists": "Nutritionists",
+    "loadMore": "Load more",
+    "loading": "Loading..."
   },
 
   "friends": {
@@ -1031,7 +1036,15 @@
     "purchased": "Purchased",
     "noPrograms": "No programs yet",
     "startJourney": "Start your fitness journey by purchasing a program from our expert trainers",
-    "browsePrograms": "Browse Programs"
+    "browsePrograms": "Browse Programs",
+    "training": "Training",
+    "nutrition": "Nutrition",
+    "aboutProgram": "About program",
+    "videos": "Videos",
+    "videoNotSupported": "Your browser does not support video playback",
+    "noVideos": "No videos available for this program",
+    "noResultsFilter": "No programs match this filter",
+    "reviews": "reviews"
   },
 
   "userSettings": {
@@ -1072,6 +1085,7 @@
     "checkBackLater": "Check back later when trainers add programs",
     "adjustSearchFilters": "Try adjusting your search or filters",
     "viewTrainerProfile": "View trainer profile →",
+    "viewNutritionistProfile": "View nutritionist profile →",
     "aboutProgram": "About this program",
     "getForFree": "Get for Free",
     "purchaseFor": "Purchase for ${price}",
@@ -1083,7 +1097,10 @@
     "standardTier": "Standard",
     "proTier": "Pro",
     "spotsLeft": "left",
-    "soldOut": "Sold Out"
+    "soldOut": "Sold Out",
+    "basicTierDesc": "Access to the program without direct contact with the coach",
+    "standardTierDesc": "Access to the program + chat with the coach",
+    "proTierDesc": "Full access — program + chat + audio/video calls with the coach"
   },
 
   "userRightSidebar": {

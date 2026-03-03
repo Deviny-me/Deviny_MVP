@@ -40,6 +40,24 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             .ToListAsync();
     }
 
+    public async Task<(List<TrainerProfile> Items, int TotalCount)> GetAllWithDetailsPagedAsync(int page, int pageSize)
+    {
+        var query = _context.TrainerProfiles.AsNoTracking();
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Include(tp => tp.User)
+            .Include(tp => tp.Specializations)
+                .ThenInclude(ts => ts.Specialization)
+            .OrderByDescending(tp => tp.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
     public async Task<TrainerProfile> CreateAsync(TrainerProfile profile)
     {
         _context.TrainerProfiles.Add(profile);

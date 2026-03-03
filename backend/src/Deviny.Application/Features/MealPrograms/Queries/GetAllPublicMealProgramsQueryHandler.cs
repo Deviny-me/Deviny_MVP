@@ -1,3 +1,4 @@
+using Deviny.Application.Common;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.MealPrograms.DTOs;
 using MediatR;
@@ -5,7 +6,7 @@ using System.Text.Json;
 
 namespace Deviny.Application.Features.MealPrograms.Queries;
 
-public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublicMealProgramsQuery, List<PublicMealProgramDto>>
+public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublicMealProgramsQuery, PagedResponse<PublicMealProgramDto>>
 {
     private readonly IMealProgramRepository _mealProgramRepository;
     private readonly IFileStorageService _fileStorage;
@@ -18,11 +19,11 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
         _fileStorage = fileStorage;
     }
 
-    public async Task<List<PublicMealProgramDto>> Handle(GetAllPublicMealProgramsQuery request, CancellationToken ct)
+    public async Task<PagedResponse<PublicMealProgramDto>> Handle(GetAllPublicMealProgramsQuery request, CancellationToken ct)
     {
-        var programs = await _mealProgramRepository.GetAllPublicAsync(ct);
+        var (programs, totalCount) = await _mealProgramRepository.GetAllPublicPagedAsync(request.Page, request.PageSize, ct);
 
-        return programs.Select(p => new PublicMealProgramDto
+        var dtos = programs.Select(p => new PublicMealProgramDto
         {
             Id = p.Id,
             Title = p.Title,
@@ -52,5 +53,7 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
             TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? "",
             TrainerRole = p.Trainer?.Role.ToString() ?? ""
         }).ToList();
+
+        return new PagedResponse<PublicMealProgramDto>(dtos, totalCount, request.Page, request.PageSize);
     }
 }

@@ -1,11 +1,11 @@
+using Deviny.Application.Common;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Programs.DTOs;
-using Deviny.Domain.Enums;
 using MediatR;
 
 namespace Deviny.Application.Features.Programs.Queries;
 
-public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProgramsQuery, List<PublicProgramDto>>
+public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProgramsQuery, PagedResponse<PublicProgramDto>>
 {
     private readonly IProgramRepository _programRepository;
     private readonly IFileStorageService _fileStorage;
@@ -18,42 +18,44 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
         _fileStorage = fileStorage;
     }
 
-    public async Task<List<PublicProgramDto>> Handle(GetAllPublicProgramsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResponse<PublicProgramDto>> Handle(GetAllPublicProgramsQuery request, CancellationToken cancellationToken)
     {
-        var programs = await _programRepository.GetAllPublicAsync();
+        var (items, totalCount) = await _programRepository.GetAllPublicWithStatsPagedAsync(request.Page, request.PageSize);
 
-        return programs.Select(p => new PublicProgramDto
+        var dtos = items.Select(s => new PublicProgramDto
         {
-            Id = p.Id,
-            Title = p.Title,
-            Description = p.Description,
-            Price = p.Price,
-            StandardPrice = p.StandardPrice,
-            ProPrice = p.ProPrice,
-            MaxStandardSpots = p.MaxStandardSpots,
-            MaxProSpots = p.MaxProSpots,
-            Category = p.Category.ToString(),
-            StandardSpotsRemaining = (p.MaxStandardSpots ?? 0) > 0
-                ? Math.Max(0, p.MaxStandardSpots!.Value - p.Purchases.Count(pu => pu.Tier == ProgramTier.Standard && pu.Status == ProgramPurchaseStatus.Active))
+            Id = s.Program.Id,
+            Title = s.Program.Title,
+            Description = s.Program.Description,
+            Price = s.Program.Price,
+            StandardPrice = s.Program.StandardPrice,
+            ProPrice = s.Program.ProPrice,
+            MaxStandardSpots = s.Program.MaxStandardSpots,
+            MaxProSpots = s.Program.MaxProSpots,
+            Category = s.Program.Category.ToString(),
+            StandardSpotsRemaining = (s.Program.MaxStandardSpots ?? 0) > 0
+                ? Math.Max(0, s.Program.MaxStandardSpots!.Value - s.StandardSpotsUsed)
                 : 0,
-            ProSpotsRemaining = (p.MaxProSpots ?? 0) > 0
-                ? Math.Max(0, p.MaxProSpots!.Value - p.Purchases.Count(pu => pu.Tier == ProgramTier.Pro && pu.Status == ProgramPurchaseStatus.Active))
+            ProSpotsRemaining = (s.Program.MaxProSpots ?? 0) > 0
+                ? Math.Max(0, s.Program.MaxProSpots!.Value - s.ProSpotsUsed)
                 : 0,
-            Code = p.Code,
-            CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath) 
+            Code = s.Program.Code,
+            CoverImageUrl = string.IsNullOrEmpty(s.Program.CoverImagePath) 
                 ? "" 
-                : _fileStorage.GetPublicUrl(p.CoverImagePath),
-            AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
-            TotalReviews = p.Reviews.Count,
-            TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
-            CreatedAt = p.CreatedAt,
-            TrainerId = p.TrainerId,
-            TrainerName = p.Trainer?.FullName ?? "Unknown Trainer",
-            TrainerAvatarUrl = string.IsNullOrEmpty(p.Trainer?.AvatarUrl) 
+                : _fileStorage.GetPublicUrl(s.Program.CoverImagePath),
+            AverageRating = s.AverageRating,
+            TotalReviews = s.TotalReviews,
+            TotalPurchases = s.TotalPurchases,
+            CreatedAt = s.Program.CreatedAt,
+            TrainerId = s.Program.TrainerId,
+            TrainerName = s.TrainerFullName ?? "Unknown Trainer",
+            TrainerAvatarUrl = string.IsNullOrEmpty(s.TrainerAvatarUrl) 
                 ? "" 
-                : _fileStorage.GetPublicUrl(p.Trainer.AvatarUrl),
-            TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? "",
-            TrainerRole = p.Trainer?.Role.ToString() ?? ""
+                : _fileStorage.GetPublicUrl(s.TrainerAvatarUrl),
+            TrainerSlug = s.TrainerSlug ?? "",
+            TrainerRole = s.TrainerRole ?? ""
         }).ToList();
+
+        return new PagedResponse<PublicProgramDto>(dtos, totalCount, request.Page, request.PageSize);
     }
 }

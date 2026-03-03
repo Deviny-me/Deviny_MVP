@@ -98,7 +98,7 @@ function ProgramDetailModal({
                 navigateTo: program.trainerSlug || program.trainerId
               })
               onClose()
-              router.push(`/user/experts/${program.trainerSlug || program.trainerId}`)
+              router.push(`/user/profile/${program.trainerId}`)
             }}
           >
             {program.trainerAvatarUrl ? (

@@ -91,6 +91,7 @@ public class TrainerScheduleController : BaseApiController
             var trainerId = await GetTrainerIdAsync();
 
             var evt = await _context.ScheduleEvents
+                .AsNoTracking()
                 .Include(e => e.Trainer)
                 .Include(e => e.Student)
                 .Where(e => e.Id == id && e.TrainerId == trainerId)
@@ -435,6 +436,7 @@ public class TrainerScheduleController : BaseApiController
             var end = start.AddDays(7);
 
             var events = await _context.ScheduleEvents
+                .AsNoTracking()
                 .Where(e => e.TrainerId == trainerId && e.StartAt >= start && e.StartAt < end)
                 .ToListAsync();
 
