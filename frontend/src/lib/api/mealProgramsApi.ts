@@ -1,4 +1,5 @@
 import { MealProgramDto, PublicMealProgramDto, CreateMealProgramRequest, UpdateMealProgramRequest } from '@/types/program';
+import { PagedResponse } from '@/types/pagination';
 import { API_URL, fetchWithAuth } from '@/lib/config';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -16,10 +17,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const mealProgramsApi = {
-  // Get all public meal programs
-  getAllPublic: async (): Promise<PublicMealProgramDto[]> => {
-    const response = await fetchWithAuth(`${API_URL}/meal-programs`);
-    return handleResponse<PublicMealProgramDto[]>(response);
+  // Get all public meal programs (paginated)
+  getAllPublic: async (page = 1, pageSize = 20): Promise<PagedResponse<PublicMealProgramDto>> => {
+    const response = await fetchWithAuth(`${API_URL}/meal-programs?page=${page}&pageSize=${pageSize}`);
+    return handleResponse<PagedResponse<PublicMealProgramDto>>(response);
   },
 
   // Get trainer's/nutritionist's own meal programs

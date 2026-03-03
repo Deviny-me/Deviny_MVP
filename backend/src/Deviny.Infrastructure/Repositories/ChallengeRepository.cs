@@ -27,6 +27,7 @@ public class ChallengeRepository : IChallengeRepository
     public async Task<Challenge?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
         return await _context.Challenges
+            .AsNoTracking()
             .Include(c => c.Achievement)
             .FirstOrDefaultAsync(c => c.Code == code, ct);
     }
@@ -34,6 +35,7 @@ public class ChallengeRepository : IChallengeRepository
     public async Task<Challenge?> GetByAchievementIdAsync(Guid achievementId, CancellationToken ct = default)
     {
         return await _context.Challenges
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.AchievementId == achievementId, ct);
     }
 }

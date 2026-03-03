@@ -43,7 +43,9 @@
     "wantToKnow": "İlk bilən olmaq istəyirsiniz? Bizi izləyin!",
     "showingXofY": "{total} proqramdan {shown} göstərilir",
     "noRating": "Qiymətləndirmə yoxdur",
-    "reviews": "rəylər"
+    "reviews": "rəylər",
+    "loadMore": "Daha çox yüklə",
+    "from": "-dən"
   },
 
   "metadata": {
@@ -317,6 +319,7 @@
     "description": "Təsvir",
     "workouts": "Məşqlər",
     "dayStreak": "Ardıcıl günlər",
+    "followers": "İzləyicilər",
     "following": "İzlədiklərim",
     "joined": "Qoşuldu",
     "xp": "XP",
@@ -409,7 +412,7 @@
     "detailedDescriptionLabel": "Ətraflı təsvir (alıcılar üçün görünür)",
     "detailedDescriptionPlaceholder": "Bu proqramı alan istifadəçilərə göstəriləcək ətraflı təsvir yazın",
     "priceLabel": "Qiymət ($) *",
-    "basicPriceLabel": "Əsas Tarif Qiyməti ($) *",
+    "basicPriceLabel": "Əsas Tarif Qiyməti ($)",
     "basicPriceHint": "Əsas tarif — məşqçi ilə əlaqə yoxdur. Satış limiti yoxdur.",
     "standardTierLabel": "Standart Tarif (Yalnız Çat)",
     "standardPriceLabel": "Standart Qiymət ($)",
@@ -897,7 +900,9 @@
     "openInNewTab": "Yeni sekmədə aç",
     "filterAll": "Hamısı",
     "filterTrainers": "Məşqçilər",
-    "filterNutritionists": "Dietoloqlar"
+    "filterNutritionists": "Dietoloqlar",
+    "loadMore": "Daha çox yüklə",
+    "loading": "Yüklənir..."
   },
 
   "friends": {
@@ -1031,7 +1036,15 @@
     "purchased": "Satın alındı",
     "noPrograms": "Hələ proqram yoxdur",
     "startJourney": "Ekspert məşqçilərimizdən proqram alaraq fitnes yolunuza başlayın",
-    "browsePrograms": "Proqramlara bax"
+    "browsePrograms": "Proqramlara bax",
+    "training": "Məşq",
+    "nutrition": "Qidalanma",
+    "aboutProgram": "Proqram haqqında",
+    "videos": "Videolar",
+    "videoNotSupported": "Brauzeriniz video oxutmanı dəstəkləmir",
+    "noVideos": "Bu proqram üçün video yoxdur",
+    "noResultsFilter": "Bu filtr üçün proqram tapılmadı",
+    "reviews": "rəy"
   },
 
   "userSettings": {
@@ -1072,6 +1085,7 @@
     "checkBackLater": "Məşqçilər proqram əlavə edəndə yenidən yoxlayın",
     "adjustSearchFilters": "Axtarış və ya filtrləri dəyişdirməyə çalışın",
     "viewTrainerProfile": "Məşqçi profilinə bax →",
+    "viewNutritionistProfile": "Dietoloq profilinə bax →",
     "aboutProgram": "Bu proqram haqqında",
     "getForFree": "Pulsuz əldə et",
     "purchaseFor": "${price} ödəyərək al",
@@ -1083,7 +1097,10 @@
     "standardTier": "Standart",
     "proTier": "Pro",
     "spotsLeft": "qalıb",
-    "soldOut": "Tükəndi"
+    "soldOut": "Tükəndi",
+    "basicTierDesc": "Məşqçi ilə birbaşa əlaqə olmadan proqrama giriş",
+    "standardTierDesc": "Proqrama giriş + məşqçi ilə çat",
+    "proTierDesc": "Tam giriş — proqram + çat + məşqçi ilə audio/video zəng"
   },
 
   "userRightSidebar": {

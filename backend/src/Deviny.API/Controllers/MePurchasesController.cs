@@ -1,0 +1,94 @@
+using Deviny.Application.Features.Purchases.Commands;
+using Deviny.Application.Features.Purchases.DTOs;
+using Deviny.Application.Features.Purchases.Queries;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Deviny.API.Controllers;
+
+[Authorize]
+[Route("api/me/purchases")]
+public class MePurchasesController : BaseApiController
+{
+    private readonly IMediator _mediator;
+    private readonly ILogger<MePurchasesController> _logger;
+
+    public MePurchasesController(IMediator mediator, ILogger<MePurchasesController> logger)
+    {
+        _mediator = mediator;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Purchase a program (training or meal)
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> PurchaseProgram([FromBody] PurchaseProgramRequest request)
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            var command = new PurchaseProgramCommand
+            {
+                UserId = userId.Value,
+                ProgramId = request.ProgramId,
+                ProgramType = request.ProgramType,
+                Tier = request.Tier
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.Success)
+                return BadRequest(new { error = result.Error });
+
+            return Ok(new { purchaseId = result.PurchaseId });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error purchasing program {ProgramId} for user {UserId}",
+                request.ProgramId, userId.Value);
+            return StatusCode(500, CreateProblemDetails(
+                "Purchase Failed",
+                "An error occurred while processing the purchase.",
+                500));
+        }
+    }
+
+    /// <summary>
+    /// Get current user's purchased programs
+    /// </summary>
+    [HttpGet]
+    public async Task<ActionResult<List<PurchasedProgramDto>>> GetMyPurchases()
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            var query = new GetMyPurchasesQuery(userId.Value);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting purchases for user {UserId}", userId.Value);
+            return StatusCode(500, CreateProblemDetails(
+                "Fetch Failed",
+                "An error occurred while fetching purchases.",
+                500));
+        }
+    }
+}
+
+/// <summary>
+/// Request body for purchasing a program
+/// </summary>
+public class PurchaseProgramRequest
+{
+    public Guid ProgramId { get; set; }
+    public string ProgramType { get; set; } = string.Empty; // "training" or "meal"
+    public string Tier { get; set; } = string.Empty;        // "Basic", "Standard", "Pro"
+}

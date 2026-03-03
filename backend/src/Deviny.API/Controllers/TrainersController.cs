@@ -1,3 +1,4 @@
+using Deviny.Application.Common;
 using Deviny.Application.Features.Trainers.DTOs;
 using Deviny.Application.Features.Trainers.Queries;
 using Deviny.API.DTOs;
@@ -31,13 +32,18 @@ public class TrainersController : BaseApiController
     }
 
     /// <summary>
-    /// Get all trainers for browsing
+    /// Get all trainers for browsing (paginated)
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<PublicTrainerDto>>> GetAll()
+    public async Task<ActionResult<PagedResponse<PublicTrainerDto>>> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var query = new GetAllTrainersQuery();
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = new GetAllTrainersQuery(page, pageSize);
         var trainers = await _mediator.Send(query);
         return Ok(trainers);
     }
@@ -53,6 +59,8 @@ public class TrainersController : BaseApiController
         {
             // Find trainer profile by slug
             var profile = await _context.TrainerProfiles
+                .AsNoTracking()
+                .Include(p => p.User)
                 .Include(p => p.Certificates.OrderBy(c => c.SortOrder))
                 .Include(p => p.Specializations)
                     .ThenInclude(ts => ts.Specialization)
@@ -63,8 +71,7 @@ public class TrainersController : BaseApiController
                 return NotFound(new { message = "Trainer not found" });
             }
 
-            // Get user info
-            var user = await _userRepository.GetByIdAsync(profile.UserId);
+            var user = profile.User;
             if (user == null)
             {
                 return NotFound(new { message = "User not found" });

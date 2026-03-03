@@ -347,7 +347,7 @@ export default function ProgramsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title || !description || !price) {
+    if (!title || !description) {
       toast.error(t('toasts.fillRequired'))
       return
     }
@@ -367,7 +367,7 @@ export default function ProgramsPage() {
             title,
             description,
             detailedDescription: detailedDescription || undefined,
-            price: parseFloat(price),
+            price: price ? parseFloat(price) : 0,
             standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -383,7 +383,7 @@ export default function ProgramsPage() {
             title,
             description,
             detailedDescription: detailedDescription || undefined,
-            price: parseFloat(price),
+            price: price ? parseFloat(price) : 0,
             standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -395,7 +395,7 @@ export default function ProgramsPage() {
           })
           toast.success(t('toasts.created'))
         }
-        loadTrainingPrograms()
+        await loadTrainingPrograms()
       } else {
         // Diet
         if (editingProgram) {
@@ -403,7 +403,7 @@ export default function ProgramsPage() {
             title,
             description,
             detailedDescription: detailedDescription || undefined,
-            price: parseFloat(price),
+            price: price ? parseFloat(price) : 0,
             standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -419,7 +419,7 @@ export default function ProgramsPage() {
             title,
             description,
             detailedDescription: detailedDescription || undefined,
-            price: parseFloat(price),
+            price: price ? parseFloat(price) : 0,
             standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
             proPrice: proPrice ? parseFloat(proPrice) : undefined,
             maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
@@ -431,7 +431,7 @@ export default function ProgramsPage() {
           })
           toast.success(t('toasts.created'))
         }
-        loadMealPrograms()
+        await loadMealPrograms()
       }
 
       closeModal()
@@ -451,10 +451,10 @@ export default function ProgramsPage() {
       setDeleting(program.id)
       if (program.type === 'training') {
         await programsApi.deleteProgram(program.id)
-        loadTrainingPrograms()
+        await loadTrainingPrograms()
       } else {
         await mealProgramsApi.deleteMealProgram(program.id)
-        loadMealPrograms()
+        await loadMealPrograms()
       }
       toast.success(t('toasts.deleted'))
     } catch (error) {

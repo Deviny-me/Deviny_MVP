@@ -27,15 +27,11 @@ public class PostLikeRepository : IPostLikeRepository
 
     public async Task<bool> RemoveAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default)
     {
-        var like = await _context.Set<PostLike>()
-            .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId, cancellationToken);
+        var deleted = await _context.Set<PostLike>()
+            .Where(l => l.PostId == postId && l.UserId == userId)
+            .ExecuteDeleteAsync(cancellationToken);
 
-        if (like == null)
-            return false;
-
-        _context.Set<PostLike>().Remove(like);
-        await _context.SaveChangesAsync(cancellationToken);
-        return true;
+        return deleted > 0;
     }
 
     public async Task<bool> ExistsAsync(Guid postId, Guid userId, CancellationToken cancellationToken = default)

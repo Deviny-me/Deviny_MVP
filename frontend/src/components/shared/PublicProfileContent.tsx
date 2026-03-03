@@ -17,6 +17,11 @@ import {
   Ban,
   Clock,
   Check,
+  Award,
+  Briefcase,
+  Star,
+  Globe,
+  Phone,
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -26,7 +31,7 @@ import { chatConnection } from '@/lib/signalr/chatConnection'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import type { RelationshipStatus } from '@/types/friend'
-import { getMediaUrl } from '@/lib/config'
+import { API_URL, fetchWithAuth, getMediaUrl } from '@/lib/config'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
@@ -34,6 +39,22 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+
+// ─── Expert profile type (returned when user is Trainer/Nutritionist) ───
+interface ExpertProfileData {
+  primaryTitle: string | null
+  secondaryTitle: string | null
+  aboutText: string | null
+  experienceYears: number | null
+  slug: string
+  programsCount: number
+  gender: string | null
+  phone: string | null
+  specializations: { id: string; name: string }[]
+  certificates: { id: string; title: string; issuer: string | null; year: number; fileUrl: string | null; fileName: string | null }[]
+  ratingValue: number
+  reviewsCount: number
+}
 
 // ─── Grid cell with like overlay ───
 function GridCell({
@@ -300,6 +321,7 @@ export function PublicProfileContent({
   const tc = useTranslations('common')
   const tp = useTranslations('profile')
   const tUp = useTranslations('userProfile')
+  const tExp = useTranslations('experts')
 
   // Tab state from URL
   const tabParam = (searchParams.get('tab') || 'all') as ProfilePostTab
@@ -332,8 +354,10 @@ export function PublicProfileContent({
     followersCount: number
     achievementsCount: number
     postsCount: number
+    expertProfile: ExpertProfileData | null
   } | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
+  const [selectedCertificate, setSelectedCertificate] = useState<{ fileUrl: string; title: string } | null>(null)
 
   useEffect(() => {
     if (!userId) return
@@ -356,6 +380,7 @@ export function PublicProfileContent({
             followersCount: data.followersCount ?? 0,
             achievementsCount: data.achievementsCount ?? 0,
             postsCount: data.postsCount ?? 0,
+            expertProfile: data.expertProfile || null,
           })
         }
       } catch (err) {
@@ -700,7 +725,13 @@ export function PublicProfileContent({
               </div>
               <div className="flex-1 pb-2">
                 <h1 className="text-xl font-bold text-white">{authorName}</h1>
-                {(profileData?.postsCount ?? totalPosts) > 0 && (
+                {profileData?.expertProfile?.primaryTitle && (
+                  <p className={`${profileAccent.text} text-sm mt-0.5`}>{profileData.expertProfile.primaryTitle}</p>
+                )}
+                {profileData?.expertProfile?.secondaryTitle && (
+                  <p className="text-xs text-gray-400 mt-0.5">{profileData.expertProfile.secondaryTitle}</p>
+                )}
+                {!profileData?.expertProfile && (profileData?.postsCount ?? totalPosts) > 0 && (
                   <p className="text-sm text-gray-400">{profileData?.postsCount ?? totalPosts} {tPosts('publications')}</p>
                 )}
                 {profileData?.createdAt && (
@@ -710,6 +741,63 @@ export function PublicProfileContent({
                 )}
               </div>
             </div>
+
+            {/* Expert Info Section (Trainer/Nutritionist) */}
+            {profileData?.expertProfile && (() => {
+              const ep = profileData.expertProfile
+              return (
+                <div className="mt-4 space-y-3">
+                  {/* Contact info */}
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    {ep.gender && (
+                      <span className="text-gray-400">{ep.gender}</span>
+                    )}
+                    {ep.phone && (
+                      <a
+                        href={`tel:${ep.phone}`}
+                        className={`flex items-center gap-1 text-gray-400 ${profileAccent.hoverText} transition-colors`}
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>{ep.phone}</span>
+                      </a>
+                    )}
+                    {(profileData.country || profileData.city) && (
+                      <span className="flex items-center gap-1 text-gray-400">
+                        <Globe className="w-3.5 h-3.5" />
+                        {[profileData.city, profileData.country].filter(Boolean).join(', ')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Expert stats */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                    {ep.experienceYears != null && ep.experienceYears > 0 && (
+                      <div className="flex items-center gap-1.5 text-gray-400">
+                        <Briefcase className="w-4 h-4" />
+                        <span>{ep.experienceYears} {tExp('yearsExperience')}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-gray-400">
+                      <Award className="w-4 h-4" />
+                      <span>{ep.programsCount} {ep.programsCount !== 1 ? tExp('programs') : tExp('program')}</span>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 px-3 py-1.5 bg-[#0A0A0A] rounded-lg">
+                      <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                      <span className="text-white font-semibold">
+                        {ep.ratingValue > 0 ? ep.ratingValue.toFixed(1) : '0.0'}
+                      </span>
+                      <span className="text-gray-400 text-sm">
+                        ({ep.reviewsCount} {ep.reviewsCount !== 1 ? tc('reviews') : tExp('review')})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* Social Action Buttons */}
             {!relationshipLoading && relationship && !relationship.isBlockedByThem && (
@@ -822,6 +910,73 @@ export function PublicProfileContent({
           </div>
         </div>
 
+        {/* About Section (Expert only) */}
+        {profileData?.expertProfile && (
+          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+            <h2 className="text-lg font-semibold text-white mb-3">{tExp('about')}</h2>
+            {profileData.expertProfile.aboutText ? (
+              <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{profileData.expertProfile.aboutText}</p>
+            ) : (
+              <p className="text-sm text-gray-500 italic">{tExp('noDescription')}</p>
+            )}
+          </div>
+        )}
+
+        {/* Specializations Section (Expert only) */}
+        {profileData?.expertProfile && (
+          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+            <h2 className="text-lg font-semibold text-white mb-3">{tExp('specializations')}</h2>
+            {profileData.expertProfile.specializations.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {profileData.expertProfile.specializations.map((spec) => (
+                  <span
+                    key={spec.id}
+                    className={`px-3 py-1.5 ${profileAccent.bgMuted} ${profileAccent.text} rounded-lg text-sm font-medium`}
+                  >
+                    {spec.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">{tExp('noSpecializations')}</p>
+            )}
+          </div>
+        )}
+
+        {/* Certificates Section (Expert only) */}
+        {profileData?.expertProfile && (
+          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+            <h2 className="text-lg font-semibold text-white mb-4">{tExp('certificates')}</h2>
+            {profileData.expertProfile.certificates.length > 0 ? (
+              <div className="space-y-3">
+                {profileData.expertProfile.certificates.map((cert) => (
+                  <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center flex-shrink-0`}>
+                      <Award className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-medium text-white">{cert.title}</h3>
+                      {cert.issuer && (
+                        <p className="text-xs text-gray-400 mt-0.5">{cert.issuer} &bull; {cert.year}</p>
+                      )}
+                      {cert.fileUrl && cert.fileName && (
+                        <button
+                          onClick={() => setSelectedCertificate({ fileUrl: cert.fileUrl!, title: cert.title })}
+                          className={`text-xs ${profileAccent.text} hover:underline mt-1 inline-block`}
+                        >
+                          {tExp('viewCertificate')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">{tExp('noCertificates')}</p>
+            )}
+          </div>
+        )}
+
         {/* Posts Section */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
@@ -921,6 +1076,33 @@ export function PublicProfileContent({
           type={toast.type}
           onClose={() => setToast(null)}
         />
+      )}
+      {/* Certificate Modal */}
+      {selectedCertificate && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedCertificate(null)}
+        >
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#1A1A1A] rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h3 className="text-white font-semibold">{selectedCertificate.title}</h3>
+              <button
+                onClick={() => setSelectedCertificate(null)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
+            </div>
+            <div className="p-4 overflow-auto">
+              <img
+                src={getMediaUrl(selectedCertificate.fileUrl) || ''}
+                alt={selectedCertificate.title}
+                className="w-full h-auto rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </>
   )

@@ -25,6 +25,11 @@ public interface IConversationRepository
     Task<List<Conversation>> GetUserConversationsAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
+    /// Paginated version of GetUserConversationsAsync.
+    /// </summary>
+    Task<(List<Conversation> Items, int TotalCount)> GetUserConversationsPagedAsync(Guid userId, int page, int pageSize, CancellationToken ct = default);
+
+    /// <summary>
     /// Get list of member user IDs in a conversation.
     /// </summary>
     Task<List<Guid>> GetMemberIdsAsync(Guid conversationId, CancellationToken ct = default);

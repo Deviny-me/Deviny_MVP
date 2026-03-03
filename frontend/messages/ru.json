@@ -43,7 +43,9 @@
     "wantToKnow": "Хотите узнать первым? Следите за обновлениями!",
     "showingXofY": "Показано {shown} из {total} программ",
     "noRating": "Нет оценок",
-    "reviews": "отзывов"
+    "reviews": "отзывов",
+    "loadMore": "Загрузить ещё",
+    "from": "От"
   },
 
   "metadata": {
@@ -317,6 +319,7 @@
     "description": "Описание",
     "workouts": "Тренировки",
     "dayStreak": "Дней подряд",
+    "followers": "Подписчики",
     "following": "Подписки",
     "joined": "Присоединился",
     "xp": "XP",
@@ -409,7 +412,7 @@
     "detailedDescriptionLabel": "Подробное описание (видно покупателям)",
     "detailedDescriptionPlaceholder": "Укажите подробное описание, которое будет показано пользователям, купившим эту программу",
     "priceLabel": "Цена ($) *",
-    "basicPriceLabel": "Цена Базового тарифа ($) *",
+    "basicPriceLabel": "Цена Базового тарифа ($)",
     "basicPriceHint": "Базовый тариф — без контакта с тренером. Без лимита продаж.",
     "standardTierLabel": "Стандарт (Только чат)",
     "standardPriceLabel": "Цена Стандарт ($)",
@@ -897,7 +900,9 @@
     "openInNewTab": "Открыть в новой вкладке",
     "filterAll": "Все",
     "filterTrainers": "Тренеры",
-    "filterNutritionists": "Нутрициологи"
+    "filterNutritionists": "Нутрициологи",
+    "loadMore": "Загрузить ещё",
+    "loading": "Загрузка..."
   },
 
   "friends": {
@@ -1031,7 +1036,15 @@
     "purchased": "Приобретено",
     "noPrograms": "Пока нет программ",
     "startJourney": "Начните свой фитнес-путь, приобретя программу от наших экспертов",
-    "browsePrograms": "Обзор программ"
+    "browsePrograms": "Обзор программ",
+    "training": "Тренировка",
+    "nutrition": "Питание",
+    "aboutProgram": "О программе",
+    "videos": "Видео",
+    "videoNotSupported": "Ваш браузер не поддерживает воспроизведение видео",
+    "noVideos": "Для этой программы нет видео",
+    "noResultsFilter": "Нет программ для выбранного фильтра",
+    "reviews": "отзывов"
   },
 
   "userSettings": {
@@ -1072,6 +1085,7 @@
     "checkBackLater": "Загляните позже, когда тренеры добавят программы",
     "adjustSearchFilters": "Попробуйте изменить запрос или фильтры",
     "viewTrainerProfile": "Просмотреть профиль тренера →",
+    "viewNutritionistProfile": "Просмотреть профиль нутрициолога →",
     "aboutProgram": "О программе",
     "getForFree": "Получить бесплатно",
     "purchaseFor": "Купить за ${price}",
@@ -1083,7 +1097,10 @@
     "standardTier": "Стандарт",
     "proTier": "Pro",
     "spotsLeft": "осталось",
-    "soldOut": "Распродано"
+    "soldOut": "Распродано",
+    "basicTierDesc": "Доступ к программе без прямого контакта с тренером",
+    "standardTierDesc": "Доступ к программе + чат с тренером",
+    "proTierDesc": "Полный доступ — программа + чат + аудио/видео звонки с тренером"
   },
 
   "userRightSidebar": {

@@ -1,4 +1,5 @@
 import { ProgramDto, CreateProgramRequest, UpdateProgramRequest, PublicProgramDto } from '@/types/program';
+import { PagedResponse } from '@/types/pagination';
 import { API_URL, fetchWithAuth } from '@/lib/config';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -16,10 +17,10 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const programsApi = {
-  // Get all public programs for browsing
-  getAllPublic: async (): Promise<PublicProgramDto[]> => {
-    const response = await fetchWithAuth(`${API_URL}/programs`);
-    return handleResponse<PublicProgramDto[]>(response);
+  // Get all public programs for browsing (paginated)
+  getAllPublic: async (page = 1, pageSize = 20): Promise<PagedResponse<PublicProgramDto>> => {
+    const response = await fetchWithAuth(`${API_URL}/programs?page=${page}&pageSize=${pageSize}`);
+    return handleResponse<PagedResponse<PublicProgramDto>>(response);
   },
 
   // Get a single public program by ID

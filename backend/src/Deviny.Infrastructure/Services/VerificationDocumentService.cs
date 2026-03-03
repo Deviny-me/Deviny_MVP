@@ -84,6 +84,7 @@ public class VerificationDocumentService : IVerificationDocumentService
     public async Task<IEnumerable<VerificationDocument>> GetUserDocumentsAsync(Guid userId)
     {
         return await _context.VerificationDocuments
+            .AsNoTracking()
             .Where(d => d.UserId == userId)
             .OrderByDescending(d => d.CreatedAt)
             .ToListAsync();

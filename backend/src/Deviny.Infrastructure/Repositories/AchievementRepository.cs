@@ -17,6 +17,7 @@ public class AchievementRepository : IAchievementRepository
     public async Task<Achievement?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
         return await _context.Achievements
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Code == code, ct);
     }
 

@@ -30,9 +30,15 @@ public class StudentsController : BaseApiController
                 return Forbid();
             }
 
-            var students = await _context.Users
+            var students = await _context.ProgramPurchases
                 .AsNoTracking()
-                .Where(u => u.Role == UserRole.Student && u.IsActive)
+                .Where(pp => pp.TrainingProgram != null &&
+                             pp.TrainingProgram.TrainerId == userId &&
+                             !pp.TrainingProgram.IsDeleted &&
+                             (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed))
+                .Select(pp => pp.User)
+                .Distinct()
+                .Where(u => u.IsActive)
                 .Select(u => new StudentDto
                 {
                     Id = u.Id,

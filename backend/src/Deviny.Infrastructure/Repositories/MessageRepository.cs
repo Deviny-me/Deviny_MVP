@@ -69,24 +69,23 @@ public class MessageRepository : IMessageRepository
     {
         var now = DateTime.UtcNow;
 
-        var unread = await _context.Messages
+        // First get the IDs we'll update (for SignalR notifications)
+        var ids = await _context.Messages
             .Where(m => m.ConversationId == conversationId &&
                         m.SenderId != userId &&
                         m.ReadAt == null &&
                         !m.IsDeleted)
+            .Select(m => m.Id)
             .ToListAsync(ct);
 
-        if (unread.Count == 0)
+        if (ids.Count == 0)
             return new List<Guid>();
 
-        var ids = new List<Guid>(unread.Count);
-        foreach (var msg in unread)
-        {
-            msg.ReadAt = now;
-            ids.Add(msg.Id);
-        }
+        // Bulk update without loading entities into memory
+        await _context.Messages
+            .Where(m => ids.Contains(m.Id))
+            .ExecuteUpdateAsync(s => s.SetProperty(m => m.ReadAt, now), ct);
 
-        await _context.SaveChangesAsync(ct);
         return ids;
     }
 
@@ -101,20 +100,12 @@ public class MessageRepository : IMessageRepository
 
     public async Task<int> GetUnreadCountForUserAsync(Guid userId, CancellationToken ct = default)
     {
-        // Get all conversation IDs where user is a member
-        var conversationIds = await _context.ConversationMembers
-            .Where(cm => cm.UserId == userId)
-            .Select(cm => cm.ConversationId)
-            .ToListAsync(ct);
-
-        if (conversationIds.Count == 0)
-            return 0;
-
-        // Count all unread messages in those conversations (not sent by this user)
+        // Single query with subquery instead of two round-trips
         return await _context.Messages
-            .CountAsync(m => conversationIds.Contains(m.ConversationId) &&
-                            m.SenderId != userId &&
-                            m.ReadAt == null &&
-                            !m.IsDeleted, ct);
+            .CountAsync(m =>
+                _context.ConversationMembers.Any(cm => cm.UserId == userId && cm.ConversationId == m.ConversationId) &&
+                m.SenderId != userId &&
+                m.ReadAt == null &&
+                !m.IsDeleted, ct);
     }
 }

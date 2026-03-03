@@ -115,6 +115,26 @@ public class ConversationRepository : IConversationRepository
             .ToListAsync(ct);
     }
 
+    public async Task<(List<Conversation> Items, int TotalCount)> GetUserConversationsPagedAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = _context.Conversations
+            .AsNoTracking()
+            .Where(c => c.Members.Any(m => m.UserId == userId));
+
+        var totalCount = await query.CountAsync(ct);
+
+        var items = await query
+            .Include(c => c.Members).ThenInclude(m => m.User)
+            .Include(c => c.Messages.OrderByDescending(msg => msg.CreatedAt).Take(1))
+                .ThenInclude(msg => msg.Sender)
+            .OrderByDescending(c => c.UpdatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
     public async Task<List<Guid>> GetMemberIdsAsync(Guid conversationId, CancellationToken ct = default)
     {
         return await _context.ConversationMembers

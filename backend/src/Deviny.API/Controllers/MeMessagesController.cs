@@ -1,3 +1,4 @@
+using Deviny.Application.Common;
 using Deviny.Application.Features.Messages;
 using Deviny.Application.Features.Messages.Commands;
 using Deviny.Application.Features.Messages.Queries;
@@ -25,11 +26,16 @@ public class ChatsController : BaseApiController
         _hubContext = hubContext;
     }
 
-    /// <summary>Get all my conversations (ordered by latest message).</summary>
+    /// <summary>Get all my conversations (ordered by latest message, paginated).</summary>
     [HttpGet]
-    public async Task<ActionResult<List<ConversationListItemDto>>> GetMyConversations()
+    public async Task<ActionResult<PagedResponse<ConversationListItemDto>>> GetMyConversations(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 30)
     {
-        var result = await _mediator.Send(new GetMyConversationsQuery(GetCurrentUserId()));
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
+
+        var result = await _mediator.Send(new GetMyConversationsQuery(GetCurrentUserId(), page, pageSize));
         return Ok(result);
     }
 

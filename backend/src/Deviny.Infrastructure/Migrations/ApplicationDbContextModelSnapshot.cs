@@ -17,7 +17,7 @@ namespace Deviny.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -677,8 +677,12 @@ namespace Deviny.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ProgramId")
+                    b.Property<Guid?>("MealProgramId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ProgramType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("PurchasedAt")
                         .HasColumnType("timestamp with time zone");
@@ -691,6 +695,9 @@ namespace Deviny.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("TrainingProgramId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -699,13 +706,19 @@ namespace Deviny.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProgramId");
+                    b.HasIndex("MealProgramId");
+
+                    b.HasIndex("TrainingProgramId");
 
                     b.HasIndex("UserId");
 
                     b.HasIndex("UserId", "PurchasedAt")
                         .IsDescending(false, true)
                         .HasDatabaseName("IX_ProgramPurchases_UserId_PurchasedAt");
+
+                    b.HasIndex("UserId", "TrainingProgramId", "MealProgramId", "Tier")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ProgramPurchases_User_Program_Tier");
 
                     b.ToTable("ProgramPurchases");
                 });
@@ -1727,11 +1740,15 @@ namespace Deviny.Infrastructure.Migrations
 
             modelBuilder.Entity("Deviny.Domain.Entities.ProgramPurchase", b =>
                 {
-                    b.HasOne("Deviny.Domain.Entities.TrainingProgram", "Program")
+                    b.HasOne("Deviny.Domain.Entities.MealProgram", "MealProgram")
                         .WithMany("Purchases")
-                        .HasForeignKey("ProgramId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MealProgramId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Deviny.Domain.Entities.TrainingProgram", "TrainingProgram")
+                        .WithMany("Purchases")
+                        .HasForeignKey("TrainingProgramId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Deviny.Domain.Entities.User", "User")
                         .WithMany("ProgramPurchases")
@@ -1739,7 +1756,9 @@ namespace Deviny.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Program");
+                    b.Navigation("MealProgram");
+
+                    b.Navigation("TrainingProgram");
 
                     b.Navigation("User");
                 });
@@ -2006,6 +2025,11 @@ namespace Deviny.Infrastructure.Migrations
                     b.Navigation("Members");
 
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Deviny.Domain.Entities.MealProgram", b =>
+                {
+                    b.Navigation("Purchases");
                 });
 
             modelBuilder.Entity("Deviny.Domain.Entities.PostComment", b =>

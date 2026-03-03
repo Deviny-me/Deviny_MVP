@@ -1,4 +1,5 @@
 import { PublicTrainerDto } from '@/types/trainer';
+import { PagedResponse } from '@/types/pagination';
 import { API_URL, fetchWithAuth } from '@/lib/config';
 
 async function apiRequest(url: string, options: RequestInit = {}) {
@@ -13,9 +14,9 @@ async function apiRequest(url: string, options: RequestInit = {}) {
 }
 
 export const trainersApi = {
-  // Get all trainers for browsing
-  getAll: async (): Promise<PublicTrainerDto[]> => {
-    return apiRequest('/trainers');
+  // Get all trainers for browsing (paginated)
+  getAll: async (page = 1, pageSize = 20): Promise<PagedResponse<PublicTrainerDto>> => {
+    return apiRequest(`/trainers?page=${page}&pageSize=${pageSize}`);
   },
 
   // Get trainer profile by slug

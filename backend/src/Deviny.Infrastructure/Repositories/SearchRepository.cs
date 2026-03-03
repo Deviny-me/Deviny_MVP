@@ -16,18 +16,19 @@ public class SearchRepository : ISearchRepository
 
     public async Task<List<UserSearchItem>> SearchUsersAsync(string query, int limit, CancellationToken ct = default)
     {
-        var q = query.Trim().ToLower();
+        var q = query.Trim();
+        var pattern = $"%{q}%";
+        var startsWithPattern = $"{q}%";
 
-        // Fetch matching users — SQL Server collation is CI by default,
-        // but we use EF.Functions.Like for safe pattern matching
+        // Use EF.Functions.ILike for case-insensitive search that leverages PostgreSQL indexes
         var users = await _context.Users
             .AsNoTracking()
             .Where(u => u.IsActive &&
-                (u.FirstName.ToLower().Contains(q) ||
-                 u.LastName.ToLower().Contains(q) ||
-                 (u.FirstName + " " + u.LastName).ToLower().Contains(q) ||
-                 u.Email.ToLower().StartsWith(q) ||
-                 (u.Slug != null && u.Slug.ToLower().Contains(q))))
+                (EF.Functions.ILike(u.FirstName, pattern) ||
+                 EF.Functions.ILike(u.LastName, pattern) ||
+                 EF.Functions.ILike(u.FirstName + " " + u.LastName, pattern) ||
+                 EF.Functions.ILike(u.Email, startsWithPattern) ||
+                 (u.Slug != null && EF.Functions.ILike(u.Slug, pattern))))
             .Take(limit)
             .Select(u => new
             {
@@ -60,14 +61,15 @@ public class SearchRepository : ISearchRepository
 
     public async Task<List<ProgramSearchItem>> SearchTrainingProgramsAsync(string query, int limit, CancellationToken ct = default)
     {
-        var q = query.Trim().ToLower();
+        var q = query.Trim();
+        var pattern = $"%{q}%";
 
         var programs = await _context.TrainingPrograms
             .AsNoTracking()
             .Where(p =>
-                p.Code.ToLower().Contains(q) ||
-                p.Title.ToLower().Contains(q) ||
-                p.Description.ToLower().Contains(q))
+                EF.Functions.ILike(p.Code, pattern) ||
+                EF.Functions.ILike(p.Title, pattern) ||
+                EF.Functions.ILike(p.Description, pattern))
             .Take(limit)
             .Select(p => new
             {
@@ -103,14 +105,15 @@ public class SearchRepository : ISearchRepository
 
     public async Task<List<ProgramSearchItem>> SearchMealProgramsAsync(string query, int limit, CancellationToken ct = default)
     {
-        var q = query.Trim().ToLower();
+        var q = query.Trim();
+        var pattern = $"%{q}%";
 
         var programs = await _context.MealPrograms
             .AsNoTracking()
             .Where(p =>
-                p.Code.ToLower().Contains(q) ||
-                p.Title.ToLower().Contains(q) ||
-                p.Description.ToLower().Contains(q))
+                EF.Functions.ILike(p.Code, pattern) ||
+                EF.Functions.ILike(p.Title, pattern) ||
+                EF.Functions.ILike(p.Description, pattern))
             .Take(limit)
             .Select(p => new
             {

@@ -1,5 +1,6 @@
 import { API_URL, fetchWithAuth } from '../config'
 import { ConversationListItemDto, MessageDto, SendMessageDto, ChatFileUploadResult } from '@/types/message'
+import { PagedResponse } from '@/types/pagination'
 
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetchWithAuth(`${API_URL}${endpoint}`, options)
@@ -14,9 +15,9 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
 }
 
 export const messagesApi = {
-  /** Get all my conversations (ordered by latest message). */
-  getMyConversations: (): Promise<ConversationListItemDto[]> =>
-    apiRequest<ConversationListItemDto[]>('/me/chats'),
+  /** Get all my conversations (ordered by latest message, paginated). */
+  getMyConversations: (page = 1, pageSize = 30): Promise<PagedResponse<ConversationListItemDto>> =>
+    apiRequest<PagedResponse<ConversationListItemDto>>(`/me/chats?page=${page}&pageSize=${pageSize}`),
 
   /** Get or create a direct conversation with another user. */
   getOrCreateConversation: (otherUserId: string): Promise<{ conversationId: string }> =>

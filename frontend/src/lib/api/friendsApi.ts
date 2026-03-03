@@ -1,5 +1,6 @@
 import { API_URL, fetchWithAuth } from '@/lib/config';
 import { FriendDto, FriendRequestDto, RelationshipStatus } from '@/types/friend';
+import { PagedResponse } from '@/types/pagination';
 
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetchWithAuth(`${API_URL}${endpoint}`, options);
@@ -56,9 +57,9 @@ export const friendsApi = {
     });
   },
 
-  // Get my friends
-  getMyFriends: async (): Promise<FriendDto[]> => {
-    return apiRequest<FriendDto[]>('/me/friends');
+  // Get my friends (paginated)
+  getMyFriends: async (page = 1, pageSize = 30): Promise<PagedResponse<FriendDto>> => {
+    return apiRequest<PagedResponse<FriendDto>>(`/me/friends?page=${page}&pageSize=${pageSize}`);
   },
 
   // Remove friend
@@ -89,9 +90,9 @@ export const followsApi = {
     });
   },
 
-  // Get my following
-  getMyFollowing: async (): Promise<FriendDto[]> => {
-    return apiRequest<FriendDto[]>('/me/follows');
+  // Get my following (paginated)
+  getMyFollowing: async (page = 1, pageSize = 30): Promise<PagedResponse<FriendDto>> => {
+    return apiRequest<PagedResponse<FriendDto>>(`/me/follows?page=${page}&pageSize=${pageSize}`);
   },
 };
 

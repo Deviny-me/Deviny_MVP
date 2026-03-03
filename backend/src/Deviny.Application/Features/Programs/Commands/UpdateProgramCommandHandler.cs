@@ -140,10 +140,11 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
             program.Id
         );
 
-        // Calculate stats
-        var avgRating = program.Reviews.Any() ? program.Reviews.Average(r => r.Rating) : 0;
-        var totalReviews = program.Reviews.Count;
-        var totalPurchases = program.Purchases.Count(p => p.Status == ProgramPurchaseStatus.Active);
+        // Calculate stats via SQL projection instead of loading Reviews/Purchases collections
+        var stats = await _programRepository.GetStatsForProgramAsync(program.Id);
+        var avgRating = stats?.AverageRating ?? 0;
+        var totalReviews = stats?.TotalReviews ?? 0;
+        var totalPurchases = stats?.TotalPurchases ?? 0;
 
         var videoPaths = string.IsNullOrEmpty(program.TrainingVideosPath) 
             ? new List<string>() 

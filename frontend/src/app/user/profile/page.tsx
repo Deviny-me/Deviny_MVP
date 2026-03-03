@@ -288,7 +288,7 @@ export default function UserProfilePage() {
 
   const stats = [
     { label: tp('workouts'), value: user?.workoutsCompleted || 0, icon: Target },
-    { label: tp('dayStreak'), value: user?.streak || 0, icon: Flame },
+    { label: tp('followers'), value: user?.followersCount || 0, icon: Users },
     { label: tp('achievements'), value: user?.achievementsCount || 0, icon: Trophy },
     { label: tp('following'), value: user?.followingCount || 0, icon: Users },
   ]

@@ -1,3 +1,4 @@
+using Deviny.Application.Common;
 using Deviny.Application.Features.Trainers.DTOs;
 using Deviny.API.DTOs;
 using Deviny.Application.Common.Interfaces;
@@ -34,22 +35,33 @@ public class NutritionistExpertsController : BaseApiController
     }
 
     /// <summary>
-    /// Get all nutritionists for browsing
+    /// Get all nutritionists for browsing (paginated)
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<PublicTrainerDto>>> GetAll()
+    public async Task<ActionResult<PagedResponse<PublicTrainerDto>>> GetAll(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var nutritionists = await _context.TrainerProfiles
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = _context.TrainerProfiles
             .AsNoTracking()
+            .Where(tp => tp.User != null && tp.User.Role == UserRole.Nutritionist);
+
+        var totalCount = await query.CountAsync();
+
+        var nutritionists = await query
             .Include(tp => tp.User)
             .Include(tp => tp.Specializations)
                 .ThenInclude(ts => ts.Specialization)
-            .Where(tp => tp.User != null && tp.User.Role == UserRole.Nutritionist)
             .OrderByDescending(tp => tp.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        var result = nutritionists.Select(t => new PublicTrainerDto
+        var items = nutritionists.Select(t => new PublicTrainerDto
         {
             Id = t.Id,
             UserId = t.UserId,
@@ -70,7 +82,7 @@ public class NutritionistExpertsController : BaseApiController
                 .ToList()
         }).ToList();
 
-        return Ok(result);
+        return Ok(new PagedResponse<PublicTrainerDto>(items, totalCount, page, pageSize));
     }
 
     /// <summary>
@@ -83,6 +95,8 @@ public class NutritionistExpertsController : BaseApiController
         try
         {
             var profile = await _context.TrainerProfiles
+                .AsNoTracking()
+                .Include(p => p.User)
                 .Include(p => p.Certificates.OrderBy(c => c.SortOrder))
                 .Include(p => p.Specializations)
                     .ThenInclude(ts => ts.Specialization)
@@ -91,7 +105,7 @@ public class NutritionistExpertsController : BaseApiController
             if (profile == null)
                 return NotFound(new { message = "Nutritionist not found" });
 
-            var user = await _userRepository.GetByIdAsync(profile.UserId);
+            var user = profile.User;
             if (user == null || user.Role != UserRole.Nutritionist)
                 return NotFound(new { message = "Nutritionist not found" });
 

@@ -41,6 +41,10 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
   const [roleFilter, setRoleFilter] = useState<'all' | 'Trainer' | 'Nutritionist'>('all')
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set())
   const [followLoading, setFollowLoading] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const PAGE_SIZE = 20
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,11 +52,13 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
         setLoading(true)
         setError(null)
         const [data, followingData] = await Promise.all([
-          trainersApi.getAll(),
-          followsApi.getMyFollowing().catch(() => [] as FriendDto[]),
+          trainersApi.getAll(1, PAGE_SIZE),
+          followsApi.getMyFollowing(1, 100).catch(() => ({ items: [] as FriendDto[], totalCount: 0, page: 1, pageSize: 100 })),
         ])
-        setTrainers(data)
-        setFollowedIds(new Set(followingData.map((f) => f.id)))
+        setTrainers(data.items)
+        setPage(1)
+        setHasMore(data.items.length < data.totalCount)
+        setFollowedIds(new Set(followingData.items.map((f) => f.id)))
       } catch (err) {
         console.error('Failed to fetch trainers:', err)
         setError(t('failedToLoad'))
@@ -63,6 +69,21 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
 
     fetchData()
   }, [])
+
+  const loadMore = async () => {
+    try {
+      setLoadingMore(true)
+      const nextPage = page + 1
+      const data = await trainersApi.getAll(nextPage, PAGE_SIZE)
+      setTrainers(prev => [...prev, ...data.items])
+      setPage(nextPage)
+      setHasMore(trainers.length + data.items.length < data.totalCount)
+    } catch (err) {
+      console.error('Failed to load more:', err)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   // Re-sort trainers when currentUser becomes available (push own card first)
   useEffect(() => {
@@ -196,7 +217,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    onClick={() => router.push(`${basePath}/experts/${trainer.slug || trainer.id}`)}
+                    onClick={() => router.push(`${basePath}/profile/${trainer.userId}`)}
                     className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-5 ${trainerAccent.hoverBorder} transition-all cursor-pointer group`}
                   >
                     <div className="flex items-start gap-4">
@@ -241,6 +262,11 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                       <div className="flex items-center gap-3 text-xs text-gray-400">
                         <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                          <span className="text-white font-medium">{trainer.ratingValue > 0 ? trainer.ratingValue.toFixed(1) : '0.0'}</span>
+                          <span>({trainer.reviewsCount})</span>
+                        </div>
+                        <div className="flex items-center gap-1">
                           <BookOpen className="w-3.5 h-3.5" />
                           <span>{trainer.programsCount} {t('programs')}</span>
                         </div>
@@ -254,12 +280,6 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
 
                       {trainer.userId !== currentUser?.id && (
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => handleMessage(e, trainer)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 text-gray-300 text-xs font-medium rounded-lg hover:bg-white/20 transition-all"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                          </button>
                           <button
                             onClick={(e) => handleFollow(e, trainer.userId)}
                             disabled={followLoading === trainer.userId}
@@ -287,6 +307,20 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
             </div>
           )}
         </>
+      )}
+
+      {/* Load More */}
+      {!loading && !error && hasMore && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="px-6 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/20 transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
+            {loadingMore ? t('loading') : t('loadMore')}
+          </button>
+        </div>
       )}
     </div>
   )

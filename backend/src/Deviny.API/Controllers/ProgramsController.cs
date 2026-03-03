@@ -1,3 +1,4 @@
+using Deviny.Application.Common;
 using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Application.Features.Programs.Queries;
 using MediatR;
@@ -17,13 +18,18 @@ public class ProgramsController : BaseApiController
     }
 
     /// <summary>
-    /// Get all public programs for browsing
+    /// Get all public programs for browsing (paginated)
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<List<PublicProgramDto>>> GetAllPublic()
+    public async Task<ActionResult<PagedResponse<PublicProgramDto>>> GetAllPublic(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var query = new GetAllPublicProgramsQuery();
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
+
+        var query = new GetAllPublicProgramsQuery(page, pageSize);
         var programs = await _mediator.Send(query);
         return Ok(programs);
     }

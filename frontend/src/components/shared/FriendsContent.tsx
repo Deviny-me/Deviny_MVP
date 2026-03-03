@@ -87,11 +87,11 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
       setLoading(true)
       if (activeTab === 'all') {
         const [friendsData, incomingData, outgoingData] = await Promise.all([
-          friendsApi.getMyFriends(),
+          friendsApi.getMyFriends(1, 100),
           friendsApi.getIncomingRequests(),
           friendsApi.getOutgoingRequests(),
         ])
-        setFriends(friendsData)
+        setFriends(friendsData.items)
         setIncomingRequests(incomingData.filter(r => r.status === FriendRequestStatus.Pending))
         setOutgoingRequests(outgoingData.filter(r => r.status === FriendRequestStatus.Pending))
         setIncomingCount(incomingData.filter(r => r.status === FriendRequestStatus.Pending).length)
@@ -103,8 +103,8 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         const data = await friendsApi.getOutgoingRequests()
         setOutgoingRequests(data.filter(r => r.status === FriendRequestStatus.Pending))
       } else if (activeTab === 'following') {
-        const data = await followsApi.getMyFollowing()
-        setFollowing(data)
+        const data = await followsApi.getMyFollowing(1, 100)
+        setFollowing(data.items)
       }
     } catch (error) {
       console.error('Error loading data:', error)

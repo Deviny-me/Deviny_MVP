@@ -38,6 +38,18 @@ public class NotificationRepository : INotificationRepository
             .CountAsync(n => n.UserId == userId && !n.IsRead, ct);
     }
 
+    public async Task<Dictionary<Guid, int>> GetUnreadCountsAsync(List<Guid> userIds, CancellationToken ct = default)
+    {
+        if (userIds.Count == 0)
+            return new Dictionary<Guid, int>();
+
+        return await _context.Notifications
+            .Where(n => userIds.Contains(n.UserId) && !n.IsRead)
+            .GroupBy(n => n.UserId)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.UserId, x => x.Count, ct);
+    }
+
     public async Task<Notification?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _context.Notifications

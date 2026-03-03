@@ -1,6 +1,5 @@
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Programs.DTOs;
-using Deviny.Domain.Enums;
 using MediatR;
 using System.Text.Json;
 
@@ -17,35 +16,35 @@ public class GetMyProgramsQueryHandler : IRequestHandler<GetMyProgramsQuery, Lis
 
     public async Task<List<ProgramDto>> Handle(GetMyProgramsQuery request, CancellationToken cancellationToken)
     {
-        var programs = await _programRepository.GetByTrainerIdAsync(request.TrainerId);
+        var items = await _programRepository.GetByTrainerIdWithStatsAsync(request.TrainerId);
 
-        return programs.Select(p =>
+        return items.Select(s =>
         {
-            var videoPaths = string.IsNullOrEmpty(p.TrainingVideosPath) 
+            var videoPaths = string.IsNullOrEmpty(s.Program.TrainingVideosPath) 
                 ? new List<string>() 
-                : JsonSerializer.Deserialize<List<string>>(p.TrainingVideosPath) ?? new List<string>();
+                : JsonSerializer.Deserialize<List<string>>(s.Program.TrainingVideosPath) ?? new List<string>();
 
             return new ProgramDto
             {
-                Id = p.Id,
-                Title = p.Title,
-                Description = p.Description,
-                DetailedDescription = p.DetailedDescription,
-                Price = p.Price,
-                StandardPrice = p.StandardPrice,
-                ProPrice = p.ProPrice,
-                MaxStandardSpots = p.MaxStandardSpots,
-                MaxProSpots = p.MaxProSpots,
-                Category = p.Category.ToString(),
-                Code = p.Code,
-                CoverImageUrl = p.CoverImagePath,
+                Id = s.Program.Id,
+                Title = s.Program.Title,
+                Description = s.Program.Description,
+                DetailedDescription = s.Program.DetailedDescription,
+                Price = s.Program.Price,
+                StandardPrice = s.Program.StandardPrice,
+                ProPrice = s.Program.ProPrice,
+                MaxStandardSpots = s.Program.MaxStandardSpots,
+                MaxProSpots = s.Program.MaxProSpots,
+                Category = s.Program.Category.ToString(),
+                Code = s.Program.Code,
+                CoverImageUrl = s.Program.CoverImagePath,
                 TrainingVideoUrls = videoPaths,
-                IsPublic = p.IsPublic,
-                AverageRating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0,
-                TotalReviews = p.Reviews.Count,
-                TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
+                IsPublic = s.Program.IsPublic,
+                AverageRating = s.AverageRating,
+                TotalReviews = s.TotalReviews,
+                TotalPurchases = s.TotalPurchases,
+                CreatedAt = s.Program.CreatedAt,
+                UpdatedAt = s.Program.UpdatedAt
             };
         }).ToList();
     }
