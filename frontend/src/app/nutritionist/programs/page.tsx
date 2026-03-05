@@ -6,19 +6,13 @@ import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   Plus,
-  Users,
   Search,
   Edit,
   Trash2,
-  BookOpen,
-  X,
-  Upload,
   Loader2,
   Video,
-  DollarSign,
   Apple,
   MessageSquare,
-  Eye,
   EyeOff
 } from 'lucide-react'
 import { nutritionistProgramsApi } from '@/lib/api/nutritionistProgramsApi'
@@ -85,47 +79,22 @@ export default function NutritionistProgramsPage() {
 
   // Tabs & category
   const [activeTab, setActiveTab] = useState<ProgramCategory>('Diet')
-  const [formCategory, setFormCategory] = useState<ProgramCategory>('Diet')
 
   // Search
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Modal state
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [editingProgram, setEditingProgram] = useState<UnifiedProgram | null>(null)
-  const [selectedProgram, setSelectedProgram] = useState<UnifiedProgram | null>(null)
-  const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
-
-  // Form state
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [detailedDescription, setDetailedDescription] = useState('')
-  const [price, setPrice] = useState('')
-  const [standardPrice, setStandardPrice] = useState('')
-  const [proPrice, setProPrice] = useState('')
-  const [maxStandardSpots, setMaxStandardSpots] = useState('')
-  const [maxProSpots, setMaxProSpots] = useState('')
-  const [coverImage, setCoverImage] = useState<File | null>(null)
-  const [coverPreview, setCoverPreview] = useState<string | null>(null)
-  const [videos, setVideos] = useState<File[]>([])
-  const [isPublic, setIsPublic] = useState(true)
 
   useEffect(() => {
     loadMealPrograms()
   }, [])
 
-  // Deep link: ?program=<id>
+  // Deep link: ?program=<id> → redirect to detail page
   useEffect(() => {
     const programId = searchParams.get('program')
     if (!programId) return
-    router.replace('/nutritionist/programs', { scroll: false })
-
-    const own = mealPrograms.find(p => p.id === programId)
-    if (own) {
-      setSelectedProgram(toUnified(own))
-    }
-  }, [searchParams, mealPrograms])
+    router.replace(`/nutritionist/programs/${programId}`)
+  }, [searchParams, router])
 
   const loadMealPrograms = async () => {
     try {
@@ -150,129 +119,6 @@ export default function NutritionistProgramsPage() {
 
   const dietCount = allPrograms.filter(p => p.category === 'Diet').length
   const consultationCount = allPrograms.filter(p => p.category === 'Consultation').length
-
-  // Form helpers
-  const resetForm = () => {
-    setTitle('')
-    setDescription('')
-    setDetailedDescription('')
-    setPrice('')
-    setStandardPrice('')
-    setProPrice('')
-    setMaxStandardSpots('')
-    setMaxProSpots('')
-    setCoverImage(null)
-    setCoverPreview(null)
-    setVideos([])
-    setIsPublic(true)
-    setEditingProgram(null)
-    setFormCategory('Diet')
-  }
-
-  const openCreateModal = () => {
-    resetForm()
-    setFormCategory(activeTab)
-    setShowCreateModal(true)
-  }
-
-  const openEditModal = (program: UnifiedProgram) => {
-    setEditingProgram(program)
-    setFormCategory(program.category)
-    setTitle(program.title)
-    setDescription(program.description)
-    setDetailedDescription(program.detailedDescription || '')
-    setPrice(program.price.toString())
-    setStandardPrice(program.standardPrice != null ? program.standardPrice.toString() : '')
-    setProPrice(program.proPrice != null ? program.proPrice.toString() : '')
-    setMaxStandardSpots(program.maxStandardSpots != null ? program.maxStandardSpots.toString() : '')
-    setMaxProSpots(program.maxProSpots != null ? program.maxProSpots.toString() : '')
-    setIsPublic(program.isPublic ?? true)
-    setCoverPreview(program.coverImageUrl ? getMediaUrl(program.coverImageUrl) : null)
-    setShowCreateModal(true)
-  }
-
-  const closeModal = () => {
-    setShowCreateModal(false)
-    resetForm()
-  }
-
-  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setCoverImage(file)
-      setCoverPreview(URL.createObjectURL(file))
-    }
-  }
-
-  const handleVideosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setVideos(prev => [...prev, ...files])
-  }
-
-  const removeVideo = (index: number) => {
-    setVideos(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!title || !description) {
-      toast.error(t('toasts.fillRequired'))
-      return
-    }
-
-    if (!editingProgram && !coverImage) {
-      toast.error(t('toasts.addCover'))
-      return
-    }
-
-    try {
-      setSaving(true)
-
-      if (editingProgram) {
-        await nutritionistProgramsApi.updateProgram(editingProgram.id, {
-          title,
-          description,
-          detailedDescription: detailedDescription || undefined,
-          price: price ? parseFloat(price) : 0,
-          standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
-          proPrice: proPrice ? parseFloat(proPrice) : undefined,
-          maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
-          maxProSpots: maxProSpots ? parseInt(maxProSpots) : undefined,
-          isPublic,
-          coverImage: coverImage || undefined,
-          videos: videos.length > 0 ? videos : undefined,
-          category: formCategory,
-        })
-        toast.success(t('toasts.updated'))
-      } else {
-        await nutritionistProgramsApi.createProgram({
-          title,
-          description,
-          detailedDescription: detailedDescription || undefined,
-          price: price ? parseFloat(price) : 0,
-          standardPrice: standardPrice ? parseFloat(standardPrice) : undefined,
-          proPrice: proPrice ? parseFloat(proPrice) : undefined,
-          maxStandardSpots: maxStandardSpots ? parseInt(maxStandardSpots) : undefined,
-          maxProSpots: maxProSpots ? parseInt(maxProSpots) : undefined,
-          isPublic,
-          coverImage: coverImage!,
-          videos,
-          category: formCategory,
-        })
-        toast.success(t('toasts.created'))
-      }
-
-      closeModal()
-      await loadMealPrograms()
-    } catch (error) {
-      console.error('Failed to save program:', error)
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      toast.error(editingProgram ? `${t('toasts.updateError')}: ${message}` : `${t('toasts.createError')}: ${message}`)
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const handleDelete = async (program: UnifiedProgram) => {
     if (!confirm(t('toasts.deleteConfirm'))) return
@@ -300,7 +146,7 @@ export default function NutritionistProgramsPage() {
             <p className="text-gray-400">{t('description')}</p>
           </div>
           <button 
-            onClick={openCreateModal}
+            onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
             className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
@@ -386,7 +232,7 @@ export default function NutritionistProgramsPage() {
               {activeTab === 'Diet' ? t('createFirstMeal') : t('createFirstConsultation')}
             </p>
             <button 
-              onClick={openCreateModal}
+              onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
               className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
             >
               {t('createProgram')}
@@ -401,7 +247,7 @@ export default function NutritionistProgramsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden group hover:border-white/20 transition-all cursor-pointer"
-                onClick={() => setSelectedProgram(program)}
+                onClick={() => router.push(`/nutritionist/programs/${program.id}`)}
               >
                 <div className="relative">
                   <img
@@ -440,7 +286,7 @@ export default function NutritionistProgramsPage() {
                   </div>
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
-                      onClick={(e) => { e.stopPropagation(); openEditModal(program) }}
+                      onClick={(e) => { e.stopPropagation(); router.push(`/nutritionist/programs/new?edit=${program.id}&category=${program.category}`) }}
                       className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-all"
                     >
                       <Edit className="w-4 h-4" />
@@ -485,442 +331,6 @@ export default function NutritionistProgramsPage() {
           </div>
         )}
 
-        {/* Program Detail Modal */}
-        {selectedProgram && !showCreateModal && (
-          <div 
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-            onClick={() => setSelectedProgram(null)}
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative">
-                {selectedProgram.coverImageUrl ? (
-                  <img
-                    src={getMediaUrl(selectedProgram.coverImageUrl) || ''}
-                    alt={selectedProgram.title}
-                    className="w-full h-48 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-48 bg-[#0A0A0A] flex items-center justify-center">
-                    <BookOpen className="w-16 h-16 text-gray-600" />
-                  </div>
-                )}
-                <button
-                  onClick={() => setSelectedProgram(null)}
-                  className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-                >
-                  <X className="w-5 h-5 text-white" />
-                </button>
-                <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                  <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
-                    ${selectedProgram.price}
-                  </span>
-                  {selectedProgram.standardPrice != null && (
-                    <span className="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">
-                      STD ${selectedProgram.standardPrice}
-                    </span>
-                  )}
-                  {selectedProgram.proPrice != null && (
-                    <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
-                      PRO ${selectedProgram.proPrice}
-                    </span>
-                  )}
-                  <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-                    selectedProgram.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
-                  }`}>
-                    {selectedProgram.category === 'Diet' ? t('typeMeal') : t('typeConsultation')}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <h2 className="text-xl font-bold text-white">{selectedProgram.title}</h2>
-
-                {selectedProgram.videoUrls && selectedProgram.videoUrls.length > 0 && (
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Video className="w-5 h-5" />
-                      <span>{selectedProgram.videoUrls.length} {tc('videos')}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-sm font-medium text-gray-400 mb-2">{tp('description')}</h3>
-                  <p className="text-white leading-relaxed">{selectedProgram.description}</p>
-                </div>
-
-                {selectedProgram.detailedDescription && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('detailedDescriptionLabel')}</h3>
-                    <p className="text-white leading-relaxed whitespace-pre-wrap">{selectedProgram.detailedDescription}</p>
-                  </div>
-                )}
-
-                {selectedProgram.videoUrls && selectedProgram.videoUrls.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-400 mb-2">{t('trainingVideos')}</h3>
-                    <div className="space-y-2">
-                      {selectedProgram.videoUrls.map((url, i) => (
-                        <video
-                          key={i}
-                          src={getMediaUrl(url) || ''}
-                          controls
-                          className="w-full rounded-lg"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => {
-                      const prog = selectedProgram
-                      setSelectedProgram(null)
-                      openEditModal(prog)
-                    }}
-                    className={`flex-1 py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
-                  >
-                    <Edit className="w-5 h-5" />
-                    {tc('edit')}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const prog = selectedProgram
-                      setSelectedProgram(null)
-                      handleDelete(prog)
-                    }}
-                    className="py-3 px-4 border border-red-500/30 text-red-400 font-semibold rounded-lg hover:bg-red-500/10 transition-colors flex items-center justify-center"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <p className="text-center text-xs text-gray-500">
-                  {t('programCode')}: <span className="text-gray-400 font-mono">{selectedProgram.code}</span>
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Create/Edit Modal */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">
-                    {editingProgram
-                      ? (formCategory === 'Diet' ? t('editMealProgram') : t('editConsultation'))
-                      : (formCategory === 'Diet' ? t('newMealProgram') : t('newConsultation'))
-                    }
-                  </h2>
-                  <button onClick={closeModal} className="text-gray-400 hover:text-white">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Category Selector */}
-                  {!editingProgram && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        {t('categoryLabel')}
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {([
-                          { cat: 'Diet' as ProgramCategory, icon: Apple, label: t('tabMeal'), color: 'green' },
-                          { cat: 'Consultation' as ProgramCategory, icon: MessageSquare, label: t('tabConsultation'), color: 'violet' },
-                        ]).map(({ cat, icon: Icon, label, color }) => (
-                          <button
-                            key={cat}
-                            type="button"
-                            onClick={() => setFormCategory(cat)}
-                            className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all border ${
-                              formCategory === cat
-                                ? `bg-${color}-500/20 text-${color}-400 border-${color}-500/50`
-                                : 'bg-[#0A0A0A] text-gray-400 border-white/10 hover:border-white/20'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Cover Image */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('coverImage')}
-                    </label>
-                    <div className="relative">
-                      {coverPreview ? (
-                        <div className="relative">
-                          <img
-                            src={coverPreview}
-                            alt="Cover preview"
-                            className="w-full h-40 object-cover rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => { setCoverImage(null); setCoverPreview(null) }}
-                            className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}>
-                          <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                          <span className="text-sm text-gray-400">{t('clickToUpload')}</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleCoverImageChange}
-                            className="hidden"
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('nameLabel')}
-                    </label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
-                      placeholder={t('namePlaceholder')}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('descriptionLabel')}
-                    </label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      rows={3}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
-                      placeholder={t('descriptionPlaceholder')}
-                    />
-                  </div>
-
-                  {/* Detailed Description (for buyers) */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('detailedDescriptionLabel')}
-                    </label>
-                    <textarea
-                      value={detailedDescription}
-                      onChange={(e) => setDetailedDescription(e.target.value)}
-                      rows={5}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
-                      placeholder={t('detailedDescriptionPlaceholder')}
-                    />
-                  </div>
-
-                  {/* Price — Basic Tier */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('basicPriceLabel')}
-                    </label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        min="0"
-                        step="0.01"
-                        className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">{t('basicPriceHint')}</p>
-                  </div>
-
-                  {/* Standard Tier */}
-                  <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
-                    <h4 className="text-sm font-semibold text-blue-400">{t('standardTierLabel')}</h4>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
-                        {t('standardPriceLabel')}
-                      </label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="number"
-                          value={standardPrice}
-                          onChange={(e) => setStandardPrice(e.target.value)}
-                          min="0"
-                          step="0.01"
-                          className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
-                          placeholder={t('standardPricePlaceholder')}
-                        />
-                      </div>
-                    </div>
-                    {standardPrice && (
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
-                          {t('maxStandardSpotsLabel')}
-                        </label>
-                        <input
-                          type="number"
-                          value={maxStandardSpots}
-                          onChange={(e) => setMaxStandardSpots(e.target.value)}
-                          min="1"
-                          step="1"
-                          className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
-                          placeholder={t('maxSpotsPlaceholder')}
-                        />
-                      </div>
-                    )}
-                    <p className="text-xs text-gray-500">{t('standardTierHint')}</p>
-                  </div>
-
-                  {/* Pro Tier */}
-                  <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
-                    <h4 className="text-sm font-semibold text-purple-400">{t('proTierLabel')}</h4>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
-                        {t('proPriceLabel')}
-                      </label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="number"
-                          value={proPrice}
-                          onChange={(e) => setProPrice(e.target.value)}
-                          min="0"
-                          step="0.01"
-                          className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
-                          placeholder={t('proPricePlaceholder')}
-                        />
-                      </div>
-                    </div>
-                    {proPrice && (
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">
-                          {t('maxProSpotsLabel')}
-                        </label>
-                        <input
-                          type="number"
-                          value={maxProSpots}
-                          onChange={(e) => setMaxProSpots(e.target.value)}
-                          min="1"
-                          step="1"
-                          className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.focusBorder}`}
-                          placeholder={t('maxSpotsPlaceholder')}
-                        />
-                      </div>
-                    )}
-                    <p className="text-xs text-gray-500">{t('proTierHint')}</p>
-                  </div>
-
-                  {/* Visibility Toggle */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('visibility')}
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setIsPublic(!isPublic)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border-2 transition-all ${
-                        isPublic
-                          ? 'border-green-500/50 bg-green-500/10'
-                          : 'border-yellow-500/50 bg-yellow-500/10'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {isPublic ? (
-                          <Eye className="w-5 h-5 text-green-400" />
-                        ) : (
-                          <EyeOff className="w-5 h-5 text-yellow-400" />
-                        )}
-                        <div className="text-left">
-                          <p className={`text-sm font-medium ${isPublic ? 'text-green-400' : 'text-yellow-400'}`}>
-                            {isPublic ? t('visibilityPublic') : t('visibilityPrivate')}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {isPublic ? t('visibilityPublicHint') : t('visibilityPrivateHint')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={`w-11 h-6 rounded-full relative transition-colors ${isPublic ? 'bg-green-500' : 'bg-gray-600'}`}>
-                        <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* Videos (hidden for Consultation) */}
-                  {formCategory !== 'Consultation' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      {t('trainingVideos')}
-                    </label>
-                    <label className={`flex items-center justify-center w-full py-3 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}>
-                      <Video className="w-5 h-5 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-400">{t('addVideo')}</span>
-                      <input
-                        type="file"
-                        accept="video/*"
-                        multiple
-                        onChange={handleVideosChange}
-                        className="hidden"
-                      />
-                    </label>
-                    {videos.length > 0 && (
-                      <div className="mt-2 space-y-2">
-                        {videos.map((video, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-[#0A0A0A] rounded-lg">
-                            <span className="text-sm text-gray-300 truncate">{video.name}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeVideo(index)}
-                              className="text-red-400 hover:text-red-300"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  )}
-
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
-                  >
-                    {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                    {editingProgram ? t('saveChanges') : t('createProgram')}
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </div>
     </>
   )

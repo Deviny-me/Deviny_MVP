@@ -10,11 +10,10 @@ import {
   Apple,
   Video,
   Star,
-  X
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { purchasesApi, PurchasedProgramDto } from '@/lib/api/purchasesApi'
-import { getMediaUrl, MEDIA_BASE_URL } from '@/lib/config'
+import { getMediaUrl } from '@/lib/config'
 
 export default function MyJourneyPage() {
   const t = useTranslations('journey')
@@ -23,7 +22,6 @@ export default function MyJourneyPage() {
   const [programs, setPrograms] = useState<PurchasedProgramDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedProgram, setSelectedProgram] = useState<PurchasedProgramDto | null>(null)
   const [filter, setFilter] = useState<'all' | 'training' | 'meal'>('all')
 
   const loadPurchases = useCallback(async () => {
@@ -133,7 +131,7 @@ export default function MyJourneyPage() {
             {filteredPrograms.map((program) => (
               <div
                 key={program.purchaseId}
-                onClick={() => setSelectedProgram(program)}
+                onClick={() => router.push(`/user/journey/${program.purchaseId}`)}
                 className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#3B82F6]/50 transition-all group"
               >
                 {/* Cover */}
@@ -237,156 +235,6 @@ export default function MyJourneyPage() {
           </div>
         )}
       </div>
-
-      {/* Program Detail Modal */}
-      {selectedProgram && (
-        <ProgramDetailModal
-          program={selectedProgram}
-          onClose={() => setSelectedProgram(null)}
-          t={t}
-        />
-      )}
     </>
-  )
-}
-
-function ProgramDetailModal({
-  program,
-  onClose,
-  t,
-}: {
-  program: PurchasedProgramDto
-  onClose: () => void
-  t: ReturnType<typeof useTranslations>
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="relative">
-          {program.coverImageUrl ? (
-            <img
-              src={getMediaUrl(program.coverImageUrl) || ''}
-              alt={program.title}
-              className="w-full h-56 object-cover"
-            />
-          ) : (
-            <div className="w-full h-56 bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 flex items-center justify-center">
-              {program.programType === 'training'
-                ? <Dumbbell className="w-16 h-16 text-gray-600" />
-                : <Apple className="w-16 h-16 text-gray-600" />
-              }
-            </div>
-          )}
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-          <div className="absolute top-3 left-3 flex gap-2">
-            <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-              program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
-            }`}>
-              {program.programType === 'training' ? t('training') : t('nutrition')}
-            </span>
-            <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
-              program.tier === 'Pro' ? 'bg-purple-600'
-                : program.tier === 'Standard' ? 'bg-blue-700'
-                : 'bg-gray-600'
-            }`}>
-              {program.tier}
-            </span>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-5">
-          <div>
-            <h2 className="text-xl font-bold text-white">{program.title}</h2>
-            <div className="flex items-center gap-2 mt-2">
-              {program.trainerAvatarUrl ? (
-                <img
-                  src={getMediaUrl(program.trainerAvatarUrl) || ''}
-                  alt={program.trainerName}
-                  className="w-6 h-6 rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-gray-700" />
-              )}
-              <span className="text-sm text-gray-400">{program.trainerName}</span>
-            </div>
-          </div>
-
-          {/* Rating */}
-          <div className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg border border-white/5">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-5 h-5 ${
-                    star <= Math.round(program.averageRating)
-                      ? 'text-yellow-500 fill-yellow-500'
-                      : 'text-gray-600'
-                  }`}
-                />
-              ))}
-            </div>
-            <span className="text-lg text-white font-semibold">
-              {program.averageRating > 0 ? program.averageRating.toFixed(1) : '—'}
-            </span>
-            <span className="text-sm text-gray-500">
-              ({program.totalReviews} {t('reviews')})
-            </span>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">{t('aboutProgram')}</h3>
-            <p className="text-white leading-relaxed">{program.description}</p>
-          </div>
-
-          {/* Videos */}
-          {program.videoUrls.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
-                <Video className="w-4 h-4" />
-                {t('videos')} ({program.videoUrls.length})
-              </h3>
-              <div className="space-y-3">
-                {program.videoUrls.map((url, index) => (
-                  <div key={index} className="rounded-lg overflow-hidden bg-black">
-                    <video
-                      controls
-                      preload="metadata"
-                      className="w-full max-h-[300px]"
-                      src={url.startsWith('http') ? url : `${MEDIA_BASE_URL}${url}`}
-                    >
-                      {t('videoNotSupported')}
-                    </video>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {program.videoUrls.length === 0 && (
-            <div className="text-center py-6 bg-[#0A0A0A] rounded-lg border border-white/5">
-              <Video className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">{t('noVideos')}</p>
-            </div>
-          )}
-
-          <p className="text-xs text-gray-500 text-center">
-            {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
-          </p>
-        </div>
-      </div>
-    </div>
   )
 }

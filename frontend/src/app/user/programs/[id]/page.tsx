@@ -1,0 +1,472 @@
+'use client'
+
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  ArrowLeft,
+  Star,
+  Users,
+  ShoppingCart,
+  Loader2,
+  Dumbbell,
+  Apple,
+  MessageSquare,
+} from 'lucide-react'
+import { programsApi } from '@/lib/api/programsApi'
+import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
+import { purchasesApi } from '@/lib/api/purchasesApi'
+import { PublicProgramDto, PublicMealProgramDto, ProgramCategory } from '@/types/program'
+import { getMediaUrl } from '@/lib/config'
+import { useTranslations } from 'next-intl'
+import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+
+type UnifiedPublicProgram = {
+  id: string
+  title: string
+  description: string
+  price: number
+  standardPrice?: number
+  proPrice?: number
+  maxStandardSpots?: number
+  maxProSpots?: number
+  standardSpotsRemaining?: number
+  proSpotsRemaining?: number
+  code: string
+  coverImageUrl: string
+  createdAt: string
+  trainerId: string
+  trainerName: string
+  trainerAvatarUrl: string
+  trainerSlug: string
+  trainerRole: string
+  category: ProgramCategory
+  averageRating?: number
+  totalReviews?: number
+  totalPurchases?: number
+}
+
+function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    price: p.price,
+    standardPrice: p.standardPrice,
+    proPrice: p.proPrice,
+    maxStandardSpots: p.maxStandardSpots,
+    maxProSpots: p.maxProSpots,
+    standardSpotsRemaining: p.standardSpotsRemaining,
+    proSpotsRemaining: p.proSpotsRemaining,
+    code: p.code,
+    coverImageUrl: p.coverImageUrl,
+    createdAt: p.createdAt,
+    trainerId: p.trainerId,
+    trainerName: p.trainerName,
+    trainerAvatarUrl: p.trainerAvatarUrl,
+    trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
+    category: (p.category as ProgramCategory) || 'Training',
+    averageRating: p.averageRating,
+    totalReviews: p.totalReviews,
+    totalPurchases: p.totalPurchases,
+  }
+}
+
+function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
+  return {
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    price: p.price,
+    standardPrice: p.standardPrice,
+    proPrice: p.proPrice,
+    maxStandardSpots: p.maxStandardSpots,
+    maxProSpots: p.maxProSpots,
+    standardSpotsRemaining: p.standardSpotsRemaining,
+    proSpotsRemaining: p.proSpotsRemaining,
+    code: p.code,
+    coverImageUrl: p.coverImageUrl,
+    createdAt: p.createdAt,
+    trainerId: p.trainerId,
+    trainerName: p.trainerName,
+    trainerAvatarUrl: p.trainerAvatarUrl,
+    trainerSlug: p.trainerSlug,
+    trainerRole: p.trainerRole,
+    category: (p.category as ProgramCategory) || 'Diet',
+    averageRating: 0,
+    totalReviews: 0,
+    totalPurchases: 0,
+  }
+}
+
+export default function ProgramDetailPage({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const { id } = params
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const t = useTranslations('userPrograms')
+  const tc = useTranslations('common')
+
+  const [program, setProgram] = useState<UnifiedPublicProgram | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [purchasing, setPurchasing] = useState(false)
+  const [purchaseError, setPurchaseError] = useState<string | null>(null)
+
+  const loadProgram = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const category = searchParams.get('category')
+
+      // Try training program first (has a direct by-id endpoint)
+      if (category !== 'Diet') {
+        const trainingProg = await programsApi.getProgramById(id)
+        if (trainingProg) {
+          setProgram(fromTraining(trainingProg))
+          return
+        }
+      }
+
+      // Fallback: search in meal programs
+      const mealRes = await mealProgramsApi.getAllPublic(1, 100)
+      const found = mealRes.items.find((p) => p.id === id)
+      if (found) {
+        setProgram(fromMeal(found))
+        return
+      }
+
+      // If category wasn't Diet, also try training (in case getProgramById returned null for other reasons)
+      if (category === 'Diet') {
+        const trainingProg = await programsApi.getProgramById(id)
+        if (trainingProg) {
+          setProgram(fromTraining(trainingProg))
+          return
+        }
+      }
+
+      setError('Program not found')
+    } catch (err) {
+      console.error('Failed to fetch program:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load program')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [id, searchParams])
+
+  useEffect(() => {
+    loadProgram()
+  }, [loadProgram])
+
+  const programType = program?.category === 'Diet' ? ('meal' as const) : ('training' as const)
+
+  const handlePurchase = async (tier: string) => {
+    if (!program) return
+    setPurchasing(true)
+    setPurchaseError(null)
+    try {
+      await purchasesApi.purchase({
+        programId: program.id,
+        programType,
+        tier,
+      })
+      router.push('/user/journey')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Purchase failed'
+      setPurchaseError(message)
+    } finally {
+      setPurchasing(false)
+    }
+  }
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return tc('free')
+    return `$${price.toFixed(2)}`
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+      </div>
+    )
+  }
+
+  if (error || !program) {
+    return (
+      <div className="space-y-4 pb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-sm font-medium">{tc('back')}</span>
+        </button>
+        <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
+          <button
+            onClick={() => router.push('/user/programs')}
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+          >
+            {tc('back')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4 pb-6">
+      {/* Back button */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="text-sm font-medium">{tc('back')}</span>
+      </button>
+
+      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+        {/* Cover Image */}
+        <div className="relative">
+          {program.coverImageUrl ? (
+            <img
+              src={getMediaUrl(program.coverImageUrl) || ''}
+              alt={program.title}
+              className="w-full h-56 sm:h-72 object-cover"
+            />
+          ) : (
+            <div className="w-full h-56 sm:h-72 bg-[#0A0A0A] flex items-center justify-center">
+              {program.category === 'Training' ? (
+                <Dumbbell className="w-16 h-16 text-gray-600" />
+              ) : program.category === 'Diet' ? (
+                <Apple className="w-16 h-16 text-gray-600" />
+              ) : (
+                <MessageSquare className="w-16 h-16 text-gray-600" />
+              )}
+            </div>
+          )}
+          <div className="absolute top-3 left-3 flex gap-2">
+            <span
+              className={`px-2 py-1 text-xs font-bold rounded text-white ${
+                program.category === 'Training'
+                  ? 'bg-blue-600'
+                  : program.category === 'Diet'
+                  ? 'bg-green-600'
+                  : 'bg-violet-600'
+              }`}
+            >
+              {program.category === 'Training'
+                ? t('training')
+                : program.category === 'Diet'
+                ? t('nutrition')
+                : t('consultation')}
+            </span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-2xl font-bold text-white">{program.title}</h1>
+            <div className="flex flex-col items-end flex-shrink-0">
+              {(() => {
+                const availablePrices: number[] = []
+                if (program.price > 0) availablePrices.push(program.price)
+                if (program.standardPrice != null && program.standardPrice > 0)
+                  availablePrices.push(program.standardPrice)
+                if (program.proPrice != null && program.proPrice > 0)
+                  availablePrices.push(program.proPrice)
+
+                if (availablePrices.length === 0) {
+                  return <span className="text-2xl font-bold text-[#3B82F6]">$0.00</span>
+                }
+
+                const minPrice = Math.min(...availablePrices)
+                const hasMultiple = availablePrices.length > 1
+                return (
+                  <span className="text-2xl font-bold text-[#3B82F6]">
+                    {hasMultiple && (
+                      <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
+                    )}
+                    {`$${minPrice.toFixed(2)}`}
+                  </span>
+                )
+              })()}
+            </div>
+          </div>
+
+          {/* Trainer */}
+          <div
+            className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg cursor-pointer hover:bg-[#141414] transition-colors"
+            onClick={() => router.push(`/user/profile/${program.trainerId}`)}
+          >
+            {program.trainerAvatarUrl ? (
+              <img
+                src={getMediaUrl(program.trainerAvatarUrl) || ''}
+                alt={program.trainerName}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{
+                  background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})`,
+                }}
+              >
+                <span className="text-white font-bold">{program.trainerName.charAt(0)}</span>
+              </div>
+            )}
+            <div>
+              <p className="text-white font-medium">{program.trainerName}</p>
+              <p className="text-xs text-gray-400">
+                {program.trainerRole?.toLowerCase() === 'nutritionist' ||
+                program.trainerRole === '2'
+                  ? t('viewNutritionistProfile')
+                  : t('viewTrainerProfile')}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+              <span className="text-white font-medium">
+                {(program.averageRating ?? 0) > 0
+                  ? (program.averageRating ?? 0).toFixed(1)
+                  : '-'}
+              </span>
+              <span className="text-gray-500">({program.totalReviews ?? 0})</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-400">
+              <Users className="w-5 h-5" />
+              <span>
+                {program.totalPurchases ?? 0} {tc('purchases')}
+              </span>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-400 mb-2">{t('aboutProgram')}</h3>
+            <p className="text-white leading-relaxed">{program.description}</p>
+          </div>
+
+          {/* Purchase Buttons */}
+          <div className="space-y-3">
+            {purchaseError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
+                {purchaseError}
+              </div>
+            )}
+
+            {/* Basic Tier */}
+            {program.price > 0 && (
+              <div>
+                <button
+                  disabled={purchasing}
+                  className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  onClick={() => handlePurchase('Basic')}
+                >
+                  {purchasing ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="w-5 h-5" />
+                  )}
+                  {`${t('basicTier')} \u2014 ${formatPrice(program.price)}`}
+                </button>
+                <p className="text-xs text-gray-500 mt-1 text-center">{t('basicTierDesc')}</p>
+              </div>
+            )}
+
+            {/* Standard Tier */}
+            {program.standardPrice != null &&
+              program.standardPrice > 0 &&
+              (() => {
+                const soldOut =
+                  program.maxStandardSpots != null &&
+                  program.maxStandardSpots > 0 &&
+                  (program.standardSpotsRemaining ?? 0) <= 0
+                return (
+                  <div>
+                    <button
+                      disabled={soldOut || purchasing}
+                      className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                        soldOut
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90 disabled:opacity-50'
+                      }`}
+                      onClick={() => !soldOut && handlePurchase('Standard')}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {soldOut
+                        ? t('soldOut')
+                        : `${t('standardTier')} — ${formatPrice(program.standardPrice!)}`}
+                      {!soldOut &&
+                        program.maxStandardSpots != null &&
+                        program.maxStandardSpots > 0 && (
+                          <span className="text-xs opacity-75">
+                            ({program.standardSpotsRemaining} {t('spotsLeft')})
+                          </span>
+                        )}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1 text-center">
+                      {t('standardTierDesc')}
+                    </p>
+                  </div>
+                )
+              })()}
+
+            {/* Pro Tier */}
+            {program.proPrice != null &&
+              program.proPrice > 0 &&
+              (() => {
+                const soldOut =
+                  program.maxProSpots != null &&
+                  program.maxProSpots > 0 &&
+                  (program.proSpotsRemaining ?? 0) <= 0
+                return (
+                  <div>
+                    <button
+                      disabled={soldOut || purchasing}
+                      className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
+                        soldOut
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90 disabled:opacity-50'
+                      }`}
+                      onClick={() => !soldOut && handlePurchase('Pro')}
+                    >
+                      <ShoppingCart className="w-5 h-5" />
+                      {soldOut
+                        ? t('soldOut')
+                        : `${t('proTier')} — ${formatPrice(program.proPrice!)}`}
+                      {!soldOut &&
+                        program.maxProSpots != null &&
+                        program.maxProSpots > 0 && (
+                          <span className="text-xs opacity-75">
+                            ({program.proSpotsRemaining} {t('spotsLeft')})
+                          </span>
+                        )}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-1 text-center">{t('proTierDesc')}</p>
+                  </div>
+                )
+              })()}
+          </div>
+
+          <p className="text-center text-xs text-gray-500">
+            {t('programCode')}{' '}
+            <span className="text-gray-400 font-mono">{program.code}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
