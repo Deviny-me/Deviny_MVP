@@ -15,7 +15,7 @@ const HIDE_RIGHT_SIDEBAR = [
   '/trainer/profile', '/trainer/students', '/trainer/settings',
   '/trainer/messages', '/trainer/leaderboards', '/trainer/live',
   '/trainer/discovery', '/trainer/challenges', '/trainer/achievements',
-  '/trainer/experts',
+  '/trainer/experts', '/trainer/dashboard',
 ]
 
 export default function TrainerDashboardLayout({

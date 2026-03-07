@@ -622,7 +622,8 @@
     "tryDifferentSearch": "Fərqli axtarış sorğusu yoxlayın",
     "willAppear": "Proqramlarınıza qeydiyyatdan sonra tələbələriniz burada görünəcək",
     "student": "Tələbə",
-    "write": "Yaz"
+    "write": "Yaz",
+    "viewProfile": "Profilə bax"
   },
 
   "feed": {
@@ -1143,5 +1144,27 @@
     "progress": "İrəliləyiş",
     "reward": "Mükafat:",
     "done": "Tamamlandı"
+  },
+
+  "dashboard": {
+    "title": "İdarə Paneli",
+    "subtitle": "Tələbələriniz, proqramlarınız və satış performansınızın icmalı",
+    "totalStudents": "Ümumi Tələbələr",
+    "programsSold": "Satılan Proqramlar",
+    "totalPrograms": "Proqramlarım",
+    "monthlySales": "Aylıq Satışlar",
+    "tierDistribution": "Səviyyə Paylanması",
+    "monthlyStudents": "Ayda Yeni Tələbələr",
+    "programPerformance": "Proqram Performansı",
+    "recentStudents": "Son Tələbələr",
+    "program": "Proqram",
+    "type": "Növ",
+    "students": "Tələbələr",
+    "sales": "Satışlar",
+    "newStudents": "Yeni Tələbələr",
+    "noSalesYet": "Hələ satış məlumatı yoxdur. Satışlarınız burada görünəcək.",
+    "noStudentsYet": "Hələ tələbə yoxdur. Proqramlarınızı aldıqdan sonra burada görünəcəklər.",
+    "noProgramsYet": "Hələ proqram yoxdur. Başlamaq üçün ilk proqramınızı yaradın.",
+    "retry": "Yenidən Cəhd Edin"
   }
 }

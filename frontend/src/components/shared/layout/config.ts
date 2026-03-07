@@ -1,5 +1,6 @@
 import {
   Award,
+  BarChart3,
   Calendar,
   Home,
   Compass,
@@ -37,6 +38,7 @@ export const trainerConfig: LayoutConfig = {
     {
       title: 'Training',
       links: [
+        { icon: BarChart3, label: 'Dashboard', path: '/trainer/dashboard' },
         { icon: Layers, label: 'My Programs', path: '/trainer/programs' },
         { icon: Users, label: 'Students', path: '/trainer/students' },
         { icon: Radio, label: 'Live Workouts', path: '/trainer/live' },
@@ -123,6 +125,7 @@ export const nutritionistConfig: LayoutConfig = {
     {
       title: 'Nutrition',
       links: [
+        { icon: BarChart3, label: 'Dashboard', path: '/nutritionist/dashboard' },
         { icon: Apple, label: 'Meal Programs', path: '/nutritionist/programs' },
         { icon: Users, label: 'Students', path: '/nutritionist/clients' },
         { icon: Radio, label: 'Live', path: '/nutritionist/live' },
