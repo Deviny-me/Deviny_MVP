@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
   Users,
@@ -33,9 +34,14 @@ interface StudentsClientsContentProps {
 }
 
 export function StudentsClientsContent({ fetchData }: StudentsClientsContentProps) {
+  const router = useRouter()
+  const pathname = usePathname()
   const accent = useAccentColors()
   const t = useTranslations('students')
   const tc = useTranslations('common')
+
+  // Derive basePath from current route: /trainer, /nutritionist, or /user
+  const basePath = pathname?.split('/').slice(0, 2).join('/') || '/user'
   const [students, setStudents] = useState<ClientOrStudent[]>([])
   const [filteredStudents, setFilteredStudents] = useState<ClientOrStudent[]>([])
   const [loading, setLoading] = useState(true)
@@ -165,7 +171,10 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
               className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4 hover:border-white/10 transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => router.push(`${basePath}/profile/${student.id}`)}
+                >
                   {student.avatarUrl ? (
                     <img
                       src={getMediaUrl(student.avatarUrl) || ''}
@@ -178,11 +187,15 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
                     </div>
                   )}
                   <div>
-                    <h3 className="font-semibold text-white">{student.name}</h3>
+                    <h3 className="font-semibold text-white hover:underline">{student.name}</h3>
                     <p className="text-sm text-gray-400">{t('student')}</p>
                   </div>
                 </div>
-                <button className="p-1.5 hover:bg-white/5 rounded-lg transition-colors">
+                <button
+                  onClick={() => router.push(`${basePath}/profile/${student.id}`)}
+                  className="p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+                  title={t('viewProfile')}
+                >
                   <MoreVertical className="w-5 h-5 text-gray-400" />
                 </button>
               </div>
@@ -201,12 +214,19 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
               </div>
 
               <div className="flex items-center gap-2">
-                <button className={`flex-1 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}>
+                <button
+                  onClick={() => router.push(`${basePath}/messages?userId=${student.id}`)}
+                  className={`flex-1 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
+                >
                   <MessageCircle className="w-4 h-4" />
                   {t('write')}
                 </button>
-                <button className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors">
-                  <UserX className="w-4 h-4 text-gray-400" />
+                <button
+                  onClick={() => router.push(`${basePath}/profile/${student.id}`)}
+                  className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                  title={t('viewProfile')}
+                >
+                  <Users className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
             </div>

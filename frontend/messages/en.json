@@ -622,7 +622,8 @@
     "tryDifferentSearch": "Try a different search query",
     "willAppear": "Your students will appear here after signing up for your programs",
     "student": "Student",
-    "write": "Message"
+    "write": "Message",
+    "viewProfile": "View Profile"
   },
 
   "feed": {
@@ -1143,5 +1144,27 @@
     "progress": "Progress",
     "reward": "Reward:",
     "done": "Done"
+  },
+
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your students, programs, and sales performance",
+    "totalStudents": "Total Students",
+    "programsSold": "Programs Sold",
+    "totalPrograms": "My Programs",
+    "monthlySales": "Monthly Sales",
+    "tierDistribution": "Tier Distribution",
+    "monthlyStudents": "New Students per Month",
+    "programPerformance": "Program Performance",
+    "recentStudents": "Recent Students",
+    "program": "Program",
+    "type": "Type",
+    "students": "Students",
+    "sales": "Sales",
+    "newStudents": "New Students",
+    "noSalesYet": "No sales data yet. Your sales will appear here.",
+    "noStudentsYet": "No students yet. They will appear after purchasing your programs.",
+    "noProgramsYet": "No programs yet. Create your first program to get started.",
+    "retry": "Try Again"
   }
 }

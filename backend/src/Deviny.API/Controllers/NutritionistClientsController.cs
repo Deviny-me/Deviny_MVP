@@ -29,9 +29,16 @@ public class NutritionistClientsController : BaseApiController
                 return Forbid();
             }
 
-            var students = await _context.Users
+            var students = await _context.ProgramPurchases
                 .AsNoTracking()
-                .Where(u => u.Role == UserRole.Student && u.IsActive)
+                .Where(pp =>
+                    (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed) &&
+                    pp.MealProgram != null &&
+                    pp.MealProgram.TrainerId == userId &&
+                    !pp.MealProgram.IsDeleted)
+                .Select(pp => pp.User)
+                .Distinct()
+                .Where(u => u.IsActive)
                 .Select(u => new StudentDto
                 {
                     Id = u.Id,

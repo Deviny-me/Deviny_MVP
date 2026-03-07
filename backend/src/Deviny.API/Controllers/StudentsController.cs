@@ -32,10 +32,12 @@ public class StudentsController : BaseApiController
 
             var students = await _context.ProgramPurchases
                 .AsNoTracking()
-                .Where(pp => pp.TrainingProgram != null &&
-                             pp.TrainingProgram.TrainerId == userId &&
-                             !pp.TrainingProgram.IsDeleted &&
-                             (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed))
+                .Where(pp =>
+                    (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed) &&
+                    (
+                        (pp.TrainingProgram != null && pp.TrainingProgram.TrainerId == userId && !pp.TrainingProgram.IsDeleted) ||
+                        (pp.MealProgram != null && pp.MealProgram.TrainerId == userId && !pp.MealProgram.IsDeleted)
+                    ))
                 .Select(pp => pp.User)
                 .Distinct()
                 .Where(u => u.IsActive)
