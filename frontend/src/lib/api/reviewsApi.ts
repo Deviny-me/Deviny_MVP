@@ -1,4 +1,4 @@
-import { ReviewDto, CreateReviewRequest } from '@/types/program';
+import { ReviewDto, ExpertReviewDto, CreateReviewRequest } from '@/types/program';
 import { API_URL, fetchWithAuth } from '@/lib/config';
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -19,6 +19,12 @@ export const reviewsApi = {
       `${API_URL}/reviews?programId=${programId}&programType=${programType}`
     );
     return handleResponse<ReviewDto[]>(response);
+  },
+
+  /** Get all reviews for an expert's programs */
+  getExpertReviews: async (expertId: string): Promise<ExpertReviewDto[]> => {
+    const response = await fetchWithAuth(`${API_URL}/reviews/expert/${expertId}`);
+    return handleResponse<ExpertReviewDto[]>(response);
   },
 
   /** Create a review for a completed program */

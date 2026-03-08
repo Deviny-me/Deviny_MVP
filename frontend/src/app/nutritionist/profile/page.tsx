@@ -56,6 +56,7 @@ import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
+import { ProfileReviewsTab } from '@/components/shared/ProfileReviewsTab'
 
 // ─── Grid cell with optimistic likes ───
 function NutritionistGridCell({
@@ -299,7 +300,7 @@ export default function NutritionistProfilePage() {
   const postsObserverRef = useRef<HTMLDivElement>(null)
   const postsAbortRef = useRef<AbortController | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements' | 'reviews'>('posts')
   
   // Edit modals
   const [showAboutModal, setShowAboutModal] = useState(false)
@@ -1007,7 +1008,7 @@ export default function NutritionistProfilePage() {
 
         {/* Tabs */}
         <div className="flex items-center gap-1 border-b border-white/10 mb-6">
-          {(['posts', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
+          {(['posts', 'reviews', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1017,7 +1018,7 @@ export default function NutritionistProfilePage() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab === 'posts' ? t('posts') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
+              {tab === 'posts' ? t('posts') : tab === 'reviews' ? t('reviews') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="nutritionistProfileTab"
@@ -1244,6 +1245,14 @@ export default function NutritionistProfilePage() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <ProfileReviewsTab
+            expertId={trainer.userId}
+            accentText={accent.text}
+            accentGradient={accent.gradientBg10}
+          />
         )}
 
         {/* About Modal */}

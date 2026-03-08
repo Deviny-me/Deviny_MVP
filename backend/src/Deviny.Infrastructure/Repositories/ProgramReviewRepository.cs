@@ -35,6 +35,20 @@ public class ProgramReviewRepository : IProgramReviewRepository
             .ToListAsync();
     }
 
+    public async Task<List<ProgramReview>> GetByExpertAsync(Guid expertId)
+    {
+        return await _context.ProgramReviews
+            .AsNoTracking()
+            .Include(r => r.User)
+            .Include(r => r.TrainingProgram)
+            .Include(r => r.MealProgram)
+            .Where(r =>
+                (r.TrainingProgram != null && r.TrainingProgram.TrainerId == expertId) ||
+                (r.MealProgram != null && r.MealProgram.TrainerId == expertId))
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<bool> ExistsAsync(Guid userId, Guid programId, ProgramType programType)
     {
         return await _context.ProgramReviews

@@ -45,6 +45,29 @@ public class ReviewsController : BaseApiController
     }
 
     /// <summary>
+    /// Get all reviews for an expert's programs (public)
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("expert/{expertId:guid}")]
+    public async Task<ActionResult<List<ReviewDto>>> GetExpertReviews(Guid expertId)
+    {
+        try
+        {
+            var query = new GetExpertReviewsQuery(expertId);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting reviews for expert {ExpertId}", expertId);
+            return StatusCode(500, CreateProblemDetails(
+                "Fetch Failed",
+                "An error occurred while fetching reviews.",
+                500));
+        }
+    }
+
+    /// <summary>
     /// Create a review for a completed program
     /// </summary>
     [Authorize]

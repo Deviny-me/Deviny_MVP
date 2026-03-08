@@ -170,6 +170,12 @@ export interface ReviewDto {
   createdAt: string;
 }
 
+export interface ExpertReviewDto extends ReviewDto {
+  programId: string;
+  programTitle: string;
+  programType: string;
+}
+
 export interface CreateReviewRequest {
   programId: string;
   programType: ProgramType;

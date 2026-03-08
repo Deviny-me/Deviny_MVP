@@ -10,3 +10,10 @@ public class ReviewDto
     public string? Comment { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class ExpertReviewDto : ReviewDto
+{
+    public Guid ProgramId { get; set; }
+    public string ProgramTitle { get; set; } = string.Empty;
+    public string ProgramType { get; set; } = string.Empty;
+}
