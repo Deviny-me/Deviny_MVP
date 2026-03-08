@@ -36,6 +36,9 @@ public class PublicMealProgramDto
     public string Code { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> VideoUrls { get; set; } = new();
+    public double AverageRating { get; set; }
+    public int TotalReviews { get; set; }
+    public int TotalPurchases { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid TrainerId { get; set; }
     public string TrainerName { get; set; } = string.Empty;

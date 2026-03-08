@@ -73,8 +73,10 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                         ? _fileStorage.GetPublicUrl(mp.Trainer.AvatarUrl)
                         : "",
                     TrainerId = mp.TrainerId,
-                    AverageRating = 0,
-                    TotalReviews = 0
+                    AverageRating = mp.Reviews != null && mp.Reviews.Any()
+                        ? Math.Round(mp.Reviews.Average(r => r.Rating), 1)
+                        : 0,
+                    TotalReviews = mp.Reviews?.Count ?? 0
                 };
             }
 

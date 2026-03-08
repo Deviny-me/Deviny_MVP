@@ -1101,7 +1101,13 @@
     "soldOut": "Sold Out",
     "basicTierDesc": "Access to the program without direct contact with the coach",
     "standardTierDesc": "Access to the program + chat with the coach",
-    "proTierDesc": "Full access — program + chat + audio/video calls with the coach"
+    "proTierDesc": "Full access — program + chat + audio/video calls with the coach",
+    "reviews": "Reviews",
+    "writeReview": "Write a review",
+    "reviewPlaceholder": "Share your experience with this program... (optional)",
+    "submitReview": "Submit Review",
+    "reviewSuccess": "Your review has been submitted successfully!",
+    "noReviews": "No reviews yet. Be the first to review!"
   },
 
   "userRightSidebar": {

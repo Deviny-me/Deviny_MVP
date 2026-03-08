@@ -50,6 +50,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IMealProgramRepository, MealProgramRepository>();
         services.AddScoped<IProgramPurchaseRepository, ProgramPurchaseRepository>();
+        services.AddScoped<IProgramReviewRepository, ProgramReviewRepository>();
         
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();

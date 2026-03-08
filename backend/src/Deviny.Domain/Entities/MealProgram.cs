@@ -24,4 +24,5 @@ public class MealProgram : BaseEntity
     // Navigation properties
     public User Trainer { get; set; } = null!;
     public ICollection<ProgramPurchase> Purchases { get; set; } = new List<ProgramPurchase>();
+    public ICollection<ProgramReview> Reviews { get; set; } = new List<ProgramReview>();
 }

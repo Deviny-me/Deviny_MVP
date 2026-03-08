@@ -52,6 +52,8 @@ public class MealProgramRepository : IMealProgramRepository
         var items = await query
             .Include(p => p.Trainer)
                 .ThenInclude(u => u.TrainerProfile)
+            .Include(p => p.Reviews)
+            .Include(p => p.Purchases)
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
