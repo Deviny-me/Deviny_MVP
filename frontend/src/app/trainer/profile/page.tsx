@@ -45,6 +45,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
+import { ProfileReviewsTab } from '@/components/shared/ProfileReviewsTab'
 
 // ─── Grid cell with optimistic likes ───
 function TrainerGridCell({
@@ -288,7 +289,7 @@ export default function ProfilePage() {
   const postsObserverRef = useRef<HTMLDivElement>(null)
   const postsAbortRef = useRef<AbortController | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements'>('posts')
+  const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements' | 'reviews'>('posts')
   
   // Edit modals
   const [showAboutModal, setShowAboutModal] = useState(false)
@@ -1016,7 +1017,7 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <div className="flex items-center gap-1 border-b border-white/10 mb-6">
-          {(['posts', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
+          {(['posts', 'reviews', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1026,7 +1027,7 @@ export default function ProfilePage() {
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              {tab === 'posts' ? t('posts') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
+              {tab === 'posts' ? t('posts') : tab === 'reviews' ? t('reviews') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="profileTab"
@@ -1253,6 +1254,14 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <ProfileReviewsTab
+            expertId={trainer.userId}
+            accentText="text-[#FF6B35]"
+            accentGradient="from-[#FF6B35]/10 to-[#FF0844]/10"
+          />
         )}
 
         {/* About Modal */}

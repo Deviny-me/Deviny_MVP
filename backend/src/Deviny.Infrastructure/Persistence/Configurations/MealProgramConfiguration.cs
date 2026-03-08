@@ -68,6 +68,11 @@ public class MealProgramConfiguration : IEntityTypeConfiguration<MealProgram>
             .HasForeignKey(pu => pu.MealProgramId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasMany(p => p.Reviews)
+            .WithOne(r => r.MealProgram)
+            .HasForeignKey(r => r.MealProgramId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasQueryFilter(p => !p.IsDeleted);
     }
 }

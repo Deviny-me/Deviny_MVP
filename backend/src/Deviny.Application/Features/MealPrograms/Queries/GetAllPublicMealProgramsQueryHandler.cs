@@ -34,8 +34,12 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
             MaxStandardSpots = p.MaxStandardSpots,
             MaxProSpots = p.MaxProSpots,
             Category = p.Category.ToString(),
-            StandardSpotsRemaining = 0,
-            ProSpotsRemaining = 0,
+            StandardSpotsRemaining = (p.MaxStandardSpots ?? 0) > 0
+                ? Math.Max(0, p.MaxStandardSpots!.Value - p.Purchases.Count(pu => pu.Tier == Deviny.Domain.Enums.ProgramTier.Standard && pu.Status == Deviny.Domain.Enums.ProgramPurchaseStatus.Active))
+                : 0,
+            ProSpotsRemaining = (p.MaxProSpots ?? 0) > 0
+                ? Math.Max(0, p.MaxProSpots!.Value - p.Purchases.Count(pu => pu.Tier == Deviny.Domain.Enums.ProgramTier.Pro && pu.Status == Deviny.Domain.Enums.ProgramPurchaseStatus.Active))
+                : 0,
             Code = p.Code,
             CoverImageUrl = string.IsNullOrEmpty(p.CoverImagePath)
                 ? ""
@@ -51,7 +55,10 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
                 ? ""
                 : _fileStorage.GetPublicUrl(p.Trainer.AvatarUrl),
             TrainerSlug = p.Trainer?.TrainerProfile?.Slug ?? "",
-            TrainerRole = p.Trainer?.Role.ToString() ?? ""
+            TrainerRole = p.Trainer?.Role.ToString() ?? "",
+            AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => (double)r.Rating), 1) : 0,
+            TotalReviews = p.Reviews.Count,
+            TotalPurchases = p.Purchases.Count
         }).ToList();
 
         return new PagedResponse<PublicMealProgramDto>(dtos, totalCount, request.Page, request.PageSize);

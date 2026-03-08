@@ -1,4 +1,5 @@
 using Deviny.Domain.Entities;
+using Deviny.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,21 +11,37 @@ public class ProgramReviewConfiguration : IEntityTypeConfiguration<ProgramReview
     {
         builder.HasKey(pr => pr.Id);
 
-        builder.HasIndex(pr => new { pr.ProgramId, pr.UserId })
-            .IsUnique();
+        // One review per user per training program
+        builder.HasIndex(pr => new { pr.TrainingProgramId, pr.UserId })
+            .IsUnique()
+            .HasFilter("\"TrainingProgramId\" IS NOT NULL");
+
+        // One review per user per meal program
+        builder.HasIndex(pr => new { pr.MealProgramId, pr.UserId })
+            .IsUnique()
+            .HasFilter("\"MealProgramId\" IS NOT NULL");
 
         builder.Property(pr => pr.Rating)
             .IsRequired();
 
-        // Add check constraint for rating range 1-5
         builder.ToTable(t => t.HasCheckConstraint("CK_ProgramReview_Rating", "\"Rating\" >= 1 AND \"Rating\" <= 5"));
 
         builder.Property(pr => pr.Comment)
             .HasMaxLength(1000);
 
-        builder.HasOne(pr => pr.Program)
+        builder.Property(pr => pr.ProgramType)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.HasOne(pr => pr.TrainingProgram)
             .WithMany(p => p.Reviews)
-            .HasForeignKey(pr => pr.ProgramId)
+            .HasForeignKey(pr => pr.TrainingProgramId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(pr => pr.MealProgram)
+            .WithMany(p => p.Reviews)
+            .HasForeignKey(pr => pr.MealProgramId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(pr => pr.User)

@@ -97,9 +97,9 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     trainerSlug: p.trainerSlug,
     trainerRole: p.trainerRole,
     category: (p.category as ProgramCategory) || 'Diet',
-    averageRating: 0,
-    totalReviews: 0,
-    totalPurchases: 0,
+    averageRating: p.averageRating ?? 0,
+    totalReviews: p.totalReviews ?? 0,
+    totalPurchases: p.totalPurchases ?? 0,
   }
 }
 

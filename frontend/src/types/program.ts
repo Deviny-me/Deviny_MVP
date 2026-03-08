@@ -112,6 +112,9 @@ export interface PublicMealProgramDto {
   videoUrls: string[];
   standardSpotsRemaining?: number;
   proSpotsRemaining?: number;
+  averageRating: number;
+  totalReviews: number;
+  totalPurchases: number;
   createdAt: string;
   trainerId: string;
   trainerName: string;
@@ -155,3 +158,27 @@ export type ProgramType = 'training' | 'meal';
 
 // Semantic program category
 export type ProgramCategory = 'Training' | 'Diet' | 'Consultation';
+
+// Reviews
+export interface ReviewDto {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface ExpertReviewDto extends ReviewDto {
+  programId: string;
+  programTitle: string;
+  programType: string;
+}
+
+export interface CreateReviewRequest {
+  programId: string;
+  programType: ProgramType;
+  rating: number;
+  comment?: string;
+}

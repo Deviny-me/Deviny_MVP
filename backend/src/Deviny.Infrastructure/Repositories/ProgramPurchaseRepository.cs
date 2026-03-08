@@ -32,6 +32,8 @@ public class ProgramPurchaseRepository : IProgramPurchaseRepository
                 .ThenInclude(tp => tp!.Reviews)
             .Include(pp => pp.MealProgram)
                 .ThenInclude(mp => mp!.Trainer)
+            .Include(pp => pp.MealProgram)
+                .ThenInclude(mp => mp!.Reviews)
             .Where(pp => pp.UserId == userId && pp.Status == ProgramPurchaseStatus.Active)
             .OrderByDescending(pp => pp.PurchasedAt)
             .ToListAsync();
@@ -59,6 +61,19 @@ public class ProgramPurchaseRepository : IProgramPurchaseRepository
                 pp.ProgramType == programType &&
                 pp.Tier == tier &&
                 pp.Status == ProgramPurchaseStatus.Active &&
+                (programType == ProgramType.Training
+                    ? pp.TrainingProgramId == programId
+                    : pp.MealProgramId == programId));
+    }
+
+    public async Task<bool> HasCompletedPurchaseAsync(Guid userId, Guid programId, ProgramType programType)
+    {
+        return await _context.ProgramPurchases
+            .AsNoTracking()
+            .AnyAsync(pp =>
+                pp.UserId == userId &&
+                pp.ProgramType == programType &&
+                pp.Status == ProgramPurchaseStatus.Completed &&
                 (programType == ProgramType.Training
                     ? pp.TrainingProgramId == programId
                     : pp.MealProgramId == programId));

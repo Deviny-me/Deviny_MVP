@@ -297,6 +297,10 @@
     "noSpecializations": "Нет специализаций",
     "noAchievements": "Пока нет достижений",
     "achievementsWillAppear": "Достижения появятся по мере вашей работы",
+    "noReviewsYet": "Отзывов пока нет",
+    "reviewsWillAppear": "Отзывы появятся, когда клиенты оценят ваши программы",
+    "reviewsTotal": "отзывов",
+    "acrossAllPrograms": "По всем программам",
     "primarySpecialty": "Основная специальность",
     "primarySpecialtyPlaceholder": "Например: Персональный тренер",
     "secondarySpecialty": "Дополнительная специальность",
@@ -554,6 +558,8 @@
     "commentPlaceholder": "Дополнительная информация",
     "saveChanges": "Сохранить изменения",
     "createEvent": "Создать событие",
+    "student": "Ученик",
+    "selectStudent": "-- Без ученика (личное) --",
     "days": {
       "mon": "Пн",
       "tue": "Вт",
@@ -1101,7 +1107,13 @@
     "soldOut": "Распродано",
     "basicTierDesc": "Доступ к программе без прямого контакта с тренером",
     "standardTierDesc": "Доступ к программе + чат с тренером",
-    "proTierDesc": "Полный доступ — программа + чат + аудио/видео звонки с тренером"
+    "proTierDesc": "Полный доступ — программа + чат + аудио/видео звонки с тренером",
+    "reviews": "Отзывы",
+    "writeReview": "Написать отзыв",
+    "reviewPlaceholder": "Поделитесь опытом использования программы... (необязательно)",
+    "submitReview": "Отправить отзыв",
+    "reviewSuccess": "Ваш отзыв успешно отправлен!",
+    "noReviews": "Пока нет отзывов. Будьте первым!"
   },
 
   "userRightSidebar": {

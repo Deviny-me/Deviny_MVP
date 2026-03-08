@@ -70,8 +70,8 @@ public class TrainingProgramConfiguration : IEntityTypeConfiguration<TrainingPro
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(p => p.Reviews)
-            .WithOne(r => r.Program)
-            .HasForeignKey(r => r.ProgramId)
+            .WithOne(r => r.TrainingProgram)
+            .HasForeignKey(r => r.TrainingProgramId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasQueryFilter(p => !p.IsDeleted);

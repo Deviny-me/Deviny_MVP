@@ -297,6 +297,10 @@
     "noSpecializations": "İxtisaslaşma yoxdur",
     "noAchievements": "Hələ nailiyyət yoxdur",
     "achievementsWillAppear": "İşlədiyiniz müddətdə nailiyyətlər görünəcək",
+    "noReviewsYet": "Hələ rəy yoxdur",
+    "reviewsWillAppear": "Müştərilər proqramlarınıza rəy verdikdə burada görünəcək",
+    "reviewsTotal": "rəy",
+    "acrossAllPrograms": "Bütün proqramlar üzrə",
     "primarySpecialty": "Əsas ixtisas",
     "primarySpecialtyPlaceholder": "Məsələn: Fərdi məşqçi",
     "secondarySpecialty": "Əlavə ixtisas",
@@ -554,6 +558,8 @@
     "commentPlaceholder": "Əlavə məlumat",
     "saveChanges": "Dəyişiklikləri saxla",
     "createEvent": "Tədbir yarat",
+    "student": "Tələbə",
+    "selectStudent": "-- Tələbəsiz (şəxsi) --",
     "days": {
       "mon": "Bazar ertəsi",
       "tue": "Çərşənbə axşamı",
@@ -1101,7 +1107,13 @@
     "soldOut": "Tükəndi",
     "basicTierDesc": "Məşqçi ilə birbaşa əlaqə olmadan proqrama giriş",
     "standardTierDesc": "Proqrama giriş + məşqçi ilə çat",
-    "proTierDesc": "Tam giriş — proqram + çat + məşqçi ilə audio/video zəng"
+    "proTierDesc": "Tam giriş — proqram + çat + məşqçi ilə audio/video zəng",
+    "reviews": "Rəylər",
+    "writeReview": "Rəy yazın",
+    "reviewPlaceholder": "Bu proqram haqqında təcrübənizi paylaşın... (isteğe bağlı)",
+    "submitReview": "Rəy göndər",
+    "reviewSuccess": "Rəyiniz uğurla göndərildi!",
+    "noReviews": "Hələ rəy yoxdur. İlk rəy yazan siz olun!"
   },
 
   "userRightSidebar": {
