@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FeedEngine.API/FeedEngine.API.csproj" />
+  <Project Path="FeedEngine.Domain/FeedEngine.Domain.csproj" />
+  <Project Path="FeedEngine.Infrastructure/FeedEngine.Infrastructure.csproj" />
+</Solution>
