@@ -558,6 +558,8 @@
     "commentPlaceholder": "Дополнительная информация",
     "saveChanges": "Сохранить изменения",
     "createEvent": "Создать событие",
+    "student": "Ученик",
+    "selectStudent": "-- Без ученика (личное) --",
     "days": {
       "mon": "Пн",
       "tue": "Вт",

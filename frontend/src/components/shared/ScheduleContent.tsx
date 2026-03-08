@@ -23,14 +23,21 @@ import { useAccentColors } from '@/lib/theme/useAccentColors'
 export interface ScheduleApiAdapter {
   getEvents(query?: GetEventsQuery): Promise<ScheduleEvent[]>
   getStats(weekStartISO: string): Promise<ScheduleStats>
-  createEvent(data: CreateScheduleEventRequest): Promise<ScheduleEvent>
-  updateEvent(id: string, data: CreateScheduleEventRequest): Promise<ScheduleEvent>
-  cancelEvent(id: string): Promise<void>
-  startCall(id: string): Promise<StartCallResponse>
+  createEvent?(data: CreateScheduleEventRequest): Promise<ScheduleEvent>
+  updateEvent?(id: string, data: CreateScheduleEventRequest): Promise<ScheduleEvent>
+  cancelEvent?(id: string): Promise<void>
+  startCall?(id: string): Promise<StartCallResponse>
+}
+
+interface StudentOption {
+  id: string
+  name: string
 }
 
 interface ScheduleContentProps {
   api: ScheduleApiAdapter
+  fetchStudents?: () => Promise<StudentOption[]>
+  readOnly?: boolean
 }
 
 // Simple toast helper
@@ -58,7 +65,7 @@ function getWeekDates(start: Date): Date[] {
   return dates
 }
 
-export function ScheduleContent({ api }: ScheduleContentProps) {
+export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleContentProps) {
   const accent = useAccentColors()
   const t = useTranslations('schedule')
   const tc = useTranslations('common')
@@ -79,6 +86,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [students, setStudents] = useState<StudentOption[]>([])
 
   // Form state
   const [title, setTitle] = useState('')
@@ -88,11 +96,18 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
   const [duration, setDuration] = useState('60')
   const [location, setLocation] = useState('')
   const [comment, setComment] = useState('')
+  const [studentId, setStudentId] = useState('')
 
   useEffect(() => {
     loadEvents()
     loadStats()
   }, [weekStart])
+
+  useEffect(() => {
+    if (fetchStudents) {
+      fetchStudents().then(setStudents).catch(() => setStudents([]))
+    }
+  }, [fetchStudents])
 
   const loadEvents = async () => {
     try {
@@ -130,6 +145,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
     setDuration('60')
     setLocation('')
     setComment('')
+    setStudentId('')
     setEditingEvent(null)
   }
 
@@ -150,6 +166,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
     setDuration(event.durationMinutes.toString())
     setLocation(event.location || '')
     setComment(event.comment || '')
+    setStudentId(event.studentId || '')
     setShowCreateModal(true)
   }
 
@@ -178,13 +195,14 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
         durationMinutes: parseInt(duration),
         location: location || undefined,
         comment: comment || undefined,
+        studentId: studentId || undefined,
       }
 
       if (editingEvent) {
-        await api.updateEvent(editingEvent.id, request)
+        await api.updateEvent!(editingEvent.id, request)
         toast.success(t('toasts.updated'))
       } else {
-        await api.createEvent(request)
+        await api.createEvent!(request)
         toast.success(t('toasts.created'))
       }
 
@@ -212,7 +230,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
 
     try {
       setDeleting(eventId)
-      await api.cancelEvent(eventId)
+      await api.cancelEvent!(eventId)
       toast.success(t('toasts.cancelled'))
       loadEvents()
       loadStats()
@@ -226,7 +244,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
 
   const handleStartCall = async (eventId: string) => {
     try {
-      const result = await api.startCall(eventId)
+      const result = await api.startCall!(eventId)
       window.open(result.callUrl, '_blank')
     } catch (error) {
       console.error('Failed to start call:', error)
@@ -276,13 +294,15 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
           <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
           <p className="text-gray-400">{t('description')}</p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
-        >
-          <Plus className="w-5 h-5" />
-          {t('addEvent')}
-        </button>
+        {!readOnly && (
+          <button
+            onClick={openCreateModal}
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
+          >
+            <Plus className="w-5 h-5" />
+            {t('addEvent')}
+          </button>
+        )}
       </div>
 
       {/* Calendar Week View */}
@@ -356,12 +376,14 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
           <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
             <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400">{t('noEvents')}</p>
-            <button
-              onClick={openCreateModal}
-              className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
-            >
-              {t('addEvent')}
-            </button>
+            {!readOnly && (
+              <button
+                onClick={openCreateModal}
+                className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
+              >
+                {t('addEvent')}
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
@@ -415,10 +437,17 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
                           <span>{event.studentName}</span>
                         </div>
                       )}
+                      {event.trainerName && readOnly && (
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          <span>{event.trainerName}</span>
+                        </div>
+                      )}
                     </div>
                     {event.comment && <p className="text-xs text-gray-500 mt-1">{event.comment}</p>}
                   </div>
 
+                  {!readOnly && (
                   <div className="flex items-center gap-2">
                     {event.type === 'Online' && (
                       <button
@@ -443,6 +472,7 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
                       )}
                     </button>
                   </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -520,6 +550,23 @@ export function ScheduleContent({ api }: ScheduleContentProps) {
                     ))}
                   </div>
                 </div>
+
+                {/* Student Selection */}
+                {students.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('student')}</label>
+                    <select
+                      value={studentId}
+                      onChange={(e) => setStudentId(e.target.value)}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                    >
+                      <option value="">{t('selectStudent')}</option>
+                      {students.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Date & Time */}
                 <div className="grid grid-cols-2 gap-4">

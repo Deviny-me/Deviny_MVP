@@ -558,6 +558,8 @@
     "commentPlaceholder": "Additional information",
     "saveChanges": "Save changes",
     "createEvent": "Create event",
+    "student": "Student",
+    "selectStudent": "-- No student (personal) --",
     "days": {
       "mon": "Mon",
       "tue": "Tue",

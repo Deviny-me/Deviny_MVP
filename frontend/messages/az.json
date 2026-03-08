@@ -558,6 +558,8 @@
     "commentPlaceholder": "Əlavə məlumat",
     "saveChanges": "Dəyişiklikləri saxla",
     "createEvent": "Tədbir yarat",
+    "student": "Tələbə",
+    "selectStudent": "-- Tələbəsiz (şəxsi) --",
     "days": {
       "mon": "Bazar ertəsi",
       "tue": "Çərşənbə axşamı",
