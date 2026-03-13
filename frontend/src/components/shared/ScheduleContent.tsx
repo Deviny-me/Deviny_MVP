@@ -14,6 +14,7 @@ import {
   MapPin,
   Edit,
   Trash2,
+  Eye,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
@@ -38,6 +39,7 @@ interface ScheduleContentProps {
   api: ScheduleApiAdapter
   fetchStudents?: () => Promise<StudentOption[]>
   readOnly?: boolean
+  currentUserId?: string
 }
 
 // Simple toast helper
@@ -65,7 +67,7 @@ function getWeekDates(start: Date): Date[] {
   return dates
 }
 
-export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleContentProps) {
+export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }: ScheduleContentProps) {
   const accent = useAccentColors()
   const t = useTranslations('schedule')
   const tc = useTranslations('common')
@@ -87,6 +89,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleConten
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [students, setStudents] = useState<StudentOption[]>([])
+  const [detailEvent, setDetailEvent] = useState<ScheduleEvent | null>(null)
 
   // Form state
   const [title, setTitle] = useState('')
@@ -393,7 +396,8 @@ export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleConten
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-4 ${accent.hoverBorder} transition-all`}
+                onClick={() => setDetailEvent(event)}
+                className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-4 ${accent.hoverBorder} transition-all cursor-pointer`}
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -447,8 +451,8 @@ export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleConten
                     {event.comment && <p className="text-xs text-gray-500 mt-1">{event.comment}</p>}
                   </div>
 
-                  {!readOnly && (
-                  <div className="flex items-center gap-2">
+                  {!readOnly && (!currentUserId || event.trainerId === currentUserId) && (
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                     {event.type === 'Online' && (
                       <button
                         onClick={() => handleStartCall(event.id)}
@@ -642,6 +646,140 @@ export function ScheduleContent({ api, fetchStudents, readOnly }: ScheduleConten
                   {editingEvent ? t('saveChanges') : t('createEvent')}
                 </button>
               </form>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Event Detail Modal */}
+      {detailEvent && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">{t('eventDetails')}</h2>
+                <button onClick={() => setDetailEvent(null)} className="text-gray-400 hover:text-white">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Title & badges */}
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-2">{detailEvent.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded text-xs font-bold ${accent.bgMuted20} ${accent.text}`}>
+                      {eventTypes.find((et) => et.value === detailEvent.type)?.label}
+                    </span>
+                    <span
+                      className={`px-2.5 py-1 rounded text-xs font-bold ${
+                        detailEvent.status === 'Confirmed'
+                          ? 'bg-green-500/20 text-green-400'
+                          : detailEvent.status === 'Completed'
+                          ? 'bg-blue-500/20 text-blue-400'
+                          : 'bg-amber-500/20 text-amber-400'
+                      }`}
+                    >
+                      {detailEvent.status === 'Confirmed' ? t('confirmed') : detailEvent.status === 'Completed' ? t('completed') : t('pending')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Date & Time */}
+                <div className="flex items-center gap-3 text-gray-300">
+                  <Calendar className={`w-5 h-5 ${accent.text}`} />
+                  <span>
+                    {new Date(detailEvent.startAt).toLocaleDateString('ru-RU', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-300">
+                  <Clock className={`w-5 h-5 ${accent.text}`} />
+                  <span>
+                    {formatTime(detailEvent.startAt)} • {detailEvent.durationMinutes} {tc('min')}
+                  </span>
+                </div>
+
+                {/* Location */}
+                {detailEvent.location && (
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <MapPin className={`w-5 h-5 ${accent.text}`} />
+                    <span>{detailEvent.location}</span>
+                  </div>
+                )}
+
+                {/* Trainer */}
+                {detailEvent.trainerName && (
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <Users className={`w-5 h-5 ${accent.text}`} />
+                    <span>{t('trainerLabel')}: {detailEvent.trainerName}</span>
+                  </div>
+                )}
+
+                {/* Student */}
+                {detailEvent.studentName && (
+                  <div className="flex items-center gap-3 text-gray-300">
+                    <Users className={`w-5 h-5 ${accent.text}`} />
+                    <span>{t('student')}: {detailEvent.studentName}</span>
+                  </div>
+                )}
+
+                {/* Comment */}
+                {detailEvent.comment && (
+                  <div className="bg-[#0A0A0A] rounded-lg p-4 border border-white/5">
+                    <p className="text-sm text-gray-400 mb-1">{t('comment')}</p>
+                    <p className="text-gray-200">{detailEvent.comment}</p>
+                  </div>
+                )}
+
+                {/* Created at */}
+                <p className="text-xs text-gray-500">
+                  {t('createdAt')}: {new Date(detailEvent.createdAt).toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+
+              {/* Actions */}
+              {!readOnly && (!currentUserId || detailEvent.trainerId === currentUserId) && (
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
+                  {detailEvent.type === 'Online' && (
+                    <button
+                      onClick={() => { handleStartCall(detailEvent.id); setDetailEvent(null); }}
+                      className={`flex-1 py-2.5 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2`}
+                    >
+                      <Video className="w-4 h-4" />
+                      {t('startCall')}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { openEditModal(detailEvent); setDetailEvent(null); }}
+                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    {t('editEvent')}
+                  </button>
+                  <button
+                    onClick={() => { handleDelete(detailEvent.id); setDetailEvent(null); }}
+                    className="py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

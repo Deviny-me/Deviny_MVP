@@ -709,17 +709,17 @@ export function PublicProfileContent({
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
           <div className={`h-32 bg-gradient-to-r ${profileAccent.gradient}`} />
           <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-12">
+            <div className="flex items-end gap-4 -mt-16 relative z-10">
               <div className="relative">
                 {authorAvatar ? (
                   <img
                     src={authorAvatar}
                     alt={authorName}
-                    className={`w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A] ${getRoleRingClass(profileData?.role)}`}
+                    className={`w-32 h-32 rounded-full object-cover border-4 border-[#1A1A1A] ${getRoleRingClass(profileData?.role)}`}
                   />
                 ) : (
-                  <div className={`w-24 h-24 rounded-xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
-                    <span className="text-white text-3xl font-bold">{authorInitials}</span>
+                  <div className={`w-32 h-32 rounded-full bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
+                    <span className="text-white text-4xl font-bold">{authorInitials}</span>
                   </div>
                 )}
               </div>
@@ -731,14 +731,27 @@ export function PublicProfileContent({
                 {profileData?.expertProfile?.secondaryTitle && (
                   <p className="text-xs text-gray-400 mt-0.5">{profileData.expertProfile.secondaryTitle}</p>
                 )}
-                {!profileData?.expertProfile && (profileData?.postsCount ?? totalPosts) > 0 && (
-                  <p className="text-sm text-gray-400">{profileData?.postsCount ?? totalPosts} {tPosts('publications')}</p>
-                )}
-                {profileData?.createdAt && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {tp('joined')} {new Date(profileData.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </p>
-                )}
+                <div className="flex items-center gap-5 mt-2">
+                  <div className="text-center">
+                    <span className="text-sm font-bold text-white">{(profileData?.postsCount ?? totalPosts).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tPosts('postsTab')}</p>
+                  </div>
+                  <div className="w-px h-7 bg-white/10" />
+                  <div className="text-center">
+                    <span className="text-sm font-bold text-white">{(profileData?.followersCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('followers')}</p>
+                  </div>
+                  <div className="w-px h-7 bg-white/10" />
+                  <div className="text-center">
+                    <span className="text-sm font-bold text-white">{(profileData?.followingCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('following')}</p>
+                  </div>
+                  <div className="w-px h-7 bg-white/10" />
+                  <div className="text-center">
+                    <span className="text-sm font-bold text-white">{(profileData?.achievementsCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('achievements')}</p>
+                  </div>
+                </div>
               </div>
             </div>
 
