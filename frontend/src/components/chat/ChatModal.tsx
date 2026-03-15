@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { MessageCircle, X, Send, Loader2, Smile, Phone, Video } from 'lucide-react';
 import { messagesApi } from '@/lib/api/messagesApi';
 import { chatConnection } from '@/lib/signalr/chatConnection';
 import { MessageDto } from '@/types/message';
@@ -17,6 +18,7 @@ interface ChatModalProps {
 }
 
 export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarUrl, otherUserRole, onClose }: ChatModalProps) {
+  const QUICK_EMOJIS = ['😀', '😂', '😍', '😎', '😭', '😡', '👍', '👏', '🙏', '🔥', '❤️', '🎉']
   const accent = useAccentColors()
   const peerAccent = otherUserRole ? getAccentColorsByRole(otherUserRole) : accent
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -25,10 +27,15 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [callNotice, setCallNotice] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const loadingRef = useRef(false);
   const conversationIdRef = useRef<string | null>(null);
+  const router = useRouter()
+  const pathname = usePathname()
 
   // Keep ref in sync
   useEffect(() => { conversationIdRef.current = conversationId }, [conversationId])
@@ -119,6 +126,43 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!emojiPickerRef.current) return
+      if (!emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handlePickEmoji = (emoji: string) => {
+    setNewMessage(prev => prev + emoji)
+  }
+
+  const handleCallClick = (type: 'audio' | 'video') => {
+    const basePath = pathname?.startsWith('/trainer')
+      ? '/trainer'
+      : pathname?.startsWith('/nutritionist')
+      ? '/nutritionist'
+      : '/user'
+
+    const params = new URLSearchParams({
+      userId: otherUserId,
+      userName: otherUserName,
+      startCall: type,
+    })
+
+    if (otherUserAvatarUrl) {
+      params.set('userAvatar', otherUserAvatarUrl)
+    }
+
+    onClose()
+    router.push(`${basePath}/messages?${params.toString()}`)
+  }
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -177,13 +221,36 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               <h3 className="text-lg font-semibold text-white">{otherUserName}</h3>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-400" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => handleCallClick('audio')}
+              className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+              title="Start audio call"
+            >
+              <Phone className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCallClick('video')}
+              className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+              title="Start video call"
+            >
+              <Video className="w-5 h-5" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
         </div>
+        {callNotice && (
+          <div className="px-4 py-2 border-b border-white/10">
+            <p className={`text-xs ${accent.text}`}>{callNotice}</p>
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -240,7 +307,32 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
 
         {/* Input */}
         <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker(prev => !prev)}
+              disabled={isSending}
+              className={`p-2 text-gray-400 ${accent.hoverText} transition-colors disabled:opacity-50`}
+              title="Add emoji"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-0 z-20 bg-[#0A0A0A] border border-white/10 rounded-xl p-2 shadow-xl w-56">
+                <div className="grid grid-cols-6 gap-1">
+                  {QUICK_EMOJIS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => handlePickEmoji(emoji)}
+                      className="p-1.5 rounded hover:bg-white/10 transition-colors text-lg"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <input
               type="text"
               value={newMessage}

@@ -19,4 +19,7 @@ public class PurchasedProgramDto
     public Guid TrainerId { get; set; }
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
+    public string PurchaseStatus { get; set; } = "Active";
+    public bool CanReview { get; set; }
+    public bool HasReviewed { get; set; }
 }

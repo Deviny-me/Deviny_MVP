@@ -49,7 +49,10 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                     AverageRating = tp.Reviews != null && tp.Reviews.Any()
                         ? Math.Round(tp.Reviews.Average(r => r.Rating), 1)
                         : 0,
-                    TotalReviews = tp.Reviews?.Count ?? 0
+                    TotalReviews = tp.Reviews?.Count ?? 0,
+                    PurchaseStatus = pp.Status.ToString(),
+                    CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                    HasReviewed = tp.Reviews?.Any(r => r.UserId == request.UserId) ?? false
                 };
             }
             else if (pp.ProgramType == ProgramType.Meal && pp.MealProgram != null)
@@ -76,7 +79,10 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                     AverageRating = mp.Reviews != null && mp.Reviews.Any()
                         ? Math.Round(mp.Reviews.Average(r => r.Rating), 1)
                         : 0,
-                    TotalReviews = mp.Reviews?.Count ?? 0
+                    TotalReviews = mp.Reviews?.Count ?? 0,
+                    PurchaseStatus = pp.Status.ToString(),
+                    CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                    HasReviewed = mp.Reviews?.Any(r => r.UserId == request.UserId) ?? false
                 };
             }
 
@@ -86,7 +92,10 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                 PurchaseId = pp.Id,
                 ProgramType = pp.ProgramType.ToString().ToLower(),
                 Tier = pp.Tier.ToString(),
-                PurchasedAt = pp.PurchasedAt
+                PurchasedAt = pp.PurchasedAt,
+                PurchaseStatus = pp.Status.ToString(),
+                CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                HasReviewed = false
             };
         }).ToList();
     }

@@ -10,7 +10,7 @@ import {
   Settings,
   LogOut,
   User,
-  Users
+  UserPlus
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -58,7 +58,7 @@ export function TopNav() {
   }
 
   const navItems = [
-    { icon: Users, label: t('students'), path: '/trainer/students', badge: undefined },
+    { icon: UserPlus, label: t('friends'), path: '/trainer/friends', badge: undefined },
     { icon: MessageCircle, label: t('messages'), path: '/trainer/messages', badge: unreadCount > 0 ? unreadCount : undefined },
     { icon: User, label: t('profile'), path: '/trainer/profile', badge: undefined },
     { icon: Settings, label: t('settings'), path: '/trainer/settings', badge: undefined },

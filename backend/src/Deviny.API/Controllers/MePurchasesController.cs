@@ -81,6 +81,39 @@ public class MePurchasesController : BaseApiController
                 500));
         }
     }
+
+    /// <summary>
+    /// Mark a purchased program as completed (e.g. after finishing last video in journey)
+    /// </summary>
+    [HttpPost("{purchaseId:guid}/complete")]
+    public async Task<IActionResult> CompletePurchase(Guid purchaseId)
+    {
+        var userId = TryGetCurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        try
+        {
+            var command = new CompletePurchaseCommand
+            {
+                UserId = userId.Value,
+                PurchaseId = purchaseId
+            };
+
+            var result = await _mediator.Send(command);
+            if (!result.Success)
+                return BadRequest(new { error = result.Error });
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error completing purchase {PurchaseId} for user {UserId}", purchaseId, userId.Value);
+            return StatusCode(500, CreateProblemDetails(
+                "Complete Purchase Failed",
+                "An error occurred while marking purchase as completed.",
+                500));
+        }
+    }
 }
 
 /// <summary>

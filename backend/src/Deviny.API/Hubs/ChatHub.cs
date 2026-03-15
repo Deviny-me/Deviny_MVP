@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Deviny.API.Hubs;
 
@@ -260,7 +261,144 @@ public class ChatHub : Hub
         });
     }
 
+    /// <summary>Relays WebRTC offer to the target participant.</summary>
+    public async Task SendCallOffer(string conversationId, string targetUserId, string callType, string offerJson)
+    {
+        var senderId = GetUserId();
+        if (senderId == null)
+        {
+            await Clients.Caller.SendAsync("Error", "Unauthorized");
+            return;
+        }
+
+        if (!await AreUsersInConversation(conversationId, senderId, targetUserId))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call participants");
+            return;
+        }
+
+        var senderName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+        var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
+
+        await Clients.Group(targetGroup).SendAsync("CallOffer", new
+        {
+            conversationId,
+            fromUserId = senderId,
+            fromUserName = senderName,
+            callType,
+            offer = DeserializeJsonOrNull(offerJson)
+        });
+    }
+
+    /// <summary>Relays WebRTC answer to the target participant.</summary>
+    public async Task SendCallAnswer(string conversationId, string targetUserId, string answerJson)
+    {
+        var senderId = GetUserId();
+        if (senderId == null)
+        {
+            await Clients.Caller.SendAsync("Error", "Unauthorized");
+            return;
+        }
+
+        if (!await AreUsersInConversation(conversationId, senderId, targetUserId))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call participants");
+            return;
+        }
+
+        var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
+        await Clients.Group(targetGroup).SendAsync("CallAnswer", new
+        {
+            conversationId,
+            fromUserId = senderId,
+            answer = DeserializeJsonOrNull(answerJson)
+        });
+    }
+
+    /// <summary>Relays ICE candidates between peers.</summary>
+    public async Task SendCallIceCandidate(string conversationId, string targetUserId, string candidateJson)
+    {
+        var senderId = GetUserId();
+        if (senderId == null)
+        {
+            await Clients.Caller.SendAsync("Error", "Unauthorized");
+            return;
+        }
+
+        if (!await AreUsersInConversation(conversationId, senderId, targetUserId))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call participants");
+            return;
+        }
+
+        var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
+        await Clients.Group(targetGroup).SendAsync("CallIceCandidate", new
+        {
+            conversationId,
+            fromUserId = senderId,
+            candidate = DeserializeJsonOrNull(candidateJson)
+        });
+    }
+
+    /// <summary>Ends an active or pending call for both peers.</summary>
+    public async Task EndCall(string conversationId, string targetUserId, string reason = "ended")
+    {
+        var senderId = GetUserId();
+        if (senderId == null)
+        {
+            await Clients.Caller.SendAsync("Error", "Unauthorized");
+            return;
+        }
+
+        if (!await AreUsersInConversation(conversationId, senderId, targetUserId))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call participants");
+            return;
+        }
+
+        var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
+        await Clients.Group(targetGroup).SendAsync("CallEnded", new
+        {
+            conversationId,
+            fromUserId = senderId,
+            reason
+        });
+
+        await Clients.Caller.SendAsync("CallEnded", new
+        {
+            conversationId,
+            fromUserId = senderId,
+            reason
+        });
+    }
+
     // ──────────── helpers ────────────
+
+    private static JsonElement? DeserializeJsonOrNull(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.Clone();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task<bool> AreUsersInConversation(string conversationId, string senderId, string targetUserId)
+    {
+        if (!Guid.TryParse(conversationId, out var convGuid)) return false;
+        if (!Guid.TryParse(senderId, out var senderGuid)) return false;
+        if (!Guid.TryParse(targetUserId, out var targetGuid)) return false;
+        if (senderGuid == targetGuid) return false;
+
+        var members = await _mediator.Send(new GetConversationMembersQuery(convGuid));
+        return members.Contains(senderGuid) && members.Contains(targetGuid);
+    }
 
     private string? GetUserId()
     {

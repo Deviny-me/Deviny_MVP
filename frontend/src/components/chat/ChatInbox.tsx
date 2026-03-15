@@ -14,6 +14,13 @@ import {
   FileText,
   Download,
   Image as ImageIcon,
+  Smile,
+  Phone,
+  Video,
+  PhoneOff,
+  Mic,
+  MicOff,
+  VideoOff,
 } from 'lucide-react'
 import { messagesApi } from '@/lib/api/messagesApi'
 import { chatConnection } from '@/lib/signalr/chatConnection'
@@ -80,14 +87,39 @@ function avatarUrl(path: string | null | undefined): string | null {
   return `${MEDIA_BASE_URL}${path}`
 }
 
+function sameId(a: string | null | undefined, b: string | null | undefined): boolean {
+  if (!a || !b) return false
+  return a.toLowerCase() === b.toLowerCase()
+}
+
 // ─── component ───
 
+type CallType = 'audio' | 'video'
+
+interface IncomingCallState {
+  conversationId: string
+  fromUserId: string
+  fromUserName: string
+  callType: CallType
+  offer: RTCSessionDescriptionInit
+}
+
+const CALL_RING_TIMEOUT_MS = 30_000
+
+function formatCallDuration(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
 export default function ChatInbox() {
+  const QUICK_EMOJIS = ['😀', '😂', '😍', '😎', '😭', '😡', '👍', '👏', '🙏', '🔥', '❤️', '🎉']
   const accent = useAccentColors()
   const searchParams = useSearchParams()
   const userIdFromUrl = searchParams.get('userId')
   const userNameFromUrl = searchParams.get('userName')
   const userAvatarFromUrl = searchParams.get('userAvatar')
+  const startCallFromUrl = searchParams.get('startCall')
 
   const [currentUserId] = useState<string | null>(() => getUserIdFromToken())
   const [conversations, setConversations] = useState<ConversationListItemDto[]>([])
@@ -96,6 +128,17 @@ export default function ChatInbox() {
   const [inputText, setInputText] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [replyTo, setReplyTo] = useState<MessageDto | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [callNotice, setCallNotice] = useState<string | null>(null)
+  const [incomingCall, setIncomingCall] = useState<IncomingCallState | null>(null)
+  const [callStatus, setCallStatus] = useState<'idle' | 'calling' | 'ringing' | 'connecting' | 'connected'>('idle')
+  const [activeCallType, setActiveCallType] = useState<CallType | null>(null)
+  const [activeCallPeerId, setActiveCallPeerId] = useState<string | null>(null)
+  const [activeCallPeerName, setActiveCallPeerName] = useState<string | null>(null)
+  const [activeCallConversationId, setActiveCallConversationId] = useState<string | null>(null)
+  const [isMicMuted, setIsMicMuted] = useState(false)
+  const [isCameraEnabled, setIsCameraEnabled] = useState(true)
+  const [callDurationSeconds, setCallDurationSeconds] = useState(0)
 
   const [loadingConvs, setLoadingConvs] = useState(true)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
@@ -107,8 +150,22 @@ export default function ChatInbox() {
   const selectedConvIdRef = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const localVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteAudioRef = useRef<HTMLAudioElement>(null)
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  const localStreamRef = useRef<MediaStream | null>(null)
+  const remoteStreamRef = useRef<MediaStream | null>(null)
+  const isCallInitiatorRef = useRef(false)
+  const callStartLoggedRef = useRef(false)
+  const incomingCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const outgoingCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const connectedCallTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const connectedAtRef = useRef<number | null>(null)
   const creatingConvRef = useRef(false)
   const deepLinkHandledRef = useRef(false)
+  const startCallHandledRef = useRef(false)
 
   // Keep ref in sync
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
@@ -301,6 +358,127 @@ export default function ChatInbox() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!emojiPickerRef.current) return
+      if (!emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const clearCallMedia = useCallback(() => {
+    if (incomingCallTimeoutRef.current) {
+      clearTimeout(incomingCallTimeoutRef.current)
+      incomingCallTimeoutRef.current = null
+    }
+    if (outgoingCallTimeoutRef.current) {
+      clearTimeout(outgoingCallTimeoutRef.current)
+      outgoingCallTimeoutRef.current = null
+    }
+    if (connectedCallTimerRef.current) {
+      clearInterval(connectedCallTimerRef.current)
+      connectedCallTimerRef.current = null
+    }
+    connectedAtRef.current = null
+    callStartLoggedRef.current = false
+    isCallInitiatorRef.current = false
+
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close()
+      peerConnectionRef.current = null
+    }
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop())
+      localStreamRef.current = null
+    }
+    if (remoteStreamRef.current) {
+      remoteStreamRef.current.getTracks().forEach(track => track.stop())
+      remoteStreamRef.current = null
+    }
+    if (localVideoRef.current) localVideoRef.current.srcObject = null
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null
+    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null
+
+    setCallStatus('idle')
+    setActiveCallType(null)
+    setActiveCallPeerId(null)
+    setActiveCallPeerName(null)
+    setActiveCallConversationId(null)
+    setIncomingCall(null)
+    setIsMicMuted(false)
+    setIsCameraEnabled(true)
+    setCallDurationSeconds(0)
+  }, [])
+
+  const sendCallLogMessage = useCallback(async (conversationId: string, text: string) => {
+    try {
+      await chatConnection.sendMessage(conversationId, text)
+    } catch (err) {
+      console.error('Failed to send call log message', err)
+    }
+  }, [])
+
+  const createPeerConnection = useCallback((conversationId: string, targetUserId: string) => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close()
+    }
+
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+    })
+
+    const remoteStream = new MediaStream()
+    remoteStreamRef.current = remoteStream
+    if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream
+    if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream
+
+    pc.onicecandidate = async (event) => {
+      if (!event.candidate) return
+      try {
+        await chatConnection.sendCallIceCandidate(conversationId, targetUserId, event.candidate.toJSON())
+      } catch (error) {
+        console.error('Failed to send ICE candidate', error)
+      }
+    }
+
+    pc.ontrack = (event) => {
+      event.streams[0]?.getTracks().forEach(track => {
+        const exists = remoteStream.getTracks().some(t => t.id === track.id)
+        if (!exists) {
+          remoteStream.addTrack(track)
+        }
+      })
+      setCallStatus('connected')
+    }
+
+    pc.onconnectionstatechange = () => {
+      if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        clearCallMedia()
+      }
+      if (pc.connectionState === 'disconnected') {
+        setCallNotice('Call connection lost.')
+        setTimeout(() => setCallNotice(null), 2500)
+      }
+    }
+
+    peerConnectionRef.current = pc
+    return pc
+  }, [clearCallMedia])
+
+  const getLocalMedia = useCallback(async (callType: CallType) => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: callType === 'video',
+    })
+    localStreamRef.current = stream
+    if (localVideoRef.current) localVideoRef.current.srcObject = stream
+    return stream
+  }, [])
+
   // ─── file upload handler ───
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -381,6 +559,268 @@ export default function ChatInbox() {
     }
   }
 
+  const handlePickEmoji = (emoji: string) => {
+    setInputText(prev => prev + emoji)
+    inputRef.current?.focus()
+  }
+
+  const handleCallClick = (type: 'audio' | 'video') => {
+    if (!selectedConv || !selectedConvId) return
+    if (callStatus !== 'idle') return
+
+    ;(async () => {
+      try {
+        setCallStatus('calling')
+        isCallInitiatorRef.current = true
+        callStartLoggedRef.current = false
+        setActiveCallType(type)
+        setActiveCallPeerId(selectedConv.peerUser.id)
+        setActiveCallPeerName(selectedConv.peerUser.fullName)
+        setActiveCallConversationId(selectedConvId)
+
+        const stream = await getLocalMedia(type)
+        const pc = createPeerConnection(selectedConvId, selectedConv.peerUser.id)
+        stream.getTracks().forEach(track => pc.addTrack(track, stream))
+
+        const offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+        await chatConnection.sendCallOffer(selectedConvId, selectedConv.peerUser.id, type, offer)
+        setCallStatus('connecting')
+
+        if (outgoingCallTimeoutRef.current) clearTimeout(outgoingCallTimeoutRef.current)
+        outgoingCallTimeoutRef.current = setTimeout(async () => {
+          if (peerConnectionRef.current?.connectionState === 'connected') return
+          try {
+            await chatConnection.endCall(selectedConvId, selectedConv.peerUser.id, 'missed')
+          } catch {
+            // ignore timeout signaling failure and still cleanup locally
+          }
+          await sendCallLogMessage(selectedConvId, `📵 Missed ${type} call (no answer).`)
+          setCallNotice('No answer. Missed call.')
+          setTimeout(() => setCallNotice(null), 2500)
+          clearCallMedia()
+        }, CALL_RING_TIMEOUT_MS)
+      } catch (error) {
+        console.error('Failed to start call', error)
+        clearCallMedia()
+        setCallNotice('Could not start the call. Please check microphone/camera permissions.')
+        setTimeout(() => setCallNotice(null), 3500)
+      }
+    })()
+  }
+
+  const handleAcceptIncomingCall = async () => {
+    if (!incomingCall) return
+
+    try {
+      setSelectedConvId(incomingCall.conversationId)
+      if (incomingCallTimeoutRef.current) {
+        clearTimeout(incomingCallTimeoutRef.current)
+        incomingCallTimeoutRef.current = null
+      }
+      setCallStatus('connecting')
+      isCallInitiatorRef.current = false
+      callStartLoggedRef.current = false
+      setActiveCallType(incomingCall.callType)
+      setActiveCallPeerId(incomingCall.fromUserId)
+      setActiveCallPeerName(incomingCall.fromUserName)
+      setActiveCallConversationId(incomingCall.conversationId)
+
+      const stream = await getLocalMedia(incomingCall.callType)
+      const pc = createPeerConnection(incomingCall.conversationId, incomingCall.fromUserId)
+      stream.getTracks().forEach(track => pc.addTrack(track, stream))
+
+      await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer))
+      const answer = await pc.createAnswer()
+      await pc.setLocalDescription(answer)
+      await chatConnection.sendCallAnswer(incomingCall.conversationId, incomingCall.fromUserId, answer)
+
+      setIncomingCall(null)
+    } catch (error) {
+      console.error('Failed to accept call', error)
+      if (incomingCall) {
+        await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'failed')
+      }
+      clearCallMedia()
+      setCallNotice('Failed to accept call. Check device permissions and try again.')
+      setTimeout(() => setCallNotice(null), 3500)
+    }
+  }
+
+  const handleDeclineIncomingCall = async () => {
+    if (!incomingCall) return
+    if (incomingCallTimeoutRef.current) {
+      clearTimeout(incomingCallTimeoutRef.current)
+      incomingCallTimeoutRef.current = null
+    }
+    await sendCallLogMessage(incomingCall.conversationId, '📵 Incoming call declined.')
+    await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'rejected')
+    setIncomingCall(null)
+    setCallStatus('idle')
+  }
+
+  const handleEndCall = async () => {
+    if (activeCallConversationId && activeCallPeerId) {
+      await sendCallLogMessage(activeCallConversationId, '📴 Call ended.')
+      await chatConnection.endCall(activeCallConversationId, activeCallPeerId, 'ended')
+    }
+    clearCallMedia()
+  }
+
+  const toggleMic = () => {
+    if (!localStreamRef.current) return
+    localStreamRef.current.getAudioTracks().forEach(track => {
+      track.enabled = !track.enabled
+      setIsMicMuted(!track.enabled)
+    })
+  }
+
+  const toggleCamera = () => {
+    if (!localStreamRef.current || activeCallType !== 'video') return
+    localStreamRef.current.getVideoTracks().forEach(track => {
+      track.enabled = !track.enabled
+      setIsCameraEnabled(track.enabled)
+    })
+  }
+
+  useEffect(() => {
+    const handleCallOffer = async (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: CallType; offer: RTCSessionDescriptionInit }) => {
+      if (sameId(currentUserId, data.fromUserId)) return
+
+      if (callStatus !== 'idle') {
+        await chatConnection.endCall(data.conversationId, data.fromUserId, 'busy')
+        return
+      }
+
+      setIncomingCall(data)
+      setCallStatus('ringing')
+      setCallNotice(`${data.fromUserName} is calling you...`)
+      setTimeout(() => setCallNotice(null), 3000)
+
+      if (incomingCallTimeoutRef.current) clearTimeout(incomingCallTimeoutRef.current)
+      incomingCallTimeoutRef.current = setTimeout(async () => {
+        try {
+          await chatConnection.endCall(data.conversationId, data.fromUserId, 'missed')
+        } catch {
+          // ignore timeout signaling failure and still cleanup locally
+        }
+        await sendCallLogMessage(data.conversationId, '📵 Missed incoming call.')
+        setCallNotice('Missed call.')
+        setTimeout(() => setCallNotice(null), 2500)
+        setIncomingCall(null)
+        setCallStatus('idle')
+      }, CALL_RING_TIMEOUT_MS)
+    }
+
+    const handleCallAnswer = async (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => {
+      if (!peerConnectionRef.current || !sameId(data.fromUserId, activeCallPeerId)) return
+      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
+      try {
+        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.answer))
+        setCallStatus('connected')
+        if (outgoingCallTimeoutRef.current) {
+          clearTimeout(outgoingCallTimeoutRef.current)
+          outgoingCallTimeoutRef.current = null
+        }
+      } catch (error) {
+        console.error('Failed to apply call answer', error)
+      }
+    }
+
+    const handleCallIce = async (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => {
+      if (!peerConnectionRef.current) return
+      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
+      if (activeCallPeerId && !sameId(data.fromUserId, activeCallPeerId)) return
+      try {
+        await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate))
+      } catch (error) {
+        console.error('Failed to add ICE candidate', error)
+      }
+    }
+
+    const handleCallEnded = (data: { conversationId: string; fromUserId: string; reason: string }) => {
+      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
+      const reasonText = data.reason === 'rejected'
+        ? 'Call declined.'
+        : data.reason === 'busy'
+        ? 'User is busy on another call.'
+        : data.reason === 'missed'
+        ? 'Missed call.'
+        : 'Call ended.'
+      setCallNotice(reasonText)
+      setTimeout(() => setCallNotice(null), 2500)
+      clearCallMedia()
+    }
+
+    chatConnection.onCallOffer(handleCallOffer)
+    chatConnection.onCallAnswer(handleCallAnswer)
+    chatConnection.onCallIceCandidate(handleCallIce)
+    chatConnection.onCallEnded(handleCallEnded)
+
+    return () => {
+      chatConnection.off('CallOffer', handleCallOffer)
+      chatConnection.off('CallAnswer', handleCallAnswer)
+      chatConnection.off('CallIceCandidate', handleCallIce)
+      chatConnection.off('CallEnded', handleCallEnded)
+    }
+  }, [activeCallConversationId, activeCallPeerId, callStatus, clearCallMedia, currentUserId, getLocalMedia])
+
+  useEffect(() => {
+    if (callStatus === 'connected' && activeCallConversationId && !callStartLoggedRef.current) {
+      callStartLoggedRef.current = true
+      const callKind = activeCallType === 'video' ? 'video' : 'audio'
+      const text = isCallInitiatorRef.current
+        ? `📞 Started a ${callKind} call.`
+        : `📞 Joined a ${callKind} call.`
+      sendCallLogMessage(activeCallConversationId, text)
+    }
+
+    if (callStatus !== 'connected') {
+      if (connectedCallTimerRef.current) {
+        clearInterval(connectedCallTimerRef.current)
+        connectedCallTimerRef.current = null
+      }
+      connectedAtRef.current = null
+      setCallDurationSeconds(0)
+      return
+    }
+
+    if (!connectedAtRef.current) connectedAtRef.current = Date.now()
+    setCallDurationSeconds(0)
+
+    connectedCallTimerRef.current = setInterval(() => {
+      if (!connectedAtRef.current) return
+      const elapsed = Math.floor((Date.now() - connectedAtRef.current) / 1000)
+      setCallDurationSeconds(elapsed)
+    }, 1000)
+
+    return () => {
+      if (connectedCallTimerRef.current) {
+        clearInterval(connectedCallTimerRef.current)
+        connectedCallTimerRef.current = null
+      }
+    }
+  }, [activeCallConversationId, activeCallType, callStatus, sendCallLogMessage])
+
+  useEffect(() => {
+    return () => {
+      clearCallMedia()
+    }
+  }, [clearCallMedia])
+
+  useEffect(() => {
+    if (startCallHandledRef.current) return
+    if (!selectedConvId) return
+    if (callStatus !== 'idle') return
+    if (startCallFromUrl !== 'audio' && startCallFromUrl !== 'video') return
+
+    const selectedConversation = conversations.find(c => c.id === selectedConvId)
+    if (!selectedConversation) return
+
+    startCallHandledRef.current = true
+    handleCallClick(startCallFromUrl)
+  }, [callStatus, conversations, selectedConvId, startCallFromUrl])
+
   // ─── derived ───
   const filteredConvs = conversations.filter(c =>
     c.peerUser.fullName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -396,7 +836,29 @@ export default function ChatInbox() {
 
   // ─── render ───
   return (
-    <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden h-[calc(100vh-130px)]">
+    <div className="relative bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden h-[calc(100vh-130px)]">
+      {incomingCall && (
+        <div className="absolute top-4 right-4 z-30 p-3 rounded-lg border border-white/10 bg-[#0A0A0A] shadow-xl w-72">
+          <p className="text-sm text-white font-semibold">Incoming {incomingCall.callType} call</p>
+          <p className="text-xs text-gray-400 mt-1">{incomingCall.fromUserName}</p>
+          <div className="flex items-center gap-2 mt-3">
+            <button
+              type="button"
+              onClick={handleDeclineIncomingCall}
+              className="flex-1 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
+            >
+              Decline
+            </button>
+            <button
+              type="button"
+              onClick={handleAcceptIncomingCall}
+              className={`flex-1 px-3 py-1.5 rounded-lg bg-gradient-to-r ${accent.gradient} text-white hover:opacity-90 transition-opacity`}
+            >
+              Accept
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex h-full">
         {/* ── Left: Conversations List ── */}
         <div
@@ -485,15 +947,40 @@ export default function ChatInbox() {
         {selectedConvId ? (
           <div className="flex-1 flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 flex items-center gap-3">
-              <button
-                className="md:hidden p-1"
-                onClick={() => setSelectedConvId(null)}
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-400" />
-              </button>
-              <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={40} role={selectedConv?.peerUser.role} />
-              <p className="font-semibold text-white">{peerName}</p>
+            <div className="p-4 border-b border-white/10">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    className="md:hidden p-1"
+                    onClick={() => setSelectedConvId(null)}
+                  >
+                    <ArrowLeft className="w-5 h-5 text-gray-400" />
+                  </button>
+                  <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={40} role={selectedConv?.peerUser.role} />
+                  <p className="font-semibold text-white truncate">{peerName}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleCallClick('audio')}
+                    className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+                    title="Start audio call"
+                  >
+                    <Phone className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCallClick('video')}
+                    className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+                    title="Start video call"
+                  >
+                    <Video className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              {callNotice && (
+                <p className={`text-xs mt-2 ${accent.text}`}>{callNotice}</p>
+              )}
             </div>
 
             {/* Messages */}
@@ -665,7 +1152,7 @@ export default function ChatInbox() {
 
             {/* Input */}
             <div className="p-4 border-t border-white/10">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
                 {/* Hidden file input */}
                 <input
                   ref={fileInputRef}
@@ -687,6 +1174,31 @@ export default function ChatInbox() {
                     <Paperclip className="w-5 h-5" />
                   )}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(prev => !prev)}
+                  disabled={sending}
+                  className={`p-2.5 text-gray-400 ${accent.hoverText} transition-colors disabled:opacity-50`}
+                  title="Add emoji"
+                >
+                  <Smile className="w-5 h-5" />
+                </button>
+                {showEmojiPicker && (
+                  <div className="absolute bottom-14 left-12 z-20 bg-[#0A0A0A] border border-white/10 rounded-xl p-2 shadow-xl w-56">
+                    <div className="grid grid-cols-6 gap-1">
+                      {QUICK_EMOJIS.map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => handlePickEmoji(emoji)}
+                          className="p-1.5 rounded hover:bg-white/10 transition-colors text-lg"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <input
                   ref={inputRef}
                   type="text"
@@ -710,6 +1222,53 @@ export default function ChatInbox() {
                 </button>
               </div>
             </div>
+
+            {callStatus !== 'idle' && activeCallPeerName && (
+              <div className="border-t border-white/10 p-3 bg-[#0A0A0A]">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{activeCallType === 'video' ? 'Video call' : 'Audio call'} with {activeCallPeerName}</p>
+                    <p className="text-xs text-gray-400 capitalize">{callStatus}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleMic}
+                      className="p-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 transition-colors"
+                      title={isMicMuted ? 'Unmute microphone' : 'Mute microphone'}
+                    >
+                      {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </button>
+                    {activeCallType === 'video' && (
+                      <button
+                        type="button"
+                        onClick={toggleCamera}
+                        className="p-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 transition-colors"
+                        title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+                      >
+                        {isCameraEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleEndCall}
+                      className="p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-white"
+                      title="End call"
+                    >
+                      <PhoneOff className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <audio ref={remoteAudioRef} autoPlay />
+                {activeCallType === 'video' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
+                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 hidden md:flex items-center justify-center">
