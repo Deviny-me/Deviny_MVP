@@ -5,12 +5,6 @@ import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
   MapPin,
-  Calendar,
-  Flame,
-  Trophy,
-  Target,
-  Users,
-  Edit2,
   Grid,
   List,
   Loader2,
@@ -21,8 +15,9 @@ import {
   Repeat2,
   Trash2,
 } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+
 import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { postsApi } from '@/lib/api/postsApi'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
@@ -256,14 +251,12 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 
 // ─── Main page ───
 export default function UserProfilePage() {
-  const router = useRouter()
   const { user, updateUser } = useUser()
   const { level } = useLevel()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
   const tp = useTranslations('profile')
   const tPosts = useTranslations('posts')
-  const tc = useTranslations('common')
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
@@ -281,17 +274,7 @@ export default function UserProfilePage() {
   const abortRef = useRef<AbortController | null>(null)
 
   // Calculate level progress from LevelProvider
-  const currentXp = level?.currentXp ?? user?.xp ?? 0
-  const xpToNextLevel = level?.requiredXpForNextLevel ?? user?.xpToNextLevel ?? 1000
-  const levelProgress = level?.progressPercent ?? (currentXp / xpToNextLevel) * 100
   const currentLevel = level?.currentLevel ?? user?.level ?? 1
-
-  const stats = [
-    { label: tp('workouts'), value: user?.workoutsCompleted || 0, icon: Target },
-    { label: tp('followers'), value: user?.followersCount || 0, icon: Users },
-    { label: tp('achievements'), value: user?.achievementsCount || 0, icon: Trophy },
-    { label: tp('following'), value: user?.followingCount || 0, icon: Users },
-  ]
 
   const loadPosts = useCallback(async (pageNum: number, append: boolean = false) => {
     // Abort previous request
@@ -417,24 +400,24 @@ export default function UserProfilePage() {
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] relative">
-            <button className="absolute bottom-3 right-3 p-2 bg-black/30 backdrop-blur-sm rounded-lg text-white hover:bg-black/50 transition-colors">
-              <Camera className="w-4 h-4" />
-            </button>
-          </div>
+          <div className="h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB]" />
 
           <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-12">
+            <div className="flex items-end gap-4 -mt-16 relative z-10">
               <div className="relative">
+                {/* Level badge above avatar */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-2 py-0.5 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full border border-white/20 shadow-lg">
+                  <span className="text-[11px] font-bold text-white whitespace-nowrap">Lv. {currentLevel}</span>
+                </div>
                 {user?.avatarUrl ? (
                   <img
                     src={getMediaUrl(user.avatarUrl) || ''}
                     alt={user?.fullName || 'User'}
-                    className="w-24 h-24 rounded-xl object-cover border-4 border-[#1A1A1A]"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-[#1A1A1A]"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center border-4 border-[#1A1A1A]">
-                    <span className="text-white text-3xl font-bold">
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center border-4 border-[#1A1A1A]">
+                    <span className="text-white text-4xl font-bold">
                       {user?.fullName?.charAt(0) || 'U'}
                     </span>
                   </div>
@@ -448,7 +431,7 @@ export default function UserProfilePage() {
                 />
                 <label
                   htmlFor="user-avatar-upload"
-                  className="absolute bottom-0 right-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                  className="absolute bottom-1 right-1 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   {uploadingAvatar ? (
                     <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
@@ -460,7 +443,7 @@ export default function UserProfilePage() {
                   <button
                     onClick={handleAvatarDelete}
                     disabled={deletingAvatar}
-                    className="absolute bottom-0 left-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
+                    className="absolute bottom-1 left-1 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
                   >
                     {deletingAvatar ? (
                       <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
@@ -470,81 +453,42 @@ export default function UserProfilePage() {
                   </button>
                 )}
               </div>
-              <div className="flex-1 flex items-end justify-between pb-2">
-                <div>
-                  <h1 className="text-xl font-bold text-white">{user?.fullName || 'User'}</h1>
-                  <p className="text-sm text-gray-400">@{user?.email?.split('@')[0] || 'user'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => router.push('/user/settings')}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm text-gray-300 hover:bg-white/5 transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    {tp('editProfile')}
-                  </button>
+              <div className="flex-1 pb-2">
+                <h1 className="text-xl font-bold text-white">{user?.fullName || 'User'}</h1>
+                <div className="flex items-center gap-5 mt-2">
+                  <Link href="/user/journey" className="text-center hover:opacity-70 transition-opacity">
+                    <span className="text-sm font-bold text-white">{(user?.workoutsCompleted || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('workouts')}</p>
+                  </Link>
+                  <div className="w-px h-7 bg-white/10" />
+                  <Link href="/user/friends" className="text-center hover:opacity-70 transition-opacity">
+                    <span className="text-sm font-bold text-white">{(user?.followersCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('followers')}</p>
+                  </Link>
+                  <div className="w-px h-7 bg-white/10" />
+                  <Link href="/user/friends" className="text-center hover:opacity-70 transition-opacity">
+                    <span className="text-sm font-bold text-white">{(user?.followingCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('following')}</p>
+                  </Link>
+                  <div className="w-px h-7 bg-white/10" />
+                  <Link href="/user/achievements" className="text-center hover:opacity-70 transition-opacity">
+                    <span className="text-sm font-bold text-white">{(user?.achievementsCount || 0).toLocaleString()}</span>
+                    <p className="text-xs text-gray-400 leading-tight">{tp('achievements')}</p>
+                  </Link>
                 </div>
               </div>
             </div>
 
             <div className="mt-4">
               {user?.bio && <p className="text-sm text-gray-300">{user.bio}</p>}
-              <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
-                {(user?.city || user?.country) && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>{[user?.city, user?.country].filter(Boolean).join(', ')}</span>
-                  </div>
-                )}
-                {user?.createdAt && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{tp('joined')} {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Level Card */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{currentLevel}</span>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-white">Level {currentLevel}</span>
-                  {level?.levelTitle && (
-                    <span className="text-xs text-blue-400 font-medium">{level.levelTitle}</span>
-                  )}
+              {(user?.city || user?.country) && (
+                <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{[user?.city, user?.country].filter(Boolean).join(', ')}</span>
                 </div>
-                <span className="text-xs text-gray-400">{currentXp} / {xpToNextLevel} {tp('xp')}</span>
-              </div>
-              <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full transition-all" style={{ width: `${levelProgress}%` }} />
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-gray-400">{xpToNextLevel - currentXp} {tp('xpToLevel')} {currentLevel + 1}</p>
-                {level?.nextLevelTitle && (
-                  <p className="text-xs text-gray-500">Следующий: {level.nextLevelTitle}</p>
-                )}
-              </div>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
-              <stat.icon className="w-5 h-5 text-[#3B82F6] mx-auto mb-2" />
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-xs text-gray-400">{stat.label}</p>
-            </div>
-          ))}
         </div>
 
         {/* Posts Section */}

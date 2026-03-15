@@ -1,5 +1,5 @@
 ﻿export type ScheduleEventType = 'Gym' | 'Online' | 'Consultation';
-export type ScheduleEventStatus = 'Pending' | 'Confirmed';
+export type ScheduleEventStatus = 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled';
 export type CallSessionStatus = 'Active' | 'Ended' | 'Missed';
 
 export interface ScheduleEvent {
