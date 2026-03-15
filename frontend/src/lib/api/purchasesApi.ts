@@ -18,6 +18,9 @@ export interface PurchasedProgramDto {
   trainerId: string;
   averageRating: number;
   totalReviews: number;
+  purchaseStatus: 'Active' | 'Completed' | 'Cancelled';
+  canReview: boolean;
+  hasReviewed: boolean;
 }
 
 export interface PurchaseProgramRequest {
@@ -60,5 +63,13 @@ export const purchasesApi = {
   getMyPurchases: async (): Promise<PurchasedProgramDto[]> => {
     const response = await fetchWithAuth(`${API_URL}/me/purchases`);
     return handleResponse<PurchasedProgramDto[]>(response);
+  },
+
+  /** Mark purchased program as completed */
+  completePurchase: async (purchaseId: string): Promise<void> => {
+    const response = await fetchWithAuth(`${API_URL}/me/purchases/${purchaseId}/complete`, {
+      method: 'POST',
+    });
+    await handleResponse<void>(response);
   },
 };

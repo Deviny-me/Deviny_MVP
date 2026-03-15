@@ -9,9 +9,11 @@ import {
   Apple,
   Video,
   Star,
+  Send,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { purchasesApi, PurchasedProgramDto } from '@/lib/api/purchasesApi'
+import { reviewsApi } from '@/lib/api/reviewsApi'
 import { getMediaUrl, MEDIA_BASE_URL } from '@/lib/config'
 
 export default function ProgramDetailPage({
@@ -26,6 +28,14 @@ export default function ProgramDetailPage({
   const [program, setProgram] = useState<PurchasedProgramDto | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewHover, setReviewHover] = useState(0)
+  const [reviewComment, setReviewComment] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviewError, setReviewError] = useState<string | null>(null)
+  const [reviewSuccess, setReviewSuccess] = useState(false)
+  const [completingPurchase, setCompletingPurchase] = useState(false)
+  const [watchedVideoIndexes, setWatchedVideoIndexes] = useState<Set<number>>(new Set())
 
   const loadProgram = useCallback(async () => {
     try {
@@ -49,6 +59,68 @@ export default function ProgramDetailPage({
   useEffect(() => {
     loadProgram()
   }, [loadProgram])
+
+  const completeProgramIfNeeded = async () => {
+    if (!program || program.purchaseStatus === 'Completed' || completingPurchase) return
+
+    try {
+      setCompletingPurchase(true)
+      await purchasesApi.completePurchase(program.purchaseId)
+      setProgram(prev => prev ? {
+        ...prev,
+        purchaseStatus: 'Completed',
+        canReview: true,
+      } : prev)
+    } catch (err) {
+      console.error('Failed to mark purchase completed:', err)
+    } finally {
+      setCompletingPurchase(false)
+    }
+  }
+
+  const handleVideoEnded = async (videoIndex: number) => {
+    setWatchedVideoIndexes(prev => {
+      const next = new Set(prev)
+      next.add(videoIndex)
+      return next
+    })
+
+    if (!program) return
+    const isLastVideo = videoIndex === program.videoUrls.length - 1
+    if (isLastVideo) {
+      await completeProgramIfNeeded()
+    }
+  }
+
+  const handleSubmitReview = async () => {
+    if (!program || reviewRating === 0 || !program.canReview || program.hasReviewed) return
+
+    setSubmittingReview(true)
+    setReviewError(null)
+    setReviewSuccess(false)
+    try {
+      await reviewsApi.createReview({
+        programId: program.programId,
+        programType: program.programType,
+        rating: reviewRating,
+        comment: reviewComment.trim() || undefined,
+      })
+
+      setProgram(prev => prev ? {
+        ...prev,
+        hasReviewed: true,
+        canReview: false,
+      } : prev)
+      setReviewRating(0)
+      setReviewComment('')
+      setReviewSuccess(true)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to submit review'
+      setReviewError(message)
+    } finally {
+      setSubmittingReview(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -194,11 +266,17 @@ export default function ProgramDetailPage({
                     <video
                       controls
                       preload="metadata"
+                      onEnded={() => handleVideoEnded(index)}
                       className="w-full max-h-[400px]"
                       src={url.startsWith('http') ? url : `${MEDIA_BASE_URL}${url}`}
                     >
                       {t('videoNotSupported')}
                     </video>
+                    {watchedVideoIndexes.has(index) && (
+                      <p className="text-xs text-green-400 px-3 py-2 bg-[#0A0A0A]">
+                        Watched
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -215,6 +293,71 @@ export default function ProgramDetailPage({
           <p className="text-xs text-gray-500 text-center">
             {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
           </p>
+
+          {/* Review after completion */}
+          <div className="pt-4 border-t border-white/10 space-y-3">
+            <h3 className="text-sm font-medium text-gray-300">Program Review</h3>
+
+            {!program.canReview && !program.hasReviewed && (
+              <p className="text-xs text-gray-500">
+                Finish the last video to unlock review.
+              </p>
+            )}
+
+            {program.hasReviewed && (
+              <p className="text-sm text-green-400">You already reviewed this program.</p>
+            )}
+
+            {(program.canReview && !program.hasReviewed) && (
+              <>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      onMouseEnter={() => setReviewHover(star)}
+                      onMouseLeave={() => setReviewHover(0)}
+                      className="p-0.5 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`w-7 h-7 transition-colors ${
+                          star <= (reviewHover || reviewRating)
+                            ? 'text-amber-400 fill-amber-400'
+                            : 'text-gray-600'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <textarea
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Share your experience"
+                  rows={3}
+                  maxLength={1000}
+                  className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#3B82F6]/50"
+                />
+
+                {reviewError && <p className="text-sm text-red-400">{reviewError}</p>}
+                {reviewSuccess && <p className="text-sm text-green-400">Review submitted successfully.</p>}
+
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={reviewRating === 0 || submittingReview}
+                  className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                >
+                  {submittingReview ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  Submit review
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

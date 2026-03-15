@@ -161,6 +161,10 @@ export class ChatConnection {
   onFriendRequestReceived(cb: (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => void) { this._on('FriendRequestReceived', cb) }
   onFriendRequestAccepted(cb: (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => void) { this._on('FriendRequestAccepted', cb) }
   onFriendRemoved(cb: (data: { removedByUserId: string; removedByName: string }) => void) { this._on('FriendRemoved', cb) }
+  onCallOffer(cb: (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: 'audio' | 'video'; offer: RTCSessionDescriptionInit }) => void) { this._on('CallOffer', cb) }
+  onCallAnswer(cb: (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => void) { this._on('CallAnswer', cb) }
+  onCallIceCandidate(cb: (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => void) { this._on('CallIceCandidate', cb) }
+  onCallEnded(cb: (data: { conversationId: string; fromUserId: string; reason: string }) => void) { this._on('CallEnded', cb) }
 
   // ─── hub invocations ───
 
@@ -197,6 +201,26 @@ export class ChatConnection {
   async stopTyping(conversationId: string) {
     await this.ensureConnected()
     await this.connection!.invoke('StopTyping', conversationId)
+  }
+
+  async sendCallOffer(conversationId: string, targetUserId: string, callType: 'audio' | 'video', offer: RTCSessionDescriptionInit) {
+    await this.ensureConnected()
+    await this.connection!.invoke('SendCallOffer', conversationId, targetUserId, callType, JSON.stringify(offer))
+  }
+
+  async sendCallAnswer(conversationId: string, targetUserId: string, answer: RTCSessionDescriptionInit) {
+    await this.ensureConnected()
+    await this.connection!.invoke('SendCallAnswer', conversationId, targetUserId, JSON.stringify(answer))
+  }
+
+  async sendCallIceCandidate(conversationId: string, targetUserId: string, candidate: RTCIceCandidateInit) {
+    await this.ensureConnected()
+    await this.connection!.invoke('SendCallIceCandidate', conversationId, targetUserId, JSON.stringify(candidate))
+  }
+
+  async endCall(conversationId: string, targetUserId: string, reason: string = 'ended') {
+    await this.ensureConnected()
+    await this.connection!.invoke('EndCall', conversationId, targetUserId, reason)
   }
 
   getState() {

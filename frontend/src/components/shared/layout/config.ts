@@ -55,7 +55,7 @@ export const trainerConfig: LayoutConfig = {
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Students', path: '/trainer/students' },
+    { icon: Users, label: 'Friends', path: '/trainer/friends' },
     { icon: MessageCircle, label: 'Messages', path: '/trainer/messages' },
     { icon: User, label: 'My Profile', path: '/trainer/profile' },
     { icon: Settings, label: 'Settings', path: '/trainer/settings' },
@@ -142,7 +142,7 @@ export const nutritionistConfig: LayoutConfig = {
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Students', path: '/nutritionist/clients' },
+    { icon: Users, label: 'Friends', path: '/nutritionist/friends' },
     { icon: MessageCircle, label: 'Messages', path: '/nutritionist/messages' },
     { icon: User, label: 'My Profile', path: '/nutritionist/profile' },
     { icon: Settings, label: 'Settings', path: '/nutritionist/settings' },
