@@ -4,7 +4,10 @@ import { useUser } from '@/components/user/UserProvider'
 import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
+  Check,
   MapPin,
+  Calendar,
+  Zap,
   Grid,
   List,
   Loader2,
@@ -22,13 +25,16 @@ import { postsApi } from '@/lib/api/postsApi'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
-import { uploadAvatar, deleteAvatar } from '@/lib/api/userApi'
+import { uploadAvatar, deleteAvatar, uploadBanner, deleteBanner } from '@/lib/api/userApi'
+import { updateUserProfile } from '@/lib/api/userApi'
+import { getCitiesForCountry, getCountries, getCountryName, localizeCityName, localizeCountryName, resolveCountryCodeByName, translateCityName } from '@/lib/data/countries'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+import { useLanguage } from '@/components/language/LanguageProvider'
 
 // ─── Grid cell with optimistic likes ───
 function GridCell({
@@ -253,10 +259,13 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 export default function UserProfilePage() {
   const { user, updateUser } = useUser()
   const { level } = useLevel()
+  const { language } = useLanguage()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
+  const tc = useTranslations('common')
   const tp = useTranslations('profile')
   const tPosts = useTranslations('posts')
+  const tr = useTranslations('auth.register')
 
   const [postIds, setPostIds] = useState<string[]>([])
   const [isLoadingPosts, setIsLoadingPosts] = useState(true)
@@ -270,11 +279,67 @@ export default function UserProfilePage() {
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [toastData, setToastData] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [isEditingProfileInfo, setIsEditingProfileInfo] = useState(false)
+  const [profileBioInput, setProfileBioInput] = useState('')
+  const [profileCountryCodeInput, setProfileCountryCodeInput] = useState('')
+  const [profileCityInput, setProfileCityInput] = useState('')
+  const [savingProfileInfo, setSavingProfileInfo] = useState(false)
+  const [showProfileSaved, setShowProfileSaved] = useState(false)
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const savedToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Calculate level progress from LevelProvider
   const currentLevel = level?.currentLevel ?? user?.level ?? 1
+  const currentXp = level?.currentXp ?? user?.xp ?? 0
+  const requiredXp = level?.requiredXpForNextLevel ?? user?.xpToNextLevel ?? 1000
+  const levelProgress = Math.min(100, Math.max(0, requiredXp > 0 ? (currentXp / requiredXp) * 100 : 0))
+
+  const profileChecks = [
+    !!user?.avatarUrl,
+    !!user?.bio,
+    !!(user?.city || user?.country),
+  ]
+  const completionPercent = Math.round((profileChecks.filter(Boolean).length / profileChecks.length) * 100)
+  const joinedDate = user?.createdAt ? new Date(user.createdAt) : null
+  const userRole = String(user?.role ?? '').toLowerCase()
+  const isExpertRole = userRole === 'trainer' || userRole === 'nutritionist' || userRole === '1' || userRole === '2'
+
+  const countries = getCountries(language)
+  const availableCities = profileCountryCodeInput ? getCitiesForCountry(profileCountryCodeInput, language) : []
+
+  const resolveCountryCode = useCallback((countryName?: string | null) => {
+    return resolveCountryCodeByName(countryName) || ''
+  }, [])
+
+  const localizedCountry = localizeCountryName(user?.country, language)
+  const localizedCity = localizeCityName(user?.city, user?.country, language)
+
+  useEffect(() => {
+    setProfileBioInput(user?.bio || '')
+    const countryCode = resolveCountryCode(user?.country)
+    setProfileCountryCodeInput(countryCode)
+
+    if (!countryCode || !user?.city) {
+      setProfileCityInput('')
+      return
+    }
+
+    const cityMatch = getCitiesForCountry(countryCode, language).find(c =>
+      c.value.toLowerCase() === user.city!.toLowerCase() ||
+      c.label.toLowerCase() === user.city!.toLowerCase() ||
+      translateCityName(c.value, language).toLowerCase() === user.city!.toLowerCase()
+    )
+    setProfileCityInput(cityMatch?.value || '')
+  }, [user?.bio, user?.country, user?.city, resolveCountryCode, language])
+
+  useEffect(() => {
+    return () => {
+      if (savedToastTimerRef.current) {
+        clearTimeout(savedToastTimerRef.current)
+      }
+    }
+  }, [])
 
   const loadPosts = useCallback(async (pageNum: number, append: boolean = false) => {
     // Abort previous request
@@ -324,6 +389,8 @@ export default function UserProfilePage() {
 
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [deletingAvatar, setDeletingAvatar] = useState(false)
+  const [uploadingBanner, setUploadingBanner] = useState(false)
+  const [deletingBanner, setDeletingBanner] = useState(false)
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -366,6 +433,47 @@ export default function UserProfilePage() {
     }
   }
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      alert(tp('toasts.avatarSelectImage'))
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      alert(tp('toasts.avatarSizeLimit'))
+      return
+    }
+
+    try {
+      setUploadingBanner(true)
+      const response = await uploadBanner(file)
+      if (response.bannerUrl) {
+        updateUser({ bannerUrl: response.bannerUrl })
+      }
+    } catch (error) {
+      console.error('Failed to upload banner:', error)
+      alert(tp('toasts.avatarUploadError'))
+    } finally {
+      setUploadingBanner(false)
+    }
+  }
+
+  const handleBannerDelete = async () => {
+    if (!confirm(tp('toasts.avatarDeleteConfirm'))) return
+    try {
+      setDeletingBanner(true)
+      await deleteBanner()
+      updateUser({ bannerUrl: null })
+    } catch (error) {
+      console.error('Failed to delete banner:', error)
+      alert(tp('toasts.avatarDeleteError'))
+    } finally {
+      setDeletingBanner(false)
+    }
+  }
+
   const handleDeletePost = async (postId: string) => {
     if (!confirm(tPosts('deleteConfirm'))) return
     try {
@@ -381,6 +489,39 @@ export default function UserProfilePage() {
       setToastData({ message, type: 'error' })
     } finally {
       setDeletingPostId(null)
+    }
+  }
+
+  const handleSaveProfileInfo = async () => {
+    try {
+      setSavingProfileInfo(true)
+      const trimmedBio = profileBioInput.trim()
+      const translatedCountry = profileCountryCodeInput ? getCountryName(profileCountryCodeInput, language) : ''
+      const translatedCity = profileCityInput ? translateCityName(profileCityInput, language) : ''
+
+      const response = await updateUserProfile({
+        bio: trimmedBio,
+        country: translatedCountry,
+        city: translatedCity,
+      })
+
+      updateUser({
+        bio: response.user?.bio ?? null,
+        country: response.user?.country ?? null,
+        city: response.user?.city ?? null,
+      })
+      setIsEditingProfileInfo(false)
+      setShowProfileSaved(true)
+      if (savedToastTimerRef.current) {
+        clearTimeout(savedToastTimerRef.current)
+      }
+      savedToastTimerRef.current = setTimeout(() => setShowProfileSaved(false), 1800)
+      setToastData({ message: tp('toasts.profileUpdated'), type: 'success' })
+    } catch (error) {
+      console.error('Failed to update profile info:', error)
+      setToastData({ message: tp('toasts.profileUpdateError'), type: 'error' })
+    } finally {
+      setSavingProfileInfo(false)
     }
   }
 
@@ -400,7 +541,50 @@ export default function UserProfilePage() {
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB]" />
+          <div className="relative h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] overflow-hidden">
+            {user?.bannerUrl && (
+              <img
+                src={getMediaUrl(user.bannerUrl) || ''}
+                alt="Profile banner"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute top-2 right-2 flex items-center gap-1.5">
+              <input
+                type="file"
+                id="user-banner-upload"
+                accept="image/*"
+                onChange={handleBannerUpload}
+                className="hidden"
+              />
+              <label
+                htmlFor="user-banner-upload"
+                className="p-1.5 bg-black/45 rounded-full border border-white/20 hover:bg-black/60 transition-colors cursor-pointer"
+                title={tp('editProfile')}
+              >
+                {uploadingBanner ? (
+                  <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-3.5 h-3.5 text-white" />
+                )}
+              </label>
+              {user?.bannerUrl && (
+                <button
+                  type="button"
+                  onClick={handleBannerDelete}
+                  disabled={deletingBanner}
+                  className="p-1.5 bg-black/45 rounded-full border border-white/20 hover:bg-red-500/40 transition-colors"
+                  title={tc('delete')}
+                >
+                  {deletingBanner ? (
+                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5 text-red-200" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
 
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-16 relative z-10">
@@ -455,39 +639,176 @@ export default function UserProfilePage() {
               </div>
               <div className="flex-1 pb-2">
                 <h1 className="text-xl font-bold text-white">{user?.fullName || 'User'}</h1>
-                <div className="flex items-center gap-5 mt-2">
-                  <Link href="/user/journey" className="text-center hover:opacity-70 transition-opacity">
-                    <span className="text-sm font-bold text-white">{(user?.workoutsCompleted || 0).toLocaleString()}</span>
-                    <p className="text-xs text-gray-400 leading-tight">{tp('workouts')}</p>
-                  </Link>
-                  <div className="w-px h-7 bg-white/10" />
-                  <Link href="/user/friends" className="text-center hover:opacity-70 transition-opacity">
-                    <span className="text-sm font-bold text-white">{(user?.followersCount || 0).toLocaleString()}</span>
-                    <p className="text-xs text-gray-400 leading-tight">{tp('followers')}</p>
-                  </Link>
-                  <div className="w-px h-7 bg-white/10" />
-                  <Link href="/user/friends" className="text-center hover:opacity-70 transition-opacity">
-                    <span className="text-sm font-bold text-white">{(user?.followingCount || 0).toLocaleString()}</span>
-                    <p className="text-xs text-gray-400 leading-tight">{tp('following')}</p>
-                  </Link>
-                  <div className="w-px h-7 bg-white/10" />
-                  <Link href="/user/achievements" className="text-center hover:opacity-70 transition-opacity">
-                    <span className="text-sm font-bold text-white">{(user?.achievementsCount || 0).toLocaleString()}</span>
-                    <p className="text-xs text-gray-400 leading-tight">{tp('achievements')}</p>
-                  </Link>
+
+                <div className="mt-3 flex items-center gap-3 text-xs text-gray-400">
+                  <div className="inline-flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-[#3B82F6]" />
+                    <span>{tp('xp')}: {currentXp.toLocaleString()}</span>
+                  </div>
+                  {joinedDate && (
+                    <div className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                      <span>{tp('joined')}: {joinedDate.toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex justify-between text-[11px] text-gray-400 mb-1">
+                    <span>Lv. {currentLevel}</span>
+                    <span>{currentXp} / {requiredXp} XP</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] transition-all"
+                      style={{ width: `${levelProgress}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4">
-              {user?.bio && <p className="text-sm text-gray-300">{user.bio}</p>}
-              {(user?.city || user?.country) && (
-                <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>{[user?.city, user?.country].filter(Boolean).join(', ')}</span>
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Link href="/user/journey" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
+                <p className="text-base font-bold text-white">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-gray-400">{tp('workouts')}</p>
+              </Link>
+              <Link href="/user/friends" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
+                <p className="text-base font-bold text-white">{(user?.followersCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-gray-400">{tp('followers')}</p>
+              </Link>
+              <Link href="/user/friends" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
+                <p className="text-base font-bold text-white">{(user?.followingCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-gray-400">{tp('following')}</p>
+              </Link>
+              <Link href="/user/achievements" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
+                <p className="text-base font-bold text-white">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-gray-400">{tp('achievements')}</p>
+              </Link>
+            </div>
+
+            <div className="mt-4 rounded-lg border border-white/10 bg-[#0A0A0A] p-3">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <p className="text-xs uppercase tracking-wide text-gray-500">{tp('aboutMe')}</p>
+                {!isEditingProfileInfo ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingProfileInfo(true)}
+                    className="text-xs text-[#93C5FD] hover:text-white transition-colors"
+                  >
+                    {tp('editProfile')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingProfileInfo(false)
+                      setProfileBioInput(user?.bio || '')
+                      const resetCode = resolveCountryCode(user?.country)
+                      setProfileCountryCodeInput(resetCode)
+                      const resetCity = user?.city
+                        ? getCitiesForCountry(resetCode, language).find(c =>
+                            c.value.toLowerCase() === user.city!.toLowerCase() ||
+                            c.label.toLowerCase() === user.city!.toLowerCase() ||
+                            translateCityName(c.value, language).toLowerCase() === user.city!.toLowerCase()
+                          )?.value || ''
+                        : ''
+                      setProfileCityInput(resetCity)
+                    }}
+                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                  >
+                    {tc('cancel')}
+                  </button>
+                )}
+              </div>
+
+              {isEditingProfileInfo ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={profileBioInput}
+                    onChange={(e) => setProfileBioInput(e.target.value)}
+                    rows={3}
+                    maxLength={1000}
+                    placeholder={tp('aboutMePlaceholder')}
+                    className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/60 resize-none"
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <select
+                      value={profileCountryCodeInput}
+                      onChange={(e) => {
+                        setProfileCountryCodeInput(e.target.value)
+                        setProfileCityInput('')
+                      }}
+                      className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#3B82F6]/60"
+                    >
+                      <option value="">{tr('selectCountry')}</option>
+                      {countries.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={profileCityInput}
+                      onChange={(e) => setProfileCityInput(e.target.value)}
+                      disabled={!profileCountryCodeInput}
+                      className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#3B82F6]/60 disabled:opacity-50"
+                    >
+                      <option value="">{profileCountryCodeInput ? tr('selectCity') : tr('selectCountry')}</option>
+                      {availableCities.map((city) => (
+                        <option key={city.value} value={city.value}>
+                          {city.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex justify-end">
+                    {showProfileSaved && (
+                      <span className="mr-2 inline-flex items-center gap-1 text-emerald-400 text-xs animate-pulse">
+                        <Check className="w-3.5 h-3.5" />
+                        {tp('toasts.profileUpdated')}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleSaveProfileInfo}
+                      disabled={savingProfileInfo}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                    >
+                      {savingProfileInfo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                      {tc('save')}
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-300">{user?.bio || tp('addDescription')}</p>
+                  <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>
+                      {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
+                    </span>
+                  </div>
+                </>
               )}
             </div>
+
+            {completionPercent < 100 && (
+              <div className="mt-4 rounded-lg border border-[#3B82F6]/30 bg-[#3B82F6]/10 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{tp('fillProfile')}</p>
+                    <p className="text-xs text-gray-300 mt-1">
+                      {isExpertRole ? tp('fillProfileDescription') : tp('fillProfileDescriptionUser')}
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold text-[#93C5FD]">{completionPercent}%</span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB]" style={{ width: `${completionPercent}%` }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -64,11 +64,13 @@ public class UserController : BaseApiController
                 email = user.Email,
                 phone = user.Phone ?? "",
                 avatarUrl = user.AvatarUrl ?? "",
+                bannerUrl = user.BannerUrl ?? "",
                 theme = user.Settings?.Theme ?? "light",
                 pushNotificationsEnabled = user.PushNotificationsEnabled,
                 role = user.Role,
                 country = user.Country,
                 city = user.City,
+                bio = user.Bio,
                 gender = user.Gender?.ToString(),
                 createdAt = user.CreatedAt,
                 followingCount = followingCount,
@@ -110,6 +112,19 @@ public class UserController : BaseApiController
                 user.Country = request.Country;
             if (!string.IsNullOrEmpty(request.City))
                 user.City = request.City;
+            if (request.Bio != null)
+                user.Bio = string.IsNullOrWhiteSpace(request.Bio) ? null : request.Bio.Trim();
+            if (request.Gender != null)
+            {
+                if (string.IsNullOrWhiteSpace(request.Gender))
+                {
+                    user.Gender = null;
+                }
+                else if (Enum.TryParse<Deviny.Domain.Enums.Gender>(request.Gender, true, out var parsedGender))
+                {
+                    user.Gender = parsedGender;
+                }
+            }
 
             await _userRepository.UpdateAsync(user);
 
@@ -133,10 +148,13 @@ public class UserController : BaseApiController
                     email = user.Email,
                     phone = user.Phone,
                     avatarUrl = user.AvatarUrl,
+                    bannerUrl = user.BannerUrl,
                     theme = user.Settings?.Theme ?? "light",
                     pushNotificationsEnabled = user.PushNotificationsEnabled,
                     country = user.Country,
-                    city = user.City
+                    city = user.City,
+                    bio = user.Bio,
+                    gender = user.Gender?.ToString()
                 }
             });
         }
@@ -298,6 +316,104 @@ public class UserController : BaseApiController
         }
     }
 
+    [HttpPost("banner")]
+    public async Task<ActionResult> UploadBanner([FromForm] IFormFile file)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { message = "Пользователь не найден" });
+            }
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { message = "Файл не выбран" });
+            }
+
+            if (file.Length > 8 * 1024 * 1024)
+            {
+                return BadRequest(new { message = "Размер файла не должен превышать 8 МБ" });
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest(new { message = "Допустимые форматы: JPG, JPEG, PNG, GIF, WEBP" });
+            }
+
+            if (!string.IsNullOrEmpty(user.BannerUrl))
+            {
+                var oldBannerPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.BannerUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldBannerPath))
+                {
+                    System.IO.File.Delete(oldBannerPath);
+                }
+            }
+
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "banners");
+            Directory.CreateDirectory(uploadPath);
+            var filePath = Path.Combine(uploadPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var bannerUrl = $"/uploads/banners/{fileName}";
+            user.BannerUrl = bannerUrl;
+            await _userRepository.UpdateAsync(user);
+
+            return Ok(new
+            {
+                message = "Баннер успешно загружен",
+                bannerUrl = bannerUrl
+            });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ошибка при загрузке баннера" });
+        }
+    }
+
+    [HttpDelete("banner")]
+    public async Task<ActionResult> DeleteBanner()
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { message = "Пользователь не найден" });
+            }
+
+            if (string.IsNullOrEmpty(user.BannerUrl))
+            {
+                return NotFound(new { message = "Баннер не найден" });
+            }
+
+            var bannerPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.BannerUrl.TrimStart('/'));
+            if (System.IO.File.Exists(bannerPath))
+            {
+                System.IO.File.Delete(bannerPath);
+            }
+
+            user.BannerUrl = null;
+            await _userRepository.UpdateAsync(user);
+
+            return NoContent();
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Ошибка при удалении баннера" });
+        }
+    }
+
     /// <summary>Get a public profile for any user by their ID.</summary>
     [HttpGet("/api/users/{userId:guid}/profile")]
     [AllowAnonymous]
@@ -366,9 +482,11 @@ public class UserController : BaseApiController
                 lastName = user.LastName,
                 fullName = user.FullName,
                 avatarUrl = user.AvatarUrl ?? "",
+                bannerUrl = user.BannerUrl ?? "",
                 role = user.Role,
                 country = user.Country,
                 city = user.City,
+                bio = user.Bio,
                 createdAt = user.CreatedAt,
                 followingCount = followingCount,
                 followersCount = followerCount,

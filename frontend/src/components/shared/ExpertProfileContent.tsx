@@ -16,11 +16,13 @@ import {
   X,
 } from 'lucide-react'
 import { API_URL, fetchWithAuth, getMediaUrl } from '@/lib/config'
+import { localizeCityName, localizeCountryName } from '@/lib/data/countries'
 import { useTranslations } from 'next-intl'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import ChatModal from '@/components/chat/ChatModal'
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useLanguage } from '@/components/language/LanguageProvider'
 
 interface ExpertProfileContentProps {
   basePath: string
@@ -31,6 +33,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
   const router = useRouter()
   const accent = useAccentColors()
   const slug = params.slug as string
+  const { language } = useLanguage()
   const t = useTranslations('experts')
   const tc = useTranslations('common')
   const { user: currentUser } = useAuth()
@@ -105,6 +108,8 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
         {/* Profile Content */}
         {!isLoading && !error && profile && (() => {
           const expertAccent = getAccentColorsByRole(profile.trainer.role)
+          const localizedCountry = localizeCountryName(profile.trainer.country, language)
+          const localizedCity = localizeCityName(profile.trainer.city, profile.trainer.country, language)
           return (
             <div className="space-y-4">
               {/* Header Card */}
@@ -157,7 +162,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                         <Globe className="w-4 h-4" />
                         <span>
                           {profile.trainer.location ||
-                            [profile.trainer.city, profile.trainer.country].filter(Boolean).join(', ')}
+                            [localizedCity, localizedCountry].filter(Boolean).join(', ')}
                         </span>
                       </div>
                     )}

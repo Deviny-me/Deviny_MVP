@@ -27,6 +27,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.Property(u => u.AvatarUrl)
             .HasMaxLength(500);
+
+        builder.Property(u => u.BannerUrl)
+            .HasMaxLength(500);
         
         builder.Property(u => u.Slug)
             .HasMaxLength(100);
@@ -40,6 +43,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         
         builder.Property(u => u.City)
             .HasMaxLength(100);
+
+        builder.Property(u => u.Bio)
+            .HasMaxLength(1000);
         
         // Ignore computed property
         builder.Ignore(u => u.FullName);
