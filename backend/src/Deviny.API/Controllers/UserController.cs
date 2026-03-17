@@ -17,6 +17,7 @@ public class UserController : BaseApiController
     private readonly IUserAchievementRepository _userAchievementRepository;
     private readonly IUserPostRepository _userPostRepository;
     private readonly ApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public UserController(
         IUserRepository userRepository,
@@ -24,7 +25,8 @@ public class UserController : BaseApiController
         IUserFollowRepository userFollowRepository,
         IUserAchievementRepository userAchievementRepository,
         IUserPostRepository userPostRepository,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
@@ -32,6 +34,7 @@ public class UserController : BaseApiController
         _userAchievementRepository = userAchievementRepository;
         _userPostRepository = userPostRepository;
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpGet("profile")]
@@ -124,6 +127,14 @@ public class UserController : BaseApiController
             }
 
             await _userRepository.UpdateAsync(user);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                userId,
+                "profile",
+                "updated",
+                "user-profile",
+                user.Id,
+                new { userId = user.Id });
 
             return Ok(new
             {
@@ -241,6 +252,14 @@ public class UserController : BaseApiController
             user.AvatarUrl = avatarUrl;
             await _userRepository.UpdateAsync(user);
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                userId,
+                "profile",
+                "updated",
+                "user-profile",
+                user.Id,
+                new { userId = user.Id, avatarUrl });
+
             return Ok(new
             {
                 message = "Аватар успешно загружен",
@@ -280,6 +299,14 @@ public class UserController : BaseApiController
             // Update user
             user.AvatarUrl = null;
             await _userRepository.UpdateAsync(user);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                userId,
+                "profile",
+                "updated",
+                "user-profile",
+                user.Id,
+                new { userId = user.Id, avatarUrl = (string?)null });
 
             return NoContent();
         }

@@ -1,4 +1,5 @@
 ﻿using Deviny.Application.Common;
+using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Posts.Commands;
 using Deviny.Application.Features.Posts.DTOs;
 using Deviny.Application.Features.Posts.Queries;
@@ -16,11 +17,16 @@ public class PostsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<PostsController> _logger;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public PostsController(IMediator mediator, ILogger<PostsController> logger)
+    public PostsController(
+        IMediator mediator,
+        ILogger<PostsController> logger,
+        IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
         _logger = logger;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -161,6 +167,12 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} liked post {PostId}", userId, postId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "post",
+            postId,
+            new { reason = "like", actorUserId = userId.Value, stats = result.Value });
         return Ok(result.Value);
     }
 
@@ -204,6 +216,12 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} unliked post {PostId}", userId, postId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "post",
+            postId,
+            new { reason = "unlike", actorUserId = userId.Value, stats = result.Value });
         return Ok(result.Value);
     }
 
@@ -276,6 +294,18 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} commented on post {PostId}", userId, postId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "post",
+            postId,
+            new
+            {
+                reason = "comment-added",
+                actorUserId = userId.Value,
+                commentId = result.Value.Id,
+                parentCommentId = result.Value.ParentCommentId
+            });
         return CreatedAtAction(nameof(GetComments), new { postId }, result.Value);
     }
 
@@ -332,6 +362,17 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} reposted post {PostId}", userId, postId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "post",
+            postId,
+            new
+            {
+                reason = "repost-created",
+                actorUserId = userId.Value,
+                repostId = result.Value.Id
+            });
         return CreatedAtAction(nameof(GetPost), new { postId = result.Value.Id }, result.Value);
     }
 
@@ -367,6 +408,12 @@ public class PostsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} removed repost of post {PostId}", userId, postId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "post",
+            postId,
+            new { reason = "repost-removed", actorUserId = userId.Value, stats = result.Value });
         return Ok(result.Value);
     }
 }

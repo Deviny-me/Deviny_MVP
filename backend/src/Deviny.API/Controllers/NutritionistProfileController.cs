@@ -17,19 +17,22 @@ public class NutritionistProfileController : BaseApiController
     private readonly ISlugGenerator _slugGenerator;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public NutritionistProfileController(
         ITrainerProfileRepository trainerProfileRepository,
         IUserRepository userRepository,
         ISlugGenerator slugGenerator,
         IConfiguration configuration,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
         _trainerProfileRepository = trainerProfileRepository;
         _userRepository = userRepository;
         _slugGenerator = slugGenerator;
         _configuration = configuration;
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     private async Task<Domain.Entities.User> GetNutritionistUserAsync()
@@ -196,6 +199,14 @@ public class NutritionistProfileController : BaseApiController
             await _trainerProfileRepository.UpdateAsync(profile);
             await _userRepository.UpdateAsync(user);
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                profile.Id,
+                new { userId = user.Id, role = "nutritionist" });
+
             return Ok(new { message = "Profile updated successfully" });
         }
         catch (UnauthorizedAccessException ex)
@@ -261,6 +272,14 @@ public class NutritionistProfileController : BaseApiController
             _context.TrainerCertificates.Add(certificate);
             await _context.SaveChangesAsync();
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "certificate",
+                certificate.Id,
+                new { userId = user.Id, role = "nutritionist" });
+
             return CreatedAtAction(nameof(GetMyProfile), new CertificateDto
             {
                 Id = certificate.Id,
@@ -308,6 +327,14 @@ public class NutritionistProfileController : BaseApiController
             _context.TrainerCertificates.Remove(certificate);
             await _context.SaveChangesAsync();
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "certificate",
+                certificateId,
+                new { userId = user.Id, role = "nutritionist" });
+
             return NoContent();
         }
         catch (UnauthorizedAccessException ex)
@@ -333,6 +360,14 @@ public class NutritionistProfileController : BaseApiController
 
             profile.AboutText = request.Text;
             await _trainerProfileRepository.UpdateAsync(profile);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                profile.Id,
+                new { userId = user.Id, role = "nutritionist" });
 
             return Ok(new { message = "About text updated successfully" });
         }
@@ -394,6 +429,14 @@ public class NutritionistProfileController : BaseApiController
             _context.TrainerSpecializations.Add(trainerSpec);
             await _context.SaveChangesAsync();
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "specialization",
+                specializationId,
+                new { userId = user.Id, role = "nutritionist" });
+
             return Ok(new SpecializationDto
             {
                 Id = specializationId,
@@ -429,6 +472,14 @@ public class NutritionistProfileController : BaseApiController
 
             _context.TrainerSpecializations.Remove(trainerSpec);
             await _context.SaveChangesAsync();
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "specialization",
+                specializationId,
+                new { userId = user.Id, role = "nutritionist" });
 
             return NoContent();
         }
@@ -481,6 +532,14 @@ public class NutritionistProfileController : BaseApiController
             user.AvatarUrl = avatarUrl;
             await _userRepository.UpdateAsync(user);
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                null,
+                new { userId = user.Id, role = "nutritionist", avatarUrl });
+
             return Ok(new { message = "Аватар успешно загружен", avatarUrl });
         }
         catch (UnauthorizedAccessException ex)
@@ -509,6 +568,14 @@ public class NutritionistProfileController : BaseApiController
 
             user.AvatarUrl = null;
             await _userRepository.UpdateAsync(user);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                null,
+                new { userId = user.Id, role = "nutritionist", avatarUrl = (string?)null });
 
             return NoContent();
         }

@@ -1,6 +1,7 @@
 using Deviny.Application.Features.MealPrograms.Commands;
 using Deviny.Application.Features.MealPrograms.DTOs;
 using Deviny.Application.Features.MealPrograms.Queries;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,10 +15,12 @@ namespace Deviny.API.Controllers;
 public class NutritionistMealProgramsController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public NutritionistMealProgramsController(IMediator mediator)
+    public NutritionistMealProgramsController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpGet]
@@ -70,6 +73,12 @@ public class NutritionistMealProgramsController : BaseApiController
             };
 
             var program = await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "created",
+                "meal-program",
+                program.Id,
+                new { trainerId = userId.Value });
             return CreatedAtAction(nameof(GetMyMealPrograms), new { id = program.Id }, program);
         }
         catch (ArgumentException ex)
@@ -118,6 +127,12 @@ public class NutritionistMealProgramsController : BaseApiController
             };
 
             var program = await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "updated",
+                "meal-program",
+                program.Id,
+                new { trainerId = userId.Value });
             return Ok(program);
         }
         catch (KeyNotFoundException ex)
@@ -154,6 +169,12 @@ public class NutritionistMealProgramsController : BaseApiController
             };
 
             await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "deleted",
+                "meal-program",
+                id,
+                new { trainerId = userId.Value });
             return NoContent();
         }
         catch (KeyNotFoundException ex)

@@ -60,6 +60,7 @@ import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreCo
 import { useAuth } from '@/features/auth/AuthContext'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { ProfileReviewsTab } from '@/components/shared/ProfileReviewsTab'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 // ─── Grid cell with optimistic likes ───
 function NutritionistGridCell({
@@ -432,6 +433,11 @@ export default function NutritionistProfilePage() {
   useEffect(() => {
     loadPosts(1)
   }, [loadPosts])
+
+  useRealtimeScopeRefresh(['profile', 'posts'], () => {
+    loadProfile()
+    loadPosts(1)
+  })
 
   const handleLoadMorePosts = useCallback(() => {
     if (!isLoadingPosts && postsHasMore && postIds.length > 0) {

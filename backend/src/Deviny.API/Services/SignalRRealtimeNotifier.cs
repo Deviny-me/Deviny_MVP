@@ -54,4 +54,74 @@ public class SignalRRealtimeNotifier : IRealtimeNotifier
         await _hubContext.Clients.Group(group).SendAsync("FriendRemoved", data, ct);
         _logger.LogDebug("Sent friend removed notification to user {UserId}", userId);
     }
+
+    public async Task SendEntityChangedAsync(
+        Guid userId,
+        string scope,
+        string action,
+        string? entityType = null,
+        Guid? entityId = null,
+        object? payload = null,
+        CancellationToken ct = default)
+    {
+        var group = $"user:{userId.ToString().ToLowerInvariant()}";
+        await _hubContext.Clients.Group(group).SendAsync("EntityChanged", new
+        {
+            scope,
+            action,
+            entityType,
+            entityId,
+            payload,
+            changedAtUtc = DateTime.UtcNow
+        }, ct);
+    }
+
+    public async Task SendEntityChangedToUsersAsync(
+        IEnumerable<Guid> userIds,
+        string scope,
+        string action,
+        string? entityType = null,
+        Guid? entityId = null,
+        object? payload = null,
+        CancellationToken ct = default)
+    {
+        var targetGroups = userIds
+            .Distinct()
+            .Select(id => $"user:{id.ToString().ToLowerInvariant()}")
+            .ToArray();
+
+        if (targetGroups.Length == 0)
+        {
+            return;
+        }
+
+        await _hubContext.Clients.Groups(targetGroups).SendAsync("EntityChanged", new
+        {
+            scope,
+            action,
+            entityType,
+            entityId,
+            payload,
+            changedAtUtc = DateTime.UtcNow
+        }, ct);
+    }
+
+    public async Task SendGlobalEntityChangedAsync(
+        string scope,
+        string action,
+        string? entityType = null,
+        Guid? entityId = null,
+        object? payload = null,
+        CancellationToken ct = default)
+    {
+        await _hubContext.Clients.All.SendAsync("EntityChanged", new
+        {
+            scope,
+            action,
+            entityType,
+            entityId,
+            payload,
+            changedAtUtc = DateTime.UtcNow
+        }, ct);
+    }
 }

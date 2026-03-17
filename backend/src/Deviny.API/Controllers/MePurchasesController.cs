@@ -1,6 +1,7 @@
 using Deviny.Application.Features.Purchases.Commands;
 using Deviny.Application.Features.Purchases.DTOs;
 using Deviny.Application.Features.Purchases.Queries;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,16 @@ public class MePurchasesController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<MePurchasesController> _logger;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public MePurchasesController(IMediator mediator, ILogger<MePurchasesController> logger)
+    public MePurchasesController(
+        IMediator mediator,
+        ILogger<MePurchasesController> logger,
+        IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
         _logger = logger;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -43,6 +49,13 @@ public class MePurchasesController : BaseApiController
 
             if (!result.Success)
                 return BadRequest(new { error = result.Error });
+
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "purchases",
+                "created",
+                "purchase",
+                result.PurchaseId,
+                new { programId = request.ProgramId, programType = request.ProgramType, tier = request.Tier });
 
             return Ok(new { purchaseId = result.PurchaseId });
         }
@@ -102,6 +115,13 @@ public class MePurchasesController : BaseApiController
             var result = await _mediator.Send(command);
             if (!result.Success)
                 return BadRequest(new { error = result.Error });
+
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "purchases",
+                "updated",
+                "purchase",
+                purchaseId,
+                new { status = "completed" });
 
             return NoContent();
         }

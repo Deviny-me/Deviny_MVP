@@ -1,6 +1,7 @@
 using Deviny.Application.Features.Programs.Commands;
 using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Application.Features.Programs.Queries;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,10 +13,12 @@ namespace Deviny.API.Controllers;
 public class TrainerProgramsController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public TrainerProgramsController(IMediator mediator)
+    public TrainerProgramsController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpGet]
@@ -70,6 +73,12 @@ public class TrainerProgramsController : BaseApiController
             };
 
             var program = await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "created",
+                "training-program",
+                program.Id,
+                new { trainerId = trainerId.Value });
             return CreatedAtAction(nameof(GetMyPrograms), new { id = program.Id }, program);
         }
         catch (ArgumentException ex)
@@ -119,6 +128,12 @@ public class TrainerProgramsController : BaseApiController
             };
 
             var program = await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "updated",
+                "training-program",
+                program.Id,
+                new { trainerId = trainerId.Value });
             return Ok(program);
         }
         catch (KeyNotFoundException ex)
@@ -155,6 +170,12 @@ public class TrainerProgramsController : BaseApiController
             };
 
             await _mediator.Send(command);
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "programs",
+                "deleted",
+                "training-program",
+                id,
+                new { trainerId = trainerId.Value });
             return NoContent();
         }
         catch (KeyNotFoundException ex)

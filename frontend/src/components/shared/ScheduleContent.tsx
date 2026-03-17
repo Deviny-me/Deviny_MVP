@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { ScheduleEvent, CreateScheduleEventRequest, ScheduleEventType, ScheduleStats, GetEventsQuery, StartCallResponse } from '@/types/schedule'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export interface ScheduleApiAdapter {
   getEvents(query?: GetEventsQuery): Promise<ScheduleEvent[]>
@@ -65,6 +66,13 @@ function getWeekDates(start: Date): Date[] {
     dates.push(d)
   }
   return dates
+}
+
+function formatDateForInput(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }: ScheduleContentProps) {
@@ -140,6 +148,11 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
     }
   }
 
+  useRealtimeScopeRefresh(['schedule'], () => {
+    loadEvents()
+    loadStats()
+  })
+
   const resetForm = () => {
     setTitle('')
     setEventType('Online')
@@ -154,7 +167,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
   const openCreateModal = () => {
     resetForm()
-    setStartDate(selectedDate.toISOString().split('T')[0])
+    setStartDate(formatDateForInput(selectedDate))
     setStartTime('10:00')
     setShowCreateModal(true)
   }
@@ -164,7 +177,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
     setTitle(event.title)
     setEventType(event.type)
     const eventDate = new Date(event.startAt)
-    setStartDate(eventDate.toISOString().split('T')[0])
+    setStartDate(formatDateForInput(eventDate))
     setStartTime(eventDate.toTimeString().slice(0, 5))
     setDuration(event.durationMinutes.toString())
     setLocation(event.location || '')
@@ -287,6 +300,18 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
   const formatTime = (dateStr: string) => {
     return new Date(dateStr).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getListParticipantName = (event: ScheduleEvent) => {
+    if (currentUserId && event.studentId === currentUserId) {
+      return event.trainerName || event.studentName || null
+    }
+
+    if (currentUserId && event.trainerId === currentUserId) {
+      return event.studentName || event.trainerName || null
+    }
+
+    return event.studentName || event.trainerName || null
   }
 
   return (
@@ -435,16 +460,10 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                           <span>{event.location}</span>
                         </div>
                       )}
-                      {event.studentName && (
+                      {getListParticipantName(event) && (
                         <div className="flex items-center gap-1">
                           <Users className="w-4 h-4" />
-                          <span>{event.studentName}</span>
-                        </div>
-                      )}
-                      {event.trainerName && readOnly && (
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          <span>{event.trainerName}</span>
+                          <span>{getListParticipantName(event)}</span>
                         </div>
                       )}
                     </div>
@@ -488,7 +507,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
           <Calendar className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
-          <p className="text-2xl font-bold text-white">{stats?.totalEvents || 0}</p>
+          <p className="text-2xl font-bold text-white">{todaysEvents.length}</p>
           <p className="text-xs text-gray-400">{t('totalEvents')}</p>
         </div>
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">

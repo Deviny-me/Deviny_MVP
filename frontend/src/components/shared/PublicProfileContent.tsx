@@ -40,7 +40,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
-import { useLanguage } from '@/components/language/LanguageProvider'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 // ─── Expert profile type (returned when user is Trainer/Nutritionist) ───
 interface ExpertProfileData {
@@ -361,6 +361,7 @@ export function PublicProfileContent({
     expertProfile: ExpertProfileData | null
   } | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
+  const [profileReloadVersion, setProfileReloadVersion] = useState(0)
   const [selectedCertificate, setSelectedCertificate] = useState<{ fileUrl: string; title: string } | null>(null)
 
   useEffect(() => {
@@ -395,7 +396,7 @@ export function PublicProfileContent({
       }
     })()
     return () => { cancelled = true }
-  }, [userId, tc])
+  }, [userId, tc, profileReloadVersion])
 
   const authorName = profileData?.fullName || tc('user')
   const authorInitials = (profileData?.firstName?.charAt(0) || authorName?.charAt(0) || 'U').toUpperCase()
@@ -415,6 +416,7 @@ export function PublicProfileContent({
   // ─── Relationship status ───
   const [relationship, setRelationship] = useState<RelationshipStatus | null>(null)
   const [relationshipLoading, setRelationshipLoading] = useState(true)
+  const [relationshipReloadVersion, setRelationshipReloadVersion] = useState(0)
   const [actionLoading, setActionLoading] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
@@ -433,7 +435,7 @@ export function PublicProfileContent({
       }
     })()
     return () => { cancelled = true }
-  }, [userId, currentUserId])
+  }, [userId, currentUserId, relationshipReloadVersion])
 
   // ─── Real-time relationship updates via SignalR ───
   useEffect(() => {
@@ -685,6 +687,14 @@ export function PublicProfileContent({
   useEffect(() => {
     if (userId) loadPosts(1)
   }, [userId, loadPosts])
+
+  useRealtimeScopeRefresh(['posts', 'friends', 'follows', 'profile'], () => {
+    if (userId) {
+      loadPosts(1)
+      setProfileReloadVersion(v => v + 1)
+      setRelationshipReloadVersion(v => v + 1)
+    }
+  })
 
   const handleLoadMore = useCallback(() => {
     if (!isLoading && hasMore && postIds.length > 0) {

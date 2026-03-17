@@ -20,6 +20,7 @@ import { Toast } from '@/components/ui/Toast'
 import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function TrainerHomeFeed() {
   const router = useRouter()
@@ -89,6 +90,11 @@ export function TrainerHomeFeed() {
       console.error('Failed to load feed:', error)
     }
   }
+
+  useRealtimeScopeRefresh(['posts', 'profile'], () => {
+    loadFeed()
+    loadProfile()
+  })
 
   // Handle post deletion
   const handleDeletePost = async (postId: string) => {

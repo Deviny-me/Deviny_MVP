@@ -19,6 +19,7 @@ import { nutritionistProgramsApi } from '@/lib/api/nutritionistProgramsApi'
 import { MealProgramDto, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 const toast = {
   success: (msg: string) => console.log('Success:', msg),
@@ -108,6 +109,10 @@ export default function NutritionistProgramsPage() {
       setLoading(false)
     }
   }
+
+  useRealtimeScopeRefresh(['programs', 'purchases'], () => {
+    loadMealPrograms()
+  })
 
   const allPrograms = mealPrograms.map(toUnified)
 

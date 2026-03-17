@@ -18,6 +18,7 @@ import { PublicProgramDto, PublicMealProgramDto, ProgramCategory } from '@/types
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'Training' | 'Diet' | 'Consultation'
@@ -144,6 +145,10 @@ export default function ProgramsPage() {
       setIsLoading(false)
     }
   }, [])
+
+  useRealtimeScopeRefresh(['programs', 'purchases'], () => {
+    loadAllPrograms()
+  })
 
   // Reload programs on every navigation to this page
   useEffect(() => {

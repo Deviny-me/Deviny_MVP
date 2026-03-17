@@ -1,5 +1,6 @@
 using Deviny.Application.Features.Notifications.Commands;
 using Deviny.Application.Features.Notifications.Queries;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,12 @@ namespace Deviny.API.Controllers;
 public class MeNotificationsController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public MeNotificationsController(IMediator mediator)
+    public MeNotificationsController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -70,6 +73,21 @@ public class MeNotificationsController : BaseApiController
             return NotFound(CreateProblemDetails("Notification.NotFound",
                 "Уведомление не найдено или уже прочитано", 404));
 
+        var unreadCount = await _mediator.Send(new GetMyUnreadNotificationCountQuery
+        {
+            UserId = userId
+        }, ct);
+
+        await _realtimeNotifier.SendUnreadCountAsync(userId, unreadCount, ct);
+        await _realtimeNotifier.SendEntityChangedAsync(
+            userId,
+            "notifications",
+            "updated",
+            "notification",
+            id,
+            new { unreadCount },
+            ct);
+
         return Ok();
     }
 
@@ -85,6 +103,16 @@ public class MeNotificationsController : BaseApiController
         {
             UserId = userId
         }, ct);
+
+        await _realtimeNotifier.SendUnreadCountAsync(userId, 0, ct);
+        await _realtimeNotifier.SendEntityChangedAsync(
+            userId,
+            "notifications",
+            "updated",
+            "notification",
+            null,
+            new { markedReadCount = count, unreadCount = 0 },
+            ct);
 
         return Ok(new { count });
     }

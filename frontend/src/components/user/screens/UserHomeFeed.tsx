@@ -17,6 +17,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { PostCard } from '@/components/posts/PostCard'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function UserHomeFeed() {
   const router = useRouter()
@@ -53,6 +54,10 @@ export function UserHomeFeed() {
       console.error('Failed to load feed:', error)
     }
   }
+
+  useRealtimeScopeRefresh(['posts'], () => {
+    loadFeed()
+  })
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm(tPosts('deleteConfirm'))) return
