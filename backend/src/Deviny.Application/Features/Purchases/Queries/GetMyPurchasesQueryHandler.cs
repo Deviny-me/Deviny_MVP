@@ -1,8 +1,9 @@
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Purchases.DTOs;
+using Deviny.Application.Features.Programs;
+using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Domain.Enums;
 using MediatR;
-using System.Text.Json;
 
 namespace Deviny.Application.Features.Purchases.Queries;
 
@@ -28,6 +29,7 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
             if (pp.ProgramType == ProgramType.Training && pp.TrainingProgram != null)
             {
                 var tp = pp.TrainingProgram;
+                var videos = ParseVideos(tp.TrainingVideosPath);
                 return new PurchasedProgramDto
                 {
                     PurchaseId = pp.Id,
@@ -37,7 +39,8 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                     Description = tp.Description,
                     CoverImageUrl = string.IsNullOrEmpty(tp.CoverImagePath)
                         ? "" : _fileStorage.GetPublicUrl(tp.CoverImagePath),
-                    VideoUrls = ParseVideoPaths(tp.TrainingVideosPath),
+                    VideoUrls = videos.Select(v => v.VideoUrl).ToList(),
+                    Videos = videos,
                     Tier = pp.Tier.ToString(),
                     Category = tp.Category.ToString(),
                     PurchasedAt = pp.PurchasedAt,
@@ -58,6 +61,7 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
             else if (pp.ProgramType == ProgramType.Meal && pp.MealProgram != null)
             {
                 var mp = pp.MealProgram;
+                var videos = ParseVideos(mp.VideosPath);
                 return new PurchasedProgramDto
                 {
                     PurchaseId = pp.Id,
@@ -67,7 +71,8 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                     Description = mp.Description,
                     CoverImageUrl = string.IsNullOrEmpty(mp.CoverImagePath)
                         ? "" : _fileStorage.GetPublicUrl(mp.CoverImagePath),
-                    VideoUrls = ParseVideoPaths(mp.VideosPath),
+                    VideoUrls = videos.Select(v => v.VideoUrl).ToList(),
+                    Videos = videos,
                     Tier = pp.Tier.ToString(),
                     Category = mp.Category.ToString(),
                     PurchasedAt = pp.PurchasedAt,
@@ -100,22 +105,16 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
         }).ToList();
     }
 
-    private List<string> ParseVideoPaths(string? videosJson)
+    private List<ProgramVideoDto> ParseVideos(string? videosJson)
     {
-        if (string.IsNullOrWhiteSpace(videosJson))
-            return new List<string>();
-
-        try
-        {
-            var paths = JsonSerializer.Deserialize<List<string>>(videosJson);
-            return paths?
-                .Where(p => !string.IsNullOrWhiteSpace(p))
-                .Select(p => _fileStorage.GetPublicUrl(p))
-                .ToList() ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
-        }
+        return ProgramVideoJsonHelper.Parse(videosJson)
+            .Where(v => !string.IsNullOrWhiteSpace(v.VideoUrl))
+            .Select(v => new ProgramVideoDto
+            {
+                VideoUrl = _fileStorage.GetPublicUrl(v.VideoUrl),
+                Title = v.Title,
+                Description = v.Description,
+            })
+            .ToList();
     }
 }

@@ -4,7 +4,6 @@ using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using MediatR;
-using System.Text.Json;
 
 namespace Deviny.Application.Features.Programs.Commands;
 
@@ -71,13 +70,16 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         }
 
         // Save training videos
-        var videoUrls = new List<string>();
+        var videos = new List<ProgramVideoDto>();
+        var titles = request.TrainingVideoTitles ?? new List<string>();
+        var descriptions = request.TrainingVideoDescriptions ?? new List<string>();
         if (request.TrainingVideos != null && request.TrainingVideos.Any())
         {
             var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
-            
-            foreach (var video in request.TrainingVideos)
+
+            for (var i = 0; i < request.TrainingVideos.Count; i++)
             {
+                var video = request.TrainingVideos[i];
                 var videoExtension = Path.GetExtension(video.FileName).ToLowerInvariant();
                 
                 if (!videoExtensions.Contains(videoExtension))
@@ -98,7 +100,12 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
                     await video.CopyToAsync(stream, cancellationToken);
                 }
 
-                videoUrls.Add($"/uploads/programs/{videoFileName}");
+                videos.Add(new ProgramVideoDto
+                {
+                    VideoUrl = $"/uploads/programs/{videoFileName}",
+                    Title = i < titles.Count ? (titles[i] ?? string.Empty) : string.Empty,
+                    Description = i < descriptions.Count ? (descriptions[i] ?? string.Empty) : string.Empty,
+                });
             }
         }
 
@@ -118,7 +125,7 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
             IsPublic = request.IsPublic,
             Code = code,
             CoverImagePath = $"/uploads/programs/{coverFileName}",
-            TrainingVideosPath = JsonSerializer.Serialize(videoUrls),
+            TrainingVideosPath = ProgramVideoJsonHelper.Serialize(videos),
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             IsDeleted = false
@@ -180,9 +187,8 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
             Console.Error.WriteLine($"Warning: Failed to publish training program created event: {ex.Message}");
         }
 
-        var videoPaths = string.IsNullOrEmpty(created.TrainingVideosPath) 
-            ? new List<string>() 
-            : JsonSerializer.Deserialize<List<string>>(created.TrainingVideosPath) ?? new List<string>();
+        var videoMetadata = ProgramVideoJsonHelper.Parse(created.TrainingVideosPath);
+        var videoPaths = videoMetadata.Select(v => v.VideoUrl).ToList();
 
         return new ProgramDto
         {
@@ -199,6 +205,7 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
             Code = created.Code,
             CoverImageUrl = created.CoverImagePath,
             TrainingVideoUrls = videoPaths,
+            TrainingVideos = videoMetadata,
             IsPublic = created.IsPublic,
             AverageRating = 0,
             TotalReviews = 0,

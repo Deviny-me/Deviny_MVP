@@ -64,7 +64,9 @@ public class TrainerProgramsController : BaseApiController
                 Category = request.Category,
                 IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
-                TrainingVideos = request.TrainingVideos
+                TrainingVideos = request.TrainingVideos,
+                TrainingVideoTitles = request.TrainingVideoTitles,
+                TrainingVideoDescriptions = request.TrainingVideoDescriptions
             };
 
             var program = await _mediator.Send(command);
@@ -111,7 +113,9 @@ public class TrainerProgramsController : BaseApiController
                 Category = request.Category,
                 IsPublic = request.IsPublic,
                 CoverImage = request.CoverImage,
-                TrainingVideos = request.TrainingVideos
+                TrainingVideos = request.TrainingVideos,
+                TrainingVideoTitles = request.TrainingVideoTitles,
+                TrainingVideoDescriptions = request.TrainingVideoDescriptions
             };
 
             var program = await _mediator.Send(command);

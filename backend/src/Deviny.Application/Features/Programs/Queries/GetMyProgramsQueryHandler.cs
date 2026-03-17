@@ -1,7 +1,6 @@
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Programs.DTOs;
 using MediatR;
-using System.Text.Json;
 
 namespace Deviny.Application.Features.Programs.Queries;
 
@@ -20,9 +19,8 @@ public class GetMyProgramsQueryHandler : IRequestHandler<GetMyProgramsQuery, Lis
 
         return items.Select(s =>
         {
-            var videoPaths = string.IsNullOrEmpty(s.Program.TrainingVideosPath) 
-                ? new List<string>() 
-                : JsonSerializer.Deserialize<List<string>>(s.Program.TrainingVideosPath) ?? new List<string>();
+            var videoMetadata = ProgramVideoJsonHelper.Parse(s.Program.TrainingVideosPath);
+            var videoPaths = videoMetadata.Select(v => v.VideoUrl).ToList();
 
             return new ProgramDto
             {
@@ -39,6 +37,7 @@ public class GetMyProgramsQueryHandler : IRequestHandler<GetMyProgramsQuery, Lis
                 Code = s.Program.Code,
                 CoverImageUrl = s.Program.CoverImagePath,
                 TrainingVideoUrls = videoPaths,
+                TrainingVideos = videoMetadata,
                 IsPublic = s.Program.IsPublic,
                 AverageRating = s.AverageRating,
                 TotalReviews = s.TotalReviews,

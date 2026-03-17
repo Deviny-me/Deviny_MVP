@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
-import { ProgramDto, MealProgramDto, ProgramCategory } from '@/types/program'
+import { ProgramDto, MealProgramDto, ProgramCategory, ProgramVideoDto } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 
 const toast = {
@@ -52,6 +52,7 @@ type ProgramData = {
   totalReviews?: number
   totalPurchases?: number
   videoUrls?: string[]
+  videos?: ProgramVideoDto[]
 }
 
 export default function TrainerProgramDetailPage({
@@ -99,6 +100,7 @@ export default function TrainerProgramDetailPage({
           totalReviews: training.totalReviews,
           totalPurchases: training.totalPurchases,
           videoUrls: training.trainingVideoUrls,
+          videos: training.trainingVideos,
         })
         return
       }
@@ -347,12 +349,23 @@ export default function TrainerProgramDetailPage({
               <h3 className="text-sm font-medium text-gray-400 mb-2">{t('trainingVideos')}</h3>
               <div className="space-y-2">
                 {program.videoUrls.map((url, i) => (
-                  <video
-                    key={i}
-                    src={getMediaUrl(url) || ''}
-                    controls
-                    className="w-full rounded-lg"
-                  />
+                  <div key={i} className="rounded-lg overflow-hidden border border-white/10 bg-[#0A0A0A]">
+                    <video
+                      src={getMediaUrl(url) || ''}
+                      controls
+                      className="w-full rounded-t-lg"
+                    />
+                    {(program.videos?.[i]?.title || program.videos?.[i]?.description) && (
+                      <div className="px-3 py-2">
+                        {program.videos?.[i]?.title && (
+                          <p className="text-sm font-semibold text-white">{program.videos[i].title}</p>
+                        )}
+                        {program.videos?.[i]?.description && (
+                          <p className="text-xs text-gray-400 mt-1">{program.videos[i].description}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

@@ -16,4 +16,6 @@ public class UpdateProgramRequest
     public bool IsPublic { get; set; } = true;
     public IFormFile? CoverImage { get; set; }
     public List<IFormFile>? TrainingVideos { get; set; }
+    public List<string>? TrainingVideoTitles { get; set; }
+    public List<string>? TrainingVideoDescriptions { get; set; }
 }

@@ -2,6 +2,12 @@ import { API_URL, fetchWithAuth } from '@/lib/config';
 
 // --- Types ---
 
+export interface ProgramVideoDto {
+  videoUrl: string;
+  title: string;
+  description: string;
+}
+
 export interface PurchasedProgramDto {
   purchaseId: string;
   programId: string;
@@ -10,6 +16,7 @@ export interface PurchasedProgramDto {
   description: string;
   coverImageUrl: string;
   videoUrls: string[];
+  videos: ProgramVideoDto[];
   tier: string;
   category: string;
   purchasedAt: string;

@@ -1,3 +1,9 @@
+export interface ProgramVideoDto {
+  videoUrl: string;
+  title: string;
+  description: string;
+}
+
 export interface ProgramDto {
   id: string;
   trainerId: string;
@@ -13,6 +19,7 @@ export interface ProgramDto {
   code: string;
   coverImageUrl: string;
   trainingVideoUrls: string[];
+  trainingVideos: ProgramVideoDto[];
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
@@ -60,6 +67,8 @@ export interface CreateProgramRequest {
   isPublic?: boolean;
   coverImage: File;
   trainingVideos: File[];
+  trainingVideoTitles?: string[];
+  trainingVideoDescriptions?: string[];
 }
 
 export interface UpdateProgramRequest {
@@ -75,6 +84,8 @@ export interface UpdateProgramRequest {
   isPublic?: boolean;
   coverImage?: File;
   trainingVideos?: File[];
+  trainingVideoTitles?: string[];
+  trainingVideoDescriptions?: string[];
 }
 
 // Meal Program types

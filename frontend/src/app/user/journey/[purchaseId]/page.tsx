@@ -272,6 +272,20 @@ export default function ProgramDetailPage({
                     >
                       {t('videoNotSupported')}
                     </video>
+                    {(program.videos?.[index]?.title || program.videos?.[index]?.description) && (
+                      <div className="px-3 py-2 bg-[#0A0A0A] border-t border-white/10">
+                        {program.videos?.[index]?.title && (
+                          <p className="text-sm font-semibold text-white">
+                            {program.videos[index].title}
+                          </p>
+                        )}
+                        {program.videos?.[index]?.description && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            {program.videos[index].description}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {watchedVideoIndexes.has(index) && (
                       <p className="text-xs text-green-400 px-3 py-2 bg-[#0A0A0A]">
                         Watched

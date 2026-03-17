@@ -2,7 +2,6 @@ using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Programs.DTOs;
 using Deviny.Domain.Enums;
 using MediatR;
-using System.Text.Json;
 
 namespace Deviny.Application.Features.Programs.Commands;
 
@@ -84,9 +83,9 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
         if (request.TrainingVideos != null && request.TrainingVideos.Any())
         {
             // Delete old videos
-            var oldVideos = string.IsNullOrEmpty(program.TrainingVideosPath) 
-                ? new List<string>() 
-                : JsonSerializer.Deserialize<List<string>>(program.TrainingVideosPath) ?? new List<string>();
+            var oldVideos = ProgramVideoJsonHelper.Parse(program.TrainingVideosPath)
+                .Select(v => v.VideoUrl)
+                .ToList();
             
             foreach (var oldVideoPath in oldVideos)
             {
@@ -98,11 +97,14 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
             }
 
             // Save new videos
-            var videoUrls = new List<string>();
+            var videos = new List<ProgramVideoDto>();
+            var titles = request.TrainingVideoTitles ?? new List<string>();
+            var descriptions = request.TrainingVideoDescriptions ?? new List<string>();
             var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
             
-            foreach (var video in request.TrainingVideos)
+            for (var i = 0; i < request.TrainingVideos.Count; i++)
             {
+                var video = request.TrainingVideos[i];
                 var videoExtension = Path.GetExtension(video.FileName).ToLowerInvariant();
                 
                 if (!videoExtensions.Contains(videoExtension))
@@ -123,10 +125,15 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
                     await video.CopyToAsync(stream, cancellationToken);
                 }
 
-                videoUrls.Add($"/uploads/programs/{videoFileName}");
+                videos.Add(new ProgramVideoDto
+                {
+                    VideoUrl = $"/uploads/programs/{videoFileName}",
+                    Title = i < titles.Count ? (titles[i] ?? string.Empty) : string.Empty,
+                    Description = i < descriptions.Count ? (descriptions[i] ?? string.Empty) : string.Empty,
+                });
             }
 
-            program.TrainingVideosPath = JsonSerializer.Serialize(videoUrls);
+            program.TrainingVideosPath = ProgramVideoJsonHelper.Serialize(videos);
         }
 
         await _programRepository.UpdateAsync(program);
@@ -146,9 +153,8 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
         var totalReviews = stats?.TotalReviews ?? 0;
         var totalPurchases = stats?.TotalPurchases ?? 0;
 
-        var videoPaths = string.IsNullOrEmpty(program.TrainingVideosPath) 
-            ? new List<string>() 
-            : JsonSerializer.Deserialize<List<string>>(program.TrainingVideosPath) ?? new List<string>();
+        var videoMetadata = ProgramVideoJsonHelper.Parse(program.TrainingVideosPath);
+        var videoPaths = videoMetadata.Select(v => v.VideoUrl).ToList();
 
         return new ProgramDto
         {
@@ -165,6 +171,7 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
             Code = program.Code,
             CoverImageUrl = program.CoverImagePath,
             TrainingVideoUrls = videoPaths,
+            TrainingVideos = videoMetadata,
             IsPublic = program.IsPublic,
             AverageRating = avgRating,
             TotalReviews = totalReviews,
