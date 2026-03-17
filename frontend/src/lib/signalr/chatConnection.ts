@@ -4,6 +4,15 @@ import type { MessageDto } from '@/types/message'
 import type { AchievementAwardedEvent } from '@/types/achievement'
 import type { UserLevelDto } from '@/types/level'
 
+export interface EntityChangedEvent {
+  scope: string
+  action: string
+  entityType?: string | null
+  entityId?: string | null
+  payload?: unknown
+  changedAtUtc?: string
+}
+
 /**
  * Singleton wrapper around the SignalR chat hub.
  * Uses Groups (user:{id} and conv:{id}) instead of the old static Dictionary.
@@ -165,6 +174,7 @@ export class ChatConnection {
   onCallAnswer(cb: (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => void) { this._on('CallAnswer', cb) }
   onCallIceCandidate(cb: (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => void) { this._on('CallIceCandidate', cb) }
   onCallEnded(cb: (data: { conversationId: string; fromUserId: string; reason: string }) => void) { this._on('CallEnded', cb) }
+  onEntityChanged(cb: (data: EntityChangedEvent) => void) { this._on('EntityChanged', cb) }
 
   // ─── hub invocations ───
 

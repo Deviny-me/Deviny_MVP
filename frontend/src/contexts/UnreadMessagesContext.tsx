@@ -47,8 +47,13 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
     let mounted = true
 
     const handleUnreadCountUpdated = (data: { totalUnreadCount: number }) => {
-      console.log('[Unread] 📡 SignalR push:', data.totalUnreadCount)
       if (mounted) {
+        // Keep badge at zero while user is inside the messages page.
+        if (isMessagesPage) {
+          setUnreadCount(0)
+          return
+        }
+
         setUnreadCount(data.totalUnreadCount)
       }
     }
@@ -71,7 +76,7 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
       chatConnection.off('UnreadCountUpdated', handleUnreadCountUpdated)
       chatConnection.offReconnected(handleReconnected)
     }
-  }, [fetchUnreadCount])
+  }, [fetchUnreadCount, isMessagesPage])
 
   const incrementUnread = useCallback(() => setUnreadCount(prev => prev + 1), [])
   const resetUnread = useCallback(() => setUnreadCount(0), [])

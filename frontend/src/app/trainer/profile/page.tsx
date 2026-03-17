@@ -46,6 +46,7 @@ import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useAuth } from '@/features/auth/AuthContext'
 import { ProfileReviewsTab } from '@/components/shared/ProfileReviewsTab'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 // ─── Grid cell with optimistic likes ───
 function TrainerGridCell({
@@ -387,6 +388,11 @@ export default function ProfilePage() {
   useEffect(() => {
     loadPosts(1)
   }, [loadPosts])
+
+  useRealtimeScopeRefresh(['profile', 'posts'], () => {
+    loadProfile()
+    loadPosts(1)
+  })
 
   const handleLoadMorePosts = useCallback(() => {
     if (!isLoadingPosts && postsHasMore && postIds.length > 0) {

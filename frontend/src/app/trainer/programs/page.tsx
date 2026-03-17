@@ -25,6 +25,7 @@ import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
 import { ProgramDto, MealProgramDto, ProgramType, ProgramCategory } from '@/types/program'
 import { getMediaUrl } from '@/lib/config'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 const toast = {
   success: (msg: string) => console.log('Success:', msg),
@@ -179,6 +180,11 @@ export default function ProgramsPage() {
       setLoadingMeal(false)
     }
   }
+
+  useRealtimeScopeRefresh(['programs', 'purchases'], () => {
+    loadTrainingPrograms()
+    loadMealPrograms()
+  })
 
   // All unified programs
   const allTrainingUnified = trainingPrograms.map(toUnifiedFromTraining)

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Deviny.Application.Common;
+using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Posts.Commands;
 using Deviny.Application.Features.Posts.DTOs;
 using Deviny.Application.Features.Posts.Queries;
@@ -20,11 +21,16 @@ public class MePostsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<MePostsController> _logger;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public MePostsController(IMediator mediator, ILogger<MePostsController> logger)
+    public MePostsController(
+        IMediator mediator,
+        ILogger<MePostsController> logger,
+        IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
         _logger = logger;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -78,6 +84,13 @@ public class MePostsController : BaseApiController
             _logger.LogInformation(
                 "User {UserId} created {PostType} post {PostId}",
                 userId, type, result.Value.Id);
+
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "posts",
+                "created",
+                "post",
+                result.Value.Id,
+                new { actorUserId = userId.Value, postType = type.ToString() });
 
             return CreatedAtAction(
                 nameof(GetMyPosts), 
@@ -246,6 +259,13 @@ public class MePostsController : BaseApiController
             }
 
             _logger.LogInformation("User {UserId} deleted post {PostId}", userId, postId);
+
+            await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                "posts",
+                "deleted",
+                "post",
+                postId,
+                new { actorUserId = userId.Value });
 
             return NoContent();
         }

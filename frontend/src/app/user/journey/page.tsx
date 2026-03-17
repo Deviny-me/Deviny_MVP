@@ -14,6 +14,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { purchasesApi, PurchasedProgramDto } from '@/lib/api/purchasesApi'
 import { getMediaUrl } from '@/lib/config'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export default function MyJourneyPage() {
   const t = useTranslations('journey')
@@ -41,6 +42,10 @@ export default function MyJourneyPage() {
   useEffect(() => {
     loadPurchases()
   }, [loadPurchases])
+
+  useRealtimeScopeRefresh(['purchases', 'programs'], () => {
+    loadPurchases()
+  })
 
   const filteredPrograms = programs.filter(p => {
     if (filter === 'all') return true

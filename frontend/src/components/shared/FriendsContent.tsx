@@ -23,6 +23,7 @@ import { useAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { Toast } from '@/components/ui/Toast'
 import { getMediaUrl } from '@/lib/config'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 interface FriendsContentProps {
   basePath: string
@@ -112,6 +113,10 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
       setLoading(false)
     }
   }
+
+  useRealtimeScopeRefresh(['friends', 'follows'], () => {
+    loadData()
+  })
 
   const handleAcceptRequest = async (requestId: number) => {
     setActionLoading(`accept-${requestId}`)

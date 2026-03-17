@@ -20,6 +20,7 @@ import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { useLevel } from '@/components/level/LevelProvider'
 import { SearchBar } from '@/components/search/SearchBar'
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function TopNav() {
   const router = useRouter()
@@ -53,6 +54,10 @@ export function TopNav() {
       console.error('Failed to load nutritionist profile:', error)
     }
   }
+
+  useRealtimeScopeRefresh(['profile'], () => {
+    loadProfile()
+  })
 
   const navItems = [
     { icon: UserPlus, label: t('friends'), path: '/nutritionist/friends', badge: undefined },

@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '@/components/user/UserProvider'
+import { useLevel } from '@/components/level/LevelProvider'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { 
@@ -34,6 +35,7 @@ export default function SettingsPage() {
   const tc = useTranslations('common')
   const router = useRouter()
   const { user, logout } = useUser()
+  const { level } = useLevel()
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
@@ -123,7 +125,7 @@ export default function SettingsPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-white">{user?.fullName || tc('user')}</h3>
               <p className="text-sm text-gray-400">{user?.email || 'user@example.com'}</p>
-              <p className="text-xs text-[#3B82F6] mt-1">Level {user?.level || 1} • {user?.xp || 0} XP</p>
+              <p className="text-xs text-[#3B82F6] mt-1">Level {level?.currentLevel ?? user?.level ?? 1} • {level?.currentXp ?? user?.xp ?? 0} XP</p>
             </div>
             <button
               onClick={() => router.push('/user/profile')}

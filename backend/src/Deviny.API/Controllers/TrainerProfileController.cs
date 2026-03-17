@@ -17,19 +17,22 @@ public class TrainerProfileController : BaseApiController
     private readonly ISlugGenerator _slugGenerator;
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
     public TrainerProfileController(
         ITrainerProfileRepository trainerProfileRepository,
         IUserRepository userRepository,
         ISlugGenerator slugGenerator,
         IConfiguration configuration,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        IRealtimeNotifier realtimeNotifier)
     {
         _trainerProfileRepository = trainerProfileRepository;
         _userRepository = userRepository;
         _slugGenerator = slugGenerator;
         _configuration = configuration;
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpGet("me/profile")]
@@ -210,6 +213,14 @@ public class TrainerProfileController : BaseApiController
             
             await _trainerProfileRepository.UpdateAsync(profile);
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                profile.Id,
+                new { userId = user.Id, role = "trainer" });
+
             return Ok(new { message = "Profile updated successfully" });
         }
         catch (Exception ex)
@@ -332,6 +343,14 @@ public class TrainerProfileController : BaseApiController
                 FileName = certificate.FileName
             };
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "certificate",
+                certificate.Id,
+                new { userId = user.Id, role = "trainer" });
+
             return CreatedAtAction(nameof(GetMyProfile), certificateDto);
         }
         catch (Exception ex)
@@ -394,6 +413,14 @@ public class TrainerProfileController : BaseApiController
             _context.TrainerCertificates.Remove(certificate);
             await _context.SaveChangesAsync();
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "certificate",
+                certificateId,
+                new { userId = user.Id, role = "trainer" });
+
             return NoContent();
         }
         catch (Exception ex)
@@ -427,6 +454,14 @@ public class TrainerProfileController : BaseApiController
 
             profile.AboutText = request.Text;
             await _trainerProfileRepository.UpdateAsync(profile);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                profile.Id,
+                new { userId = user.Id, role = "trainer" });
 
             return Ok(new { message = "About text updated successfully" });
         }
@@ -502,6 +537,14 @@ public class TrainerProfileController : BaseApiController
             _context.TrainerSpecializations.Add(trainerSpec);
             await _context.SaveChangesAsync();
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "specialization",
+                specializationId,
+                new { userId = user.Id, role = "trainer" });
+
             return Ok(new SpecializationDto
             {
                 Id = specializationId,
@@ -547,6 +590,14 @@ public class TrainerProfileController : BaseApiController
 
             _context.TrainerSpecializations.Remove(trainerSpec);
             await _context.SaveChangesAsync();
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "specialization",
+                specializationId,
+                new { userId = user.Id, role = "trainer" });
 
             return NoContent();
         }
@@ -619,6 +670,14 @@ public class TrainerProfileController : BaseApiController
             user.AvatarUrl = avatarUrl;
             await _userRepository.UpdateAsync(user);
 
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                null,
+                new { userId = user.Id, role = "trainer", avatarUrl });
+
             return Ok(new
             {
                 message = "Аватар успешно загружен",
@@ -663,6 +722,14 @@ public class TrainerProfileController : BaseApiController
             // Clear avatar URL
             user.AvatarUrl = null;
             await _userRepository.UpdateAsync(user);
+
+            await _realtimeNotifier.SendEntityChangedAsync(
+                user.Id,
+                "profile",
+                "updated",
+                "expert-profile",
+                null,
+                new { userId = user.Id, role = "trainer", avatarUrl = (string?)null });
 
             return NoContent();
         }

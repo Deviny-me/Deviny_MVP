@@ -1,4 +1,5 @@
 using Deviny.Application.Features.Friends.Commands;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,12 @@ namespace Deviny.API.Controllers;
 public class MeBlocksController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public MeBlocksController(IMediator mediator)
+    public MeBlocksController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpPost("{userId}")]
@@ -26,6 +29,15 @@ public class MeBlocksController : BaseApiController
         };
 
         await _mediator.Send(command);
+
+        await _realtimeNotifier.SendEntityChangedToUsersAsync(
+            new[] { blockerId, userId },
+            "friends",
+            "blocked",
+            "block",
+            userId,
+            new { blockerId, blockedUserId = userId });
+
         return NoContent();
     }
 
@@ -40,6 +52,15 @@ public class MeBlocksController : BaseApiController
         };
 
         await _mediator.Send(command);
+
+        await _realtimeNotifier.SendEntityChangedToUsersAsync(
+            new[] { blockerId, userId },
+            "friends",
+            "unblocked",
+            "block",
+            userId,
+            new { blockerId, blockedUserId = userId });
+
         return NoContent();
     }
 }

@@ -21,6 +21,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useLevel } from '@/components/level/LevelProvider'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function NutritionistHomeFeed() {
   const router = useRouter()
@@ -89,6 +90,11 @@ export function NutritionistHomeFeed() {
       console.error('Failed to load feed:', error)
     }
   }
+
+  useRealtimeScopeRefresh(['posts', 'profile'], () => {
+    loadFeed()
+    loadProfile()
+  })
 
   // Handle post deletion
   const handleDeletePost = async (postId: string) => {

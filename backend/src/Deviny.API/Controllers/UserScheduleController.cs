@@ -1,4 +1,5 @@
 using Deviny.API.DTOs;
+using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
@@ -11,10 +12,12 @@ namespace Deviny.API.Controllers;
 public class UserScheduleController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public UserScheduleController(ApplicationDbContext context)
+    public UserScheduleController(ApplicationDbContext context, IRealtimeNotifier realtimeNotifier)
     {
         _context = context;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     private async Task<Guid> GetUserIdAsync()
@@ -169,6 +172,17 @@ public class UserScheduleController : BaseApiController
             _context.ScheduleEvents.Add(evt);
             await _context.SaveChangesAsync();
 
+            var createTargets = evt.StudentId.HasValue
+                ? new[] { userId, evt.StudentId.Value }
+                : new[] { userId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                createTargets,
+                "schedule",
+                "created",
+                "schedule-event",
+                evt.Id,
+                new { trainerId = userId, studentId = evt.StudentId, startAt = evt.StartAt });
+
             return CreatedAtAction(nameof(GetEvent), new { id = evt.Id }, new ScheduleEventDto
             {
                 Id = evt.Id,
@@ -236,6 +250,17 @@ public class UserScheduleController : BaseApiController
 
             await _context.SaveChangesAsync();
 
+            var updateTargets = evt.StudentId.HasValue
+                ? new[] { userId, evt.StudentId.Value }
+                : new[] { userId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                updateTargets,
+                "schedule",
+                "updated",
+                "schedule-event",
+                evt.Id,
+                new { trainerId = userId, studentId = evt.StudentId, startAt = evt.StartAt, status = evt.Status.ToString() });
+
             return Ok(new ScheduleEventDto
             {
                 Id = evt.Id,
@@ -289,6 +314,17 @@ public class UserScheduleController : BaseApiController
 
             await _context.SaveChangesAsync();
 
+            var rescheduleTargets = evt.StudentId.HasValue
+                ? new[] { userId, evt.StudentId.Value }
+                : new[] { userId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                rescheduleTargets,
+                "schedule",
+                "updated",
+                "schedule-event",
+                evt.Id,
+                new { trainerId = userId, studentId = evt.StudentId, startAt = evt.StartAt, durationMinutes = evt.DurationMinutes });
+
             return Ok(new ScheduleEventDto
             {
                 Id = evt.Id,
@@ -331,6 +367,17 @@ public class UserScheduleController : BaseApiController
             evt.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            var cancelTargets = evt.StudentId.HasValue
+                ? new[] { userId, evt.StudentId.Value }
+                : new[] { userId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                cancelTargets,
+                "schedule",
+                "deleted",
+                "schedule-event",
+                evt.Id,
+                new { trainerId = userId, studentId = evt.StudentId });
 
             return NoContent();
         }

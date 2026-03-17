@@ -23,6 +23,7 @@ import { FriendDto } from '@/types/friend'
 import { getMediaUrl } from '@/lib/config'
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 interface ExpertsContentProps {
   basePath: string
@@ -84,6 +85,25 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
       setLoadingMore(false)
     }
   }
+
+  useRealtimeScopeRefresh(['follows'], () => {
+    const fetchData = async () => {
+      try {
+        const [data, followingData] = await Promise.all([
+          trainersApi.getAll(1, PAGE_SIZE),
+          followsApi.getMyFollowing(1, 100).catch(() => ({ items: [] as FriendDto[], totalCount: 0, page: 1, pageSize: 100 })),
+        ])
+        setTrainers(data.items)
+        setPage(1)
+        setHasMore(data.items.length < data.totalCount)
+        setFollowedIds(new Set(followingData.items.map((f) => f.id)))
+      } catch (err) {
+        console.error('Failed to refresh experts:', err)
+      }
+    }
+
+    fetchData()
+  })
 
   // Re-sort trainers when currentUser becomes available (push own card first)
   useEffect(() => {

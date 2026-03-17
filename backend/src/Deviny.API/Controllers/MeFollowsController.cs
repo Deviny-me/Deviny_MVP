@@ -1,4 +1,5 @@
 using Deviny.Application.Common;
+using Deviny.Application.Common.Interfaces;
 using Deviny.Application.DTOs;
 using Deviny.Application.Features.Friends.Commands;
 using Deviny.Application.Features.Friends.Queries;
@@ -12,10 +13,12 @@ namespace Deviny.API.Controllers;
 public class MeFollowsController : BaseApiController
 {
     private readonly IMediator _mediator;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public MeFollowsController(IMediator mediator)
+    public MeFollowsController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     [HttpPost("{trainerId}")]
@@ -37,6 +40,15 @@ public class MeFollowsController : BaseApiController
         };
 
         await _mediator.Send(command);
+
+        await _realtimeNotifier.SendEntityChangedToUsersAsync(
+            new[] { userId, trainerId },
+            "follows",
+            "created",
+            "follow",
+            trainerId,
+            new { followerId = userId, trainerId });
+
         return NoContent();
     }
 
@@ -51,6 +63,15 @@ public class MeFollowsController : BaseApiController
         };
 
         await _mediator.Send(command);
+
+        await _realtimeNotifier.SendEntityChangedToUsersAsync(
+            new[] { userId, trainerId },
+            "follows",
+            "deleted",
+            "follow",
+            trainerId,
+            new { followerId = userId, trainerId });
+
         return NoContent();
     }
 

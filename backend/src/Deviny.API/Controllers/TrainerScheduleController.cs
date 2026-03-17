@@ -14,11 +14,16 @@ public class TrainerScheduleController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILevelService _levelService;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public TrainerScheduleController(ApplicationDbContext context, ILevelService levelService)
+    public TrainerScheduleController(
+        ApplicationDbContext context,
+        ILevelService levelService,
+        IRealtimeNotifier realtimeNotifier)
     {
         _context = context;
         _levelService = levelService;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     private async Task<Guid> GetTrainerIdAsync()
@@ -175,6 +180,17 @@ public class TrainerScheduleController : BaseApiController
             _context.ScheduleEvents.Add(evt);
             await _context.SaveChangesAsync();
 
+            var createTargets = evt.StudentId.HasValue
+                ? new[] { trainerId, evt.StudentId.Value }
+                : new[] { trainerId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                createTargets,
+                "schedule",
+                "created",
+                "schedule-event",
+                evt.Id,
+                new { trainerId, studentId = evt.StudentId, startAt = evt.StartAt });
+
             // Award XP to trainer for scheduling a session
             await _levelService.AddXpAsync(
                 trainerId,
@@ -236,6 +252,17 @@ public class TrainerScheduleController : BaseApiController
             evt.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            var rescheduleTargets = evt.StudentId.HasValue
+                ? new[] { trainerId, evt.StudentId.Value }
+                : new[] { trainerId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                rescheduleTargets,
+                "schedule",
+                "updated",
+                "schedule-event",
+                evt.Id,
+                new { trainerId, studentId = evt.StudentId, startAt = evt.StartAt, durationMinutes = evt.DurationMinutes });
 
             return Ok(new ScheduleEventDto
             {
@@ -308,6 +335,17 @@ public class TrainerScheduleController : BaseApiController
 
             await _context.SaveChangesAsync();
 
+            var updateTargets = evt.StudentId.HasValue
+                ? new[] { trainerId, evt.StudentId.Value }
+                : new[] { trainerId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                updateTargets,
+                "schedule",
+                "updated",
+                "schedule-event",
+                evt.Id,
+                new { trainerId, studentId = evt.StudentId, startAt = evt.StartAt, status = evt.Status.ToString() });
+
             // Award XP if session was just completed
             if (!wasCompleted && isNowCompleted)
             {
@@ -362,6 +400,17 @@ public class TrainerScheduleController : BaseApiController
             evt.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
+
+            var cancelTargets = evt.StudentId.HasValue
+                ? new[] { trainerId, evt.StudentId.Value }
+                : new[] { trainerId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                cancelTargets,
+                "schedule",
+                "deleted",
+                "schedule-event",
+                evt.Id,
+                new { trainerId, studentId = evt.StudentId });
 
             return NoContent();
         }

@@ -1,4 +1,5 @@
 using Deviny.Application.Features.Posts.Commands;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,16 @@ public class CommentsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<CommentsController> _logger;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public CommentsController(IMediator mediator, ILogger<CommentsController> logger)
+    public CommentsController(
+        IMediator mediator,
+        ILogger<CommentsController> logger,
+        IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
         _logger = logger;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -79,6 +85,12 @@ public class CommentsController : BaseApiController
         }
 
         _logger.LogInformation("User {UserId} deleted comment {CommentId}", userId, commentId);
+        await _realtimeNotifier.SendGlobalEntityChangedAsync(
+            "posts",
+            "updated",
+            "comment",
+            commentId,
+            new { reason = "comment-deleted", actorUserId = userId.Value, commentId });
         return NoContent();
     }
 }

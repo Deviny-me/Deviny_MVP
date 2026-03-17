@@ -31,6 +31,7 @@ import {
 } from 'recharts'
 import { dashboardApi, DashboardStats } from '@/lib/api/dashboardApi'
 import { getMediaUrl } from '@/lib/config'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 interface DashboardContentProps {
   accentColor: string // hex color like '#FF6B35' or '#22c55e'
@@ -74,6 +75,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       setLoading(false)
     }
   }
+
+  useRealtimeScopeRefresh(['schedule', 'follows', 'programs', 'purchases'], () => {
+    loadStats()
+  })
 
   if (loading) {
     return (

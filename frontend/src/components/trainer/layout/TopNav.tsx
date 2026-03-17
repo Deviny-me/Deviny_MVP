@@ -21,6 +21,7 @@ import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { useLevel } from '@/components/level/LevelProvider'
 import { SearchBar } from '@/components/search/SearchBar'
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function TopNav() {
   const router = useRouter()
@@ -56,6 +57,10 @@ export function TopNav() {
       console.error('Failed to load trainer profile:', error)
     }
   }
+
+  useRealtimeScopeRefresh(['profile'], () => {
+    loadTrainerProfile()
+  })
 
   const navItems = [
     { icon: UserPlus, label: t('friends'), path: '/trainer/friends', badge: undefined },
