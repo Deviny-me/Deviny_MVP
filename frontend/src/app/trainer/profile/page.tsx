@@ -343,6 +343,10 @@ export default function ProfilePage() {
 
   const locationCountries = getCountries(language)
   const locationCities = editLocationCountryCode ? getCitiesForCountry(editLocationCountryCode, language) : []
+  const editLocationDisplay = [
+    editLocationCity ? translateCityName(editLocationCity, language) : '',
+    editLocationCountryCode ? getCountryName(editLocationCountryCode, language) : ''
+  ].filter(Boolean).join(', ')
 
   const syncLocationEditor = useCallback((country?: string | null, city?: string | null) => {
     const countryCode = resolveCountryCodeByName(country) || ''
@@ -720,7 +724,7 @@ export default function ProfilePage() {
         primaryTitle: editPrimaryTitle || undefined,
         secondaryTitle: editSecondaryTitle || undefined,
         experienceYears: editExperienceYears ? parseInt(editExperienceYears) : undefined,
-        location: editLocation || undefined
+        location: editLocationDisplay || undefined
       })
       setToastData({ message: t('toasts.profileUpdated'), type: 'success' })
       setShowEditProfileModal(false)
@@ -1559,8 +1563,8 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-300 mb-2">{t('location')}</label>
                     <input
                       type="text"
-                      value={editLocation}
-                      onChange={(e) => setEditLocation(e.target.value)}
+                      value={editLocationDisplay}
+                      readOnly
                       className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
                       placeholder={t('locationPlaceholder')}
                     />

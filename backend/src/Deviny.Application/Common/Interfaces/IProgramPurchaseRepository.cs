@@ -10,5 +10,5 @@ public interface IProgramPurchaseRepository
     Task<bool> MarkCompletedAsync(Guid userId, Guid purchaseId);
     Task<bool> ExistsAsync(Guid userId, Guid programId, ProgramType programType, ProgramTier tier);
     Task<int> CountByProgramAndTierAsync(Guid programId, ProgramType programType, ProgramTier tier);
-    Task<bool> HasCompletedPurchaseAsync(Guid userId, Guid programId, ProgramType programType);
+    Task<bool> HasPurchasedAsync(Guid userId, Guid programId, ProgramType programType);
 }

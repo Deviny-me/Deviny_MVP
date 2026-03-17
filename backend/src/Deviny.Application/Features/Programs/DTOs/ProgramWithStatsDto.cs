@@ -20,4 +20,10 @@ public class ProgramWithStatsDto
     public string? TrainerAvatarUrl { get; set; }
     public string? TrainerSlug { get; set; }
     public string? TrainerRole { get; set; }
+
+    // Latest review snapshot for cards
+    public string? LatestReviewComment { get; set; }
+    public int? LatestReviewRating { get; set; }
+    public string? LatestReviewUserName { get; set; }
+    public DateTime? LatestReviewCreatedAt { get; set; }
 }

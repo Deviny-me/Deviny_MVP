@@ -92,6 +92,22 @@ public class ProgramRepository : IProgramRepository
                 TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
                 StandardSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Standard && pu.Status == ProgramPurchaseStatus.Active),
                 ProSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Pro && pu.Status == ProgramPurchaseStatus.Active),
+                LatestReviewComment = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.Comment)
+                    .FirstOrDefault(),
+                LatestReviewRating = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (int?)r.Rating)
+                    .FirstOrDefault(),
+                LatestReviewUserName = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.User.FirstName + " " + r.User.LastName)
+                    .FirstOrDefault(),
+                LatestReviewCreatedAt = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (DateTime?)r.CreatedAt)
+                    .FirstOrDefault(),
             })
             .ToListAsync();
     }
@@ -120,6 +136,22 @@ public class ProgramRepository : IProgramRepository
                 TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
                 StandardSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Standard && pu.Status == ProgramPurchaseStatus.Active),
                 ProSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Pro && pu.Status == ProgramPurchaseStatus.Active),
+                LatestReviewComment = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.Comment)
+                    .FirstOrDefault(),
+                LatestReviewRating = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (int?)r.Rating)
+                    .FirstOrDefault(),
+                LatestReviewUserName = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.User.FirstName + " " + r.User.LastName)
+                    .FirstOrDefault(),
+                LatestReviewCreatedAt = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (DateTime?)r.CreatedAt)
+                    .FirstOrDefault(),
             })
             .ToListAsync();
 
@@ -143,6 +175,22 @@ public class ProgramRepository : IProgramRepository
                 TotalPurchases = p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active),
                 StandardSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Standard && pu.Status == ProgramPurchaseStatus.Active),
                 ProSpotsUsed = p.Purchases.Count(pu => pu.Tier == ProgramTier.Pro && pu.Status == ProgramPurchaseStatus.Active),
+                LatestReviewComment = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.Comment)
+                    .FirstOrDefault(),
+                LatestReviewRating = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (int?)r.Rating)
+                    .FirstOrDefault(),
+                LatestReviewUserName = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.User.FirstName + " " + r.User.LastName)
+                    .FirstOrDefault(),
+                LatestReviewCreatedAt = p.Reviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => (DateTime?)r.CreatedAt)
+                    .FirstOrDefault(),
             })
             .FirstOrDefaultAsync();
     }

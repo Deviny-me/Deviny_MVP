@@ -48,12 +48,12 @@ public class CreateReviewCommandHandler : IRequestHandler<CreateReviewCommand, C
                 return CreateReviewResult.Fail("Program not found.");
         }
 
-        // 4. Validate user has a completed purchase for this program
-        var hasCompletedPurchase = await _purchaseRepository.HasCompletedPurchaseAsync(
+        // 4. Validate user has purchased this program
+        var hasPurchased = await _purchaseRepository.HasPurchasedAsync(
             request.UserId, request.ProgramId, programType);
 
-        if (!hasCompletedPurchase)
-            return CreateReviewResult.Fail("You can only review programs you have completed.");
+        if (!hasPurchased)
+            return CreateReviewResult.Fail("You can only review programs you have purchased.");
 
         // 5. Check duplicate review
         var alreadyReviewed = await _reviewRepository.ExistsAsync(

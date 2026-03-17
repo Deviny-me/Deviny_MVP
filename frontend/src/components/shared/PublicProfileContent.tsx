@@ -40,6 +40,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+import { useLanguage } from '@/components/language/LanguageProvider'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 // ─── Expert profile type (returned when user is Trainer/Nutritionist) ───

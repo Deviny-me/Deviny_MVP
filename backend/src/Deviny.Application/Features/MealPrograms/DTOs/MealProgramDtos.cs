@@ -39,6 +39,10 @@ public class PublicMealProgramDto
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalPurchases { get; set; }
+    public string? LatestReviewComment { get; set; }
+    public int? LatestReviewRating { get; set; }
+    public string? LatestReviewUserName { get; set; }
+    public DateTime? LatestReviewCreatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid TrainerId { get; set; }
     public string TrainerName { get; set; } = string.Empty;

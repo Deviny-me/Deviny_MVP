@@ -11,7 +11,6 @@ import {
   Dumbbell,
   Apple,
   MessageSquare,
-  Send,
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
@@ -21,6 +20,7 @@ import { PublicProgramDto, PublicMealProgramDto, ProgramCategory, ReviewDto } fr
 import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 type UnifiedPublicProgram = {
   id: string
@@ -117,16 +117,8 @@ export default function ProgramDetailPage({
   const [error, setError] = useState<string | null>(null)
   const [purchasing, setPurchasing] = useState(false)
   const [purchaseError, setPurchaseError] = useState<string | null>(null)
-
-  // Reviews state
   const [reviews, setReviews] = useState<ReviewDto[]>([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
-  const [reviewRating, setReviewRating] = useState(0)
-  const [reviewHover, setReviewHover] = useState(0)
-  const [reviewComment, setReviewComment] = useState('')
-  const [submittingReview, setSubmittingReview] = useState(false)
-  const [reviewError, setReviewError] = useState<string | null>(null)
-  const [reviewSuccess, setReviewSuccess] = useState(false)
 
   const loadProgram = useCallback(async () => {
     try {
@@ -175,7 +167,6 @@ export default function ProgramDetailPage({
 
   const programType = program?.category === 'Diet' ? ('meal' as const) : ('training' as const)
 
-  // Load reviews when program is loaded
   const loadReviews = useCallback(async () => {
     if (!program) return
     try {
@@ -195,31 +186,12 @@ export default function ProgramDetailPage({
     }
   }, [program, loadReviews])
 
-  const handleSubmitReview = async () => {
-    if (!program || reviewRating === 0) return
-    setSubmittingReview(true)
-    setReviewError(null)
-    setReviewSuccess(false)
-    try {
-      await reviewsApi.createReview({
-        programId: program.id,
-        programType,
-        rating: reviewRating,
-        comment: reviewComment.trim() || undefined,
-      })
-      setReviewSuccess(true)
-      setReviewRating(0)
-      setReviewComment('')
+  useRealtimeScopeRefresh(['programs', 'reviews'], () => {
+    loadProgram()
+    if (program) {
       loadReviews()
-      // Refresh program to update averageRating/totalReviews
-      loadProgram()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to submit review'
-      setReviewError(message)
-    } finally {
-      setSubmittingReview(false)
     }
-  }
+  })
 
   const handlePurchase = async (tier: string) => {
     if (!program) return
@@ -526,7 +498,6 @@ export default function ProgramDetailPage({
         </div>
       </div>
 
-      {/* Reviews Section */}
       <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
         <div className="p-5 space-y-4">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
@@ -534,67 +505,6 @@ export default function ProgramDetailPage({
             {t('reviews')} ({reviews.length})
           </h2>
 
-          {/* Write Review Form */}
-          <div className="p-4 bg-[#0A0A0A] rounded-lg space-y-3">
-            <p className="text-sm font-medium text-gray-300">{t('writeReview')}</p>
-
-            {/* Star Rating Selector */}
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setReviewRating(star)}
-                  onMouseEnter={() => setReviewHover(star)}
-                  onMouseLeave={() => setReviewHover(0)}
-                  className="p-0.5 transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={`w-7 h-7 transition-colors ${
-                      star <= (reviewHover || reviewRating)
-                        ? 'text-amber-400 fill-amber-400'
-                        : 'text-gray-600'
-                    }`}
-                  />
-                </button>
-              ))}
-              {reviewRating > 0 && (
-                <span className="ml-2 text-sm text-gray-400">{reviewRating}/5</span>
-              )}
-            </div>
-
-            {/* Comment Textarea */}
-            <textarea
-              value={reviewComment}
-              onChange={(e) => setReviewComment(e.target.value)}
-              placeholder={t('reviewPlaceholder')}
-              rows={3}
-              maxLength={1000}
-              className="w-full px-3 py-2 bg-[#1A1A1A] border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#3B82F6]/50"
-            />
-
-            {reviewError && (
-              <p className="text-sm text-red-400">{reviewError}</p>
-            )}
-            {reviewSuccess && (
-              <p className="text-sm text-green-400">{t('reviewSuccess')}</p>
-            )}
-
-            <button
-              onClick={handleSubmitReview}
-              disabled={reviewRating === 0 || submittingReview}
-              className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
-            >
-              {submittingReview ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-              {t('submitReview')}
-            </button>
-          </div>
-
-          {/* Reviews List */}
           {reviewsLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />
@@ -606,10 +516,7 @@ export default function ProgramDetailPage({
           ) : (
             <div className="space-y-3">
               {reviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="p-4 bg-[#0A0A0A] rounded-lg space-y-2"
-                >
+                <div key={review.id} className="p-4 bg-[#0A0A0A] rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {review.userAvatarUrl ? (
@@ -627,9 +534,7 @@ export default function ProgramDetailPage({
                       )}
                       <div>
                         <p className="text-white text-sm font-medium">{review.userName}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(review.createdAt).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-0.5">
@@ -637,23 +542,20 @@ export default function ProgramDetailPage({
                         <Star
                           key={star}
                           className={`w-3.5 h-3.5 ${
-                            star <= review.rating
-                              ? 'text-amber-400 fill-amber-400'
-                              : 'text-gray-600'
+                            star <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-600'
                           }`}
                         />
                       ))}
                     </div>
                   </div>
-                  {review.comment && (
-                    <p className="text-gray-300 text-sm leading-relaxed">{review.comment}</p>
-                  )}
+                  {review.comment && <p className="text-gray-300 text-sm leading-relaxed">{review.comment}</p>}
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
     </div>
   )
 }

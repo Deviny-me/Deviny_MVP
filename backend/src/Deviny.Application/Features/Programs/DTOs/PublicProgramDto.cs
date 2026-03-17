@@ -18,6 +18,10 @@ public class PublicProgramDto
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalPurchases { get; set; }
+    public string? LatestReviewComment { get; set; }
+    public int? LatestReviewRating { get; set; }
+    public string? LatestReviewUserName { get; set; }
+    public DateTime? LatestReviewCreatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     
     // Trainer info
