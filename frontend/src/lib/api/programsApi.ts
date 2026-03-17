@@ -78,6 +78,18 @@ export const programsApi = {
       });
     }
 
+    if (request.trainingVideoTitles && request.trainingVideoTitles.length > 0) {
+      request.trainingVideoTitles.forEach((title) => {
+        formData.append('trainingVideoTitles', title);
+      });
+    }
+
+    if (request.trainingVideoDescriptions && request.trainingVideoDescriptions.length > 0) {
+      request.trainingVideoDescriptions.forEach((description) => {
+        formData.append('trainingVideoDescriptions', description);
+      });
+    }
+
     const response = await fetchWithAuth(`${API_URL}/trainer/me/programs`, {
       method: 'POST',
       body: formData,
@@ -124,6 +136,18 @@ export const programsApi = {
     if (request.trainingVideos && request.trainingVideos.length > 0) {
       request.trainingVideos.forEach((video) => {
         formData.append('trainingVideos', video);
+      });
+    }
+
+    if (request.trainingVideoTitles && request.trainingVideoTitles.length > 0) {
+      request.trainingVideoTitles.forEach((title) => {
+        formData.append('trainingVideoTitles', title);
+      });
+    }
+
+    if (request.trainingVideoDescriptions && request.trainingVideoDescriptions.length > 0) {
+      request.trainingVideoDescriptions.forEach((description) => {
+        formData.append('trainingVideoDescriptions', description);
       });
     }
 

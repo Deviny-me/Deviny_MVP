@@ -1,4 +1,5 @@
 using Deviny.Domain.Enums;
+using Deviny.Application.Features.Programs.DTOs;
 
 namespace Deviny.Application.Features.Purchases.DTOs;
 
@@ -11,6 +12,7 @@ public class PurchasedProgramDto
     public string Description { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public List<string> VideoUrls { get; set; } = new();
+    public List<ProgramVideoDto> Videos { get; set; } = new();
     public string Tier { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public DateTime PurchasedAt { get; set; }
