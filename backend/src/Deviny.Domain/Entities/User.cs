@@ -10,6 +10,7 @@ public class User : BaseEntity
     public required string LastName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? BannerUrl { get; set; }
     public string? Slug { get; set; }
     public bool PushNotificationsEnabled { get; set; } = false;
     public required UserRole Role { get; set; }
@@ -20,6 +21,7 @@ public class User : BaseEntity
     public Gender? Gender { get; set; }
     public string? Country { get; set; }
     public string? City { get; set; }
+    public string? Bio { get; set; }
     
     // Computed property for backward compatibility
     public string FullName => $"{FirstName} {LastName}".Trim();

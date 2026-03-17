@@ -32,6 +32,7 @@ import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import type { RelationshipStatus } from '@/types/friend'
 import { API_URL, fetchWithAuth, getMediaUrl } from '@/lib/config'
+import { localizeCityName, localizeCountryName } from '@/lib/data/countries'
 import { PostCard } from '@/components/posts/PostCard'
 import { ProfilePostTabs } from '@/components/posts/ProfilePostTabs'
 import { getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
@@ -39,6 +40,7 @@ import { PhotoLightbox } from '@/components/ui/PhotoLightbox'
 import { Toast } from '@/components/ui/Toast'
 import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
+import { useLanguage } from '@/components/language/LanguageProvider'
 
 // ─── Expert profile type (returned when user is Trainer/Nutritionist) ───
 interface ExpertProfileData {
@@ -316,6 +318,7 @@ export function PublicProfileContent({
 }: PublicProfileContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { language } = useLanguage()
   const upsertPosts = useUpsertPosts()
   const tPosts = useTranslations('posts')
   const tc = useTranslations('common')
@@ -346,6 +349,7 @@ export function PublicProfileContent({
     fullName: string
     firstName: string
     avatarUrl: string | null
+    bannerUrl: string | null
     role: string | null
     country: string | null
     city: string | null
@@ -372,6 +376,7 @@ export function PublicProfileContent({
             fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || tc('user'),
             firstName: data.firstName || '',
             avatarUrl: data.avatarUrl || null,
+            bannerUrl: data.bannerUrl || null,
             role: data.role || null,
             country: data.country || null,
             city: data.city || null,
@@ -395,7 +400,10 @@ export function PublicProfileContent({
   const authorName = profileData?.fullName || tc('user')
   const authorInitials = (profileData?.firstName?.charAt(0) || authorName?.charAt(0) || 'U').toUpperCase()
   const authorAvatar = profileData?.avatarUrl ? getMediaUrl(profileData.avatarUrl) : null
+  const authorBanner = profileData?.bannerUrl ? getMediaUrl(profileData.bannerUrl) : null
   const profileAccent = getAccentColorsByRole(profileData?.role)
+  const localizedCountry = localizeCountryName(profileData?.country, language)
+  const localizedCity = localizeCityName(profileData?.city, profileData?.country, language)
 
   // Redirect to own profile if viewing self
   useEffect(() => {
@@ -707,7 +715,15 @@ export function PublicProfileContent({
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className={`h-32 bg-gradient-to-r ${profileAccent.gradient}`} />
+          <div className={`relative h-32 bg-gradient-to-r ${profileAccent.gradient}`}>
+            {authorBanner && (
+              <img
+                src={authorBanner}
+                alt={`${authorName} banner`}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+          </div>
           <div className="px-6 pb-6">
             <div className="flex items-end gap-4 -mt-16 relative z-10">
               <div className="relative">
@@ -777,7 +793,7 @@ export function PublicProfileContent({
                     {(profileData.country || profileData.city) && (
                       <span className="flex items-center gap-1 text-gray-400">
                         <Globe className="w-3.5 h-3.5" />
-                        {[profileData.city, profileData.country].filter(Boolean).join(', ')}
+                        {[localizedCity, localizedCountry].filter(Boolean).join(', ')}
                       </span>
                     )}
                   </div>

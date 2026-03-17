@@ -206,9 +206,22 @@ public class TrainerProfileController : BaseApiController
             if (!string.IsNullOrEmpty(request.Location))
                 profile.Location = request.Location;
 
+            if (request.Gender != null)
+            {
+                if (string.IsNullOrWhiteSpace(request.Gender))
+                {
+                    user.Gender = null;
+                }
+                else if (Enum.TryParse<Deviny.Domain.Enums.Gender>(request.Gender, true, out var parsedGender))
+                {
+                    user.Gender = parsedGender;
+                }
+            }
+
             profile.UpdatedAt = DateTime.UtcNow;
             
             await _trainerProfileRepository.UpdateAsync(profile);
+            await _userRepository.UpdateAsync(user);
 
             return Ok(new { message = "Profile updated successfully" });
         }

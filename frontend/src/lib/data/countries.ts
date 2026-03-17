@@ -548,6 +548,56 @@ export function getCountries(lang: string = 'ru') {
     .sort((a, b) => a.name.localeCompare(b.name, lang))
 }
 
+// Resolve country code from a stored country name in any supported language.
+export function resolveCountryCodeByName(countryName?: string | null): string | null {
+  if (!countryName) return null
+  const normalized = countryName.trim().toLowerCase()
+
+  for (const code of Object.keys(COUNTRIES_DATA)) {
+    const candidates = [
+      getCountryName(code, 'en'),
+      getCountryName(code, 'ru'),
+      getCountryName(code, 'az'),
+      COUNTRIES_DATA[code]?.name,
+    ]
+
+    if (candidates.some(name => (name || '').trim().toLowerCase() === normalized)) {
+      return code
+    }
+  }
+
+  return null
+}
+
+// Translate a stored country value to the current app language when possible.
+export function localizeCountryName(countryName?: string | null, lang: string = 'ru'): string {
+  if (!countryName) return ''
+  const code = resolveCountryCodeByName(countryName)
+  return code ? getCountryName(code, lang) : countryName
+}
+
+// Translate a stored city value to the current app language when possible.
+export function localizeCityName(cityName?: string | null, countryName?: string | null, lang: string = 'ru'): string {
+  if (!cityName) return ''
+
+  const code = resolveCountryCodeByName(countryName)
+  if (!code) return cityName
+
+  const normalized = cityName.trim().toLowerCase()
+  const cities = getCitiesForCountry(code, lang)
+
+  const match = cities.find(city => {
+    const value = city.value.trim().toLowerCase()
+    const label = city.label.trim().toLowerCase()
+    const ru = translateCityName(city.value, 'ru').trim().toLowerCase()
+    const az = translateCityName(city.value, 'az').trim().toLowerCase()
+    const en = translateCityName(city.value, 'en').trim().toLowerCase()
+    return value === normalized || label === normalized || ru === normalized || az === normalized || en === normalized
+  })
+
+  return match ? match.label : cityName
+}
+
 // Get sorted list of countries (Russian - backward compat)
 export const COUNTRIES = Object.entries(COUNTRIES_DATA)
   .map(([code, data]) => ({

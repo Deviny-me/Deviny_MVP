@@ -213,6 +213,7 @@ export interface UpdateTrainerProfileRequest {
   secondaryTitle?: string
   experienceYears?: number
   location?: string
+  gender?: string
 }
 
 export async function updateTrainerProfile(data: UpdateTrainerProfileRequest): Promise<void> {

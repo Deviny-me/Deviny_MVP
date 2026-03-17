@@ -216,6 +216,7 @@ export interface UpdateNutritionistProfileRequest {
   secondaryTitle?: string
   experienceYears?: number
   location?: string
+  gender?: string
 }
 
 export async function updateNutritionistProfile(data: UpdateNutritionistProfileRequest): Promise<void> {

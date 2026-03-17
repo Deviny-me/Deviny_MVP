@@ -13,6 +13,7 @@ interface UserData {
   email: string
   phone: string
   avatarUrl?: string | null
+  bannerUrl?: string | null
   role: number | string
   gender?: string | null
   country?: string | null
@@ -90,6 +91,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           email: data.email,
           phone: data.phone,
           avatarUrl: data.avatarUrl || null,
+          bannerUrl: data.bannerUrl || null,
           role: data.role,
           gender: data.gender,
           country: data.country,
