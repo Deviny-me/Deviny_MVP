@@ -36,6 +36,9 @@ import {
 import { fetchTrainerProfile, updateAbout, uploadCertificate, deleteCertificate, addSpecialization, deleteSpecialization, updateTrainerProfile, uploadTrainerAvatar, deleteTrainerAvatar } from '@/lib/api/trainerProfileApi'
 import { TrainerProfileResponse, CertificateDto, SpecializationDto } from '@/types/trainerProfile'
 import { postsApi } from '@/lib/api/postsApi'
+import { updateUserProfile } from '@/lib/api/userApi'
+import { useLanguage } from '@/components/language/LanguageProvider'
+import { getCitiesForCountry, getCountries, getCountryName, localizeCityName, localizeCountryName, resolveCountryCodeByName, translateCityName } from '@/lib/data/countries'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
@@ -270,6 +273,8 @@ export default function ProfilePage() {
   const t = useTranslations('profile')
   const tp = useTranslations('posts')
   const tc = useTranslations('common')
+  const tr = useTranslations('auth.register')
+  const { language } = useLanguage()
   const { user } = useAuth()
   const isNutritionist = user?.role === 'nutritionist'
   const upsertPosts = useUpsertPosts()
@@ -321,9 +326,40 @@ export default function ProfilePage() {
   const [editPrimaryTitle, setEditPrimaryTitle] = useState('')
   const [editSecondaryTitle, setEditSecondaryTitle] = useState('')
   const [editExperienceYears, setEditExperienceYears] = useState('')
-  const [editLocation, setEditLocation] = useState('')
+  const [editLocationCountryCode, setEditLocationCountryCode] = useState('')
+  const [editLocationCity, setEditLocationCity] = useState('')
   const [editPhone, setEditPhone] = useState('')
   const [editGender, setEditGender] = useState('')
+
+  const normalizeGenderValue = (value?: string | null): 'Male' | 'Female' | 'Other' | '' => {
+    if (!value) return ''
+    const normalized = value.trim().toLowerCase()
+    if (normalized === 'male') return 'Male'
+    if (normalized === 'female') return 'Female'
+    if (normalized === 'other') return 'Other'
+    return ''
+  }
+
+  const locationCountries = getCountries(language)
+  const locationCities = editLocationCountryCode ? getCitiesForCountry(editLocationCountryCode, language) : []
+
+  const syncLocationEditor = useCallback((country?: string | null, city?: string | null) => {
+    const countryCode = resolveCountryCodeByName(country) || ''
+    setEditLocationCountryCode(countryCode)
+
+    if (!countryCode || !city) {
+      setEditLocationCity('')
+      return
+    }
+
+    const matchedCity = getCitiesForCountry(countryCode, language).find(c =>
+      c.value.toLowerCase() === city.toLowerCase() ||
+      c.label.toLowerCase() === city.toLowerCase() ||
+      translateCityName(c.value, language).toLowerCase() === city.toLowerCase()
+    )
+
+    setEditLocationCity(matchedCity?.value || '')
+  }, [language])
 
   const loadProfile = async () => {
     try {
@@ -335,9 +371,9 @@ export default function ProfilePage() {
       setEditPrimaryTitle(data.trainer?.primaryTitle || '')
       setEditSecondaryTitle(data.trainer?.secondaryTitle || '')
       setEditExperienceYears(data.trainer?.experienceYears?.toString() || '')
-      setEditLocation(data.trainer?.location || '')
       setEditPhone(data.trainer?.phone || '')
-      setEditGender(data.trainer?.gender || '')
+      setEditGender(normalizeGenderValue(data.trainer?.gender))
+      syncLocationEditor(data.trainer?.country, data.trainer?.city)
     } catch (error) {
       console.error('Failed to load profile:', error)
       setToastData({ message: t('toasts.profileLoadError'), type: 'error' })
@@ -406,6 +442,11 @@ export default function ProfilePage() {
     if (postsObserverRef.current) observer.observe(postsObserverRef.current)
     return () => observer.disconnect()
   }, [postsHasMore, isLoadingPosts, handleLoadMorePosts, activeTab])
+
+  useEffect(() => {
+    if (!profile?.trainer) return
+    syncLocationEditor(profile.trainer.country, profile.trainer.city)
+  }, [language, profile?.trainer?.country, profile?.trainer?.city, syncLocationEditor])
 
   const handleSaveAbout = async () => {
     try {
@@ -513,11 +554,22 @@ export default function ProfilePage() {
   }
 
   const handleSaveLocation = async () => {
+    if (!editLocationCountryCode || !editLocationCity) {
+      setToastData({ message: t('toasts.fillRequiredFields'), type: 'error' })
+      return
+    }
+
     try {
       setSaving(true)
-      await updateTrainerProfile({
-        location: editLocation,
-      })
+      const country = getCountryName(editLocationCountryCode, language)
+      const city = translateCityName(editLocationCity, language)
+      const location = [city, country].filter(Boolean).join(', ')
+
+      await Promise.all([
+        updateTrainerProfile({ location }),
+        updateUserProfile({ country, city }),
+      ])
+
       setToastData({ message: t('toasts.locationUpdated'), type: 'success' })
       setShowEditLocationModal(false)
       loadProfile()
@@ -532,7 +584,9 @@ export default function ProfilePage() {
   const handleSavePhone = async () => {
     try {
       setSaving(true)
-      // Note: Phone update might need to be added to backend API
+      await updateUserProfile({
+        phone: editPhone.trim(),
+      })
       setToastData({ message: t('toasts.phoneUpdated'), type: 'success' })
       setShowEditPhoneModal(false)
       loadProfile()
@@ -564,7 +618,10 @@ export default function ProfilePage() {
   const handleSaveGender = async () => {
     try {
       setSaving(true)
-      // Note: Gender update might need to be added to backend API
+      const normalizedGender = normalizeGenderValue(editGender)
+      await updateTrainerProfile({
+        gender: normalizedGender || '',
+      })
       setToastData({ message: t('toasts.genderUpdated'), type: 'success' })
       setShowEditGenderModal(false)
       loadProfile()
@@ -712,6 +769,8 @@ export default function ProfilePage() {
   }
 
   const { trainer, about, certificates, achievements = [], specializations } = profile
+  const localizedCountry = localizeCountryName(trainer.country, language)
+  const localizedCity = localizeCityName(trainer.city, trainer.country, language)
 
   return (
     <>
@@ -816,7 +875,7 @@ export default function ProfilePage() {
                 <span className="text-xs">{t('location')}</span>
               </div>
               <p className="text-white text-sm font-medium truncate">
-                {trainer.location || [trainer.city, trainer.country].filter(Boolean).join(', ') || t('notSpecified')}
+                {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
               </p>
             </div>
           )}
@@ -856,23 +915,27 @@ export default function ProfilePage() {
           )}
 
           {/* Gender */}
-          {trainer.gender && (
-            <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
-              <button
-                onClick={() => setShowEditGenderModal(true)}
-                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
-              <div className="flex items-center gap-2 text-gray-400 mb-1">
-                <User className="w-4 h-4" />
-                <span className="text-xs">{t('genderLabel')}</span>
-              </div>
-              <p className="text-white text-sm font-medium">
-                {trainer.gender === 'Male' || trainer.gender === 'male' ? t('male') : trainer.gender === 'Female' || trainer.gender === 'female' ? t('female') : trainer.gender}
-              </p>
+          <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
+            <button
+              onClick={() => setShowEditGenderModal(true)}
+              className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Edit2 className="w-3 h-3" />
+            </button>
+            <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <User className="w-4 h-4" />
+              <span className="text-xs">{t('genderLabel')}</span>
             </div>
-          )}
+            <p className="text-white text-sm font-medium">
+              {trainer.gender === 'Male' || trainer.gender === 'male'
+                ? t('male')
+                : trainer.gender === 'Female' || trainer.gender === 'female'
+                  ? t('female')
+                  : trainer.gender === 'Other' || trainer.gender === 'other'
+                    ? t('other')
+                    : t('notSpecified')}
+            </p>
+          </div>
           
         </div>
 
@@ -1558,13 +1621,30 @@ export default function ProfilePage() {
                 </button>
               </div>
               <div className="p-4 space-y-4">
-                <input
-                  type="text"
-                  value={editLocation}
-                  onChange={(e) => setEditLocation(e.target.value)}
+                <select
+                  value={editLocationCountryCode}
+                  onChange={(e) => {
+                    setEditLocationCountryCode(e.target.value)
+                    setEditLocationCity('')
+                  }}
                   className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
-                  placeholder={t('locationPlaceholder')}
-                />
+                >
+                  <option value="">{tr('selectCountry')}</option>
+                  {locationCountries.map(country => (
+                    <option key={country.code} value={country.code}>{country.name}</option>
+                  ))}
+                </select>
+                <select
+                  value={editLocationCity}
+                  onChange={(e) => setEditLocationCity(e.target.value)}
+                  disabled={!editLocationCountryCode}
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] disabled:opacity-50"
+                >
+                  <option value="">{editLocationCountryCode ? tr('selectCity') : tr('selectCountry')}</option>
+                  {locationCities.map(city => (
+                    <option key={city.value} value={city.value}>{city.label}</option>
+                  ))}
+                </select>
                 <button
                   onClick={handleSaveLocation}
                   disabled={saving}
@@ -1681,6 +1761,7 @@ export default function ProfilePage() {
                   <option value="">{t('selectGender')}</option>
                   <option value="Male">{t('male')}</option>
                   <option value="Female">{t('female')}</option>
+                  <option value="Other">{t('other')}</option>
                 </select>
                 <button
                   onClick={handleSaveGender}

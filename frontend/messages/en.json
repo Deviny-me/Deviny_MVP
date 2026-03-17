@@ -313,6 +313,7 @@
 
     "fillProfile": "Complete profile",
     "fillProfileDescription": "Add information about yourself so clients can learn about your experience and specialization. A complete profile builds trust and attracts more clients.",
+    "fillProfileDescriptionUser": "Add a photo, bio, and location so friends can get to know you better.",
     "addPhotoAndName": "Add photo and name",
     "specifySpecialization": "Specify specialization",
     "addCertificatesAndAchievements": "Add certificates and achievements",
