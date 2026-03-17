@@ -44,6 +44,10 @@ export interface PublicProgramDto {
   averageRating: number;
   totalReviews: number;
   totalPurchases: number;
+  latestReviewComment?: string;
+  latestReviewRating?: number;
+  latestReviewUserName?: string;
+  latestReviewCreatedAt?: string;
   standardSpotsRemaining?: number;
   proSpotsRemaining?: number;
   createdAt: string;
@@ -126,6 +130,10 @@ export interface PublicMealProgramDto {
   averageRating: number;
   totalReviews: number;
   totalPurchases: number;
+  latestReviewComment?: string;
+  latestReviewRating?: number;
+  latestReviewUserName?: string;
+  latestReviewCreatedAt?: string;
   createdAt: string;
   trainerId: string;
   trainerName: string;

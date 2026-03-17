@@ -48,6 +48,10 @@ type UnifiedPublicProgram = {
   averageRating?: number
   totalReviews?: number
   totalPurchases?: number
+  latestReviewComment?: string
+  latestReviewRating?: number
+  latestReviewUserName?: string
+  latestReviewCreatedAt?: string
 }
 
 function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
@@ -74,6 +78,10 @@ function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
     averageRating: p.averageRating,
     totalReviews: p.totalReviews,
     totalPurchases: p.totalPurchases,
+    latestReviewComment: p.latestReviewComment,
+    latestReviewRating: p.latestReviewRating,
+    latestReviewUserName: p.latestReviewUserName,
+    latestReviewCreatedAt: p.latestReviewCreatedAt,
   }
 }
 
@@ -101,6 +109,10 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
     averageRating: p.averageRating ?? 0,
     totalReviews: p.totalReviews ?? 0,
     totalPurchases: p.totalPurchases ?? 0,
+    latestReviewComment: p.latestReviewComment,
+    latestReviewRating: p.latestReviewRating,
+    latestReviewUserName: p.latestReviewUserName,
+    latestReviewCreatedAt: p.latestReviewCreatedAt,
   }
 }
 
@@ -417,6 +429,7 @@ export default function ProgramsPage() {
                         <span className="text-sm text-gray-400">{program.trainerName}</span>
                       </div>
                       <p className="text-sm text-gray-500 mt-2 line-clamp-2">{program.description}</p>
+
                     </div>
 
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">

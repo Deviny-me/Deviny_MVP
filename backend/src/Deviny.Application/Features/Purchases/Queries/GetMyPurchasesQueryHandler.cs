@@ -54,7 +54,7 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                         : 0,
                     TotalReviews = tp.Reviews?.Count ?? 0,
                     PurchaseStatus = pp.Status.ToString(),
-                    CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                    CanReview = pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed,
                     HasReviewed = tp.Reviews?.Any(r => r.UserId == request.UserId) ?? false
                 };
             }
@@ -86,7 +86,7 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                         : 0,
                     TotalReviews = mp.Reviews?.Count ?? 0,
                     PurchaseStatus = pp.Status.ToString(),
-                    CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                    CanReview = pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed,
                     HasReviewed = mp.Reviews?.Any(r => r.UserId == request.UserId) ?? false
                 };
             }
@@ -99,7 +99,7 @@ public class GetMyPurchasesQueryHandler : IRequestHandler<GetMyPurchasesQuery, L
                 Tier = pp.Tier.ToString(),
                 PurchasedAt = pp.PurchasedAt,
                 PurchaseStatus = pp.Status.ToString(),
-                CanReview = pp.Status == ProgramPurchaseStatus.Completed,
+                CanReview = pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed,
                 HasReviewed = false
             };
         }).ToList();

@@ -53,6 +53,7 @@ public class MealProgramRepository : IMealProgramRepository
             .Include(p => p.Trainer)
                 .ThenInclude(u => u.TrainerProfile)
             .Include(p => p.Reviews)
+                .ThenInclude(r => r.User)
             .Include(p => p.Purchases)
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)

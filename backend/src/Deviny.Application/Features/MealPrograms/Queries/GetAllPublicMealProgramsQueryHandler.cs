@@ -58,7 +58,23 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
             TrainerRole = p.Trainer?.Role.ToString() ?? "",
             AverageRating = p.Reviews.Any() ? Math.Round(p.Reviews.Average(r => (double)r.Rating), 1) : 0,
             TotalReviews = p.Reviews.Count,
-            TotalPurchases = p.Purchases.Count
+            TotalPurchases = p.Purchases.Count,
+            LatestReviewComment = p.Reviews
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => r.Comment)
+                .FirstOrDefault(),
+            LatestReviewRating = p.Reviews
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => (int?)r.Rating)
+                .FirstOrDefault(),
+            LatestReviewUserName = p.Reviews
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => r.User.FirstName + " " + r.User.LastName)
+                .FirstOrDefault(),
+            LatestReviewCreatedAt = p.Reviews
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => (DateTime?)r.CreatedAt)
+                .FirstOrDefault()
         }).ToList();
 
         return new PagedResponse<PublicMealProgramDto>(dtos, totalCount, request.Page, request.PageSize);

@@ -1,6 +1,7 @@
 using Deviny.Application.Features.Reviews.Commands;
 using Deviny.Application.Features.Reviews.DTOs;
 using Deviny.Application.Features.Reviews.Queries;
+using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,16 @@ public class ReviewsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ReviewsController> _logger;
+    private readonly IRealtimeNotifier _realtimeNotifier;
 
-    public ReviewsController(IMediator mediator, ILogger<ReviewsController> logger)
+    public ReviewsController(
+        IMediator mediator,
+        ILogger<ReviewsController> logger,
+        IRealtimeNotifier realtimeNotifier)
     {
         _mediator = mediator;
         _logger = logger;
+        _realtimeNotifier = realtimeNotifier;
     }
 
     /// <summary>
@@ -92,6 +98,40 @@ public class ReviewsController : BaseApiController
 
             if (!result.Success)
                 return BadRequest(new { error = result.Error });
+
+            // Realtime refresh for all connected clients where program/review cards are shown.
+            // Best-effort: review must stay saved even if SignalR push fails.
+            try
+            {
+                await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                    scope: "programs",
+                    action: "review-created",
+                    entityType: "programReview",
+                    entityId: result.ReviewId,
+                    payload: new
+                    {
+                        programId = request.ProgramId,
+                        programType = request.ProgramType,
+                        rating = request.Rating
+                    });
+
+                await _realtimeNotifier.SendGlobalEntityChangedAsync(
+                    scope: "reviews",
+                    action: "review-created",
+                    entityType: "programReview",
+                    entityId: result.ReviewId,
+                    payload: new
+                    {
+                        programId = request.ProgramId,
+                        programType = request.ProgramType
+                    });
+            }
+            catch (Exception pushEx)
+            {
+                _logger.LogWarning(pushEx,
+                    "Review {ReviewId} was created, but realtime push failed.",
+                    result.ReviewId);
+            }
 
             return Ok(new { reviewId = result.ReviewId });
         }

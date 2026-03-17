@@ -87,14 +87,14 @@ public class ProgramPurchaseRepository : IProgramPurchaseRepository
                     : pp.MealProgramId == programId));
     }
 
-    public async Task<bool> HasCompletedPurchaseAsync(Guid userId, Guid programId, ProgramType programType)
+    public async Task<bool> HasPurchasedAsync(Guid userId, Guid programId, ProgramType programType)
     {
         return await _context.ProgramPurchases
             .AsNoTracking()
             .AnyAsync(pp =>
                 pp.UserId == userId &&
                 pp.ProgramType == programType &&
-                pp.Status == ProgramPurchaseStatus.Completed &&
+                (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed) &&
                 (programType == ProgramType.Training
                     ? pp.TrainingProgramId == programId
                     : pp.MealProgramId == programId));
