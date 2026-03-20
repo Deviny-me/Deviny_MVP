@@ -83,12 +83,4 @@ public class GlobalExceptionHandlerMiddleware
 
         await context.Response.WriteAsync(json);
     }
-
-    private class ErrorResponse
-    {
-        public int StatusCode { get; set; }
-        public string Message { get; set; } = string.Empty;
-        public string? Details { get; set; }
-        public string? StackTrace { get; set; }
-    }
 }

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode, useEffect } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
+import { buildUrl } from '@/lib/config'
 
 import ruMessages from '../../../messages/ru.json'
 import enMessages from '../../../messages/en.json'
@@ -55,7 +56,7 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
         const token = localStorage.getItem('accessToken')
         if (!token) return
 
-        const response = await fetch('http://localhost:5000/api/me/settings', {
+        const response = await fetch(buildUrl('/me/settings'), {
           headers: {
             'Authorization': `Bearer ${token}`
           },
@@ -85,7 +86,7 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
       const token = localStorage.getItem('accessToken')
       if (!token) return
 
-      await fetch('http://localhost:5000/api/me/settings/language', {
+      await fetch(buildUrl('/me/settings/language'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

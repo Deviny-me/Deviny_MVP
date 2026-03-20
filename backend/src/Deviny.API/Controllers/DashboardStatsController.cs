@@ -3,6 +3,9 @@ using Deviny.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 
 namespace Deviny.API.Controllers;
 
@@ -210,51 +213,4 @@ public class DashboardStatsController : BaseApiController
     }
 }
 
-// --- Response DTOs ---
 
-public class DashboardStatsResponse
-{
-    public int TotalStudents { get; set; }
-    public int TotalProgramsSold { get; set; }
-    public int TotalPrograms { get; set; }
-    public List<MonthlySalesDto> MonthlySales { get; set; } = new();
-    public List<ProgramStatsDto> ProgramStats { get; set; } = new();
-    public TierDistributionDto TierDistribution { get; set; } = new();
-    public List<RecentStudentDto> RecentStudents { get; set; } = new();
-}
-
-public class MonthlySalesDto
-{
-    public int Year { get; set; }
-    public int Month { get; set; }
-    public int Sales { get; set; }
-    public int Students { get; set; }
-}
-
-public class ProgramStatsDto
-{
-    public Guid ProgramId { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public int TotalSales { get; set; }
-    public int UniqueStudents { get; set; }
-    public int BasicSales { get; set; }
-    public int StandardSales { get; set; }
-    public int ProSales { get; set; }
-}
-
-public class TierDistributionDto
-{
-    public int Basic { get; set; }
-    public int Standard { get; set; }
-    public int Pro { get; set; }
-}
-
-public class RecentStudentDto
-{
-    public Guid Id { get; set; }
-    public string FullName { get; set; } = string.Empty;
-    public string? AvatarUrl { get; set; }
-    public string Email { get; set; } = string.Empty;
-}

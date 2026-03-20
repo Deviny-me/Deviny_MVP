@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Auth.Commands;
 using Deviny.Application.Features.Auth.DTOs;
@@ -255,3 +257,5 @@ public class AuthController : ControllerBase
         return Ok(new { message = "Logged out successfully" });
     }
 }
+
+

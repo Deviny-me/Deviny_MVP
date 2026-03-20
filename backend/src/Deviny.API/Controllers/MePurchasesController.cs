@@ -5,6 +5,9 @@ using Deviny.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 
 namespace Deviny.API.Controllers;
 
@@ -136,12 +139,4 @@ public class MePurchasesController : BaseApiController
     }
 }
 
-/// <summary>
-/// Request body for purchasing a program
-/// </summary>
-public class PurchaseProgramRequest
-{
-    public Guid ProgramId { get; set; }
-    public string ProgramType { get; set; } = string.Empty; // "training" or "meal"
-    public string Tier { get; set; } = string.Empty;        // "Basic", "Standard", "Pro"
-}
+

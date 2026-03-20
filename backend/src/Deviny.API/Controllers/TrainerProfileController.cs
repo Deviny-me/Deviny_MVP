@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Entities;
 using Deviny.Infrastructure.Persistence;
@@ -135,7 +137,13 @@ public class TrainerProfileController : BaseApiController
                     Slug = profile.Slug,
                     ProfilePublicUrl = profilePublicUrl,
                     Role = user.Role.ToString(),
-                    Feedback = user.Feedback,
+                    Feedback = user.Feedback == null
+                        ? null
+                        : new FeedbackDto
+                        {
+                            StarRating = user.Feedback.StarRating,
+                            RatingScore = user.Feedback.RatingScore
+                        },
                     ActivityRatingValue = 0
                 },
                 About = new AboutDto
@@ -752,3 +760,5 @@ public class TrainerProfileController : BaseApiController
         }
     }
 }
+
+

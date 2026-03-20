@@ -1,4 +1,4 @@
-﻿using Deviny.Application.Common;
+using Deviny.Application.Common;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Posts.Commands;
 using Deviny.Application.Features.Posts.DTOs;
@@ -6,6 +6,9 @@ using Deviny.Application.Features.Posts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 
 namespace Deviny.API.Controllers;
 
@@ -418,19 +421,4 @@ public class PostsController : BaseApiController
     }
 }
 
-/// <summary>
-/// Request body for creating a comment.
-/// </summary>
-public class CreateCommentRequest
-{
-    public required string Content { get; set; }
-    public Guid? ParentCommentId { get; set; }
-}
 
-/// <summary>
-/// Request body for creating a repost.
-/// </summary>
-public class CreateRepostRequest
-{
-    public string? Quote { get; set; }
-}

@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Deviny.Infrastructure.Persistence;
@@ -62,3 +64,4 @@ public class StudentsController : BaseApiController
         }
     }
 }
+

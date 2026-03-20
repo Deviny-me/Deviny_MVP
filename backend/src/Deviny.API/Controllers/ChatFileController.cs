@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 
 namespace Deviny.API.Controllers;
 
@@ -88,10 +91,4 @@ public class ChatFileController : BaseApiController
     }
 }
 
-public class ChatFileUploadResult
-{
-    public string Url { get; set; } = string.Empty;
-    public string FileName { get; set; } = string.Empty;
-    public string ContentType { get; set; } = string.Empty;
-    public long Size { get; set; }
-}
+

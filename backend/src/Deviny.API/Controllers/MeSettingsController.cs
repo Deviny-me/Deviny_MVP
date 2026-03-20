@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Domain.Entities;
 using Deviny.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
@@ -144,3 +146,5 @@ public class MeSettingsController : BaseApiController
         Response.Cookies.Append(LanguageCookieName, language, cookieOptions);
     }
 }
+
+

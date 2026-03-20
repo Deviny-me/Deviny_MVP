@@ -6,6 +6,9 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Deviny.API.Hubs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 
 namespace Deviny.API.Controllers;
 
@@ -15,12 +18,12 @@ namespace Deviny.API.Controllers;
 /// Thin layer – all logic lives in MediatR handlers.
 /// </summary>
 [Route("api/me/chats")]
-public class ChatsController : BaseApiController
+public class MeMessagesController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly IHubContext<ChatHub> _hubContext;
 
-    public ChatsController(IMediator mediator, IHubContext<ChatHub> hubContext)
+    public MeMessagesController(IMediator mediator, IHubContext<ChatHub> hubContext)
     {
         _mediator = mediator;
         _hubContext = hubContext;
@@ -116,7 +119,7 @@ public class ChatsController : BaseApiController
         catch (Exception ex)
         {
             // Log but don't fail the request — message was already saved
-            var logger = HttpContext.RequestServices.GetService<ILogger<ChatsController>>();
+            var logger = HttpContext.RequestServices.GetService<ILogger<MeMessagesController>>();
             logger?.LogWarning(ex, "Failed to broadcast message via SignalR for conv {ConvId}", conversationId);
         }
 
@@ -156,13 +159,4 @@ public class ChatsController : BaseApiController
 #endif
 }
 
-/// <summary>Body for the REST send-message endpoint.</summary>
-public class SendMessageBodyDto
-{
-    public string Text { get; set; } = string.Empty;
-    public Guid? ReplyToMessageId { get; set; }
-    public string? AttachmentUrl { get; set; }
-    public string? AttachmentFileName { get; set; }
-    public string? AttachmentContentType { get; set; }
-    public long? AttachmentSize { get; set; }
-}
+

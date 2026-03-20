@@ -1,6 +1,8 @@
 using Deviny.Application.Common;
 using Deviny.Application.Features.Trainers.DTOs;
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
@@ -180,3 +182,5 @@ public class NutritionistExpertsController : BaseApiController
         return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
     }
 }
+
+

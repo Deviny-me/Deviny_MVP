@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { User, Upload, Trash2, Loader2 } from 'lucide-react'
 import { uploadAvatar, deleteAvatar } from '@/lib/api/userApi'
+import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 
 interface AvatarUploadProps {
@@ -52,7 +53,7 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
       <div className="relative">
         {avatarUrl ? (
           <Image
-            src={`http://localhost:5000${avatarUrl}`}
+            src={getMediaUrl(avatarUrl) ?? ''}
             alt="Avatar"
             width={128}
             height={128}

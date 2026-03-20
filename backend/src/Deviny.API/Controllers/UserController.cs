@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
@@ -501,3 +503,5 @@ public class UserController : BaseApiController
         }
     }
 }
+
+

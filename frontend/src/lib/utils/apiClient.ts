@@ -1,7 +1,6 @@
 import { authService } from '@/features/auth/services/authService'
 import { getAccessToken, setAccessToken, clearAccessToken } from '@/features/auth/utils/tokenStorage'
-
-const API_URL = 'http://localhost:5000/api'
+import { API_URL } from '@/lib/config'
 
 interface RequestOptions extends RequestInit {
   skipAuth?: boolean

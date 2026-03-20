@@ -1,4 +1,6 @@
-using Deviny.API.DTOs;
+using Deviny.API.DTOs.Requests;
+using Deviny.API.DTOs.Responses;
+using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Entities;
 using Deviny.Infrastructure.Persistence;
@@ -605,3 +607,5 @@ public class NutritionistProfileController : BaseApiController
         return (words[0][0].ToString() + words[1][0].ToString()).ToUpper();
     }
 }
+
+

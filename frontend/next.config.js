@@ -1,12 +1,15 @@
 /** @type {import('next').NextConfig} */
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const parsedBackendUrl = new URL(backendUrl)
+
 const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
+        protocol: parsedBackendUrl.protocol.replace(':', ''),
+        hostname: parsedBackendUrl.hostname,
+        port: parsedBackendUrl.port || undefined,
       },
     ],
   },
@@ -14,11 +17,11 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:5000/uploads/:path*',
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ]
   },

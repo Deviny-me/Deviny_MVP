@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode, useEffect } from 'react'
+import { buildUrl } from '@/lib/config'
 
 type Theme = 'light' | 'dark'
 
@@ -46,7 +47,7 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
         const token = localStorage.getItem('accessToken')
         if (!token) return
 
-        const response = await fetch('http://localhost:5000/api/me/settings', {
+        const response = await fetch(buildUrl('/me/settings'), {
           headers: {
             'Authorization': `Bearer ${token}`
           },
@@ -81,7 +82,7 @@ export function ThemeProvider({ children, initialTheme = 'light' }: ThemeProvide
       const token = localStorage.getItem('accessToken')
       if (!token) return
 
-      await fetch('http://localhost:5000/api/me/settings/theme', {
+      await fetch(buildUrl('/me/settings/theme'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
