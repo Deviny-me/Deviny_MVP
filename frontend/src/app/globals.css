@@ -40,8 +40,8 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #7c3aed;
-  border-color: #7c3aed;
+  background-color: #D4A843;
+  border-color: #D4A843;
 }
 
 input[type="checkbox"]:checked::after {
@@ -57,12 +57,12 @@ input[type="checkbox"]:checked::after {
 }
 
 input[type="checkbox"]:hover:not(:disabled) {
-  border-color: #7c3aed;
+  border-color: #D4A843;
 }
 
 input[type="checkbox"]:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.2);
 }
 
 input[type="checkbox"]:disabled {

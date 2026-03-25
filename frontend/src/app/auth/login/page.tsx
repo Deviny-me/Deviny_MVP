@@ -3,13 +3,20 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, FormEvent, Suspense } from 'react'
 import { useTranslations } from 'next-intl'
-import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, User, Dumbbell, Apple, ArrowLeft } from 'lucide-react'
+import { Spinner } from '@/components/ui/Spinner'
 import { useLogin } from '@/features/auth/hooks/useLogin'
+import { cn } from '@/lib/utils/cn'
+
+const roleConfig = {
+  user:         { icon: User,     iconBg: 'bg-user-100',         iconColor: 'text-user-600',         ring: 'focus-within:ring-user-500' },
+  trainer:      { icon: Dumbbell, iconBg: 'bg-trainer-100',      iconColor: 'text-trainer-600',      ring: 'focus-within:ring-trainer-500' },
+  nutritionist: { icon: Apple,    iconBg: 'bg-nutritionist-100', iconColor: 'text-nutritionist-600', ring: 'focus-within:ring-nutritionist-500' },
+}
 
 function LoginPageContent() {
   const searchParams = useSearchParams()
@@ -24,7 +31,7 @@ function LoginPageContent() {
     rememberMe: false,
   })
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  
+
   const { login, isLoading, error, setError } = useLogin()
 
   useEffect(() => {
@@ -90,97 +97,111 @@ function LoginPageContent() {
 
   const isTrainer = role === 'trainer'
   const isNutritionist = role === 'nutritionist'
-  const isProfessional = isTrainer || isNutritionist
+  const cfg = roleConfig[role]
+  const Icon = cfg.icon
 
   return (
-    <div className="light w-full max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-primary-700 mb-2">Deviny</h1>
-        <p className="text-gray-600">
-          {t('tagline')}
-        </p>
-      </div>
+    <div className="w-full max-w-md mx-auto">
+      {/* Back button */}
+      <Link
+        href="/auth"
+        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-all group mb-6"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        {t('login.backToRoles')}
+      </Link>
 
-      <Card className="p-8 bg-white">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+      {/* Role badge */}
+      <div className="flex flex-col items-center mb-8">
+        <div className={cn('w-16 h-16 rounded-2xl flex items-center justify-center mb-4', cfg.iconBg)}>
+          <Icon className={cn('w-8 h-8', cfg.iconColor)} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">
           {isTrainer ? t('login.titleTrainer') : isNutritionist ? t('login.titleNutritionist') : t('login.titleUser')}
         </h2>
+        <p className="text-sm text-gray-500 mt-1">{t('tagline')}</p>
+      </div>
 
+      {/* Form card */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-amber-100/20 border border-amber-200/30 p-6 sm:p-8">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-5 flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+            <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => {
                 setFormData({ ...formData, email: e.target.value })
-                if (fieldErrors.email) {
-                  setFieldErrors({ ...fieldErrors, email: '' })
-                }
+                if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: '' })
               }}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Email"
+              className={cn(
+                'w-full px-4 py-3 rounded-xl border bg-white text-gray-900 placeholder:text-gray-400 transition-all hover:border-gray-600 focus:bg-white focus:outline-none focus:ring-2 focus:border-transparent',
+                fieldErrors.email ? 'border-red-400 focus:ring-red-500' : 'border-gray-900 focus:ring-primary-500'
+              )}
+              placeholder="name@example.com"
               disabled={isLoading}
             />
-            {fieldErrors.email && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
-            )}
+            {fieldErrors.email && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.email}</p>}
           </div>
 
+          {/* Password */}
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('login.password')}</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => {
                   setFormData({ ...formData, password: e.target.value })
-                  if (fieldErrors.password) {
-                    setFieldErrors({ ...fieldErrors, password: '' })
-                  }
+                  if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' })
                 }}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  fieldErrors.password ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder={t('login.password')}
+                className={cn(
+                  'w-full px-4 py-3 pr-12 rounded-xl border bg-white text-gray-900 placeholder:text-gray-400 transition-all hover:border-gray-600 focus:bg-white focus:outline-none focus:ring-2 focus:border-transparent',
+                  fieldErrors.password ? 'border-red-400 focus:ring-red-500' : 'border-gray-900 focus:ring-primary-500'
+                )}
+                placeholder="••••••••"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {fieldErrors.password && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
-            )}
+            {fieldErrors.password && <p className="mt-1.5 text-sm text-red-600">{fieldErrors.password}</p>}
           </div>
 
+          {/* Remember me + forgot */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center cursor-pointer">
+            <label className="flex items-center cursor-pointer group">
               <input
                 type="checkbox"
                 checked={formData.rememberMe}
                 onChange={(e) =>
                   setFormData({ ...formData, rememberMe: e.target.checked })
                 }
-                className="w-4 h-4 text-primary-600 bg-white border-gray-300 rounded focus:ring-primary-500 accent-primary-600 cursor-pointer"
+                className="w-4 h-4 bg-white border-gray-300 rounded cursor-pointer"
+                style={{ accentColor: '#D4A843' }}
                 disabled={isLoading}
               />
-              <span className="ml-2 text-sm text-gray-700 select-none">{t('login.rememberMe')}</span>
+              <span className="ml-2 text-sm text-gray-600 select-none group-hover:text-gray-900 transition-colors">
+                {t('login.rememberMe')}
+              </span>
             </label>
 
             <Link
               href="#"
-              className="text-sm text-primary-600 hover:text-primary-700"
+              className="text-sm text-primary-600 hover:text-primary-700 hover:underline underline-offset-2 font-medium transition-all"
             >
               {t('login.forgotPassword')}
             </Link>
@@ -193,28 +214,33 @@ function LoginPageContent() {
             type="submit"
             disabled={isLoading}
           >
-            {isLoading ? t('login.submitting') : t('login.submit')}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" color="white" />
+                {t('login.submitting')}
+              </span>
+            ) : t('login.submit')}
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-amber-200/30" /></div>
+        </div>
+
+        {/* Links */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
             {t('login.noAccount')}{' '}
             <Link
               href={`/auth/register?role=${role}`}
-              className="text-primary-600 hover:text-primary-700 font-medium"
+              className="text-primary-600 hover:text-primary-700 hover:underline underline-offset-2 font-semibold transition-all"
             >
               {t('login.register')}
             </Link>
           </p>
-          <Link
-            href="/auth"
-            className="block mt-4 text-sm text-gray-500 hover:text-gray-700"
-          >
-            {t('login.backToRoles')}
-          </Link>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
@@ -222,8 +248,8 @@ function LoginPageContent() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="light w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
+        <Spinner size="md" color="primary" />
       </div>
     }>
       <LoginPageContent />

@@ -3,15 +3,27 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useTranslations } from 'next-intl'
-import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
 import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
-import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon } from 'lucide-react'
+import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon, User, Dumbbell, Apple, ArrowLeft } from 'lucide-react'
 import { COUNTRIES_DATA, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName, translateCityName } from '@/lib/data/countries'
+import { Spinner } from '@/components/ui/Spinner'
 import { useLanguage } from '@/components/language/LanguageProvider'
+import { cn } from '@/lib/utils/cn'
+
+const roleConfig = {
+  user:         { icon: User,     iconBg: 'bg-user-100',         iconColor: 'text-user-600' },
+  trainer:      { icon: Dumbbell, iconBg: 'bg-trainer-100',      iconColor: 'text-trainer-600' },
+  nutritionist: { icon: Apple,    iconBg: 'bg-nutritionist-100', iconColor: 'text-nutritionist-600' },
+}
+
+const inputBase = 'w-full px-4 py-3 rounded-xl border bg-white text-gray-900 placeholder:text-gray-400 transition-all hover:border-gray-600 focus:bg-white focus:outline-none focus:ring-2 focus:border-transparent'
+const inputOk = 'border-gray-900 focus:ring-primary-500'
+const inputErr = 'border-red-400 focus:ring-red-500'
+const selectBase = 'w-full px-4 py-3 rounded-xl border bg-white text-gray-900 transition-all hover:border-gray-600 focus:bg-white focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
 
 function RegisterPageContent() {
   const searchParams = useSearchParams()
@@ -31,7 +43,6 @@ function RegisterPageContent() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
-  // Extended fields for trainer
   const [phone, setPhone] = useState('')
   const [phoneCountryCode, setPhoneCountryCode] = useState<string>('RU')
   const [gender, setGender] = useState<GenderType | undefined>()
@@ -40,12 +51,10 @@ function RegisterPageContent() {
   const [verificationDocument, setVerificationDocument] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
-  // Get available cities based on selected country with language-aware translations
   const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
   const selectedCountryName = countryCode ? getCountryName(countryCode, language) : ''
   const countries = getCountries(language)
 
-  // Get phone format and max digits for selected phone country
   const phoneCountryData = COUNTRIES_DATA[phoneCountryCode]
   const phoneFormat = phoneCountryData?.phoneFormat || 'XXX XXX XXX'
   const maxPhoneDigits = phoneCountryData?.maxDigits || 10
@@ -57,12 +66,9 @@ function RegisterPageContent() {
 
   const { loading, errors, register, clearErrors } = useRegister()
 
-  // Handle phone number input with formatting
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     const digits = value.replace(/\D/g, '')
-    
-    // Limit to max digits for the country
     if (digits.length <= maxPhoneDigits) {
       const formatted = formatPhoneNumber(digits, phoneFormat)
       setPhone(formatted)
@@ -85,12 +91,9 @@ function RegisterPageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     if (!role) return
-
     clearErrors()
     
-    // Combine phone code with phone number for trainers and nutritionists
     const fullPhone = (role === 'trainer' || role === 'nutritionist') && phone 
       ? `${COUNTRIES_DATA[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
       : phone
@@ -108,7 +111,6 @@ function RegisterPageContent() {
       city: translateCityName(city, language),
     }
 
-    // Add trainer and nutritionist specific fields
     if (role === 'trainer' || role === 'nutritionist') {
       formData.verificationDocument = verificationDocument || undefined
     }
@@ -130,7 +132,6 @@ function RegisterPageContent() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0])
     }
@@ -138,12 +139,8 @@ function RegisterPageContent() {
 
   const handleFileSelect = (file: File) => {
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
-    if (!allowedTypes.includes(file.type)) {
-      return
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      return
-    }
+    if (!allowedTypes.includes(file.type)) return
+    if (file.size > 10 * 1024 * 1024) return
     setVerificationDocument(file)
   }
 
@@ -155,16 +152,12 @@ function RegisterPageContent() {
 
   const removeFile = () => {
     setVerificationDocument(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const getFileIcon = (file: File) => {
-    if (file.type === 'application/pdf') {
-      return <FileText className="w-8 h-8 text-red-500" />
-    }
-    return <ImageIcon className="w-8 h-8 text-blue-500" />
+    if (file.type === 'application/pdf') return <FileText className="w-7 h-7 text-red-500" />
+    return <ImageIcon className="w-7 h-7 text-blue-500" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -173,294 +166,238 @@ function RegisterPageContent() {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
   }
 
-  if (!role) {
-    return null
-  }
+  if (!role) return null
 
   const isTrainer = role === 'trainer'
   const isNutritionist = role === 'nutritionist'
   const isProfessional = isTrainer || isNutritionist
+  const cfg = roleConfig[role]
+  const Icon = cfg.icon
 
   return (
-    <div className="light w-full max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-primary-700 mb-2">Deviny</h1>
-        <p className="text-lg text-gray-600">
-          {t('tagline')}
-        </p>
-      </div>
+    <div className="w-full max-w-xl mx-auto py-4">
+      {/* Back button */}
+      <Link
+        href={`/auth/login?role=${role}`}
+        className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-all group mb-6"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        {tr('backToLogin')}
+      </Link>
 
-      <Card className="p-8 bg-white">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+      {/* Role badge */}
+      <div className="flex flex-col items-center mb-6">
+        <div className={cn('w-14 h-14 rounded-2xl flex items-center justify-center mb-3', cfg.iconBg)}>
+          <Icon className={cn('w-7 h-7', cfg.iconColor)} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900">
           {isTrainer ? tr('titleTrainer') : isNutritionist ? tr('titleNutritionist') : tr('titleUser')}
         </h2>
+      </div>
 
+      {/* Form card */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-amber-100/20 border border-amber-200/30 p-6 sm:p-8">
         {errors.general && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-5 flex items-center gap-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+            <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
             {errors.general}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* First Name and Last Name */}
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Section: Personal info */}
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{tr('personalInfo')}</p>
+
+          {/* Names */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tr('firstName')}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('firstName')}</label>
               <input
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={cn(inputBase, errors.firstName ? inputErr : inputOk)}
                 placeholder={tr('firstNamePlaceholder')}
                 disabled={loading}
               />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
-              )}
+              {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tr('lastName')}
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('lastName')}</label>
               <input
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={cn(inputBase, errors.lastName ? inputErr : inputOk)}
                 placeholder={tr('lastNamePlaceholder')}
                 disabled={loading}
               />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-              )}
+              {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {tr('email')}
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('email')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={cn(inputBase, errors.email ? inputErr : inputOk)}
               placeholder={tr('emailPlaceholder')}
               disabled={loading}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {tr('password')}
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('password')}</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.password ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={cn(inputBase, 'pr-12', errors.password ? inputErr : inputOk)}
                 placeholder={tr('passwordPlaceholder')}
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-            )}
+            {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
           </div>
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {tr('confirmPassword')}
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('confirmPassword')}</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                }`}
+                className={cn(inputBase, 'pr-12', errors.confirmPassword ? inputErr : inputOk)}
                 placeholder={tr('confirmPasswordPlaceholder')}
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-            )}
+            {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
           </div>
 
-          {/* Gender */}
-          {isProfessional && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tr('gender')}
-              </label>
-              <select
-                value={gender || ''}
-                onChange={(e) => setGender(e.target.value as GenderType || undefined)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                  errors.gender ? 'border-red-500' : 'border-gray-300'
-                }`}
-                disabled={loading}
-              >
-                <option value="">{tr('selectGender')}</option>
-                {GENDERS.map((g) => (
-                  <option key={g.value} value={g.value}>
-                    {g.label}
-                  </option>
-                ))}
-              </select>
-              {errors.gender && (
-                <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
-              )}
-            </div>
-          )}
-
-          {/* Phone - Only for professionals */}
-          {isProfessional && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {tr('phone')} *
-              </label>
-              <div className="flex gap-2">
-                <select
-                  value={phoneCountryCode}
-                  onChange={(e) => {
-                    setPhoneCountryCode(e.target.value)
-                    setPhone('') // Clear phone when changing country code
-                  }}
-                  className={`w-32 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  disabled={loading}
-                >
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {COUNTRIES_DATA[c.code].phoneCode}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={handlePhoneChange}
-                  className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                    errors.phone ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder={phoneFormat.replace(/X/g, '9')}
-                  disabled={loading}
-                />
-              </div>
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-              )}
-            </div>
-          )}
-
-          {/* Country and City */}
-          {isProfessional && (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {tr('country')}
-                </label>
-                <select
-                  value={countryCode}
-                  onChange={(e) => {
-                    setCountryCode(e.target.value)
-                    setCity('') // Reset city when country changes
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                    errors.country ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  disabled={loading}
-                >
-                  <option value="">{tr('selectCountry')}</option>
-                  {countries.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.country && (
-                  <p className="mt-1 text-sm text-red-600">{errors.country}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {tr('city')}
-                </label>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
-                    errors.city ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  disabled={loading || !countryCode}
-                >
-                  <option value="">{countryCode ? tr('selectCity') : tr('selectCountry')}</option>
-                  {availableCities.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.city && (
-                  <p className="mt-1 text-sm text-red-600">{errors.city}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Professional-specific fields */}
+          {/* Professional fields */}
           {isProfessional && (
             <>
-              {/* Verification Document Upload */}
+              <div className="border-t border-amber-200/20 pt-5 mt-5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-5">{tr('professionalInfo')}</p>
+              </div>
+
+              {/* Gender */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {tr('documentLabel')}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('gender')}</label>
+                <select
+                  value={gender || ''}
+                  onChange={(e) => setGender(e.target.value as GenderType || undefined)}
+                  className={cn(selectBase, errors.gender ? inputErr : inputOk)}
+                  disabled={loading}
+                >
+                  <option value="">{tr('selectGender')}</option>
+                  {GENDERS.map((g) => (
+                    <option key={g.value} value={g.value}>{g.label}</option>
+                  ))}
+                </select>
+                {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('phone')} *</label>
+                <div className="flex gap-2">
+                  <select
+                    value={phoneCountryCode}
+                    onChange={(e) => { setPhoneCountryCode(e.target.value); setPhone('') }}
+                    className={cn(selectBase, 'w-28 flex-shrink-0', errors.phone ? inputErr : inputOk)}
+                    disabled={loading}
+                  >
+                    {countries.map((c) => (
+                      <option key={c.code} value={c.code}>{COUNTRIES_DATA[c.code].phoneCode}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className={cn(inputBase, 'flex-1', errors.phone ? inputErr : inputOk)}
+                    placeholder={phoneFormat.replace(/X/g, '9')}
+                    disabled={loading}
+                  />
+                </div>
+                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+              </div>
+
+              {/* Location */}
+              <div className="border-t border-amber-200/20 pt-5 mt-5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-5">{tr('locationInfo')}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('country')}</label>
+                  <select
+                    value={countryCode}
+                    onChange={(e) => { setCountryCode(e.target.value); setCity('') }}
+                    className={cn(selectBase, errors.country ? inputErr : inputOk)}
+                    disabled={loading}
+                  >
+                    <option value="">{tr('selectCountry')}</option>
+                    {countries.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                  {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('city')}</label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className={cn(selectBase, errors.city ? inputErr : inputOk)}
+                    disabled={loading || !countryCode}
+                  >
+                    <option value="">{countryCode ? tr('selectCity') : tr('selectCountry')}</option>
+                    {availableCities.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                </div>
+              </div>
+
+              {/* Document upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{tr('documentLabel')}</label>
                 
                 {!verificationDocument ? (
                   <div
-                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      dragActive 
-                        ? 'border-primary-500 bg-primary-50' 
-                        : errors.verificationDocument 
-                          ? 'border-red-500 bg-red-50' 
-                          : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                    className={cn(
+                      'relative border-2 border-dashed rounded-xl p-6 text-center transition-all',
+                      dragActive
+                        ? 'border-primary-500 bg-primary-50'
+                        : errors.verificationDocument
+                          ? 'border-red-400 bg-red-50/50'
+                          : 'border-amber-200/40 hover:border-amber-300/50 bg-amber-50/30'
+                    )}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -474,94 +411,99 @@ function RegisterPageContent() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       disabled={loading}
                     />
-                    <Upload className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+                    <div className="w-12 h-12 rounded-xl bg-amber-100/50 flex items-center justify-center mx-auto mb-3">
+                      <Upload className="w-5 h-5 text-gray-400" />
+                    </div>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium text-primary-600">{tr('selectFile')}</span>
+                      <span className="font-semibold text-primary-600">{tr('selectFile')}</span>
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {tr('allowedFormats')}
-                    </p>
+                    <p className="text-xs text-gray-400 mt-1">{tr('allowedFormats')}</p>
                   </div>
                 ) : (
-                  <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="border border-amber-200/30 rounded-xl p-4 bg-amber-50/30">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center gap-3 min-w-0">
                         {getFileIcon(verificationDocument)}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {verificationDocument.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {formatFileSize(verificationDocument.size)}
-                          </p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{verificationDocument.name}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(verificationDocument.size)}</p>
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={removeFile}
-                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
                         disabled={loading}
                       >
-                        <X className="h-5 w-5 text-gray-500" />
+                        <X className="h-4 w-4 text-gray-500" />
                       </button>
                     </div>
                   </div>
                 )}
                 
-                {errors.verificationDocument && (
-                  <p className="mt-1 text-sm text-red-600">{errors.verificationDocument}</p>
-                )}
+                {errors.verificationDocument && <p className="mt-1 text-sm text-red-600">{errors.verificationDocument}</p>}
               </div>
             </>
           )}
 
           {/* Terms */}
-          <div>
-            <label className="flex items-start space-x-3">
+          <div className="pt-2">
+            <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={termsAccepted}
                 onChange={(e) => setTermsAccepted(e.target.checked)}
-                className={`mt-1 w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 ${
+                className={cn(
+                  'mt-0.5 w-4 h-4 rounded border-gray-300',
                   errors.termsAccepted ? 'border-red-500' : ''
-                }`}
+                )}
+                style={{ accentColor: '#D4A843' }}
                 disabled={loading}
               />
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-600 leading-relaxed">
                 {tr('termsAccept')}{' '}
-                <Link href="/terms" className="text-primary-600 hover:text-primary-700 underline">
+                <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-medium underline underline-offset-2">
                   {tr('termsLink')}
                 </Link>
               </span>
             </label>
-            {errors.termsAccepted && (
-              <p className="mt-1 text-sm text-red-600">{errors.termsAccepted}</p>
-            )}
+            {errors.termsAccepted && <p className="mt-1 text-sm text-red-600">{errors.termsAccepted}</p>}
           </div>
 
           <Button
-            variant={isProfessional ? 'trainer' : 'user'}
+            variant={isNutritionist ? 'nutritionist' : isTrainer ? 'trainer' : 'user'}
             size="lg"
             fullWidth
             type="submit"
             disabled={loading}
           >
-            {loading ? tr('submitting') : tr('submit')}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" color="white" />
+                {tr('submitting')}
+              </span>
+            ) : tr('submit')}
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm">
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-amber-200/30" /></div>
+        </div>
+
+        {/* Links */}
+        <div className="text-center">
+          <p className="text-sm text-gray-600">
             {tr('hasAccount')}{' '}
             <Link
               href={`/auth/login?role=${role}`}
-              className="text-primary-600 hover:text-primary-700 font-medium"
+              className="text-primary-600 hover:text-primary-700 hover:underline underline-offset-2 font-semibold transition-all"
             >
               {tr('loginLink')}
             </Link>
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
@@ -569,11 +511,12 @@ function RegisterPageContent() {
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div className="light w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="w-full max-w-md mx-auto flex items-center justify-center min-h-[400px]">
+        <Spinner size="md" color="primary" />
       </div>
     }>
       <RegisterPageContent />
     </Suspense>
   )
 }
+

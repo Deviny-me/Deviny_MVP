@@ -9,6 +9,7 @@ import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
 import { LanguageProvider } from '@/components/language/LanguageProvider'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
+import { Spinner } from '@/components/ui/Spinner'
 
 // Routes where right sidebar should be hidden
 const HIDE_RIGHT_SIDEBAR = [
@@ -65,7 +66,7 @@ export default function TrainerDashboardLayout({
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B35]"></div>
+        <Spinner size="lg" color="trainer" />
       </div>
     )
   }

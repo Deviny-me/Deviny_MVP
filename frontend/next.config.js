@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.deviny.me'
 const parsedBackendUrl = new URL(backendUrl)
 
 const nextConfig = {

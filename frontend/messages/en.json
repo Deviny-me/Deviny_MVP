@@ -55,7 +55,24 @@
 
   "auth": {
     "tagline": "Social network for fitness and healthy lifestyle",
+    "heroTitle": "Your path to a healthy lifestyle starts here",
+    "heroSubtitle": "Deviny brings together fitness enthusiasts, trainers, and nutritionists in one platform. Find motivation, support, and professional guidance.",
     "selectRole": "Please select a role",
+    "chooseRole": "Choose how you want to use the platform",
+    "features": {
+      "programs": "Training & Meal Programs",
+      "programsDesc": "Access professional workout and nutrition plans from certified experts",
+      "community": "Community & Support",
+      "communityDesc": "Connect with like-minded people who share your goals and support each other",
+      "challenges": "Challenges & Achievements",
+      "challengesDesc": "Stay motivated with challenges, earn XP, level up, and unlock achievements",
+      "experts": "Expert Marketplace",
+      "expertsDesc": "Find certified trainers and nutritionists, buy programs, leave reviews",
+      "chat": "Real-time Messaging",
+      "chatDesc": "Stay connected with your trainer and community through instant messaging",
+      "progress": "Track Your Progress",
+      "progressDesc": "Share your results, see your growth, and inspire others on their journey"
+    },
     "loginAsUser": "Log in as user",
     "loginAsTrainer": "Log in as trainer",
     "loginAsNutritionist": "Log in as nutritionist",
@@ -135,6 +152,7 @@
       "submitting": "Registering...",
       "hasAccount": "Already have an account?",
       "loginLink": "Log in",
+      "backToLogin": "Back to login",
       "backToRoles": "Back to role selection",
       "personalInfo": "Personal information",
       "professionalInfo": "Professional information",

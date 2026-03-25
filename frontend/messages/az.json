@@ -55,7 +55,24 @@
 
   "auth": {
     "tagline": "Fitnes və sağlam həyat tərzi üçün sosial şəbəkə",
+    "heroTitle": "Sağlam həyat tərzinə gedən yolunuz buradan başlayır",
+    "heroSubtitle": "Deviny fitnes həvəskarlarını, məşqçiləri və nutrisioloqları bir platformada birləşdirir. Motivasiya, dəstək və peşəkar rəhbərlik tapın.",
     "selectRole": "Zəhmət olmasa, rol seçin",
+    "chooseRole": "Platformadan necə istifadə etmək istədiyinizi seçin",
+    "features": {
+      "programs": "Məşq və Qidalanma Proqramları",
+      "programsDesc": "Sertifikalı ekspertlərdən peşəkar məşq və qidalanma planlarına çıxış",
+      "community": "İcma və Dəstək",
+      "communityDesc": "Hədəflərinizi paylaşan və bir-birinizi dəstəkləyən həmfikirlərlə əlaqə qurun",
+      "challenges": "Çağırışlar və Nailiyyətlər",
+      "challengesDesc": "Çağırışlarla motivasiyanızı qoruyun, XP qazanın, səviyyə yüksəldin",
+      "experts": "Ekspert Bazarı",
+      "expertsDesc": "Sertifikalı məşqçilər və nutrisioloqlar tapın, proqramlar alın, rəylər yazın",
+      "chat": "Ani Mesajlaşma",
+      "chatDesc": "Məşqçiniz və icma ilə ani mesajlaşma vasitəsilə əlaqədə qalın",
+      "progress": "İrəliləyişinizi İzləyin",
+      "progressDesc": "Nəticələrinizi paylaşın, böyümənizi izləyin və başqalarını ruhlandırın"
+    },
     "loginAsUser": "İstifadəçi kimi daxil ol",
     "loginAsTrainer": "Məşqçi kimi daxil ol",
     "loginAsNutritionist": "Nutrisioloq kimi daxil ol",
@@ -135,6 +152,7 @@
       "submitting": "Qeydiyyat...",
       "hasAccount": "Artıq hesabınız var?",
       "loginLink": "Daxil ol",
+      "backToLogin": "Girişə qayıt",
       "backToRoles": "Rol seçiminə qayıt",
       "personalInfo": "Şəxsi məlumatlar",
       "professionalInfo": "Peşəkar məlumatlar",
