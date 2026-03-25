@@ -73,7 +73,7 @@ export default function MyJourneyPage() {
               onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === 'all'
-                  ? 'bg-[#3B82F6] text-white'
+                  ? 'bg-[#0c8de6] text-white'
                   : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
               }`}
             >
@@ -109,7 +109,7 @@ export default function MyJourneyPage() {
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
           </div>
         )}
 
@@ -123,7 +123,7 @@ export default function MyJourneyPage() {
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button 
               onClick={loadPurchases}
-              className="px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {tc('tryAgain')}
             </button>
@@ -137,7 +137,7 @@ export default function MyJourneyPage() {
               <div
                 key={program.purchaseId}
                 onClick={() => router.push(`/user/journey/${program.purchaseId}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#3B82F6]/50 transition-all group"
+                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#0c8de6]/50 transition-all group"
               >
                 {/* Cover */}
                 <div className="relative h-40">
@@ -148,7 +148,7 @@ export default function MyJourneyPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-[#0c8de6]/20 to-[#0070c4]/20 flex items-center justify-center">
                       {program.programType === 'training' 
                         ? <Dumbbell className="w-12 h-12 text-gray-600" />
                         : <Apple className="w-12 h-12 text-gray-600" />
@@ -226,7 +226,7 @@ export default function MyJourneyPage() {
             <p className="text-sm text-gray-400 mb-4">{t('startJourney')}</p>
             <button
               onClick={() => router.push('/user/programs')}
-              className="px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {t('browsePrograms')}
             </button>

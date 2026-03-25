@@ -220,7 +220,7 @@ export default function ProgramDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
       </div>
     )
   }
@@ -242,7 +242,7 @@ export default function ProgramDetailPage({
           <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -315,13 +315,13 @@ export default function ProgramDetailPage({
                   availablePrices.push(program.proPrice)
 
                 if (availablePrices.length === 0) {
-                  return <span className="text-2xl font-bold text-[#3B82F6]">$0.00</span>
+                  return <span className="text-2xl font-bold text-[#0c8de6]">$0.00</span>
                 }
 
                 const minPrice = Math.min(...availablePrices)
                 const hasMultiple = availablePrices.length > 1
                 return (
-                  <span className="text-2xl font-bold text-[#3B82F6]">
+                  <span className="text-2xl font-bold text-[#0c8de6]">
                     {hasMultiple && (
                       <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
                     )}
@@ -402,7 +402,7 @@ export default function ProgramDetailPage({
               <div>
                 <button
                   disabled={purchasing}
-                  className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                   onClick={() => handlePurchase('Basic')}
                 >
                   {purchasing ? (
@@ -507,7 +507,7 @@ export default function ProgramDetailPage({
 
           {reviewsLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />
             </div>
           ) : reviews.length === 0 ? (
             <div className="text-center py-6">

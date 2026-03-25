@@ -221,7 +221,7 @@ export function PostComments({
       </div>
 
       {/* Input — fixed at bottom */}
-      <form onSubmit={handleSubmitComment} className="px-4 py-3 border-t border-white/10 flex gap-2 flex-shrink-0">
+      <form onSubmit={handleSubmitComment} className="px-4 py-3 border-t border-white/[0.06] flex gap-2 flex-shrink-0">
         <input
           ref={inputRef}
           type="text"
@@ -229,7 +229,7 @@ export function PostComments({
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Написать комментарий..."
-          className={`flex-1 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 ${accent.focusBorder}`}
+          className={`flex-1 px-4 py-2 text-sm bg-white/[0.04] border border-white/[0.06] rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 ${accent.focusBorder}`}
           disabled={isSubmitting}
           maxLength={1000}
         />

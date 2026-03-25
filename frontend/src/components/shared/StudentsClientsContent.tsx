@@ -103,7 +103,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4">
+        <div className="bg-[#141414]/50 rounded-xl border border-white/5 p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${accent.gradientBg20} flex items-center justify-center`}>
               <Users className={`w-5 h-5 ${accent.text}`} />
@@ -114,7 +114,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
             </div>
           </div>
         </div>
-        <div className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4">
+        <div className="bg-[#141414]/50 rounded-xl border border-white/5 p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg ${accent.bgMuted} flex items-center justify-center`}>
               <Activity className={`w-5 h-5 ${accent.text}`} />
@@ -125,7 +125,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
             </div>
           </div>
         </div>
-        <div className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4">
+        <div className="bg-[#141414]/50 rounded-xl border border-white/5 p-4">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg ${accent.bgMuted} flex items-center justify-center`}>
               <Calendar className={`w-5 h-5 ${accent.text}`} />
@@ -146,14 +146,14 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
           placeholder={t('searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full pl-12 pr-4 py-3 bg-[#1A1A1A]/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder} transition-colors`}
+          className={`w-full pl-12 pr-4 py-3 bg-[#141414]/50 border border-white/[0.06] rounded-lg text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder} transition-colors`}
         />
       </div>
 
       {/* List */}
       {filteredStudents.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-gray-600" />
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">
@@ -168,7 +168,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
           {filteredStudents.map((student) => (
             <div
               key={student.id}
-              className="bg-[#1A1A1A]/50 rounded-xl border border-white/5 p-4 hover:border-white/10 transition-colors"
+              className="bg-[#141414]/50 rounded-xl border border-white/5 p-4 hover:border-white/[0.06] transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
                 <div
@@ -193,7 +193,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
                 </div>
                 <button
                   onClick={() => router.push(`${basePath}/profile/${student.id}`)}
-                  className="p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-white/[0.04] rounded-lg transition-colors"
                   title={t('viewProfile')}
                 >
                   <MoreVertical className="w-5 h-5 text-gray-400" />
@@ -223,7 +223,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
                 </button>
                 <button
                   onClick={() => router.push(`${basePath}/profile/${student.id}`)}
-                  className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                  className="px-3 py-2 bg-white/[0.04] hover:bg-white/10 border border-white/[0.06] rounded-lg transition-colors"
                   title={t('viewProfile')}
                 >
                   <Users className="w-4 h-4 text-gray-400" />

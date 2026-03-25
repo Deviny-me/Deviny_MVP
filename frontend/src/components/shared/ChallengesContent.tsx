@@ -48,7 +48,7 @@ export default function ChallengesContent() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
             <Target className="w-10 h-10 text-gray-400" />
           </div>
           <h2 className="text-xl font-bold text-white mb-2">{t('noChallenges')}</h2>
@@ -64,7 +64,7 @@ export default function ChallengesContent() {
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
+      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/[0.06] p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
@@ -119,7 +119,7 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
   const gradient = c.achievementColorKey ? getGradient(c.achievementColorKey) : accentGradient
 
   return (
-    <div className={`bg-[#1A1A1A] rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-white/10'} p-5 hover:border-white/20 transition-all`}>
+    <div className={`bg-[#141414] rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-white/[0.06]'} p-5 hover:border-white/20 transition-all`}>
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 ${isCompleted ? '' : 'opacity-70'}`}>
@@ -159,7 +159,7 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
 
           {/* Reward badge */}
           {c.achievementTitle && (
-            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/[0.04] rounded-full">
               <Trophy className="w-3.5 h-3.5 text-yellow-400" />
               <span className="text-xs text-gray-300">{t('reward')} {c.achievementTitle}</span>
             </div>

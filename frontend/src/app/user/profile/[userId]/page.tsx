@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { Suspense } from 'react'
 import { useParams } from 'next/navigation'
@@ -25,7 +25,7 @@ export default function OtherUserProfilePage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
       </div>
     }>
       <OtherUserProfilePageInner />

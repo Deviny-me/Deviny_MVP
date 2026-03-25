@@ -59,6 +59,32 @@ const config: Config = {
           800: '#196239',
           900: '#175130',
         },
+        surface: {
+          0: '#0A0A0A',
+          1: '#111111',
+          2: '#141414',
+          3: '#1A1A1A',
+          4: '#222222',
+        },
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-in-from-top-1': {
+          '0%': { opacity: '0', transform: 'translateY(-4px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-in-from-bottom-2': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.15s ease-out',
+        'slide-down': 'slide-in-from-top-1 0.15s ease-out',
+        'slide-up': 'slide-in-from-bottom-2 0.2s ease-out',
       },
     },
   },

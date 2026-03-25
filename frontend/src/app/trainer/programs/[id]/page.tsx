@@ -28,8 +28,8 @@ const toast = {
 }
 
 const accent = {
-  gradient: 'from-[#FF6B35] to-[#FF0844]',
-  bg: 'bg-[#FF6B35]',
+  gradient: 'from-[#f07915] to-[#d4600b]',
+  bg: 'bg-[#f07915]',
 }
 
 type ProgramData = {
@@ -168,7 +168,7 @@ export default function TrainerProgramDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
       </div>
     )
   }
@@ -190,7 +190,7 @@ export default function TrainerProgramDetailPage({
           <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/trainer/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>

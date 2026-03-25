@@ -58,7 +58,7 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className={`bg-gradient-to-br ${accentGradient.replace('from-', 'from-').replace('to-', 'to-')} rounded-xl border border-white/10 p-5 flex items-center gap-6`}
+      <div className={`bg-gradient-to-br ${accentGradient.replace('from-', 'from-').replace('to-', 'to-')} rounded-xl border border-white/[0.06] p-5 flex items-center gap-6`}
         style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))` }}
       >
         <div className="text-center">
@@ -82,7 +82,7 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
       {/* Review list */}
       <div className="space-y-3">
         {reviews.map((review) => (
-          <div key={review.id} className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
+          <div key={review.id} className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
             <div className="flex items-start gap-3">
               {/* Avatar */}
               {review.userAvatarUrl ? (

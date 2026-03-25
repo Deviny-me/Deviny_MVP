@@ -28,9 +28,9 @@ const toast = {
 }
 
 const accent = {
-  gradient: 'from-[#FF6B35] to-[#FF0844]',
-  border: 'focus:border-[#FF6B35]',
-  hoverBorder: 'hover:border-[#FF6B35]/50',
+  gradient: 'from-[#f07915] to-[#d4600b]',
+  border: 'focus:border-[#f07915]',
+  hoverBorder: 'hover:border-[#f07915]/50',
 }
 
 type VideoBlock = {
@@ -269,7 +269,7 @@ export default function TrainerProgramFormPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
       </div>
     )
   }

@@ -194,11 +194,11 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
       onClick={onClose}
     >
       <div
-        className="bg-[#1A1A1A] rounded-xl border border-white/10 w-full max-w-2xl h-[600px] flex flex-col"
+        className="bg-[#141414] rounded-xl border border-white/[0.06] w-full max-w-2xl h-[600px] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             {otherUserAvatarUrl ? (
               <img
@@ -240,14 +240,14 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg hover:bg-white/[0.04] transition-colors"
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
         </div>
         {callNotice && (
-          <div className="px-4 py-2 border-b border-white/10">
+          <div className="px-4 py-2 border-b border-white/[0.06]">
             <p className={`text-xs ${accent.text}`}>{callNotice}</p>
           </div>
         )}
@@ -276,7 +276,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                   <div className={`max-w-[70%]`}>
                     {/* Reply preview */}
                     {message.replyTo && (
-                      <div className={`mb-1 px-3 py-1.5 border-l-2 ${accent.border} bg-white/5 rounded text-xs text-gray-400`}>
+                      <div className={`mb-1 px-3 py-1.5 border-l-2 ${accent.border} bg-white/[0.04] rounded text-xs text-gray-400`}>
                         <span className="font-medium text-gray-300">{message.replyTo.senderName}</span>
                         <p className="truncate">{message.replyTo.text}</p>
                       </div>
@@ -285,7 +285,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                       className={`rounded-2xl p-3 ${
                         isMe
                           ? `${accent.bg} text-white rounded-br-sm`
-                          : 'border-2 border-gray-700 bg-[#1A1A1A] text-white rounded-bl-sm'
+                          : 'border-2 border-gray-700 bg-[#141414] text-white rounded-bl-sm'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
@@ -306,7 +306,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10">
+        <form onSubmit={handleSendMessage} className="p-4 border-t border-white/[0.06]">
           <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
             <button
               type="button"
@@ -318,7 +318,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               <Smile className="w-5 h-5" />
             </button>
             {showEmojiPicker && (
-              <div className="absolute bottom-12 left-0 z-20 bg-[#0A0A0A] border border-white/10 rounded-xl p-2 shadow-xl w-56">
+              <div className="absolute bottom-12 left-0 z-20 bg-[#0A0A0A] border border-white/[0.06] rounded-xl p-2 shadow-xl w-56">
                 <div className="grid grid-cols-6 gap-1">
                   {QUICK_EMOJIS.map((emoji) => (
                     <button

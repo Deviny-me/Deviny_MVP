@@ -131,7 +131,7 @@ export function PostCard({
   const isModal = variant === 'modal'
 
   return (
-    <div className={`bg-[#1A1A1A] rounded-lg border border-white/10 overflow-hidden transition-all duration-300 ${
+    <div className={`bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden transition-all duration-300 hover:border-white/[0.1] ${
       isModal
         ? commentsOpen && !originalDeleted
           ? 'md:w-[920px] max-w-full'
@@ -150,8 +150,8 @@ export function PostCard({
         <div className="min-w-0">
           {/* Repost indicator */}
           {isRepost && (
-            <div className="px-3 pt-2 flex items-center gap-1.5 text-gray-400 text-xs">
-              <Repeat2 className="w-3 h-3" />
+            <div className="px-4 pt-2.5 flex items-center gap-1.5 text-gray-500 text-xs">
+              <Repeat2 className="w-3.5 h-3.5" />
               <span>Репост</span>
             </div>
           )}
@@ -173,7 +173,7 @@ export function PostCard({
                   )}
                 </button>
               )}
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/[0.04] flex items-center justify-center">
                 <Repeat2 className="w-6 h-6 text-gray-600" />
               </div>
               <p className="text-sm text-gray-500">Публикация была удалена</p>
@@ -181,7 +181,7 @@ export function PostCard({
           ) : (
             <>
               {/* Post Header */}
-              <div className="p-3 hover:bg-white/5 transition-colors">
+              <div className="p-3.5 hover:bg-white/[0.02] transition-colors">
                 <div className="flex items-center gap-2">
                   <div
                     className="flex items-center gap-2 flex-1 cursor-pointer"
@@ -276,13 +276,13 @@ export function PostCard({
 
               {/* Post Caption */}
               {displayCaption && (
-                <div className="px-3 py-2">
-                  <p className="text-sm text-gray-300">{displayCaption}</p>
+                <div className="px-4 py-2.5">
+                  <p className="text-sm text-gray-300 leading-relaxed">{displayCaption}</p>
                 </div>
               )}
 
               {/* Post Actions */}
-              <div className="px-3 py-2 border-t border-white/10">
+              <div className="px-3 py-1.5 border-t border-white/[0.06]">
                 <PostActions
                   postId={post.id}
                   onCommentClick={() => setCommentsOpen(prev => !prev)}
@@ -295,10 +295,10 @@ export function PostCard({
 
         {/* ===== RIGHT: Inline comments panel ===== */}
         {commentsOpen && !originalDeleted && (
-          <div className={`border-t border-white/10 flex flex-col ${
+          <div className={`border-t border-white/[0.06] flex flex-col ${
             isModal
-              ? 'max-h-[70vh] md:border-t-0 md:border-l'
-              : 'h-[500px] md:h-auto md:max-h-[650px] md:border-t-0 md:border-l'
+              ? 'max-h-[70vh] md:border-t-0 md:border-l md:border-white/[0.06]'
+              : 'h-[500px] md:h-auto md:max-h-[650px] md:border-t-0 md:border-l md:border-white/[0.06]'
           }`}>
             <PostCommentsPanel
               postId={post.id}

@@ -54,9 +54,9 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
-        className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
-          hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
-          text-gray-700 dark:text-gray-300
+        className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium
+          hover:bg-white/[0.04] transition-all
+          text-gray-400
           disabled:opacity-50"
         title={getLanguageLabel(language)}
       >
@@ -69,17 +69,17 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-[9999] min-w-[160px]"
+          className="fixed bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 py-1 z-[9999] min-w-[160px] animate-slide-down"
           style={{ top: dropdownPos.top, right: dropdownPos.right }}
         >
           {LANGUAGES.map((lang) => (
             <button
               key={lang}
               onClick={() => handleSelect(lang)}
-              className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all rounded-lg mx-0.5
                 ${lang === language
-                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 font-medium'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                  ? 'bg-amber-500/[0.08] text-amber-400 font-medium'
+                  : 'text-gray-400 hover:bg-white/[0.04] hover:text-gray-200'
                 }`}
             >
               <span className="text-base">{getLanguageFlag(lang)}</span>

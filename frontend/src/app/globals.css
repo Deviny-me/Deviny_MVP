@@ -2,26 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 255, 255, 255;
-  --background-end-rgb: 243, 244, 246;
+@layer base {
+  :root {
+    --foreground-rgb: 0, 0, 0;
+    --background-start-rgb: 255, 255, 255;
+    --background-end-rgb: 243, 244, 246;
+  }
+
+  .dark {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 17, 24, 39;
+    --background-end-rgb: 31, 41, 55;
+  }
+
+  /* Smooth scrolling globally */
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    color: rgb(var(--foreground-rgb));
+    background: #0A0A0A;
+    min-height: 100vh;
+  }
+
+  /* Text selection */
+  ::selection {
+    background: rgba(12, 141, 230, 0.3);
+    color: white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
 }
 
-.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 17, 24, 39;
-  --background-end-rgb: 31, 41, 55;
-}
+@layer utilities {
+  /* Glass morphism utility */
+  .glass {
+    background: rgba(26, 26, 26, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  min-height: 100vh;
+  .glass-strong {
+    background: rgba(26, 26, 26, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Hide scrollbar utility */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Animated glow for active elements */
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(12, 141, 230, 0.15), 0 0 40px rgba(12, 141, 230, 0.05);
+  }
+  .glow-orange {
+    box-shadow: 0 0 20px rgba(240, 121, 21, 0.15), 0 0 40px rgba(240, 121, 21, 0.05);
+  }
+  .glow-green {
+    box-shadow: 0 0 20px rgba(40, 191, 104, 0.15), 0 0 40px rgba(40, 191, 104, 0.05);
+  }
 }
 
 /* Custom checkbox styles */
@@ -31,12 +102,12 @@ input[type="checkbox"] {
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid #d1d5db;
-  border-radius: 4px;
-  background-color: white;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   position: relative;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input[type="checkbox"]:checked {
@@ -58,6 +129,7 @@ input[type="checkbox"]:checked::after {
 
 input[type="checkbox"]:hover:not(:disabled) {
   border-color: #D4A843;
+  background-color: rgba(212, 168, 67, 0.1);
 }
 
 input[type="checkbox"]:focus {
@@ -68,4 +140,11 @@ input[type="checkbox"]:focus {
 input[type="checkbox"]:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, input, textarea, select {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

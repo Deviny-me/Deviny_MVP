@@ -1,6 +1,7 @@
 'use client'
 
-import { Flame, Users, Calendar, TrendingUp, ArrowRight } from 'lucide-react'
+import { Users, Calendar, TrendingUp, ArrowRight } from 'lucide-react'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -54,12 +55,12 @@ export function RightSidebar() {
     <div className="w-72 flex-shrink-0 space-y-4 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6 scrollbar-hide">
       {/* Recent Students */}
       {students.length > 0 && (
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">{tFeed('recentStudents')}</h3>
             <button
               onClick={() => router.push('/trainer/students')}
-              className="text-xs text-[#FF6B35] hover:underline flex items-center gap-1"
+              className="text-xs text-[#f07915] hover:underline flex items-center gap-1"
             >
               {tCommon('all')}
               <ArrowRight className="w-3 h-3" />
@@ -69,7 +70,7 @@ export function RightSidebar() {
             {students.map((student) => (
               <div
                 key={student.id}
-                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
               >
                 {student.avatarUrl ? (
                   <img
@@ -78,7 +79,7 @@ export function RightSidebar() {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center text-white text-xs font-bold">
                     {getInitials(student.name)}
                   </div>
                 )}
@@ -95,20 +96,18 @@ export function RightSidebar() {
       {/* Footer */}
       <div className="px-3 py-2">
         <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-gray-500">
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">About</a>
+          <a href="#" className="hover:text-[#f07915] hover:underline">About</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Help Center</a>
+          <a href="#" className="hover:text-[#f07915] hover:underline">Help Center</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Privacy</a>
+          <a href="#" className="hover:text-[#f07915] hover:underline">Privacy</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Terms</a>
+          <a href="#" className="hover:text-[#f07915] hover:underline">Terms</a>
           <span>•</span>
-          <a href="#" className="hover:text-[#FF6B35] hover:underline">Advertising</a>
+          <a href="#" className="hover:text-[#f07915] hover:underline">Advertising</a>
         </div>
         <div className="mt-2 flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
-            <Flame className="w-3 h-3 text-white" strokeWidth={2.5} />
-          </div>
+          <Image src="/logo-icon.png" alt="Deviny" width={20} height={20} className="rounded" />
           <p className="text-[10px] text-gray-600">Deviny Fitness © 2026</p>
         </div>
       </div>

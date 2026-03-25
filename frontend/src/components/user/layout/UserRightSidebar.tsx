@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { 
-  Flame,
   Star,
   X,
   Users,
@@ -45,7 +44,7 @@ function ProgramDetailModal({
       onClick={onClose}
     >
       <div 
-        className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-[#141414] rounded-xl border border-white/[0.06] max-w-lg w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Cover */}
@@ -76,7 +75,7 @@ function ProgramDetailModal({
             <h2 className="text-xl font-bold text-white">{program.title}</h2>
             <div className="flex flex-col items-end flex-shrink-0">
               <span className={`text-2xl font-bold ${
-                program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
+                program.price === 0 ? 'text-green-400' : 'text-[#0c8de6]'
               }`}>
                 {formatPrice(program.price)}
               </span>
@@ -108,7 +107,7 @@ function ProgramDetailModal({
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
                 <span className="text-white font-bold">
                   {program.trainerName.charAt(0)}
                 </span>
@@ -144,7 +143,7 @@ function ProgramDetailModal({
           {/* Purchase Buttons */}
           <div className="space-y-2">
             <button
-              className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               onClick={() => {
                 // TODO: Implement purchase flow
                 alert(tp('purchaseComingSoon'))
@@ -183,25 +182,6 @@ export function UserRightSidebar() {
 
   return (
     <div className="w-72 flex-shrink-0 space-y-2 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6">
-      {/* Footer */}
-      <div className="px-3 py-2">
-        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-gray-500">
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('about')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('helpCenter')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('privacy')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('terms')}</a>
-        </div>
-        <div className="mt-2 flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
-            <Flame className="w-3 h-3 text-white" strokeWidth={2.5} />
-          </div>
-          <p className="text-[10px] text-gray-600">{ts('copyright')}</p>
-        </div>
-      </div>
-
       {/* Program Detail Modal */}
       {selectedProgram && (
         <ProgramDetailModal

@@ -27,7 +27,7 @@ export function UserDashboardHeader() {
         <div className="flex items-center justify-between">
           {/* Left - Brand */}
           <div>
-            <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">CoachOS</h1>
+            <h1 className="text-xl font-bold text-[#0c8de6] dark:text-[#0c8de6]">CoachOS</h1>
           </div>
 
           {/* Right - Profile & Level */}

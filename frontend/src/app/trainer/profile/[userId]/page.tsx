@@ -25,7 +25,7 @@ export default function OtherUserProfilePageTrainer() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
       </div>
     }>
       <OtherUserProfilePageTrainerInner />

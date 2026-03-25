@@ -53,7 +53,7 @@ export default function AchievementsContent() {
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
+      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/[0.06] p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
@@ -124,8 +124,8 @@ function Section({
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
           {icon} {title} (0)
         </h3>
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
             {emptyIcon}
           </div>
           <h3 className="text-lg font-semibold text-white mb-2">{emptyTitle}</h3>
@@ -160,7 +160,7 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
 
   return (
     <div
-      className={`bg-[#1A1A1A] rounded-xl border ${borderCls} p-4 hover:scale-105 transition-all cursor-pointer group ${glowCls}`}
+      className={`bg-[#141414] rounded-xl border ${borderCls} p-4 hover:scale-105 transition-all cursor-pointer group ${glowCls}`}
     >
       <div className="flex flex-col items-center text-center">
         {/* Icon */}

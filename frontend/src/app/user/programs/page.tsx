@@ -282,7 +282,7 @@ export default function ProgramsPage() {
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/50"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/50"
             />
           </div>
 
@@ -293,7 +293,7 @@ export default function ProgramsPage() {
                 onClick={() => setFilterType('all')}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   filterType === 'all' 
-                    ? 'bg-[#3B82F6] text-white' 
+                    ? 'bg-[#0c8de6] text-white' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -309,7 +309,7 @@ export default function ProgramsPage() {
                   onClick={() => setFilterType(cat)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     filterType === cat 
-                      ? 'bg-[#3B82F6] text-white' 
+                      ? 'bg-[#0c8de6] text-white' 
                       : 'text-gray-400 hover:text-white'
                   }`}
                 >
@@ -326,7 +326,7 @@ export default function ProgramsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#3B82F6]/50"
+                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#0c8de6]/50"
               >
                 <option value="newest">{t('newest')}</option>
                 <option value="popular">{t('mostPopular')}</option>
@@ -341,14 +341,14 @@ export default function ProgramsPage() {
         {/* Programs List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+            <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
           </div>
         ) : error ? (
           <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
             <p className="text-red-400 mb-4">{error}</p>
             <button
               onClick={loadAllPrograms}
-              className="px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
+              className="px-4 py-2 bg-[#0c8de6] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
             >
               {tc('tryAgain')}
             </button>
@@ -456,13 +456,13 @@ export default function ProgramsPage() {
 
                           // If no tier has a price > 0, show $0.00
                           if (availablePrices.length === 0) {
-                            return <span className="text-lg font-bold text-[#3B82F6]">$0.00</span>
+                            return <span className="text-lg font-bold text-[#0c8de6]">$0.00</span>
                           }
 
                           const minPrice = Math.min(...availablePrices)
                           const hasMultiplePrices = availablePrices.length > 1
                           return (
-                            <span className="text-lg font-bold text-[#3B82F6]">
+                            <span className="text-lg font-bold text-[#0c8de6]">
                               {hasMultiplePrices && (
                                 <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
                               )}

@@ -125,7 +125,7 @@ export default function ProgramDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
       </div>
     )
   }
@@ -147,7 +147,7 @@ export default function ProgramDetailPage({
           <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/journey')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -177,7 +177,7 @@ export default function ProgramDetailPage({
               className="w-full h-56 sm:h-72 object-cover"
             />
           ) : (
-            <div className="w-full h-56 sm:h-72 bg-gradient-to-br from-[#3B82F6]/20 to-[#2563EB]/20 flex items-center justify-center">
+            <div className="w-full h-56 sm:h-72 bg-gradient-to-br from-[#0c8de6]/20 to-[#0070c4]/20 flex items-center justify-center">
               {program.programType === 'training' ? (
                 <Dumbbell className="w-16 h-16 text-gray-600" />
               ) : (
@@ -351,7 +351,7 @@ export default function ProgramDetailPage({
                   placeholder="Share your experience"
                   rows={3}
                   maxLength={1000}
-                  className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#3B82F6]/50"
+                  className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#0c8de6]/50"
                 />
 
                 {reviewError && <p className="text-sm text-red-400">{reviewError}</p>}
@@ -360,7 +360,7 @@ export default function ProgramDetailPage({
                 <button
                   onClick={handleSubmitReview}
                   disabled={reviewRating === 0 || submittingReview}
-                  className="px-4 py-2 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
                 >
                   {submittingReview ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

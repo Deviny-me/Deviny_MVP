@@ -90,7 +90,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
 
         {/* Error State */}
         {error && !isLoading && (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+          <div className="text-center py-12 bg-[#141414] rounded-xl border border-white/[0.06]">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
@@ -113,7 +113,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
           return (
             <div className="space-y-4">
               {/* Header Card */}
-              <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
                 <div className="flex flex-col md:flex-row items-start gap-6">
                   {/* Avatar */}
                   <div className="flex-shrink-0">
@@ -220,7 +220,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                         {profile.trainer.phone && (
                           <a
                             href={`tel:${profile.trainer.phone}`}
-                            className="px-4 py-2 bg-[#0A0A0A] hover:bg-white/5 rounded-lg text-sm text-gray-300 transition-colors flex items-center gap-2"
+                            className="px-4 py-2 bg-[#0A0A0A] hover:bg-white/[0.04] rounded-lg text-sm text-gray-300 transition-colors flex items-center gap-2"
                           >
                             <Phone className="w-4 h-4" />
                             {t('call')}
@@ -233,7 +233,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
               </div>
 
               {/* About */}
-              <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
                 <h2 className="text-xl font-semibold text-white mb-3">{t('about')}</h2>
                 {profile.about?.text ? (
                   <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{profile.about.text}</p>
@@ -243,7 +243,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
               </div>
 
               {/* Specializations */}
-              <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
                 <h2 className="text-xl font-semibold text-white mb-3">{t('specializations')}</h2>
                 {profile.specializations && profile.specializations.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
@@ -262,12 +262,12 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
               </div>
 
               {/* Certificates */}
-              <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">{t('certificates')}</h2>
                 {profile.certificates && profile.certificates.length > 0 ? (
                   <div className="space-y-3">
                     {profile.certificates.map((cert) => (
-                      <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
+                      <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/[0.04] transition-colors">
                         <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center flex-shrink-0`}>
                           <Award className="w-5 h-5 text-white" />
                         </div>
@@ -294,7 +294,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
               </div>
 
               {/* Achievements */}
-              <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
                 <h2 className="text-xl font-semibold text-white mb-4">{t('achievements')}</h2>
                 {profile.achievements && profile.achievements.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -311,7 +311,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       const bgColor = toneColors[achievement.tone.toLowerCase()] || `bg-gradient-to-br ${expertAccent.gradient}`
 
                       return (
-                        <div key={achievement.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
+                        <div key={achievement.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/[0.04] transition-colors">
                           <div className={`w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center text-xl flex-shrink-0`}>
                             {achievement.iconKey}
                           </div>
@@ -340,8 +340,8 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
           className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setSelectedCertificate(null)}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#1A1A1A] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#141414] rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
               <h3 className="text-white font-semibold">{selectedCertificate.title}</h3>
               <button
                 onClick={() => setSelectedCertificate(null)}

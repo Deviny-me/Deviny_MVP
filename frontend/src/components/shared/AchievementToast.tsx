@@ -69,7 +69,7 @@ function AchievementToast({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 80, scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className="pointer-events-auto w-80 bg-[#1A1A1A] border border-white/10 rounded-xl overflow-hidden shadow-2xl"
+      className="pointer-events-auto w-80 bg-[#141414] border border-white/[0.06] rounded-xl overflow-hidden shadow-2xl"
     >
       {/* Top gradient accent */}
       <div className={`h-1 bg-gradient-to-r ${gradient}`} />

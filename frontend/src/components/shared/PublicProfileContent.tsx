@@ -725,7 +725,7 @@ export function PublicProfileContent({
     <>
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden">
           <div className={`relative h-32 bg-gradient-to-r ${profileAccent.gradient}`}>
             {authorBanner && (
               <img
@@ -939,7 +939,7 @@ export function PublicProfileContent({
                   <button
                     onClick={handleBlock}
                     disabled={actionLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/5 text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/[0.04] text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
                   >
                     <Ban className="w-4 h-4" />
                     <span>{tUp('block')}</span>
@@ -952,7 +952,7 @@ export function PublicProfileContent({
 
         {/* About Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+          <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
             <h2 className="text-lg font-semibold text-white mb-3">{tExp('about')}</h2>
             {profileData.expertProfile.aboutText ? (
               <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{profileData.expertProfile.aboutText}</p>
@@ -964,7 +964,7 @@ export function PublicProfileContent({
 
         {/* Specializations Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+          <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
             <h2 className="text-lg font-semibold text-white mb-3">{tExp('specializations')}</h2>
             {profileData.expertProfile.specializations.length > 0 ? (
               <div className="flex flex-wrap gap-2">
@@ -985,12 +985,12 @@ export function PublicProfileContent({
 
         {/* Certificates Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-6">
+          <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
             <h2 className="text-lg font-semibold text-white mb-4">{tExp('certificates')}</h2>
             {profileData.expertProfile.certificates.length > 0 ? (
               <div className="space-y-3">
                 {profileData.expertProfile.certificates.map((cert) => (
-                  <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors">
+                  <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/[0.04] transition-colors">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center flex-shrink-0`}>
                       <Award className="w-5 h-5 text-white" />
                     </div>
@@ -1018,8 +1018,8 @@ export function PublicProfileContent({
         )}
 
         {/* Posts Section */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5" style={{ color: accentColor }} />
               <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
@@ -1058,7 +1058,7 @@ export function PublicProfileContent({
 
           {postIds.length === 0 && !isLoading ? (
             <div className="py-12 text-center">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-10 h-10 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">{tPosts('noPublications')}</h3>
@@ -1123,8 +1123,8 @@ export function PublicProfileContent({
           className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setSelectedCertificate(null)}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#1A1A1A] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#141414] rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
               <h3 className="text-white font-semibold">{selectedCertificate.title}</h3>
               <button
                 onClick={() => setSelectedCertificate(null)}

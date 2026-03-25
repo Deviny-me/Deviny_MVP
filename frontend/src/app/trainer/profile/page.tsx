@@ -206,7 +206,7 @@ function TrainerGridCell({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(postId) }}
-          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-[#FF6B35]"
+          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-[#f07915]"
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -762,7 +762,7 @@ export default function ProfilePage() {
     return (
       <>
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
         </div>
       </>
     )
@@ -788,7 +788,7 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden mb-6">
           {/* Cover */}
-          <div className="h-40 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] relative">
+          <div className="h-40 bg-gradient-to-r from-[#f07915] to-[#d4600b] relative">
           </div>
 
           {/* Profile Info */}
@@ -803,7 +803,7 @@ export default function ProfilePage() {
                     className="w-28 h-28 rounded-xl object-cover border-4 border-[#1A1A1A]"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-xl bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center border-4 border-[#1A1A1A]">
+                  <div className="w-28 h-28 rounded-xl bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center border-4 border-[#1A1A1A]">
                     <span className="text-white text-3xl font-bold">
                       {trainer.initials}
                     </span>
@@ -841,7 +841,7 @@ export default function ProfilePage() {
                 )}
                 {/* Achievement Badge */}
                 {trainer.achievementsCount > 0 && (
-                  <div className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r from-[#FF6B35] to-[#FF0844] border-2 border-[#1A1A1A] flex items-center justify-center shadow-lg">
+                  <div className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r from-[#f07915] to-[#d4600b] border-2 border-[#1A1A1A] flex items-center justify-center shadow-lg">
                     <Award className="w-5 h-5 text-white" />
                   </div>
                 )}
@@ -876,7 +876,7 @@ export default function ProfilePage() {
             <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
               <button
                 onClick={() => setShowEditLocationModal(true)}
-                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -895,7 +895,7 @@ export default function ProfilePage() {
             <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
               <button
                 onClick={() => setShowEditPhoneModal(true)}
-                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -912,7 +912,7 @@ export default function ProfilePage() {
             <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
               <button
                 onClick={() => setShowEditExperienceModal(true)}
-                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -928,7 +928,7 @@ export default function ProfilePage() {
           <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
             <button
               onClick={() => setShowEditGenderModal(true)}
-              className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#FF6B35] opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 p-1 text-gray-500 hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Edit2 className="w-3 h-3" />
             </button>
@@ -950,14 +950,14 @@ export default function ProfilePage() {
         </div>
 
         {/* Bio Section */}
-        <div className="bg-gradient-to-br from-[#FF6B35]/5 to-[#FF0844]/5 rounded-xl border border-white/10 p-4 mb-6">
+        <div className="bg-gradient-to-br from-[#f07915]/5 to-[#d4600b]/5 rounded-xl border border-white/10 p-4 mb-6">
           {about?.text ? (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-gray-400">{t('aboutMe')}</h3>
                 <button 
                   onClick={() => setShowAboutModal(true)}
-                  className="text-xs text-[#FF6B35] hover:underline"
+                  className="text-xs text-[#f07915] hover:underline"
                 >
                   {tc('change')}
                 </button>
@@ -977,13 +977,13 @@ export default function ProfilePage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className="bg-gradient-to-br from-[#FF6B35]/10 to-[#FF0844]/10 rounded-xl border border-[#FF6B35]/20 p-4 text-center">
-            <BookOpen className="w-6 h-6 text-[#FF6B35] mx-auto mb-2" />
+          <div className="bg-gradient-to-br from-[#f07915]/10 to-[#d4600b]/10 rounded-xl border border-[#f07915]/20 p-4 text-center">
+            <BookOpen className="w-6 h-6 text-[#f07915] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.programsCount}</p>
             <p className="text-xs text-gray-400">{t('programs')}</p>
           </div>
-          <div className="bg-gradient-to-br from-[#FF6B35]/10 to-[#FF0844]/10 rounded-xl border border-[#FF6B35]/20 p-4 text-center">
-            <Users className="w-6 h-6 text-[#FF6B35] mx-auto mb-2" />
+          <div className="bg-gradient-to-br from-[#f07915]/10 to-[#d4600b]/10 rounded-xl border border-[#f07915]/20 p-4 text-center">
+            <Users className="w-6 h-6 text-[#f07915] mx-auto mb-2" />
             <p className="text-2xl font-bold text-white">{trainer.studentsCount}</p>
             <p className="text-xs text-gray-400">{t('students')}</p>
           </div>
@@ -1006,7 +1006,7 @@ export default function ProfilePage() {
               <h3 className="text-sm font-medium text-gray-400">{t('specializations')}</h3>
               <button
                 onClick={() => setShowSpecializationModal(true)}
-                className="text-xs text-[#FF6B35] hover:underline flex items-center gap-1"
+                className="text-xs text-[#f07915] hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3 h-3" />
                 {tc('add')}
@@ -1016,7 +1016,7 @@ export default function ProfilePage() {
               {specializations.map((spec) => (
                 <span
                   key={spec.id}
-                  className="px-3 py-1.5 bg-gradient-to-r from-[#FF6B35]/10 to-[#FF0844]/10 border border-[#FF6B35]/20 text-gray-300 rounded-lg text-sm flex items-center gap-2"
+                  className="px-3 py-1.5 bg-gradient-to-r from-[#f07915]/10 to-[#d4600b]/10 border border-[#f07915]/20 text-gray-300 rounded-lg text-sm flex items-center gap-2"
                 >
                   {spec.name}
                   <button 
@@ -1040,7 +1040,7 @@ export default function ProfilePage() {
           <div className="mb-6">
             <button
               onClick={() => setShowSpecializationModal(true)}
-              className="w-full py-3 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-400 hover:border-[#FF6B35]/30 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-400 hover:border-[#f07915]/30 transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" />
               {t('addSpecialization')}
@@ -1096,7 +1096,7 @@ export default function ProfilePage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-3 font-medium capitalize transition-all relative ${
                 activeTab === tab
-                  ? 'text-[#FF6B35]'
+                  ? 'text-[#f07915]'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -1104,7 +1104,7 @@ export default function ProfilePage() {
               {activeTab === tab && (
                 <motion.div
                   layoutId="profileTab"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#FF6B35] to-[#FF0844]"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#f07915] to-[#d4600b]"
                 />
               )}
             </button>
@@ -1116,20 +1116,20 @@ export default function ProfilePage() {
           <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
             <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Grid className="w-5 h-5 text-[#FF6B35]" />
+                <Grid className="w-5 h-5 text-[#f07915]" />
                 <h3 className="font-semibold text-white">{t('publications')}</h3>
                 {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
               </div>
               <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#FF6B35]' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#f07915]' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#FF6B35]' : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#f07915]' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -1153,7 +1153,7 @@ export default function ProfilePage() {
                 </div>
                 {(isLoadingPosts || postsHasMore) && (
                   <div ref={postsObserverRef} className="py-8 flex justify-center">
-                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
                   </div>
                 )}
               </div>
@@ -1175,7 +1175,7 @@ export default function ProfilePage() {
                 ))}
                 {(isLoadingPosts || postsHasMore) && (
                   <div ref={postsObserverRef} className="py-8 flex justify-center">
-                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#FF6B35] animate-spin" />}
+                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
                   </div>
                 )}
               </div>
@@ -1187,7 +1187,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <button
               onClick={() => setShowCertificateModal(true)}
-              className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#FF6B35]/50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#f07915]/50 transition-colors flex items-center justify-center gap-2"
             >
               <Upload className="w-5 h-5" />
               {t('addCertificate')}
@@ -1218,7 +1218,7 @@ export default function ProfilePage() {
                     {cert.fileUrl && (
                       <button 
                         onClick={() => setViewingCertificate(getMediaUrl(cert.fileUrl) || '')}
-                        className="text-xs text-[#FF6B35] hover:underline"
+                        className="text-xs text-[#f07915] hover:underline"
                       >
                         {t('viewFile')}
                       </button>
@@ -1239,7 +1239,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <button
               onClick={() => setShowSpecializationModal(true)}
-              className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#FF6B35]/50 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white hover:border-[#f07915]/50 transition-colors flex items-center justify-center gap-2"
             >
               <Plus className="w-5 h-5" />
               {t('addSpecialization')}
@@ -1332,8 +1332,8 @@ export default function ProfilePage() {
         {activeTab === 'reviews' && (
           <ProfileReviewsTab
             expertId={trainer.userId}
-            accentText="text-[#FF6B35]"
-            accentGradient="from-[#FF6B35]/10 to-[#FF0844]/10"
+            accentText="text-[#f07915]"
+            accentGradient="from-[#f07915]/10 to-[#d4600b]/10"
           />
         )}
 
@@ -1356,13 +1356,13 @@ export default function ProfilePage() {
                   value={aboutText}
                   onChange={(e) => setAboutText(e.target.value)}
                   rows={5}
-                  className="w-full px-4 py-3 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] resize-none mb-4"
+                  className="w-full px-4 py-3 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915] resize-none mb-4"
                   placeholder={t('aboutMePlaceholder')}
                 />
                 <button
                   onClick={handleSaveAbout}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1394,7 +1394,7 @@ export default function ProfilePage() {
                       type="text"
                       value={certTitle}
                       onChange={(e) => setCertTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder={t('certificateNamePlaceholder')}
                     />
                   </div>
@@ -1404,7 +1404,7 @@ export default function ProfilePage() {
                       type="text"
                       value={certIssuer}
                       onChange={(e) => setCertIssuer(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder={t('organizationPlaceholder')}
                     />
                   </div>
@@ -1414,12 +1414,12 @@ export default function ProfilePage() {
                       type="number"
                       value={certYear}
                       onChange={(e) => setCertYear(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">{t('file')}</label>
-                    <label className="flex items-center justify-center w-full py-4 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FF6B35]/50 transition-colors">
+                    <label className="flex items-center justify-center w-full py-4 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#f07915]/50 transition-colors">
                       <Upload className="w-5 h-5 text-gray-400 mr-2" />
                       <span className="text-sm text-gray-400">
                         {certFile ? certFile.name : t('selectFile')}
@@ -1435,7 +1435,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                     {tc('add')}
@@ -1467,7 +1467,7 @@ export default function ProfilePage() {
                     <select
                       value={specName}
                       onChange={(e) => setSpecName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                     >
                       <option value="">{t('selectSpecialization')}</option>
                       <option value={t('specializationOptions.strength')}>{t('specializationOptions.strength')}</option>
@@ -1500,7 +1500,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={saving || !specName}
-                    className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                     {tc('add')}
@@ -1533,7 +1533,7 @@ export default function ProfilePage() {
                       type="text"
                       value={editPrimaryTitle}
                       onChange={(e) => setEditPrimaryTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder={t('primarySpecialtyPlaceholder')}
                     />
                   </div>
@@ -1543,7 +1543,7 @@ export default function ProfilePage() {
                       type="text"
                       value={editSecondaryTitle}
                       onChange={(e) => setEditSecondaryTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder={t('secondarySpecialtyPlaceholder')}
                     />
                   </div>
@@ -1553,7 +1553,7 @@ export default function ProfilePage() {
                       type="number"
                       value={editExperienceYears}
                       onChange={(e) => setEditExperienceYears(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder="5"
                       min="0"
                       max="50"
@@ -1565,7 +1565,7 @@ export default function ProfilePage() {
                       type="text"
                       value={editLocationDisplay}
                       readOnly
-                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                      className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                       placeholder={t('locationPlaceholder')}
                     />
                   </div>
@@ -1573,7 +1573,7 @@ export default function ProfilePage() {
                     <button
                       onClick={handleSaveProfile}
                       disabled={saving}
-                      className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                       {tc('save')}
@@ -1637,7 +1637,7 @@ export default function ProfilePage() {
                     setEditLocationCountryCode(e.target.value)
                     setEditLocationCity('')
                   }}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                 >
                   <option value="">{tr('selectCountry')}</option>
                   {locationCountries.map(country => (
@@ -1648,7 +1648,7 @@ export default function ProfilePage() {
                   value={editLocationCity}
                   onChange={(e) => setEditLocationCity(e.target.value)}
                   disabled={!editLocationCountryCode}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35] disabled:opacity-50"
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915] disabled:opacity-50"
                 >
                   <option value="">{editLocationCountryCode ? tr('selectCity') : tr('selectCountry')}</option>
                   {locationCities.map(city => (
@@ -1658,7 +1658,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveLocation}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1690,13 +1690,13 @@ export default function ProfilePage() {
                   type="tel"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                   placeholder={t('phonePlaceholder')}
                 />
                 <button
                   onClick={handleSavePhone}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1728,14 +1728,14 @@ export default function ProfilePage() {
                   type="number"
                   value={editExperienceYears}
                   onChange={(e) => setEditExperienceYears(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                   placeholder="5"
                   min="0"
                 />
                 <button
                   onClick={handleSaveExperience}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1766,7 +1766,7 @@ export default function ProfilePage() {
                 <select
                   value={editGender}
                   onChange={(e) => setEditGender(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#FF6B35]"
+                  className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#f07915]"
                 >
                   <option value="">{t('selectGender')}</option>
                   <option value="Male">{t('male')}</option>
@@ -1776,7 +1776,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleSaveGender}
                   disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}

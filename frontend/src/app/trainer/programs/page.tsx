@@ -117,12 +117,12 @@ export default function ProgramsPage() {
 
   // Trainer accent colors
   const accent = {
-    gradient: 'from-[#FF6B35] to-[#FF0844]',
-    text: 'text-[#FF6B35]',
-    border: 'focus:border-[#FF6B35]',
-    hoverBorder: 'hover:border-[#FF6B35]/50',
-    bg: 'bg-[#FF6B35]',
-    hoverText: 'group-hover:text-[#FF6B35]',
+    gradient: 'from-[#f07915] to-[#d4600b]',
+    text: 'text-[#f07915]',
+    border: 'focus:border-[#f07915]',
+    hoverBorder: 'hover:border-[#f07915]/50',
+    bg: 'bg-[#f07915]',
+    hoverText: 'group-hover:text-[#f07915]',
   }
 
   // Active tab — now based on category

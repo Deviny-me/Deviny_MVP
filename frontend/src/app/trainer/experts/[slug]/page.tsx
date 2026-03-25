@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -38,7 +38,7 @@ export default function TrainerExpertProfilePage() {
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
     </div>
   )
 }

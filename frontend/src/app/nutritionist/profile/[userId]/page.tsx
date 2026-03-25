@@ -25,7 +25,7 @@ export default function OtherUserProfilePageNutritionist() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 text-[#22c55e] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#28bf68] animate-spin" />
       </div>
     }>
       <OtherUserProfilePageNutritionistInner />

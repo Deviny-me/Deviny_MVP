@@ -334,20 +334,20 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
       </div>
 
       {/* Calendar Week View */}
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
+      <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={goToPreviousWeek} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+          <button onClick={goToPreviousWeek} className="p-2 hover:bg-white/[0.04] rounded-lg transition-colors">
             <ChevronLeft className="w-5 h-5 text-gray-400" />
           </button>
           <div className="flex items-center gap-4">
             <h3 className="font-semibold text-white">
               {weekStart.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
             </h3>
-            <button onClick={goToToday} className="px-3 py-1 text-xs bg-white/5 hover:bg-white/10 rounded-lg text-gray-300 transition-colors">
+            <button onClick={goToToday} className="px-3 py-1 text-xs bg-white/[0.04] hover:bg-white/10 rounded-lg text-gray-300 transition-colors">
               {t('today')}
             </button>
           </div>
-          <button onClick={goToNextWeek} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+          <button onClick={goToNextWeek} className="p-2 hover:bg-white/[0.04] rounded-lg transition-colors">
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </button>
         </div>
@@ -372,7 +372,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                     ? `bg-gradient-to-br ${accent.gradient} text-white`
                     : isToday
                     ? `${accent.bgMuted20} text-white border ${accent.borderMuted50}`
-                    : 'bg-[#0A0A0A] text-gray-400 hover:bg-white/5'
+                    : 'bg-[#0A0A0A] text-gray-400 hover:bg-white/[0.04]'
                 }`}
               >
                 <p className="text-xs font-medium mb-1">{weekDays[index]}</p>
@@ -401,7 +401,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
             <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
           </div>
         ) : todaysEvents.length === 0 ? (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+          <div className="text-center py-12 bg-[#141414] rounded-xl border border-white/[0.06]">
             <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400">{t('noEvents')}</p>
             {!readOnly && (
@@ -422,7 +422,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
                 onClick={() => setDetailEvent(event)}
-                className={`bg-[#1A1A1A] rounded-xl border border-white/10 p-4 ${accent.hoverBorder} transition-all cursor-pointer`}
+                className={`bg-[#141414] rounded-xl border border-white/[0.06] p-4 ${accent.hoverBorder} transition-all cursor-pointer`}
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -480,13 +480,13 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                         <Video className="w-5 h-5 text-white" />
                       </button>
                     )}
-                    <button onClick={() => openEditModal(event)} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                    <button onClick={() => openEditModal(event)} className="p-2 bg-white/[0.04] hover:bg-white/10 rounded-lg transition-colors">
                       <Edit className="w-4 h-4 text-gray-400" />
                     </button>
                     <button
                       onClick={() => handleDelete(event.id)}
                       disabled={deleting === event.id}
-                      className="p-2 bg-white/5 hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 bg-white/[0.04] hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50"
                     >
                       {deleting === event.id ? (
                         <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
@@ -505,17 +505,17 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4 text-center">
           <Calendar className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
           <p className="text-2xl font-bold text-white">{todaysEvents.length}</p>
           <p className="text-xs text-gray-400">{t('totalEvents')}</p>
         </div>
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4 text-center">
           <Users className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
           <p className="text-2xl font-bold text-white">{stats?.upcomingEvents || 0}</p>
           <p className="text-xs text-gray-400">{t('upcoming')}</p>
         </div>
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 text-center">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4 text-center">
           <Clock className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
           <p className="text-2xl font-bold text-white">{stats?.totalMinutes ? Math.round(stats.totalMinutes / 60) : 0}ч</p>
           <p className="text-xs text-gray-400">{t('trainingHours')}</p>
@@ -528,7 +528,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-[#141414] rounded-2xl border border-white/[0.06] w-full max-w-lg max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -548,7 +548,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                     placeholder={t('eventNamePlaceholder')}
                   />
                 </div>
@@ -581,7 +581,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                     <select
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                     >
                       <option value="">{t('selectStudent')}</option>
                       {students.map((s) => (
@@ -599,7 +599,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                     />
                   </div>
                   <div>
@@ -608,7 +608,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                       type="time"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                     />
                   </div>
                 </div>
@@ -619,7 +619,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                   <select
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                   >
                     <option value="30">{t('duration30')}</option>
                     <option value="45">{t('duration45')}</option>
@@ -637,7 +637,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('locationPlaceholder')}
                     />
                   </div>
@@ -650,7 +650,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={2}
-                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
+                    className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none`}
                     placeholder={t('commentPlaceholder')}
                   />
                 </div>
@@ -676,7 +676,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="bg-[#141414] rounded-2xl border border-white/[0.06] w-full max-w-lg max-h-[90vh] overflow-y-auto"
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -774,7 +774,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
               {/* Actions */}
               {!readOnly && (!currentUserId || detailEvent.trainerId === currentUserId) && (
-                <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white/[0.06]">
                   {detailEvent.type === 'Online' && (
                     <button
                       onClick={() => { handleStartCall(detailEvent.id); setDetailEvent(null); }}
@@ -786,7 +786,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                   )}
                   <button
                     onClick={() => { openEditModal(detailEvent); setDetailEvent(null); }}
-                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+                    className="flex-1 py-2.5 bg-white/[0.04] hover:bg-white/10 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
                   >
                     <Edit className="w-4 h-4" />
                     {t('editEvent')}

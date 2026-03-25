@@ -114,7 +114,7 @@ export function UserHomeFeed() {
   }
 
   return (
-    <div className="space-y-3 pb-6">
+    <div className="space-y-4 pb-8">
       {/* Hidden file inputs */}
       <input
         ref={photoInputRef}
@@ -134,53 +134,55 @@ export function UserHomeFeed() {
       />
 
       {/* Create Post Card */}
-      <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-4">
+      <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
-          <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-[#0A0A0A] rounded-lg">
-            <Loader2 className="w-4 h-4 text-[#3B82F6] animate-spin" />
-            <span className="text-sm text-gray-400">{uploadProgress}</span>
+          <div className="mb-3 flex items-center gap-2.5 px-3 py-2.5 bg-[#0c8de6]/[0.06] border border-[#0c8de6]/10 rounded-lg">
+            <Loader2 className="w-4 h-4 text-[#0c8de6] animate-spin" />
+            <span className="text-sm text-gray-300">{uploadProgress}</span>
           </div>
         )}
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button 
             onClick={() => photoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
-            <ImageIcon className="w-5 h-5 text-[#3B82F6]" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">{tf('photo')}</span>
+            <ImageIcon className="w-5 h-5 text-[#0c8de6] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{tf('photo')}</span>
           </button>
+          <div className="w-px h-6 bg-white/[0.06]" />
           <button 
             onClick={() => videoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
-            <Video className="w-5 h-5 text-[#3B82F6]" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">{tf('video')}</span>
+            <Video className="w-5 h-5 text-[#0c8de6] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{tf('video')}</span>
           </button>
+          <div className="w-px h-6 bg-white/[0.06]" />
           <button 
             onClick={() => router.push('/user/achievements')}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
-            <Award className="w-5 h-5 text-amber-500" strokeWidth={1.5} />
-            <span className="text-sm font-medium text-gray-300">{tf('achievement')}</span>
+            <Award className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
+            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{tf('achievement')}</span>
           </button>
         </div>
       </div>
 
       {/* Separator */}
-      <div className="flex items-center gap-3 px-2">
-        <div className="flex-1 h-px bg-white/10" />
-        <span className="text-xs text-gray-500 font-medium">{tf('title')}</span>
-        <div className="flex-1 h-px bg-white/10" />
+      <div className="flex items-center gap-3 px-1">
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+        <span className="text-[11px] text-gray-600 font-medium uppercase tracking-wider">{tf('title')}</span>
+        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
       </div>
 
       {/* Feed Posts or Empty State */}
       {feedPostIds.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {feedPostIds.map((id) => (
             <PostCard
               key={id}
@@ -197,12 +199,12 @@ export function UserHomeFeed() {
           ))}
         </div>
       ) : (
-        <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-            <Flame className="w-8 h-8 text-gray-400" />
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+            <Flame className="w-7 h-7 text-gray-600" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{tf('noPosts')}</h3>
-          <p className="text-sm text-gray-400">{tf('noPostsDescription')}</p>
+          <h3 className="text-base font-semibold text-gray-200 mb-1.5">{tf('noPosts')}</h3>
+          <p className="text-sm text-gray-500 max-w-xs mx-auto">{tf('noPostsDescription')}</p>
         </div>
       )}
 

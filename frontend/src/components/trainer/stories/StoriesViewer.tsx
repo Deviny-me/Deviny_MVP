@@ -183,11 +183,11 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/10"
+                  className="bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/[0.06]"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center">
                         <Flame className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -196,7 +196,7 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-[#FF6B35]">
+                      <div className="flex items-center gap-1 text-[#f07915]">
                         <Zap className="w-4 h-4" fill="currentColor" />
                         <span className="text-lg font-bold">+{currentStory.workout.xpEarned}</span>
                       </div>
@@ -214,14 +214,14 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
               <input
                 type="text"
                 placeholder={`Reply to ${story.userName}...`}
-                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#FF6B35]"
+                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#f07915]"
                 onClick={() => setIsPaused(true)}
                 onBlur={() => setIsPaused(false)}
               />
               <button className="p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full hover:bg-white/20 transition-colors">
                 <Heart className="w-5 h-5 text-white" />
               </button>
-              <button className="p-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full hover:opacity-90 transition-opacity">
+              <button className="p-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] rounded-full hover:opacity-90 transition-opacity">
                 <Send className="w-5 h-5 text-white" />
               </button>
             </div>

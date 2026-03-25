@@ -37,7 +37,7 @@ const colorMap: Record<string, string> = {
   teal: 'from-teal-500 to-teal-700',
   emerald: 'from-green-500 to-green-700',
   purple: 'from-purple-500 to-purple-700',
-  orange: 'from-[#FF6B35] to-[#FF0844]',
+  orange: 'from-[#f07915] to-[#d4600b]',
   red: 'from-red-500 to-red-700',
   yellow: 'from-yellow-400 to-yellow-600',
   pink: 'from-pink-500 to-pink-700',

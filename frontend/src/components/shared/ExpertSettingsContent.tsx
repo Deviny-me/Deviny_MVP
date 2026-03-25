@@ -63,16 +63,16 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+        className="bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden"
       >
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06]">
           <User className={`w-5 h-5 ${accent.text}`} />
           <h2 className="font-semibold text-white">{t('account')}</h2>
         </div>
         <div className="divide-y divide-white/5">
           <button
             onClick={() => router.push(`${basePath}/profile`)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5"
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.04]"
           >
             <div>
               <p className="text-white">{t('editProfile')}</p>

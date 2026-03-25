@@ -158,12 +158,12 @@ export function NotificationDropdown() {
       {/* Bell Button */}
       <button
         onClick={handleToggle}
-        className="relative p-2 rounded hover:bg-white/5 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-white/[0.04] transition-all"
         title={t('title')}
       >
         <Bell className="w-5 h-5 text-gray-400" strokeWidth={1.5} />
         {unreadCount > 0 && (
-          <div className={`absolute top-1 right-1 min-w-[16px] h-4 px-1 ${accent.badge} rounded-full flex items-center justify-center animate-pulse`}>
+          <div className={`absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 ${accent.badge} rounded-full flex items-center justify-center`}>
             <span className="text-[10px] font-bold text-white leading-none">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
@@ -173,9 +173,9 @@ export function NotificationDropdown() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
             <h3 className="text-sm font-semibold text-white">{t('title')}</h3>
             {unreadCount > 0 && (
               <button
@@ -205,14 +205,14 @@ export function NotificationDropdown() {
                   <div
                     key={notification.id}
                     onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
-                    className={`flex items-start gap-3 px-4 py-3 border-b border-white/5 transition-colors cursor-pointer ${
+                    className={`flex items-start gap-3 px-4 py-3 border-b border-white/[0.04] transition-colors cursor-pointer ${
                       notification.isRead
                         ? 'bg-transparent opacity-60'
                         : 'bg-white/[0.02] hover:bg-white/[0.05]'
                     }`}
                   >
                     {/* Icon */}
-                    <div className="mt-0.5 p-1.5 rounded-lg bg-white/5 flex-shrink-0">
+                    <div className="mt-0.5 p-1.5 rounded-lg bg-white/[0.04] flex-shrink-0">
                       {getNotificationIcon(notification.type)}
                     </div>
 
@@ -241,7 +241,7 @@ export function NotificationDropdown() {
                   <button
                     onClick={handleLoadMore}
                     disabled={loading}
-                    className="w-full py-3 text-xs text-gray-300 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                    className="w-full py-3 text-xs text-gray-300 hover:text-white hover:bg-white/[0.04] transition-colors disabled:opacity-50"
                   >
                     {loading ? t('loading') : t('loadMore')}
                   </button>

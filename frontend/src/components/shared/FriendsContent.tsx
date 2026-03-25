@@ -205,7 +205,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
     <>
       <div className="space-y-4 pb-6">
         {/* Header */}
-        <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-6">
+        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
@@ -220,13 +220,13 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-64 bg-[#0A0A0A] border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
+                className={`w-64 bg-[#0A0A0A] border border-white/[0.06] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-white/10">
+          <div className="flex items-center gap-2 border-b border-white/[0.06]">
             {[
               { id: 'all' as const, label: t('allFriends'), count: friends.length },
               { id: 'requests' as const, label: t('requests'), count: incomingCount },
@@ -251,7 +251,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'all' && (
           <div className="grid grid-cols-1 gap-4">
             {filteredFriends.length === 0 ? (
-              <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-8 text-center">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
                 <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-white font-semibold mb-2">{t('noFriends')}</h3>
                 <p className="text-gray-400 text-sm">{t('startConnecting')}</p>
@@ -260,7 +260,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
               filteredFriends.map((friend) => (
                 <div
                   key={friend.id}
-                  className="bg-[#1A1A1A] rounded-lg border border-white/10 p-5 hover:border-white/20 transition-all"
+                  className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div
@@ -289,7 +289,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleMessage(friend.id)}
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-all flex items-center gap-2"
+                        className="px-4 py-2 bg-white/[0.04] hover:bg-white/10 border border-white/[0.06] text-white rounded-lg transition-all flex items-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm font-medium">{t('message')}</span>
@@ -318,7 +318,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'requests' && (
           <div className="space-y-4">
             {incomingRequests.length === 0 ? (
-              <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-8 text-center">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
                 <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-white font-semibold mb-2">{t('noPendingRequests')}</h3>
                 <p className="text-gray-400 text-sm">{t('requestsWillAppear')}</p>
@@ -330,7 +330,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   {incomingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="bg-[#1A1A1A] rounded-lg border border-white/10 p-5 hover:border-white/20 transition-all"
+                      className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
                     >
                       <div className="flex items-center gap-4">
                         {request.senderAvatar ? (
@@ -367,7 +367,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           <button
                             onClick={() => handleDeclineRequest(request.id)}
                             disabled={actionLoading === `decline-${request.id}`}
-                            className="px-3 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-all disabled:opacity-50"
+                            className="px-3 py-2 bg-white/[0.04] hover:bg-white/10 border border-white/[0.06] text-white rounded-lg transition-all disabled:opacity-50"
                           >
                             {actionLoading === `decline-${request.id}` ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -389,7 +389,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'sent' && (
           <div className="space-y-4">
             {outgoingRequests.length === 0 ? (
-              <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-8 text-center">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
                 <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-white font-semibold mb-2">{t('noPendingSent')}</h3>
                 <p className="text-gray-400 text-sm">{t('requestsWillAppear')}</p>
@@ -401,7 +401,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   {outgoingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="bg-[#1A1A1A] rounded-lg border border-white/10 p-5 hover:border-white/20 transition-all"
+                      className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
                     >
                       <div className="flex items-center gap-4">
                         {request.receiverAvatar ? (
@@ -426,7 +426,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                         <button
                           onClick={() => handleCancelRequest(request.id)}
                           disabled={actionLoading === `cancel-${request.id}`}
-                          className="px-3 py-2 bg-white/5 hover:bg-red-500/10 border border-white/10 text-gray-400 hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
+                          className="px-3 py-2 bg-white/[0.04] hover:bg-red-500/10 border border-white/[0.06] text-gray-400 hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
                         >
                           {actionLoading === `cancel-${request.id}` ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -447,7 +447,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'following' && (
           <div className="grid grid-cols-1 gap-4">
             {following.length === 0 ? (
-              <div className="bg-[#1A1A1A] rounded-lg border border-white/10 p-8 text-center">
+              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
                 <UserCheck className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-white font-semibold mb-2">{t('notFollowingYet')}</h3>
                 <p className="text-gray-400 text-sm">{t('startConnecting')}</p>
@@ -456,7 +456,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
               following.map((trainer) => (
                 <div
                   key={trainer.id}
-                  className="bg-[#1A1A1A] rounded-lg border border-white/10 p-5 hover:border-white/20 transition-all"
+                  className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div

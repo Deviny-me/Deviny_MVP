@@ -54,14 +54,14 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
             <MainIcon className="w-16 h-16 text-white" />
           </div>
           <motion.div
-            className="absolute -top-2 -right-2 w-10 h-10 bg-[#1A1A1A] border border-white/10 rounded-full flex items-center justify-center"
+            className="absolute -top-2 -right-2 w-10 h-10 bg-[#141414] border border-white/[0.06] rounded-full flex items-center justify-center"
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           >
             <Globe className={`w-5 h-5 ${accent.text}`} />
           </motion.div>
           <motion.div
-            className="absolute -bottom-2 -left-2 w-10 h-10 bg-[#1A1A1A] border border-white/10 rounded-full flex items-center justify-center"
+            className="absolute -bottom-2 -left-2 w-10 h-10 bg-[#141414] border border-white/[0.06] rounded-full flex items-center justify-center"
             animate={{ rotate: -360 }}
             transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
           >
@@ -104,7 +104,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
             const bgClasses = [accent.bgMuted, accent.featureCard2Bg ?? accent.bgMuted, accent.featureCard1Bg ?? accent.bgMuted]
             const textClasses = [accent.text, accent.textSecondary ?? accent.text, accent.featureCard1Text ?? accent.text]
             return (
-              <div key={i} className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
+              <div key={i} className="bg-[#141414] border border-white/[0.06] rounded-xl p-4">
                 <div className={`w-10 h-10 ${bgClasses[i % 3]} rounded-lg flex items-center justify-center mx-auto mb-3`}>
                   <Icon className={`w-5 h-5 ${textClasses[i % 3]}`} />
                 </div>

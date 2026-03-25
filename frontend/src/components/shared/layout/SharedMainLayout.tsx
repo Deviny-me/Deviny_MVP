@@ -9,6 +9,7 @@ interface SharedMainLayoutProps {
   topNav: ReactNode
   leftSidebarSections: NavSection[]
   rightSidebar?: ReactNode
+  footer?: ReactNode
   showLeftSidebar?: boolean
   showRightSidebar?: boolean
   accentColor?: 'orange' | 'green' | 'blue'
@@ -24,17 +25,18 @@ export function SharedMainLayout({
   topNav,
   leftSidebarSections,
   rightSidebar,
+  footer,
   showLeftSidebar = true, 
   showRightSidebar = true,
   accentColor = 'orange',
   className,
 }: SharedMainLayoutProps) {
   return (
-    <div className={`min-h-screen bg-[#0A0A0A] ${className || ''}`}>
+    <div className={`min-h-screen bg-[#0A0A0A] flex flex-col ${className || ''}`}>
       {topNav}
       
-      <div className="max-w-[1280px] mx-auto px-6">
-        <div className="flex gap-6 pt-4">
+      <div className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6">
+        <div className="flex gap-6 pt-5">
           {/* Left Sidebar */}
           {showLeftSidebar && (
             <div className="hidden lg:block">
@@ -43,7 +45,7 @@ export function SharedMainLayout({
           )}
 
           {/* Main Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pb-8">
             {children}
           </div>
 
@@ -55,6 +57,15 @@ export function SharedMainLayout({
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      {footer && (
+        <footer className="mt-auto border-t border-white/[0.06]">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5">
+            {footer}
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

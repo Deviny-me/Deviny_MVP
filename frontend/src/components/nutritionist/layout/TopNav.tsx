@@ -4,13 +4,13 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { 
-  Flame, 
   MessageCircle, 
   Settings,
   LogOut,
   User,
   UserPlus
 } from 'lucide-react'
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { fetchNutritionistProfile } from '@/lib/api/nutritionistProfileApi'
@@ -74,18 +74,16 @@ export function TopNav() {
   }
 
   return (
-    <nav className="sticky top-0 bg-[#1A1A1A] border-b border-white/10 z-50 shadow-xl">
+    <nav className="sticky top-0 glass-strong border-b border-white/[0.06] z-50">
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo & Search */}
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             <button 
               onClick={() => router.push('/nutritionist')}
-              className="flex items-center gap-2 flex-shrink-0"
+              className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center">
-                <Flame className="w-5 h-5 text-white" strokeWidth={2.5} />
-              </div>
+              <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
               <span className="text-sm font-bold text-white hidden sm:block uppercase">{roleLabel}</span>
             </button>
 
@@ -93,29 +91,29 @@ export function TopNav() {
           </div>
 
           {/* Center: Navigation */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {navItems.map((item) => {
               const hasUnread = item.badge !== undefined && item.badge > 0
               return (
                 <button
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`relative flex flex-col items-center justify-center px-4 py-2 rounded transition-colors ${
+                  className={`relative flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all ${
                     isActive(item.path)
-                      ? 'text-[#22c55e]'
+                      ? 'text-[#28bf68] bg-[#28bf68]/[0.08]'
                       : hasUnread
-                      ? 'text-[#16a34a] hover:text-[#16a34a]'
-                      : 'text-gray-400 hover:text-white'
+                      ? 'text-[#1c9e52] hover:text-[#1c9e52]'
+                      : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
                   }`}
                   title={item.label}
                 >
                   <item.icon className="w-5 h-5" strokeWidth={1.5} />
                   <span className="text-[10px] font-medium mt-0.5 hidden lg:block">{item.label}</span>
                   {isActive(item.path) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#22c55e]" />
+                    <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#28bf68] rounded-full" />
                   )}
                   {item.badge && (
-                    <div className="absolute top-0 right-2 w-4 h-4 bg-[#16a34a] rounded-full flex items-center justify-center animate-pulse">
+                    <div className="absolute top-0 right-2 w-4 h-4 bg-[#1c9e52] rounded-full flex items-center justify-center">
                       <span className="text-[10px] font-bold text-white">{item.badge}</span>
                     </div>
                   )}
@@ -127,23 +125,23 @@ export function TopNav() {
           {/* Right: Notifications & Profile */}
           <div className="flex items-center gap-3 flex-1 justify-end">
             <LanguageSwitcher compact />
-            <div className="w-px h-6 bg-white/10" />
+            <div className="w-px h-5 bg-white/[0.08]" />
             <NotificationDropdown />
-            <div className="w-px h-6 bg-white/10" />
+            <div className="w-px h-5 bg-white/[0.08]" />
             {/* Profile Menu */}
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-2 p-1 pr-3 rounded hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-white/[0.04] transition-all"
               >
                 {profile?.trainer?.avatarUrl ? (
                   <img
                     src={getMediaUrl(profile.trainer.avatarUrl) || ''}
                     alt={profile.trainer.fullName}
-                    className="w-8 h-8 rounded-full object-cover border border-white/10"
+                    className="w-8 h-8 rounded-full object-cover border border-white/[0.06]"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center border border-white/10">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center ring-2 ring-[#28bf68]/20">
                     <span className="text-white text-xs font-bold">
                       {profile?.trainer?.initials || 'N'}
                     </span>
@@ -163,8 +161,8 @@ export function TopNav() {
                     className="fixed inset-0 z-40" 
                     onClick={() => setShowProfileMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                    <div className="p-4 border-b border-white/10">
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
+                    <div className="p-4 border-b border-white/[0.06]">
                       <div className="flex items-center gap-3">
                         {profile?.trainer?.avatarUrl ? (
                           <img
@@ -173,7 +171,7 @@ export function TopNav() {
                             className="w-12 h-12 rounded-full object-cover"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center">
                             <span className="text-white text-lg font-bold">
                               {profile?.trainer?.initials || 'N'}
                             </span>
@@ -185,19 +183,19 @@ export function TopNav() {
                         </div>
                       </div>
                       {level && (
-                        <div className="mt-3 p-2.5 bg-gradient-to-r from-[#22c55e]/10 to-[#16a34a]/10 border border-[#22c55e]/20 rounded-lg">
+                        <div className="mt-3 p-2.5 bg-gradient-to-r from-[#28bf68]/10 to-[#1c9e52]/10 border border-[#28bf68]/20 rounded-lg">
                           <div className="flex items-center justify-between mb-1.5">
                             <span className="text-xs font-semibold text-white">Level {level.currentLevel}</span>
                             <span className="text-xs text-gray-400">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>
                           </div>
-                          <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                          <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-gradient-to-r from-[#22c55e] to-[#16a34a] rounded-full transition-all duration-300"
+                              className="h-full bg-gradient-to-r from-[#28bf68] to-[#1c9e52] rounded-full transition-all duration-300"
                               style={{ width: `${(level.currentXp / level.requiredXpForNextLevel) * 100}%` }}
                             />
                           </div>
                           {level.levelTitle && (
-                            <p className="text-[10px] text-green-400 font-medium mt-1">{level.levelTitle}</p>
+                            <p className="text-[10px] text-[#28bf68] font-medium mt-1">{level.levelTitle}</p>
                           )}
                         </div>
                       )}
@@ -206,7 +204,7 @@ export function TopNav() {
                           router.push('/nutritionist/profile')
                           setShowProfileMenu(false)
                         }}
-                        className="mt-3 w-full py-1.5 border border-[#22c55e] text-[#22c55e] rounded-lg text-sm font-semibold hover:bg-[#22c55e]/10 transition-colors"
+                        className="mt-3 w-full py-1.5 border border-[#28bf68] text-[#28bf68] rounded-lg text-sm font-semibold hover:bg-[#28bf68]/10 transition-colors"
                       >
                         {t('viewProfile')}
                       </button>
@@ -218,17 +216,17 @@ export function TopNav() {
                           router.push('/nutritionist/settings')
                           setShowProfileMenu(false)
                         }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/5 rounded-lg transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/[0.04] rounded-lg transition-colors text-left"
                       >
                         <Settings className="w-5 h-5" strokeWidth={1.5} />
                         <span className="text-sm">{t('settingsPrivacy')}</span>
                       </button>
                     </div>
 
-                    <div className="border-t border-white/10 p-2">
+                    <div className="border-t border-white/[0.06] p-2">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/5 rounded-lg transition-colors text-left"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-300 hover:bg-white/[0.04] rounded-lg transition-colors text-left"
                       >
                         <LogOut className="w-5 h-5" strokeWidth={1.5} />
                         <span className="text-sm">{t('signOut')}</span>

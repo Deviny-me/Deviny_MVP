@@ -34,15 +34,15 @@ import { getMediaUrl } from '@/lib/config'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 interface DashboardContentProps {
-  accentColor: string // hex color like '#FF6B35' or '#22c55e'
-  accentGradient: string // tailwind gradient like 'from-[#FF6B35] to-[#FF0844]'
+  accentColor: string // hex color like '#f07915' or '#28bf68'
+  accentGradient: string // tailwind gradient like 'from-[#f07915] to-[#d4600b]'
   role: 'trainer' | 'nutritionist'
 }
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const TIER_COLORS = {
-  basic: '#3B82F6',
+  basic: '#f07915',
   standard: '#F59E0B',
   pro: '#8B5CF6',
 }
@@ -90,7 +90,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
 
   if (error) {
     return (
-      <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+      <div className="text-center py-12 bg-[#141414] rounded-xl border border-white/[0.06]">
         <p className="text-red-400 mb-4">{error}</p>
         <button
           onClick={loadStats}
@@ -150,7 +150,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Monthly Sales Chart */}
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+      <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-5 h-5" style={{ color: accentColor }} />
           <h2 className="text-lg font-semibold text-white">{t('monthlySales')}</h2>
@@ -170,7 +170,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
               <XAxis dataKey="name" tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={{ stroke: '#333' }} />
               <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={{ stroke: '#333' }} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                 labelStyle={{ color: '#fff' }}
                 itemStyle={{ color: '#9CA3AF' }}
               />
@@ -190,7 +190,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       {/* Two-column Layout: Tier Distribution + Students Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Tier Distribution Pie Chart */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+        <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
           <div className="flex items-center gap-2 mb-4">
             <PieChartIcon className="w-5 h-5" style={{ color: accentColor }} />
             <h2 className="text-lg font-semibold text-white">{t('tierDistribution')}</h2>
@@ -215,7 +215,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                   labelStyle={{ color: '#fff' }}
                 />
                 <Legend
@@ -227,7 +227,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
         </div>
 
         {/* Monthly Students Chart */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+        <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5" style={{ color: accentColor }} />
             <h2 className="text-lg font-semibold text-white">{t('monthlyStudents')}</h2>
@@ -241,7 +241,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
                 <XAxis dataKey="name" tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={{ stroke: '#333' }} />
                 <YAxis tick={{ fill: '#9CA3AF', fontSize: 12 }} axisLine={{ stroke: '#333' }} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                   labelStyle={{ color: '#fff' }}
                   itemStyle={{ color: '#9CA3AF' }}
                 />
@@ -258,7 +258,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Program Performance Table */}
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+      <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Layers className="w-5 h-5" style={{ color: accentColor }} />
           <h2 className="text-lg font-semibold text-white">{t('programPerformance')}</h2>
@@ -319,7 +319,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Recent Students */}
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+      <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Users className="w-5 h-5" style={{ color: accentColor }} />
           <h2 className="text-lg font-semibold text-white">{t('recentStudents')}</h2>
@@ -377,7 +377,7 @@ function StatCard({
   accentColor: string
 }) {
   return (
-    <div className="bg-[#1A1A1A] rounded-xl border border-white/5 p-5">
+    <div className="bg-[#141414] rounded-xl border border-white/5 p-5">
       <div className="flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-lg flex items-center justify-center"

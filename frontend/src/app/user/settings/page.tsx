@@ -117,7 +117,7 @@ export default function SettingsPage() {
         {/* Profile Card */}
         <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
               <span className="text-white text-2xl font-bold">
                 {user?.fullName?.charAt(0) || tc('user').charAt(0)}
               </span>
@@ -125,11 +125,11 @@ export default function SettingsPage() {
             <div className="flex-1">
               <h3 className="font-semibold text-white">{user?.fullName || tc('user')}</h3>
               <p className="text-sm text-gray-400">{user?.email || 'user@example.com'}</p>
-              <p className="text-xs text-[#3B82F6] mt-1">Level {level?.currentLevel ?? user?.level ?? 1} • {level?.currentXp ?? user?.xp ?? 0} XP</p>
+              <p className="text-xs text-[#0c8de6] mt-1">Level {level?.currentLevel ?? user?.level ?? 1} • {level?.currentXp ?? user?.xp ?? 0} XP</p>
             </div>
             <button
               onClick={() => router.push('/user/profile')}
-              className="px-4 py-2 border border-[#3B82F6] text-[#3B82F6] text-sm font-semibold rounded-lg hover:bg-[#3B82F6]/10 transition-colors"
+              className="px-4 py-2 border border-[#0c8de6] text-[#0c8de6] text-sm font-semibold rounded-lg hover:bg-[#0c8de6]/10 transition-colors"
             >
               {t('edit')}
             </button>
@@ -154,7 +154,7 @@ export default function SettingsPage() {
                     <span className="text-sm text-white">{item.label}</span>
                   </div>
                   {item.toggle ? (
-                    <div className={`w-10 h-6 rounded-full transition-colors ${item.value ? 'bg-[#3B82F6]' : 'bg-gray-600'} p-0.5`}>
+                    <div className={`w-10 h-6 rounded-full transition-colors ${item.value ? 'bg-[#0c8de6]' : 'bg-gray-600'} p-0.5`}>
                       <div className={`w-5 h-5 rounded-full bg-white transition-transform ${item.value ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
                   ) : item.value ? (

@@ -836,9 +836,9 @@ export default function ChatInbox() {
 
   // ─── render ───
   return (
-    <div className="relative bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden h-[calc(100vh-130px)]">
+    <div className="relative bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden h-[calc(100vh-130px)]">
       {incomingCall && (
-        <div className="absolute top-4 right-4 z-30 p-3 rounded-lg border border-white/10 bg-[#0A0A0A] shadow-xl w-72">
+        <div className="absolute top-4 right-4 z-30 p-3 rounded-lg border border-white/[0.06] bg-[#0A0A0A] shadow-xl w-72">
           <p className="text-sm text-white font-semibold">Incoming {incomingCall.callType} call</p>
           <p className="text-xs text-gray-400 mt-1">{incomingCall.fromUserName}</p>
           <div className="flex items-center gap-2 mt-3">
@@ -862,12 +862,12 @@ export default function ChatInbox() {
       <div className="flex h-full">
         {/* ── Left: Conversations List ── */}
         <div
-          className={`w-80 border-r border-white/10 flex flex-col ${
+          className={`w-80 border-r border-white/[0.06] flex flex-col ${
             selectedConvId ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Header + search */}
-          <div className="p-4 border-b border-white/10">
+          <div className="p-4 border-b border-white/[0.06]">
             <h2 className="text-lg font-bold text-white mb-3">Messages</h2>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -876,7 +876,7 @@ export default function ChatInbox() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className={`w-full pl-10 pr-4 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
+                className={`w-full pl-10 pr-4 py-2 bg-[#0A0A0A] border border-white/[0.06] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
@@ -907,7 +907,7 @@ export default function ChatInbox() {
                       )
                     )
                   }}
-                  className={`w-full flex items-center gap-3 p-4 hover:bg-white/5 transition-colors ${
+                  className={`w-full flex items-center gap-3 p-4 hover:bg-white/[0.04] transition-colors ${
                     selectedConvId === conv.id ? 'bg-white/5' : ''
                   }`}
                 >
@@ -947,7 +947,7 @@ export default function ChatInbox() {
         {selectedConvId ? (
           <div className="flex-1 flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-white/10">
+            <div className="p-4 border-b border-white/[0.06]">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <button
@@ -1024,7 +1024,7 @@ export default function ChatInbox() {
                               className={`text-xs px-3 py-1 mb-0.5 rounded-t-xl border-l-2 ${
                                 isMe
                                   ? `${accent.border} ${accent.bgMuted20} text-white/80`
-                                  : `${accent.border} bg-white/5 text-gray-400`
+                                  : `${accent.border} bg-white/[0.04] text-gray-400`
                               }`}
                             >
                               <span className="font-semibold">
@@ -1038,7 +1038,7 @@ export default function ChatInbox() {
                             className={`group relative rounded-2xl px-4 py-2.5 ${
                               isMe
                                 ? `${accent.bg} text-white rounded-br-sm`
-                                : 'border-2 border-gray-700 bg-[#1A1A1A] text-white rounded-bl-sm'
+                                : 'border-2 border-gray-700 bg-[#141414] text-white rounded-bl-sm'
                             }`}
                           >
                             {/* Attachment */}
@@ -1101,7 +1101,7 @@ export default function ChatInbox() {
                                   setReplyTo(msg)
                                   inputRef.current?.focus()
                                 }}
-                                className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0A0A0A] border border-white/10 rounded-full p-1"
+                                className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0A0A0A] border border-white/[0.06] rounded-full p-1"
                               >
                                 <Reply className="w-3 h-3 text-gray-400" />
                               </button>
@@ -1151,7 +1151,7 @@ export default function ChatInbox() {
             )}
 
             {/* Input */}
-            <div className="p-4 border-t border-white/10">
+            <div className="p-4 border-t border-white/[0.06]">
               <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
                 {/* Hidden file input */}
                 <input
@@ -1184,7 +1184,7 @@ export default function ChatInbox() {
                   <Smile className="w-5 h-5" />
                 </button>
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 left-12 z-20 bg-[#0A0A0A] border border-white/10 rounded-xl p-2 shadow-xl w-56">
+                  <div className="absolute bottom-14 left-12 z-20 bg-[#0A0A0A] border border-white/[0.06] rounded-xl p-2 shadow-xl w-56">
                     <div className="grid grid-cols-6 gap-1">
                       {QUICK_EMOJIS.map(emoji => (
                         <button
@@ -1207,7 +1207,7 @@ export default function ChatInbox() {
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={sending}
-                  className={`flex-1 bg-[#0A0A0A] border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
+                  className={`flex-1 bg-[#0A0A0A] border border-white/[0.06] rounded-full px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
                 />
                 <button
                   onClick={handleSend}
@@ -1224,7 +1224,7 @@ export default function ChatInbox() {
             </div>
 
             {callStatus !== 'idle' && activeCallPeerName && (
-              <div className="border-t border-white/10 p-3 bg-[#0A0A0A]">
+              <div className="border-t border-white/[0.06] p-3 bg-[#0A0A0A]">
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div>
                     <p className="text-sm font-semibold text-white">{activeCallType === 'video' ? 'Video call' : 'Audio call'} with {activeCallPeerName}</p>
@@ -1234,7 +1234,7 @@ export default function ChatInbox() {
                     <button
                       type="button"
                       onClick={toggleMic}
-                      className="p-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 transition-colors"
+                      className="p-2 rounded-lg border border-white/[0.06] text-gray-300 hover:bg-white/10 transition-colors"
                       title={isMicMuted ? 'Unmute microphone' : 'Mute microphone'}
                     >
                       {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -1243,7 +1243,7 @@ export default function ChatInbox() {
                       <button
                         type="button"
                         onClick={toggleCamera}
-                        className="p-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 transition-colors"
+                        className="p-2 rounded-lg border border-white/[0.06] text-gray-300 hover:bg-white/10 transition-colors"
                         title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
                       >
                         {isCameraEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
