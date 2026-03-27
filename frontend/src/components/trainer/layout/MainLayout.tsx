@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 import { SharedMainLayout, trainerConfig } from '@/components/shared/layout'
 import { TopNav } from './TopNav'
-import { RightSidebar } from './RightSidebar'
+import { TrainerFooter } from './TrainerFooter'
 
 interface MainLayoutProps {
   children: ReactNode
@@ -23,9 +23,10 @@ export function MainLayout({
     <SharedMainLayout
       topNav={<TopNav />}
       leftSidebarSections={trainerConfig.navSections}
-      rightSidebar={<RightSidebar />}
+      footer={<TrainerFooter />}
       showLeftSidebar={showLeftSidebar}
-      showRightSidebar={showRightSidebar}
+      showRightSidebar={false}
+      accentColor="orange"
     >
       {children}
     </SharedMainLayout>
