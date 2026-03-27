@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
-import { Eye, EyeOff, User, Dumbbell, Apple, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, User, Dumbbell, Apple, ArrowLeft, Check } from 'lucide-react'
 import { Spinner } from '@/components/ui/Spinner'
 import { useLogin } from '@/features/auth/hooks/useLogin'
 import { cn } from '@/lib/utils/cn'
@@ -183,17 +183,17 @@ function LoginPageContent() {
 
           {/* Remember me + forgot */}
           <div className="flex items-center justify-between">
-            <label className="flex items-center cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={formData.rememberMe}
-                onChange={(e) =>
-                  setFormData({ ...formData, rememberMe: e.target.checked })
-                }
-                className="w-4 h-4 bg-white border-gray-300 rounded cursor-pointer"
-                style={{ accentColor: '#D4A843' }}
-                disabled={isLoading}
-              />
+            <label className="flex items-center cursor-pointer group" onClick={() => !isLoading && setFormData({ ...formData, rememberMe: !formData.rememberMe })}>
+              <div
+                className={cn(
+                  'w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0',
+                  formData.rememberMe
+                    ? 'bg-primary-500 border-primary-500'
+                    : 'border-gray-400 bg-white'
+                )}
+              >
+                {formData.rememberMe && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+              </div>
               <span className="ml-2 text-sm text-gray-600 select-none group-hover:text-gray-900 transition-colors">
                 {t('login.rememberMe')}
               </span>

@@ -449,17 +449,21 @@ function RegisterPageContent() {
           {/* Terms */}
           <div className="pt-2">
             <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
+              <div
+                onClick={() => !loading && setTermsAccepted(!termsAccepted)}
                 className={cn(
-                  'mt-0.5 w-4 h-4 rounded border-gray-300',
-                  errors.termsAccepted ? 'border-red-500' : ''
+                  'mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer',
+                  termsAccepted
+                    ? 'bg-primary-500 border-primary-500'
+                    : errors.termsAccepted ? 'border-red-500 bg-white' : 'border-gray-400 bg-white'
                 )}
-                style={{ accentColor: '#D4A843' }}
-                disabled={loading}
-              />
+              >
+                {termsAccepted && (
+                  <svg className="w-3 h-3 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3.5 8.5L6.5 11.5L12.5 4.5" />
+                  </svg>
+                )}
+              </div>
               <span className="text-sm text-gray-600 leading-relaxed">
                 {tr('termsAccept')}{' '}
                 <Link href="/terms" className="text-primary-600 hover:text-primary-700 font-medium underline underline-offset-2">

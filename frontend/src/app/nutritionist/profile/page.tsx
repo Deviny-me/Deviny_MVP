@@ -791,86 +791,96 @@ export default function NutritionistProfilePage() {
     <>
       <div className="pb-6">
         {/* Profile Header */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden mb-6">
-          <div className={`h-40 bg-gradient-to-r ${accent.gradient} relative`}>
+        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden mb-4">
+          <div className={`h-48 bg-gradient-to-r ${accent.gradient} relative`}>
           </div>
 
-          <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-14">
-              <div className="relative">
-                {trainer.avatarUrl ? (
-                  <img
-                    src={getMediaUrl(trainer.avatarUrl) || ''}
-                    alt={trainer.fullName}
-                    className="w-28 h-28 rounded-xl object-cover border-4 border-[#1A1A1A]"
-                  />
-                ) : (
-                  <div className={`w-28 h-28 rounded-xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
-                    <span className="text-white text-3xl font-bold">
-                      {trainer.initials}
-                    </span>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
+          <div className="relative flex flex-col items-center -mt-16 pb-6 px-6">
+            <div className="relative z-10">
+              {trainer.avatarUrl ? (
+                <img
+                  src={getMediaUrl(trainer.avatarUrl) || ''}
+                  alt={trainer.fullName}
+                  className="w-32 h-32 rounded-2xl object-cover border-4 border-[#1A1A1A] shadow-xl"
                 />
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+              ) : (
+                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-[#1A1A1A] shadow-xl`}>
+                  <span className="text-white text-4xl font-bold">
+                    {trainer.initials}
+                  </span>
+                </div>
+              )}
+              <input
+                type="file"
+                id="avatar-upload"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-1 right-1 p-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                {uploadingAvatar ? (
+                  <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                ) : (
+                  <Camera className="w-3.5 h-3.5 text-gray-400" />
+                )}
+              </label>
+              {trainer.avatarUrl && (
+                <button
+                  onClick={handleAvatarDelete}
+                  disabled={deletingAvatar}
+                  className="absolute bottom-1 left-1 p-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
                 >
-                  {uploadingAvatar ? (
+                  {deletingAvatar ? (
                     <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
                   ) : (
-                    <Camera className="w-3.5 h-3.5 text-gray-400" />
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   )}
-                </label>
-                {trainer.avatarUrl && (
-                  <button
-                    onClick={handleAvatarDelete}
-                    disabled={deletingAvatar}
-                    className="absolute bottom-0 left-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
-                  >
-                    {deletingAvatar ? (
-                      <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    )}
-                  </button>
-                )}
-                {trainer.achievementsCount > 0 && (
-                  <div className={`absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r ${accent.gradient} border-2 border-[#1A1A1A] flex items-center justify-center shadow-lg`}>
-                    <Award className="w-5 h-5 text-white" />
-                  </div>
-                )}
-              </div>
+                </button>
+              )}
+            </div>
 
-              <div className="flex-1 flex items-end justify-between pb-1">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-white">{trainer.fullName}</h1>
-                    {trainer.ratingValue > 0 && (
-                      <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-lg">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-gray-400">{trainer.primaryTitle || t('personalNutritionist')}</p>
-                  {trainer.secondaryTitle && (
-                    <p className="text-sm text-gray-500">{trainer.secondaryTitle}</p>
-                  )}
+            {/* Name and Rating - Centered */}
+            <div className="flex items-center gap-2 mt-4">
+              <h1 className="text-2xl font-bold text-white">{trainer.fullName}</h1>
+              {trainer.ratingValue > 0 && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-lg">
+                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
                 </div>
+              )}
+            </div>
+            <p className="text-gray-400 text-center mt-1">{trainer.primaryTitle || t('personalNutritionist')}</p>
+            {trainer.secondaryTitle && (
+              <p className="text-sm text-gray-500 text-center">{trainer.secondaryTitle}</p>
+            )}
+
+            {/* Stats Row */}
+            <div className="mt-5 w-full grid grid-cols-4 divide-x divide-white/10 rounded-xl bg-white/[0.03] border border-white/[0.06] py-4">
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-xl font-bold text-white">{trainer.programsCount}</p>
+                <p className="text-[11px] text-gray-500">{t('programs')}</p>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-xl font-bold text-white">{trainer.studentsCount}</p>
+                <p className="text-[11px] text-gray-500">{t('students')}</p>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-xl font-bold text-white">{trainer.ratingValue.toFixed(1)}</p>
+                <p className="text-[11px] text-gray-500">{trainer.reviewsCount} {t('reviews')}</p>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-xl font-bold text-white">{trainer.achievementsCount}</p>
+                <p className="text-[11px] text-gray-500">{t('achievements')}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Contact & Location Info */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           {(trainer.location || trainer.city || trainer.country) && (
             <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
               <button
@@ -945,11 +955,11 @@ export default function NutritionistProfilePage() {
         </div>
 
         {/* Bio Section */}
-        <div className={`bg-gradient-to-br ${accent.gradientBg} rounded-xl border border-white/10 p-4 mb-6`}>
+        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-5 mb-4">
           {about?.text ? (
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-400">{t('aboutMe')}</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-300">{t('aboutMe')}</h3>
                 <button 
                   onClick={() => setShowAboutModal(true)}
                   className={`text-xs ${accent.text} hover:underline`}
@@ -968,30 +978,6 @@ export default function NutritionistProfilePage() {
               {t('addDescription')}
             </button>
           )}
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className={`bg-gradient-to-br ${accent.gradientBg10} rounded-xl border ${accent.borderMuted} p-4 text-center`}>
-            <BookOpen className={`w-6 h-6 ${accent.text} mx-auto mb-2`} />
-            <p className="text-2xl font-bold text-white">{trainer.programsCount}</p>
-            <p className="text-xs text-gray-400">{t('programs')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 p-4 text-center">
-            <Users className="w-6 h-6 text-green-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.studentsCount}</p>
-            <p className="text-xs text-gray-400">{t('students')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-4 text-center">
-            <Star className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.ratingValue.toFixed(1)}</p>
-            <p className="text-xs text-gray-400">{trainer.reviewsCount} {t('reviews')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-4 text-center">
-            <Award className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.achievementsCount}</p>
-            <p className="text-xs text-gray-400">{t('achievements')}</p>
-          </div>
         </div>
 
         {/* Specializations */}

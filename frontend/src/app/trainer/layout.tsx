@@ -18,6 +18,8 @@ const HIDE_RIGHT_SIDEBAR = [
   '/trainer/discovery', '/trainer/challenges', '/trainer/achievements',
   '/trainer/experts', '/trainer/dashboard',
 ]
+// Routes where both sidebars should be hidden
+const HIDE_ALL_SIDEBARS: string[] = []
 
 export default function TrainerDashboardLayout({
   children,
@@ -29,7 +31,8 @@ export default function TrainerDashboardLayout({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const checkedRef = useRef(false)
 
-  const showRightSidebar = !HIDE_RIGHT_SIDEBAR.some(r => pathname?.startsWith(r))
+  const showLeftSidebar = !HIDE_ALL_SIDEBARS.some(r => pathname?.startsWith(r))
+  const showRightSidebar = !HIDE_RIGHT_SIDEBAR.some(r => pathname?.startsWith(r)) && showLeftSidebar
 
   useEffect(() => {
     if (checkedRef.current) return
@@ -78,7 +81,7 @@ export default function TrainerDashboardLayout({
           <UnreadNotificationsProvider>
             <LevelProvider>
               <TrainerAchievementBridge>
-                <MainLayout showRightSidebar={showRightSidebar}>
+                <MainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
                   {children}
                 </MainLayout>
               </TrainerAchievementBridge>

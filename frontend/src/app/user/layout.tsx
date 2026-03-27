@@ -16,10 +16,10 @@ import { Spinner } from '@/components/ui/Spinner'
 const HIDE_RIGHT_SIDEBAR = [
   '/user/challenges', '/user/settings', '/user/schedule',
   '/user/leaderboards', '/user/live', '/user/experts', '/user/discovery',
-  '/user/achievements',
+  '/user/achievements', '/user/messages',
 ]
 // Routes where both sidebars should be hidden
-const HIDE_ALL_SIDEBARS = ['/user/messages']
+const HIDE_ALL_SIDEBARS: string[] = []
 
 export default function UserDashboardLayout({
   children,
