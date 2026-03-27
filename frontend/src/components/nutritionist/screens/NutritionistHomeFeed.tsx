@@ -68,6 +68,7 @@ export function NutritionistHomeFeed() {
   const videoInputRef = useRef<HTMLInputElement>(null)
   
   // State — only IDs; data in store
+  const [feedLoading, setFeedLoading] = useState(true)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -78,16 +79,19 @@ export function NutritionistHomeFeed() {
 
   // Load feed on mount
   useEffect(() => {
-    loadFeed()
+    loadFeed(true)
   }, [])
 
-  const loadFeed = async () => {
+  const loadFeed = async (isInitial = false) => {
     try {
+      if (isInitial) setFeedLoading(true)
       const response = await postsApi.getFeed(1, 20)
       const ids = upsertPosts(response.posts)
       setFeedPostIds(ids)
     } catch (error) {
       console.error('Failed to load feed:', error)
+    } finally {
+      if (isInitial) setFeedLoading(false)
     }
   }
 
@@ -217,7 +221,11 @@ export function NutritionistHomeFeed() {
       </div>
 
       {/* Feed Posts or Empty State */}
-      {feedPostIds.length > 0 ? (
+      {feedLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-7 h-7 text-[#28bf68] animate-spin" />
+        </div>
+      ) : feedPostIds.length > 0 ? (
         <div className="space-y-4">
           {feedPostIds.map((id) => (
             <PostCard

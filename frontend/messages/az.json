@@ -218,7 +218,16 @@
     "viewProfile": "Profilə bax",
     "settingsPrivacy": "Tənzimləmələr və məxfilik",
     "signOut": "Çıxış",
-    "searchUserPlaceholder": "Məşqçilər, proqramlar, məşqlər axtarın..."
+    "searchUserPlaceholder": "Məşqçilər, proqramlar, məşqlər axtarın...",
+    "training": "Məşqlər",
+    "compete": "Yarışlar",
+    "nutritionSection": "Qidalanma",
+    "discover": "Kəşf",
+    "myPrograms": "Proqramlarım",
+    "myJourney": "Yolum",
+    "liveWorkouts": "Canlı məşqlər",
+    "mealPrograms": "Qidalanma proqramları",
+    "myProfile": "Profilim"
   },
 
   "settings": {

@@ -24,15 +24,16 @@ export const useLogin = () => {
         (data.role as 'user' | 'trainer' | 'nutritionist') || 'trainer',
         data.rememberMe ?? false,
       )
+      // Don't setIsLoading(false) on success — let it stay true
+      // until the page navigates away (component unmounts)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred'
       const errorMap: Record<string, string> = {
         'SERVER_UNAVAILABLE': t('serverUnavailable'),
       }
       setError(errorMap[message] || message)
-      throw err
-    } finally {
       setIsLoading(false)
+      throw err
     }
   }
 

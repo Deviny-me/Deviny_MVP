@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { startNavigation } from '@/components/ui/RouteProgressBar'
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher'
 import { 
   MessageCircle, 
@@ -81,7 +82,7 @@ export function TopNav() {
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             {/* Logo */}
             <button 
-              onClick={() => router.push('/nutritionist')}
+              onClick={() => { if (pathname !== '/nutritionist') startNavigation(); router.push('/nutritionist') }}
               className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
               <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
@@ -98,7 +99,7 @@ export function TopNav() {
               return (
                 <button
                   key={item.path}
-                  onClick={() => router.push(item.path)}
+                  onClick={() => { if (!isActive(item.path)) startNavigation(); router.push(item.path) }}
                   className={`relative flex flex-col items-center justify-center px-5 py-2 rounded-lg transition-all ${
                     isActive(item.path)
                       ? 'text-[#28bf68] bg-[#28bf68]/[0.08]'

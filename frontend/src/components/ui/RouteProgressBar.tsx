@@ -3,18 +3,25 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
+/** Call this before router.push() to show the route progress bar */
+export function startNavigation() {
+  window.dispatchEvent(new Event('routeChangeStart'))
+}
+
 export function RouteProgressBar() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [progress, setProgress] = useState(0)
   const [visible, setVisible] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const prevUrl = useRef('')
 
   const start = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
     setProgress(0)
     setVisible(true)
-    // Quick jump to ~30%, then slow crawl
     setTimeout(() => setProgress(30), 50)
     timerRef.current = setInterval(() => {
       setProgress(prev => {
@@ -22,10 +29,17 @@ export function RouteProgressBar() {
         return prev + (90 - prev) * 0.1
       })
     }, 300)
+    // Auto-cancel if no navigation happens within 8s
+    timeoutRef.current = setTimeout(() => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      setProgress(100)
+      setTimeout(() => { setVisible(false); setProgress(0) }, 300)
+    }, 8000)
   }, [])
 
   const done = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current)
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
     setProgress(100)
     setTimeout(() => {
       setVisible(false)
@@ -40,6 +54,13 @@ export function RouteProgressBar() {
     }
     prevUrl.current = url
   }, [pathname, searchParams, done])
+
+  // Listen for custom navigation start event (from router.push calls)
+  useEffect(() => {
+    const handleRouteStart = () => start()
+    window.addEventListener('routeChangeStart', handleRouteStart)
+    return () => window.removeEventListener('routeChangeStart', handleRouteStart)
+  }, [start])
 
   // Intercept link clicks for navigation start
   useEffect(() => {
@@ -64,7 +85,7 @@ export function RouteProgressBar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[99999] h-[3px]">
       <div
-        className="h-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-300 ease-out"
+        className="h-full bg-gradient-to-r from-white/80 via-white to-white/80 shadow-[0_0_10px_rgba(255,255,255,0.4)] transition-all duration-300 ease-out"
         style={{ width: `${progress}%` }}
       />
     </div>

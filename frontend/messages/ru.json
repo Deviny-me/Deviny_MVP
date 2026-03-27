@@ -218,7 +218,16 @@
     "viewProfile": "Просмотр профиля",
     "settingsPrivacy": "Настройки и приватность",
     "signOut": "Выйти",
-    "searchUserPlaceholder": "Поиск тренеров, программ, тренировок..."
+    "searchUserPlaceholder": "Поиск тренеров, программ, тренировок...",
+    "training": "Тренировки",
+    "compete": "Соревнования",
+    "nutritionSection": "Питание",
+    "discover": "Обзор",
+    "myPrograms": "Мои программы",
+    "myJourney": "Мой путь",
+    "liveWorkouts": "Live тренировки",
+    "mealPrograms": "Программы питания",
+    "myProfile": "Мой профиль"
   },
 
   "settings": {

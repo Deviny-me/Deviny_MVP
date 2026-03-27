@@ -218,7 +218,16 @@
     "viewProfile": "View Profile",
     "settingsPrivacy": "Settings & Privacy",
     "signOut": "Sign Out",
-    "searchUserPlaceholder": "Search trainers, programs, workouts..."
+    "searchUserPlaceholder": "Search trainers, programs, workouts...",
+    "training": "Training",
+    "compete": "Compete",
+    "nutritionSection": "Nutrition",
+    "discover": "Discover",
+    "myPrograms": "My Programs",
+    "myJourney": "My Journey",
+    "liveWorkouts": "Live Workouts",
+    "mealPrograms": "Meal Programs",
+    "myProfile": "My Profile"
   },
 
   "settings": {

@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { ReactNode } from 'react'
+import { startNavigation } from '@/components/ui/RouteProgressBar'
 import { TopNavItem, UserRole } from './types'
 import { SearchBar } from '@/components/search/SearchBar'
 
@@ -59,7 +60,7 @@ export function SharedTopNav({
           <div className="flex items-center gap-4 flex-1 max-w-xl">
             {/* Logo */}
             <button 
-              onClick={() => router.push(basePath)}
+              onClick={() => { if (pathname !== basePath) startNavigation(); router.push(basePath) }}
               className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
               <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
@@ -80,7 +81,7 @@ export function SharedTopNav({
               return (
                 <button
                   key={item.path}
-                  onClick={() => router.push(item.path)}
+                  onClick={() => { if (!isActive(item.path)) startNavigation(); router.push(item.path) }}
                   className={`relative flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all ${
                     isActive(item.path)
                       ? `${tc.activeText} bg-white/[0.04]`

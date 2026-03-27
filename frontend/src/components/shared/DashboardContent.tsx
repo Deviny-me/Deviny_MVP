@@ -60,19 +60,19 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadStats()
+    loadStats(true)
   }, [])
 
-  const loadStats = async () => {
+  const loadStats = async (isInitial = false) => {
     try {
-      setLoading(true)
+      if (isInitial) setLoading(true)
       setError(null)
       const data = await dashboardApi.getStats()
       setStats(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load dashboard')
     } finally {
-      setLoading(false)
+      if (isInitial) setLoading(false)
     }
   }
 
@@ -93,7 +93,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       <div className="text-center py-12 bg-[#141414] rounded-xl border border-white/[0.06]">
         <p className="text-red-400 mb-4">{error}</p>
         <button
-          onClick={loadStats}
+          onClick={() => loadStats(true)}
           className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors"
           style={{ backgroundColor: accentColor }}
         >

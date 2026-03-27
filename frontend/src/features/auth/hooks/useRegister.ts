@@ -178,6 +178,8 @@ export const useRegister = () => {
       // Navigate to role-specific dashboard
       const dashboardRoute = role === 'user' ? '/user' : role === 'nutritionist' ? '/nutritionist' : '/trainer'
       router.push(dashboardRoute)
+      // Don't setLoading(false) on success — let it stay true
+      // until the page navigates away (component unmounts)
     } catch (error) {
       if (error instanceof Error) {
         const errorMap: Record<string, string> = {
@@ -188,7 +190,6 @@ export const useRegister = () => {
       } else {
         setErrors({ general: t('registrationError') })
       }
-    } finally {
       setLoading(false)
     }
   }

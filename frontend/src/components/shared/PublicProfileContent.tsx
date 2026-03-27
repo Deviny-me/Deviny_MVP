@@ -722,6 +722,14 @@ export function PublicProfileContent({
   // Use the viewed user's accent color for the section icons
   const accentColor = profileAccent.primary
 
+  if (profileLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: profileAccent.primary }} />
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="space-y-4 pb-6">

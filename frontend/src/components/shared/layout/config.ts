@@ -20,6 +20,7 @@ import { LayoutConfig } from './types'
 
 /**
  * Navigation configuration for trainers.
+ * Labels use i18n keys from the 'nav' namespace.
  */
 export const trainerConfig: LayoutConfig = {
   role: 'trainer',
@@ -30,40 +31,41 @@ export const trainerConfig: LayoutConfig = {
     {
       title: null,
       links: [
-        { icon: Home, label: 'Home', path: '/trainer' },
-        { icon: Compass, label: 'Discover', path: '/trainer/discovery' },
-        { icon: GraduationCap, label: 'Experts', path: '/trainer/experts' },
+        { icon: Home, label: 'home', path: '/trainer' },
+        { icon: Compass, label: 'discover', path: '/trainer/discovery' },
+        { icon: GraduationCap, label: 'experts', path: '/trainer/experts' },
       ]
     },
     {
-      title: 'Training',
+      title: 'training',
       links: [
-        { icon: BarChart3, label: 'Dashboard', path: '/trainer/dashboard' },
-        { icon: Layers, label: 'My Programs', path: '/trainer/programs' },
-        { icon: Users, label: 'Students', path: '/trainer/students' },
-        { icon: Radio, label: 'Live Workouts', path: '/trainer/live' },
-        { icon: Calendar, label: 'Schedule', path: '/trainer/schedule' },
+        { icon: BarChart3, label: 'dashboard', path: '/trainer/dashboard' },
+        { icon: Layers, label: 'myPrograms', path: '/trainer/programs' },
+        { icon: Users, label: 'students', path: '/trainer/students' },
+        { icon: Radio, label: 'liveWorkouts', path: '/trainer/live' },
+        { icon: Calendar, label: 'schedule', path: '/trainer/schedule' },
       ]
     },
     {
-      title: 'Compete',
+      title: 'compete',
       links: [
-        { icon: Target, label: 'Challenges', path: '/trainer/challenges' },
-        { icon: Trophy, label: 'Leaderboards', path: '/trainer/leaderboards' },
-        { icon: Award, label: 'Achievements', path: '/trainer/achievements' },
+        { icon: Target, label: 'challenges', path: '/trainer/challenges' },
+        { icon: Trophy, label: 'leaderboards', path: '/trainer/leaderboards' },
+        { icon: Award, label: 'achievements', path: '/trainer/achievements' },
       ]
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Friends', path: '/trainer/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/trainer/messages' },
-    { icon: User, label: 'My Profile', path: '/trainer/profile' },
-    { icon: Settings, label: 'Settings', path: '/trainer/settings' },
+    { icon: Users, label: 'friends', path: '/trainer/friends' },
+    { icon: MessageCircle, label: 'messages', path: '/trainer/messages' },
+    { icon: User, label: 'myProfile', path: '/trainer/profile' },
+    { icon: Settings, label: 'settings', path: '/trainer/settings' },
   ]
 }
 
 /**
  * Navigation configuration for users.
+ * Labels use i18n keys from the 'nav' namespace.
  */
 export const userConfig: LayoutConfig = {
   role: 'user',
@@ -74,39 +76,40 @@ export const userConfig: LayoutConfig = {
     {
       title: null,
       links: [
-        { icon: Home, label: 'Home', path: '/user' },
-        { icon: Compass, label: 'Discover', path: '/user/discovery' },
-        { icon: GraduationCap, label: 'Experts', path: '/user/experts' },
+        { icon: Home, label: 'home', path: '/user' },
+        { icon: Compass, label: 'discover', path: '/user/discovery' },
+        { icon: GraduationCap, label: 'experts', path: '/user/experts' },
       ]
     },
     {
-      title: 'Training',
+      title: 'training',
       links: [
-        { icon: Layers, label: 'Programs', path: '/user/programs' },
-        { icon: BookOpen, label: 'My Journey', path: '/user/journey' },
-        { icon: Radio, label: 'Live Workouts', path: '/user/live' },
-        { icon: Calendar, label: 'Schedule', path: '/user/schedule' },
+        { icon: Layers, label: 'programs', path: '/user/programs' },
+        { icon: BookOpen, label: 'myJourney', path: '/user/journey' },
+        { icon: Radio, label: 'liveWorkouts', path: '/user/live' },
+        { icon: Calendar, label: 'schedule', path: '/user/schedule' },
       ]
     },
     {
-      title: 'Compete',
+      title: 'compete',
       links: [
-        { icon: Target, label: 'Challenges', path: '/user/challenges' },
-        { icon: Trophy, label: 'Leaderboards', path: '/user/leaderboards' },
-        { icon: Award, label: 'Achievements', path: '/user/achievements' },
+        { icon: Target, label: 'challenges', path: '/user/challenges' },
+        { icon: Trophy, label: 'leaderboards', path: '/user/leaderboards' },
+        { icon: Award, label: 'achievements', path: '/user/achievements' },
       ]
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Friends', path: '/user/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/user/messages' },
-    { icon: User, label: 'Profile', path: '/user/profile' },
-    { icon: Settings, label: 'Settings', path: '/user/settings' },
+    { icon: Users, label: 'friends', path: '/user/friends' },
+    { icon: MessageCircle, label: 'messages', path: '/user/messages' },
+    { icon: User, label: 'profile', path: '/user/profile' },
+    { icon: Settings, label: 'settings', path: '/user/settings' },
   ]
 }
 
 /**
  * Navigation configuration for nutritionists.
+ * Labels use i18n keys from the 'nav' namespace.
  */
 export const nutritionistConfig: LayoutConfig = {
   role: 'nutritionist',
@@ -117,35 +120,35 @@ export const nutritionistConfig: LayoutConfig = {
     {
       title: null,
       links: [
-        { icon: Home, label: 'Home', path: '/nutritionist' },
-        { icon: Compass, label: 'Discover', path: '/nutritionist/discovery' },
-        { icon: GraduationCap, label: 'Experts', path: '/nutritionist/experts' },
+        { icon: Home, label: 'home', path: '/nutritionist' },
+        { icon: Compass, label: 'discover', path: '/nutritionist/discovery' },
+        { icon: GraduationCap, label: 'experts', path: '/nutritionist/experts' },
       ]
     },
     {
-      title: 'Nutrition',
+      title: 'nutritionSection',
       links: [
-        { icon: BarChart3, label: 'Dashboard', path: '/nutritionist/dashboard' },
-        { icon: Apple, label: 'Meal Programs', path: '/nutritionist/programs' },
-        { icon: Users, label: 'Students', path: '/nutritionist/clients' },
-        { icon: Radio, label: 'Live', path: '/nutritionist/live' },
-        { icon: Calendar, label: 'Schedule', path: '/nutritionist/schedule' },
+        { icon: BarChart3, label: 'dashboard', path: '/nutritionist/dashboard' },
+        { icon: Apple, label: 'mealPrograms', path: '/nutritionist/programs' },
+        { icon: Users, label: 'students', path: '/nutritionist/clients' },
+        { icon: Radio, label: 'live', path: '/nutritionist/live' },
+        { icon: Calendar, label: 'schedule', path: '/nutritionist/schedule' },
       ]
     },
     {
-      title: 'Compete',
+      title: 'compete',
       links: [
-        { icon: Target, label: 'Challenges', path: '/nutritionist/challenges' },
-        { icon: Trophy, label: 'Leaderboards', path: '/nutritionist/leaderboards' },
-        { icon: Award, label: 'Achievements', path: '/nutritionist/achievements' },
+        { icon: Target, label: 'challenges', path: '/nutritionist/challenges' },
+        { icon: Trophy, label: 'leaderboards', path: '/nutritionist/leaderboards' },
+        { icon: Award, label: 'achievements', path: '/nutritionist/achievements' },
       ]
     }
   ],
   topNavItems: [
-    { icon: Users, label: 'Friends', path: '/nutritionist/friends' },
-    { icon: MessageCircle, label: 'Messages', path: '/nutritionist/messages' },
-    { icon: User, label: 'My Profile', path: '/nutritionist/profile' },
-    { icon: Settings, label: 'Settings', path: '/nutritionist/settings' },
+    { icon: Users, label: 'friends', path: '/nutritionist/friends' },
+    { icon: MessageCircle, label: 'messages', path: '/nutritionist/messages' },
+    { icon: User, label: 'myProfile', path: '/nutritionist/profile' },
+    { icon: Settings, label: 'settings', path: '/nutritionist/settings' },
   ]
 }
 

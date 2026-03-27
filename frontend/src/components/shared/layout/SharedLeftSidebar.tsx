@@ -1,7 +1,9 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { NavSection } from './types'
+import { startNavigation } from '@/components/ui/RouteProgressBar'
 
 interface SharedLeftSidebarProps {
   sections: NavSection[]
@@ -22,6 +24,7 @@ const colorMap = {
 export function SharedLeftSidebar({ sections, className, accentColor = 'orange' }: SharedLeftSidebarProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const t = useTranslations('nav')
 
   const isActivePath = (path: string) => pathname === path
 
@@ -37,7 +40,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
               {section.title && (
                 <div className="px-3 pt-4 pb-2">
                   <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest">
-                    {section.title}
+                    {t(section.title as any)}
                   </p>
                 </div>
               )}
@@ -47,7 +50,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
                 return (
                   <button
                     key={`${link.path}-${linkIndex}`}
-                    onClick={() => router.push(link.path)}
+                    onClick={() => { if (!isActivePath(link.path)) startNavigation(); router.push(link.path) }}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
                       isActive
                         ? `bg-gradient-to-r ${colors.activeBg} border-l-2 ${colors.activeBorder}`
@@ -65,7 +68,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
                     <span className={`text-[13px] font-medium ${
                       isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
                     }`}>
-                      {link.label}
+                      {t(link.label as any)}
                     </span>
                     {link.badge !== undefined && link.badge > 0 && (
                       <span className={`ml-auto px-1.5 py-0.5 text-[10px] font-bold ${colors.badge} text-white rounded-full min-w-[20px] text-center`}>
