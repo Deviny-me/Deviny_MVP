@@ -89,7 +89,7 @@ export function TopNav() {
               onClick={() => { if (pathname !== '/nutritionist') startNavigation(); router.push('/nutritionist') }}
               className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
+              <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={90} height={30} className="h-7 w-auto" />
             </button>
 
             {/* Search */}
@@ -106,7 +106,7 @@ export function TopNav() {
                   onClick={() => { if (!isActive(item.path)) startNavigation(); router.push(item.path) }}
                   className={`relative flex flex-col items-center justify-center px-5 py-2 rounded-lg transition-all ${
                     isActive(item.path)
-                      ? 'text-[#28bf68] bg-[#28bf68]/[0.08]'
+                      ? 'text-[#28bf68] bg-[#28bf68]/[0.12] dark:bg-[#28bf68]/[0.08]'
                       : hasUnread
                       ? 'text-[#1c9e52] hover:text-[#1c9e52]'
                       : 'text-faint-foreground hover:text-muted-foreground hover:bg-hover-overlay'
@@ -120,7 +120,7 @@ export function TopNav() {
                   )}
                   {item.badge !== undefined && item.badge > 0 && (
                     <div className="absolute -top-0.5 right-2 min-w-[18px] h-[18px] bg-[#28bf68] rounded-full flex items-center justify-center px-1">
-                      <span className="text-[10px] font-bold text-foreground">{item.badge}</span>
+                      <span className="text-[10px] font-bold text-white">{item.badge}</span>
                     </div>
                   )}
                 </button>
@@ -154,11 +154,11 @@ export function TopNav() {
                   <img
                     src={getMediaUrl(profile.trainer.avatarUrl) || ''}
                     alt={profile.trainer.fullName}
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-[#28bf68]/20"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-[#28bf68]/30"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center ring-2 ring-[#28bf68]/20">
-                    <span className="text-foreground text-sm font-bold">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center ring-2 ring-[#28bf68]/30">
+                    <span className="text-white text-sm font-bold">
                       {profile?.trainer?.initials || 'N'}
                     </span>
                   </div>
@@ -178,18 +178,18 @@ export function TopNav() {
                     className="fixed inset-0 z-40" 
                     onClick={() => setShowProfileMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl overflow-hidden z-50 animate-slide-down" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
                     <div className="p-4 border-b border-border-subtle">
                       <div className="flex items-center gap-3">
                         {profile?.trainer?.avatarUrl ? (
                           <img
                             src={getMediaUrl(profile.trainer.avatarUrl) || ''}
                             alt={profile.trainer.fullName}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-[#28bf68]/20"
+                            className="w-12 h-12 rounded-full object-cover ring-2 ring-[#28bf68]/30"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center ring-2 ring-[#28bf68]/20">
-                            <span className="text-foreground text-lg font-bold">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#28bf68] to-[#1c9e52] flex items-center justify-center ring-2 ring-[#28bf68]/30">
+                            <span className="text-white text-lg font-bold">
                               {profile?.trainer?.initials || 'N'}
                             </span>
                           </div>
@@ -201,7 +201,7 @@ export function TopNav() {
                       </div>
                       {/* Level Display */}
                       {level && (
-                        <div className="mt-3 p-3 bg-gradient-to-r from-[#28bf68]/[0.06] to-[#1c9e52]/[0.06] border border-[#28bf68]/10 rounded-lg">
+                        <div className="mt-3 p-3 bg-gradient-to-r from-[#28bf68]/[0.1] to-[#1c9e52]/[0.1] dark:from-[#28bf68]/[0.06] dark:to-[#1c9e52]/[0.06] border border-[#28bf68]/15 dark:border-[#28bf68]/10 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-semibold text-foreground">Level {level.currentLevel}</span>
                             <span className="text-[11px] text-faint-foreground">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>

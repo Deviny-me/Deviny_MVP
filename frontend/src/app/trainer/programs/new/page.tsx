@@ -639,7 +639,7 @@ export default function TrainerProgramFormPage() {
             <button
               type="submit"
               disabled={saving}
-              className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+              className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
             >
               {saving && <Loader2 className="w-5 h-5 animate-spin" />}
               {isEditing ? t('saveChanges') : t('createProgram')}

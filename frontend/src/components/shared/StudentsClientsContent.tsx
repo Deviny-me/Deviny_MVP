@@ -182,7 +182,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold`}>
+                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
                       {getInitials(student.name)}
                     </div>
                   )}
@@ -216,7 +216,7 @@ export function StudentsClientsContent({ fetchData }: StudentsClientsContentProp
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => router.push(`${basePath}/messages?userId=${student.id}`)}
-                  className={`flex-1 py-2 bg-gradient-to-r ${accent.gradient} text-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
+                  className={`flex-1 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
                 >
                   <MessageCircle className="w-4 h-4" />
                   {t('write')}

@@ -152,7 +152,7 @@ export default function NutritionistProgramsPage() {
           </div>
           <button 
             onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
-            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
             {t('createProgram')}
@@ -238,7 +238,7 @@ export default function NutritionistProgramsPage() {
             </p>
             <button 
               onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
-              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90`}
+              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
             >
               {t('createProgram')}
             </button>

@@ -158,7 +158,7 @@ export function PostComments({
                   />
                 ) : (
                   <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAccentColorsByRole(comment.author.role).gradient} flex items-center justify-center flex-shrink-0`}>
-                    <span className="text-[10px] font-bold text-foreground">
+                    <span className="text-[10px] font-bold text-white">
                       {getInitials(comment.author.firstName, comment.author.lastName)}
                     </span>
                   </div>

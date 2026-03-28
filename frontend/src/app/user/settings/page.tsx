@@ -120,7 +120,7 @@ export default function SettingsPage() {
         <div className="bg-surface-3 rounded-xl border border-border p-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
-              <span className="text-foreground text-2xl font-bold">
+              <span className="text-white text-2xl font-bold">
                 {user?.fullName?.charAt(0) || tc('user').charAt(0)}
               </span>
             </div>
@@ -178,12 +178,6 @@ export default function SettingsPage() {
           <LogOut className="w-5 h-5" />
           <span className="font-semibold">{t('signOut')}</span>
         </button>
-
-        {/* Footer */}
-        <div className="text-center text-xs text-faint-foreground">
-          <p>{t('version')}</p>
-          <p className="mt-1">{t('copyright')}</p>
-        </div>
       </div>
     </>
   )

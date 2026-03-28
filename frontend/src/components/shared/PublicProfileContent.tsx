@@ -753,11 +753,11 @@ export function PublicProfileContent({
                 <img
                   src={authorAvatar}
                   alt={authorName}
-                  className={`w-32 h-32 rounded-2xl object-cover border-4 border-[#1A1A1A] shadow-xl ${getRoleRingClass(profileData?.role)}`}
+                  className={`w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ${getRoleRingClass(profileData?.role)}`}
                 />
               ) : (
-                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-[#1A1A1A] shadow-xl`}>
-                  <span className="text-foreground text-4xl font-bold">{authorInitials}</span>
+                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
+                  <span className="text-white text-4xl font-bold">{authorInitials}</span>
                 </div>
               )}
             </div>
@@ -1010,7 +1010,7 @@ export function PublicProfileContent({
                 {profileData.expertProfile.certificates.map((cert) => (
                   <div key={cert.id} className="flex items-start gap-3 p-3 bg-background rounded-lg hover:bg-hover-overlay transition-colors">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center flex-shrink-0`}>
-                      <Award className="w-5 h-5 text-foreground" />
+                      <Award className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
                       <h3 className="text-sm font-medium text-foreground">{cert.title}</h3>

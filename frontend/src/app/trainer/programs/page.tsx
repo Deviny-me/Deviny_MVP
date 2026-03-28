@@ -263,7 +263,7 @@ export default function ProgramsPage() {
           </div>
           <button 
             onClick={() => router.push(`/trainer/programs/new?category=${activeTab}`)}
-            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
             {t('createProgram')}
@@ -276,7 +276,7 @@ export default function ProgramsPage() {
               onClick={() => setActiveTab('Training')}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'Training'
-                  ? `bg-gradient-to-r ${accent.gradient} text-foreground shadow-lg`
+                  ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -292,7 +292,7 @@ export default function ProgramsPage() {
             onClick={() => setActiveTab('Diet')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'Diet'
-                ? `bg-gradient-to-r ${accent.gradient} text-foreground shadow-lg`
+                ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -308,7 +308,7 @@ export default function ProgramsPage() {
             onClick={() => setActiveTab('Consultation')}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'Consultation'
-                ? `bg-gradient-to-r ${accent.gradient} text-foreground shadow-lg`
+                ? `bg-gradient-to-r ${accent.gradient} text-white shadow-lg`
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -426,7 +426,7 @@ export default function ProgramsPage() {
             </p>
             <button 
               onClick={() => router.push(`/trainer/programs/new?category=${activeTab}`)}
-              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90`}
+              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
             >
               {t('createProgram')}
             </button>

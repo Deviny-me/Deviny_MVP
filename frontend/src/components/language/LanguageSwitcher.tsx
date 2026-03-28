@@ -69,7 +69,8 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 py-1 z-[9999] min-w-[160px] animate-slide-down"
+          className="fixed bg-surface-2 border border-border rounded-xl py-1 z-[9999] min-w-[160px] animate-slide-down"
+          style={{ boxShadow: 'var(--dropdown-shadow)' }}
           style={{ top: dropdownPos.top, right: dropdownPos.right }}
         >
           {LANGUAGES.map((lang) => (

@@ -161,12 +161,12 @@ export function StoriesBar() {
                       className="w-16 h-16 rounded-full object-cover border-2 border-[#141414]"
                     />
                     <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center border-2 border-[#141414]">
-                      <Plus className="w-3 h-3 text-foreground" strokeWidth={3} />
+                      <Plus className="w-3 h-3 text-white" strokeWidth={3} />
                     </div>
                   </div>
                 )}
                 {story.hasStory && story.userLevel > 0 && (
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-foreground border-2 border-[#141414]">
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-white border-2 border-[#141414]">
                     {story.userLevel}
                   </div>
                 )}

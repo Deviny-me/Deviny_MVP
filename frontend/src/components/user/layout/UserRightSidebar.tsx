@@ -108,7 +108,7 @@ function ProgramDetailModal({
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
-                <span className="text-foreground font-bold">
+                <span className="text-white font-bold">
                   {program.trainerName.charAt(0)}
                 </span>
               </div>
@@ -143,7 +143,7 @@ function ProgramDetailModal({
           {/* Purchase Buttons */}
           <div className="space-y-2">
             <button
-              className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               onClick={() => {
                 // TODO: Implement purchase flow
                 alert(tp('purchaseComingSoon'))
@@ -154,7 +154,7 @@ function ProgramDetailModal({
             </button>
             {program.proPrice != null && (
               <button
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                className="w-full py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 onClick={() => {
                   // TODO: Implement purchase flow
                   alert(tp('purchaseComingSoon'))

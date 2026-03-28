@@ -274,7 +274,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(friend.role)}`}
                         />
                       ) : (
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold text-lg`}>
+                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold text-lg`}>
                           {friend.fullName?.[0] || friend.email[0].toUpperCase()}
                         </div>
                       )}
@@ -340,7 +340,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.senderRole)}`}
                           />
                         ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold`}>
+                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
                             {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
                           </div>
                         )}
@@ -355,7 +355,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
                             disabled={actionLoading === `accept-${request.id}`}
-                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-foreground rounded-lg transition-all flex items-center gap-2 disabled:opacity-50`}
+                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg transition-all flex items-center gap-2 disabled:opacity-50`}
                           >
                             {actionLoading === `accept-${request.id}` ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -411,7 +411,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.receiverRole)}`}
                           />
                         ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold`}>
+                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
                             {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
                           </div>
                         )}
@@ -470,7 +470,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(trainer.role)}`}
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-foreground font-bold text-lg">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
                           {trainer.fullName?.[0] || trainer.email[0].toUpperCase()}
                         </div>
                       )}

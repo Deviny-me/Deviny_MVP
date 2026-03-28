@@ -177,7 +177,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
 
       {/* Dropdown */}
       {isOpen && (hasResults || noResults) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-[60] max-h-[400px] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface-2 border border-border rounded-xl overflow-hidden z-[60] max-h-[400px] overflow-y-auto" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
           {noResults && (
             <div className="px-4 py-6 text-center text-faint-foreground text-sm">
               {tSearch('noResults', { query: query.trim() })}
@@ -187,7 +187,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Users section */}
           {results && results.users.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider" style={{ background: 'var(--section-header-bg)' }}>
                 <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('users')}
               </div>
@@ -205,7 +205,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                     />
                   ) : (
                     <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAccentColorsByRole(item.role).gradient} flex items-center justify-center flex-shrink-0`}>
-                      <span className="text-xs font-bold text-foreground">
+                      <span className="text-xs font-bold text-white">
                         {item.fullName.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -224,7 +224,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Workout Programs section */}
           {results && results.workoutPrograms.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider" style={{ background: 'var(--section-header-bg)' }}>
                 <Dumbbell className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('trainingPrograms')}
               </div>
@@ -259,7 +259,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Meal Programs section */}
           {results && results.mealPrograms.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider" style={{ background: 'var(--section-header-bg)' }}>
                 <UtensilsCrossed className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('nutritionPrograms')}
               </div>

@@ -77,7 +77,7 @@ function AchievementToast({
       <div className="p-4 flex items-start gap-3">
         {/* Icon */}
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="w-6 h-6 text-foreground" />
+          <Icon className="w-6 h-6 text-white" />
         </div>
 
         {/* Text */}

@@ -6,6 +6,7 @@ import { ReactNode } from 'react'
 import { startNavigation } from '@/components/ui/RouteProgressBar'
 import { TopNavItem, UserRole } from './types'
 import { SearchBar } from '@/components/search/SearchBar'
+import { useTheme } from '@/components/theme/ThemeProvider'
 
 const topNavColorMap = {
   green:  { logoBg: 'from-[#28bf68] to-[#1c9e52]', activeText: 'text-[#28bf68]', unreadText: 'text-[#1c9e52] hover:text-[#1c9e52]', indicator: 'bg-[#28bf68]', badge: 'bg-[#1c9e52]' },
@@ -42,6 +43,7 @@ export function SharedTopNav({
 }: SharedTopNavProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const { theme } = useTheme()
   const tc = topNavColorMap[accentColor]
 
   const isActive = (path: string) => pathname === path
@@ -63,7 +65,7 @@ export function SharedTopNav({
               onClick={() => { if (pathname !== basePath) startNavigation(); router.push(basePath) }}
               className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
+              <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={90} height={30} className="h-7 w-auto" />
               {logoText && (
                 <span className="text-sm font-bold text-foreground hidden sm:block tracking-tight">{logoText}</span>
               )}

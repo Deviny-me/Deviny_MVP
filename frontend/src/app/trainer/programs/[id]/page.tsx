@@ -190,7 +190,7 @@ export default function TrainerProgramDetailPage({
           <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/trainer/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -377,7 +377,7 @@ export default function TrainerProgramDetailPage({
               onClick={() =>
                 router.push(`/trainer/programs/new?edit=${program.id}&category=${program.category}`)
               }
-              className={`flex-1 py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
+              className={`flex-1 py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2`}
             >
               <Edit className="w-5 h-5" />
               {tc('edit')}

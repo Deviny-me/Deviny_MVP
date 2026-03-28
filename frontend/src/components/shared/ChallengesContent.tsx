@@ -64,7 +64,7 @@ export default function ChallengesContent() {
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
+      <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1A1A1A] dark:to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">{t('title')}</h1>
@@ -123,7 +123,7 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 ${isCompleted ? '' : 'opacity-70'}`}>
-          <IconCmp className="w-7 h-7 text-foreground" />
+          <IconCmp className="w-7 h-7 text-white" />
         </div>
 
         {/* Content */}

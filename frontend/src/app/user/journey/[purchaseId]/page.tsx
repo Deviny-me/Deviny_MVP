@@ -147,7 +147,7 @@ export default function ProgramDetailPage({
           <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/journey')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -360,7 +360,7 @@ export default function ProgramDetailPage({
                 <button
                   onClick={handleSubmitReview}
                   disabled={reviewRating === 0 || submittingReview}
-                  className="px-4 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
                 >
                   {submittingReview ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

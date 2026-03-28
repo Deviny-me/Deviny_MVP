@@ -181,7 +181,7 @@ export function PostCard({
           ) : (
             <>
               {/* Post Header */}
-              <div className="p-3.5 hover:bg-white/[0.02] transition-colors">
+              <div className="p-3.5 hover:bg-hover-overlay transition-colors">
                 <div className="flex items-center gap-2">
                   <div
                     className="flex items-center gap-2 flex-1 cursor-pointer"
@@ -195,7 +195,7 @@ export function PostCard({
                       />
                     ) : (
                       <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${authorAccent.gradient} flex items-center justify-center`}>
-                        <span className="text-foreground text-xs font-bold">{authorInitials}</span>
+                        <span className="text-white text-xs font-bold">{authorInitials}</span>
                       </div>
                     )}
                     <div className="flex-1">

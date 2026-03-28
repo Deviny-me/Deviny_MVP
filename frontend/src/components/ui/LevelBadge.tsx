@@ -29,7 +29,7 @@ export function LevelBadge({ className = '', showTitle = true }: LevelBadgeProps
       {/* Level Circle */}
       <div className="relative">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-          <span className="text-foreground font-bold text-sm">{level.currentLevel}</span>
+          <span className="text-white font-bold text-sm">{level.currentLevel}</span>
         </div>
         <Trophy className="absolute -top-1 -right-1 w-4 h-4 text-amber-500" />
       </div>

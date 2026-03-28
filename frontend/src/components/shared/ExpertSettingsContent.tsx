@@ -123,9 +123,6 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
         <LogOut className="w-5 h-5" />
         <span className="font-medium">{tc('logout')}</span>
       </motion.button>
-
-      {/* Version */}
-      <p className="text-center text-xs text-faint-foreground">Deviny v1.0.0</p>
     </div>
   )
 }

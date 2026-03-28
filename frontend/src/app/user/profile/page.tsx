@@ -592,17 +592,17 @@ export default function UserProfilePage() {
             <div className="relative z-10">
               {/* Level badge above avatar */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-2.5 py-0.5 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full border border-white/20 shadow-lg shadow-[#0c8de6]/20">
-                <span className="text-[11px] font-bold text-foreground whitespace-nowrap">Lv. {currentLevel}</span>
+                <span className="text-[11px] font-bold text-white whitespace-nowrap">Lv. {currentLevel}</span>
               </div>
               {user?.avatarUrl ? (
                 <img
                   src={getMediaUrl(user.avatarUrl) || ''}
                   alt={user?.fullName || 'User'}
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-[#1A1A1A] shadow-xl"
+                  className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl"
                 />
               ) : (
-                <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-[#1A1A1A] shadow-xl">
-                  <span className="text-foreground text-4xl font-bold">
+                <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl">
+                  <span className="text-white text-4xl font-bold">
                     {user?.fullName?.charAt(0) || 'U'}
                   </span>
                 </div>
@@ -686,7 +686,7 @@ export default function UserProfilePage() {
               </Link>
             </div>
 
-            <div className="mt-6 w-full bg-white/[0.02] rounded-xl border border-border-subtle p-5">
+            <div className="mt-6 w-full bg-surface-1 dark:bg-white/[0.02] rounded-xl border border-border-subtle p-5">
               <div className="flex items-center justify-between gap-3 mb-3">
                 <h3 className="text-sm font-semibold text-muted-foreground">{tp('aboutMe')}</h3>
                 {!isEditingProfileInfo ? (
@@ -772,7 +772,7 @@ export default function UserProfilePage() {
                       type="button"
                       onClick={handleSaveProfileInfo}
                       disabled={savingProfileInfo}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
                     >
                       {savingProfileInfo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       {tc('save')}

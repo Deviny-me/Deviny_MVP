@@ -123,7 +123,7 @@ export default function MyJourneyPage() {
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <button 
               onClick={loadPurchases}
-              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {tc('tryAgain')}
             </button>
@@ -226,7 +226,7 @@ export default function MyJourneyPage() {
             <p className="text-sm text-muted-foreground mb-4">{t('startJourney')}</p>
             <button
               onClick={() => router.push('/user/programs')}
-              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {t('browsePrograms')}
             </button>

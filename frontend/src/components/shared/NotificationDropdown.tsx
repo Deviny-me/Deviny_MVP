@@ -164,7 +164,7 @@ export function NotificationDropdown() {
         <Bell className="w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
         {unreadCount > 0 && (
           <div className={`absolute top-0.5 right-0.5 min-w-[18px] h-[18px] px-1 ${accent.badge} rounded-full flex items-center justify-center`}>
-            <span className="text-[10px] font-bold text-foreground leading-none">
+            <span className="text-[10px] font-bold text-white leading-none">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           </div>
@@ -173,7 +173,7 @@ export function NotificationDropdown() {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
+        <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-surface-2 border border-border rounded-xl overflow-hidden z-50 animate-slide-down" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <h3 className="text-sm font-semibold text-foreground">{t('title')}</h3>
@@ -208,8 +208,9 @@ export function NotificationDropdown() {
                     className={`flex items-start gap-3 px-4 py-3 border-b border-border-subtle transition-colors cursor-pointer ${
                       notification.isRead
                         ? 'bg-transparent opacity-60'
-                        : 'bg-white/[0.02] hover:bg-hover-overlay'
+                        : 'hover:bg-hover-overlay'
                     }`}
+                    style={!notification.isRead ? { background: 'var(--unread-bg)' } : undefined}
                   >
                     {/* Icon */}
                     <div className="mt-0.5 p-1.5 rounded-lg bg-border-subtle flex-shrink-0">

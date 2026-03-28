@@ -53,7 +53,7 @@ export default function AchievementsContent() {
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
+      <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1A1A1A] dark:to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">{t('title')}</h1>
@@ -169,7 +169,7 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
             <>
               <div className={`absolute inset-0 bg-gradient-to-br ${gradient} rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity`} />
               <div className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg`}>
-                <Icon className="w-8 h-8 text-foreground" />
+                <Icon className="w-8 h-8 text-white" />
               </div>
             </>
           ) : (

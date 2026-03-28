@@ -63,7 +63,7 @@ export function UserTopNav() {
               onClick={() => { if (pathname !== '/user') startNavigation(); router.push('/user') }}
               className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
+              <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={90} height={30} className="h-7 w-auto" />
             </button>
 
             {/* Search */}
@@ -80,7 +80,7 @@ export function UserTopNav() {
                   onClick={() => { if (!isActive(item.path)) startNavigation(); router.push(item.path) }}
                   className={`relative flex flex-col items-center justify-center px-5 py-2 rounded-lg transition-all ${
                     isActive(item.path)
-                      ? 'text-[#0c8de6] bg-[#0c8de6]/[0.08]'
+                      ? 'text-[#0c8de6] bg-[#0c8de6]/[0.12] dark:bg-[#0c8de6]/[0.08]'
                       : hasUnread
                       ? 'text-[#0070c4] hover:text-[#0070c4]'
                       : 'text-faint-foreground hover:text-muted-foreground hover:bg-hover-overlay'
@@ -94,7 +94,7 @@ export function UserTopNav() {
                   )}
                   {item.badge !== undefined && item.badge > 0 && (
                     <div className="absolute -top-0.5 right-2 min-w-[18px] h-[18px] bg-[#0c8de6] rounded-full flex items-center justify-center px-1">
-                      <span className="text-[10px] font-bold text-foreground">{item.badge}</span>
+                      <span className="text-[10px] font-bold text-white">{item.badge}</span>
                     </div>
                   )}
                 </button>
@@ -124,8 +124,8 @@ export function UserTopNav() {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-hover-overlay transition-all"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/20">
-                  <span className="text-foreground text-sm font-bold">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/30">
+                  <span className="text-white text-sm font-bold">
                     {user?.fullName?.charAt(0) || 'U'}
                   </span>
                 </div>
@@ -144,11 +144,11 @@ export function UserTopNav() {
                     className="fixed inset-0 z-40" 
                     onClick={() => setShowProfileMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl overflow-hidden z-50 animate-slide-down" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
                     <div className="p-4 border-b border-border-subtle">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/20">
-                          <span className="text-foreground text-lg font-bold">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/30">
+                          <span className="text-white text-lg font-bold">
                             {user?.fullName?.charAt(0) || 'U'}
                           </span>
                         </div>
@@ -159,7 +159,7 @@ export function UserTopNav() {
                       </div>
                       {/* Level Display */}
                       {level && (
-                        <div className="mt-3 p-3 bg-gradient-to-r from-[#0c8de6]/[0.06] to-[#0070c4]/[0.06] border border-[#0c8de6]/10 rounded-lg">
+                        <div className="mt-3 p-3 bg-gradient-to-r from-[#0c8de6]/[0.1] to-[#0070c4]/[0.1] dark:from-[#0c8de6]/[0.06] dark:to-[#0070c4]/[0.06] border border-[#0c8de6]/15 dark:border-[#0c8de6]/10 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-semibold text-foreground">Level {level.currentLevel}</span>
                             <span className="text-[11px] text-faint-foreground">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>

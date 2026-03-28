@@ -325,7 +325,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
         {!readOnly && (
           <button
             onClick={openCreateModal}
-            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
             {t('addEvent')}
@@ -369,7 +369,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 onClick={() => setSelectedDate(date)}
                 className={`p-3 rounded-xl text-center transition-all relative ${
                   isSelected
-                    ? `bg-gradient-to-br ${accent.gradient} text-foreground`
+                    ? `bg-gradient-to-br ${accent.gradient} text-white`
                     : isToday
                     ? `${accent.bgMuted20} text-foreground border ${accent.borderMuted50}`
                     : 'bg-background text-muted-foreground hover:bg-hover-overlay'
@@ -407,7 +407,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
             {!readOnly && (
               <button
                 onClick={openCreateModal}
-                className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90`}
+                className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
               >
                 {t('addEvent')}
               </button>
@@ -564,7 +564,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                         onClick={() => setEventType(type.value)}
                         className={`px-4 py-2 rounded-lg font-medium transition-all ${
                           eventType === type.value
-                            ? `bg-gradient-to-r ${accent.gradient} text-foreground`
+                            ? `bg-gradient-to-r ${accent.gradient} text-white`
                             : 'bg-white/5 text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -659,7 +659,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 <button
                   type="submit"
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {editingEvent ? t('saveChanges') : t('createEvent')}
@@ -756,7 +756,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 {detailEvent.comment && (
                   <div className="bg-background rounded-lg p-4 border border-border-subtle">
                     <p className="text-sm text-muted-foreground mb-1">{t('comment')}</p>
-                    <p className="text-gray-200">{detailEvent.comment}</p>
+                    <p className="text-foreground">{detailEvent.comment}</p>
                   </div>
                 )}
 
@@ -778,7 +778,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                   {detailEvent.type === 'Online' && (
                     <button
                       onClick={() => { handleStartCall(detailEvent.id); setDetailEvent(null); }}
-                      className={`flex-1 py-2.5 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2`}
+                      className={`flex-1 py-2.5 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2`}
                     >
                       <Video className="w-4 h-4" />
                       {t('startCall')}

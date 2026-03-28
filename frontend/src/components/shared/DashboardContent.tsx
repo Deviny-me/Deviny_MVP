@@ -286,7 +286,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
                 {stats.programStats.map((program) => {
                   const Icon = CATEGORY_ICONS[program.category] || Layers
                   return (
-                    <tr key={program.programId} className="border-b border-border-subtle hover:bg-white/[0.02]">
+                    <tr key={program.programId} className="border-b border-border-subtle hover:bg-hover-overlay">
                       <td className="py-3 px-2">
                         <span className="text-foreground font-medium">{program.title}</span>
                       </td>
@@ -334,7 +334,7 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
             {stats.recentStudents.map((student) => (
               <div
                 key={student.id}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/[0.02] transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-hover-overlay transition-colors"
               >
                 {student.avatarUrl ? (
                   <img

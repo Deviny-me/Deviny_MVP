@@ -801,11 +801,11 @@ export default function NutritionistProfilePage() {
                 <img
                   src={getMediaUrl(trainer.avatarUrl) || ''}
                   alt={trainer.fullName}
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-[#1A1A1A] shadow-xl"
+                  className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl"
                 />
               ) : (
-                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-[#1A1A1A] shadow-xl`}>
-                  <span className="text-foreground text-4xl font-bold">
+                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
+                  <span className="text-white text-4xl font-bold">
                     {trainer.initials}
                   </span>
                 </div>
@@ -1343,7 +1343,7 @@ export default function NutritionistProfilePage() {
                 <button
                   onClick={handleSaveAbout}
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1416,7 +1416,7 @@ export default function NutritionistProfilePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                     {tc('add')}
@@ -1481,7 +1481,7 @@ export default function NutritionistProfilePage() {
                   <button
                     type="submit"
                     disabled={saving || !specName}
-                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                    className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                   >
                     {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                     {tc('add')}
@@ -1554,7 +1554,7 @@ export default function NutritionistProfilePage() {
                     <button
                       onClick={handleSaveProfile}
                       disabled={saving}
-                      className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                      className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                     >
                       {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                       {tc('save')}
@@ -1636,7 +1636,7 @@ export default function NutritionistProfilePage() {
                 <button
                   onClick={handleSaveLocation}
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1671,7 +1671,7 @@ export default function NutritionistProfilePage() {
                 <button
                   onClick={handleSavePhone}
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1707,7 +1707,7 @@ export default function NutritionistProfilePage() {
                 <button
                   onClick={handleSaveExperience}
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}
@@ -1745,7 +1745,7 @@ export default function NutritionistProfilePage() {
                 <button
                   onClick={handleSaveGender}
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
                   {tc('save')}

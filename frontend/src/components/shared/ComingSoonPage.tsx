@@ -51,7 +51,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${accent.gradient} rounded-full blur-2xl opacity-30 animate-pulse`} />
           <div className={`relative w-full h-full bg-gradient-to-br ${accent.gradient} rounded-full flex items-center justify-center`}>
-            <MainIcon className="w-16 h-16 text-foreground" />
+            <MainIcon className="w-16 h-16 text-white" />
           </div>
           <motion.div
             className="absolute -top-2 -right-2 w-10 h-10 bg-surface-2 border border-border-subtle rounded-full flex items-center justify-center"
@@ -117,7 +117,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
 
         {/* Notify button */}
         <motion.button
-          className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${accent.gradient} text-foreground font-medium rounded-xl hover:opacity-90 transition-opacity`}
+          className={`inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${accent.gradient} text-white font-medium rounded-xl hover:opacity-90 transition-opacity`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}

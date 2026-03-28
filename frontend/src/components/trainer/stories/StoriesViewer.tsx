@@ -125,7 +125,7 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                     alt={story.userName}
                     className="w-10 h-10 rounded-full object-cover border-2 border-white"
                   />
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-foreground border-2 border-black">
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-white border-2 border-black">
                     {story.userLevel}
                   </div>
                 </div>
@@ -188,7 +188,7 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center">
-                        <Flame className="w-5 h-5 text-foreground" />
+                        <Flame className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <p className="text-xs text-foreground/70">Completed Workout</p>
@@ -222,7 +222,7 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                 <Heart className="w-5 h-5 text-foreground" />
               </button>
               <button className="p-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] rounded-full hover:opacity-90 transition-opacity">
-                <Send className="w-5 h-5 text-foreground" />
+                <Send className="w-5 h-5 text-white" />
               </button>
             </div>
           </div>

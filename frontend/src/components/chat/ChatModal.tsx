@@ -208,7 +208,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               />
             ) : (
               <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${peerAccent.gradient} flex items-center justify-center`}>
-                <span className="text-foreground text-sm font-bold">
+                <span className="text-white text-sm font-bold">
                   {otherUserName
                     .split(' ')
                     .map((n) => n[0])
@@ -344,7 +344,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
             <button
               type="submit"
               disabled={!newMessage.trim() || isSending}
-              className={`p-2 bg-gradient-to-r ${accent.gradient} text-foreground rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`p-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isSending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

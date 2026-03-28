@@ -38,7 +38,7 @@ export function ComingSoonModal({
         <p className="text-sm text-muted-foreground mb-6">{message}</p>
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+          className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
           {buttonText}
         </button>

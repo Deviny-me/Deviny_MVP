@@ -242,7 +242,7 @@ export default function ProgramDetailPage({
           <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -402,7 +402,7 @@ export default function ProgramDetailPage({
               <div>
                 <button
                   disabled={purchasing}
-                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                   onClick={() => handlePurchase('Basic')}
                 >
                   {purchasing ? (
@@ -431,7 +431,7 @@ export default function ProgramDetailPage({
                       className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
                         soldOut
                           ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-foreground hover:opacity-90 disabled:opacity-50'
+                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90 disabled:opacity-50'
                       }`}
                       onClick={() => !soldOut && handlePurchase('Standard')}
                     >
@@ -469,7 +469,7 @@ export default function ProgramDetailPage({
                       className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
                         soldOut
                           ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
-                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-foreground hover:opacity-90 disabled:opacity-50'
+                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90 disabled:opacity-50'
                       }`}
                       onClick={() => !soldOut && handlePurchase('Pro')}
                     >

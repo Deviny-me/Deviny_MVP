@@ -98,7 +98,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <button
               onClick={() => router.push(`${basePath}/experts`)}
-              className={`px-6 py-2 bg-gradient-to-r ${accent.gradient} text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity`}
+              className={`px-6 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity`}
             >
               {t('backToExperts')}
             </button>
@@ -125,7 +125,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       />
                     ) : (
                       <div className={`w-32 h-32 rounded-xl bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center`}>
-                        <span className="text-foreground text-4xl font-bold">{profile.trainer.initials}</span>
+                        <span className="text-white text-4xl font-bold">{profile.trainer.initials}</span>
                       </div>
                     )}
                   </div>
@@ -212,7 +212,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       <div className="flex flex-wrap items-center gap-3 mt-6">
                         <button
                           onClick={() => setIsChatOpen(true)}
-                          className={`px-4 py-2 bg-gradient-to-r ${expertAccent.gradient} text-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2`}
+                          className={`px-4 py-2 bg-gradient-to-r ${expertAccent.gradient} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2`}
                         >
                           <MessageCircle className="w-4 h-4" />
                           {t('sendMessage')}
@@ -269,7 +269,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                     {profile.certificates.map((cert) => (
                       <div key={cert.id} className="flex items-start gap-3 p-3 bg-background rounded-lg hover:bg-hover-overlay transition-colors">
                         <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center flex-shrink-0`}>
-                          <Award className="w-5 h-5 text-foreground" />
+                          <Award className="w-5 h-5 text-white" />
                         </div>
                         <div className="flex-1">
                           <h3 className="text-sm font-medium text-foreground">{cert.title}</h3>

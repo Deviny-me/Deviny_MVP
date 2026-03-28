@@ -191,7 +191,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
                 isActive
                   ? role === 'all'
                     ? 'bg-white text-black'
-                    : `bg-gradient-to-r ${roleAccent!.gradient} text-foreground`
+                    : `bg-gradient-to-r ${roleAccent!.gradient} text-white`
                   : 'bg-surface-2 border border-border-subtle text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
@@ -211,7 +211,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
           <p className="text-sm text-muted-foreground">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground rounded-lg text-sm`}
+            className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg text-sm`}
           >
             {tc('tryAgain')}
           </button>
@@ -249,7 +249,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
                         />
                       ) : (
                         <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${trainerAccent.gradient} flex items-center justify-center`}>
-                          <span className="text-foreground text-xl font-bold">{trainer.name.charAt(0)}</span>
+                          <span className="text-white text-xl font-bold">{trainer.name.charAt(0)}</span>
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -306,7 +306,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
                             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all disabled:opacity-50 ${
                               followedIds.has(trainer.userId)
                                 ? `${trainerAccent.bgMuted} ${trainerAccent.text} hover:opacity-80`
-                                : `bg-gradient-to-r ${trainerAccent.gradient} text-foreground hover:opacity-90`
+                                : `bg-gradient-to-r ${trainerAccent.gradient} text-white hover:opacity-90`
                             }`}
                           >
                             {followLoading === trainer.userId ? (

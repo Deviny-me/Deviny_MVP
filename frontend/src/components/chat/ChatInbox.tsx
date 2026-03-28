@@ -852,7 +852,7 @@ export default function ChatInbox() {
             <button
               type="button"
               onClick={handleAcceptIncomingCall}
-              className={`flex-1 px-3 py-1.5 rounded-lg bg-gradient-to-r ${accent.gradient} text-foreground hover:opacity-90 transition-opacity`}
+              className={`flex-1 px-3 py-1.5 rounded-lg bg-gradient-to-r ${accent.gradient} text-white hover:opacity-90 transition-opacity`}
             >
               Accept
             </button>
