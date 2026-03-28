@@ -17,6 +17,7 @@ import {
   LucideIcon
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useLanguage, getLanguageLabel, Language } from '@/components/language/LanguageProvider'
 
 interface SettingsItem {
   icon: LucideIcon
@@ -38,6 +39,7 @@ export default function SettingsPage() {
   const { user, logout } = useUser()
   const { level } = useLevel()
   const { theme, toggleTheme } = useTheme()
+  const { language, setLanguage } = useLanguage()
   const isDarkMode = theme === 'dark'
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
@@ -49,6 +51,13 @@ export default function SettingsPage() {
   const handleLogout = () => {
     logout()
     router.push('/auth/login')
+  }
+
+  const cycleLanguage = () => {
+    const langs: Language[] = ['ru', 'en', 'az']
+    const idx = langs.indexOf(language)
+    const next = langs[(idx + 1) % langs.length]
+    setLanguage(next)
   }
 
   const settingsSections: SettingsSection[] = [
@@ -69,7 +78,7 @@ export default function SettingsPage() {
           value: isDarkMode, 
           action: toggleTheme 
         },
-        { icon: Globe, label: t('language'), value: t('english'), action: () => {} },
+        { icon: Globe, label: t('language'), value: getLanguageLabel(language), action: cycleLanguage },
       ]
     },
     {
@@ -109,7 +118,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="max-w-2xl space-y-6 pb-6">
+      <div className="space-y-6 pb-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>

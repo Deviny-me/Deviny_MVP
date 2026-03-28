@@ -4,6 +4,7 @@ import { useUser } from '@/components/user/UserProvider'
 import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
+  Pencil,
   Check,
   MapPin,
   Calendar,
@@ -565,9 +566,9 @@ export default function UserProfilePage() {
                 title={tp('editProfile')}
               >
                 {uploadingBanner ? (
-                  <Loader2 className="w-3.5 h-3.5 text-foreground animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-foreground" />
+                  <Pencil className="w-3.5 h-3.5 text-white" />
                 )}
               </label>
               {user?.bannerUrl && (
@@ -581,85 +582,135 @@ export default function UserProfilePage() {
                   {deletingBanner ? (
                     <Loader2 className="w-3.5 h-3.5 text-foreground animate-spin" />
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-red-200" />
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   )}
                 </button>
               )}
             </div>
           </div>
 
-          <div className="relative flex flex-col items-center -mt-16 pb-6 px-6">
-            <div className="relative z-10">
-              {/* Level badge above avatar */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-2.5 py-0.5 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full border border-white/20 shadow-lg shadow-[#0c8de6]/20">
-                <span className="text-[11px] font-bold text-white whitespace-nowrap">Lv. {currentLevel}</span>
-              </div>
-              {user?.avatarUrl ? (
-                <img
-                  src={getMediaUrl(user.avatarUrl) || ''}
-                  alt={user?.fullName || 'User'}
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl">
-                  <span className="text-white text-4xl font-bold">
-                    {user?.fullName?.charAt(0) || 'U'}
-                  </span>
-                </div>
-              )}
-              <input
-                type="file"
-                id="user-avatar-upload"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-              />
-              <label
-                htmlFor="user-avatar-upload"
-                className="absolute bottom-1 right-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                {uploadingAvatar ? (
-                  <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+          <div className="relative px-6 pb-6">
+            {/* Avatar + Info row */}
+            <div className="flex gap-5 -mt-14">
+              {/* Avatar */}
+              <div className="relative z-10 flex-shrink-0 self-start">
+                {user?.avatarUrl ? (
+                  <img
+                    src={getMediaUrl(user.avatarUrl) || ''}
+                    alt={user?.fullName || 'User'}
+                    className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10"
+                  />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl">
+                    <span className="text-white text-3xl font-bold">
+                      {user?.fullName?.charAt(0) || 'U'}
+                    </span>
+                  </div>
                 )}
-              </label>
-              {user?.avatarUrl && (
-                <button
-                  onClick={handleAvatarDelete}
-                  disabled={deletingAvatar}
-                  className="absolute bottom-1 left-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-red-500/20 transition-colors"
+                <input
+                  type="file"
+                  id="user-avatar-upload"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="user-avatar-upload"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#0c8de6] hover:bg-[#0a7bc9] shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors cursor-pointer z-10"
                 >
-                  {deletingAvatar ? (
-                    <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-3 h-3 text-white animate-spin" />
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    <Pencil className="w-3 h-3 text-white" />
                   )}
-                </button>
-              )}
-            </div>
-
-            <h1 className="text-2xl font-bold text-foreground mt-4 text-center">{user?.fullName || 'User'}</h1>
-
-            <div className="mt-2 flex items-center flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-              <div className="inline-flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
-                <span>{tp('xp')}: {currentXp.toLocaleString()}</span>
+                </label>
+                {user?.avatarUrl && (
+                  <button
+                    onClick={handleAvatarDelete}
+                    disabled={deletingAvatar}
+                    className="absolute bottom-0 left-0 p-1.5 bg-red-500 hover:bg-red-600 shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors z-10"
+                  >
+                    {deletingAvatar ? (
+                      <Loader2 className="w-3 h-3 text-white animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3 h-3 text-white" />
+                    )}
+                  </button>
+                )}
               </div>
-              {joinedDate && (
-                <div className="inline-flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-faint-foreground" />
-                  <span>{tp('joined')}: {joinedDate.toLocaleDateString()}</span>
+
+              {/* Name + Stats inline */}
+              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl font-bold text-foreground truncate">{user?.fullName || 'User'}</h1>
+                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full whitespace-nowrap">
+                      Lv. {currentLevel}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
+                    </span>
+                    {joinedDate && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {joinedDate.toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                {/* Stats */}
+                <div className="hidden sm:flex items-center gap-5">
+                  <Link href="/user/journey" className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground mt--0.5">{tp('workouts')}</p>
+                  </Link>
+                  <Link href="/user/friends" className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.followersCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
+                  </Link>
+                  <Link href="/user/friends" className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.followingCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
+                  </Link>
+                  <Link href="/user/achievements" className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            <div className="mt-3 w-full max-w-xs">
-              <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
-                <span>Lv. {currentLevel}</span>
-                <span>{currentXp} / {requiredXp} XP</span>
+            {/* Stats row for mobile */}
+            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
+              <Link href="/user/journey" className="text-center">
+                <p className="text-base font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('workouts')}</p>
+              </Link>
+              <Link href="/user/friends" className="text-center">
+                <p className="text-base font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
+              </Link>
+              <Link href="/user/friends" className="text-center">
+                <p className="text-base font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
+              </Link>
+              <Link href="/user/achievements" className="text-center">
+                <p className="text-base font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
+              </Link>
+            </div>
+
+            {/* XP Progress */}
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+                <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
+                <span>{currentXp.toLocaleString()} / {requiredXp.toLocaleString()} XP</span>
               </div>
-              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+              <div className="flex-1 h-1.5 rounded-full bg-border/50 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full transition-all"
                   style={{ width: `${levelProgress}%` }}
@@ -667,28 +718,10 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            <div className="mt-6 w-full grid grid-cols-4 divide-x divide-border rounded-xl bg-white/[0.03] border border-border-subtle py-4">
-              <Link href="/user/journey" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('workouts')}</p>
-              </Link>
-              <Link href="/user/friends" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('followers')}</p>
-              </Link>
-              <Link href="/user/friends" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('following')}</p>
-              </Link>
-              <Link href="/user/achievements" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('achievements')}</p>
-              </Link>
-            </div>
-
-            <div className="mt-6 w-full bg-surface-1 dark:bg-white/[0.02] rounded-xl border border-border-subtle p-5">
-              <div className="flex items-center justify-between gap-3 mb-3">
-                <h3 className="text-sm font-semibold text-muted-foreground">{tp('aboutMe')}</h3>
+            {/* About Me */}
+            <div className="mt-4 bg-surface-1 dark:bg-white/[0.02] rounded-xl border border-border-subtle p-4">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tp('aboutMe')}</h3>
                 {!isEditingProfileInfo ? (
                   <button
                     type="button"

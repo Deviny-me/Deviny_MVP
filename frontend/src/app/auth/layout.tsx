@@ -68,6 +68,18 @@ function AuthLayoutInner({ children }: { children: React.ReactNode }) {
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 pb-8">
         {children}
       </div>
+
+      {/* Footer */}
+      <div className="relative z-10 px-4 sm:px-8 py-4 sm:py-5">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <p className="text-xs text-gray-500 dark:text-gray-600">© {new Date().getFullYear()} Deviny</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-600">
+            <a href="#" className="hover:text-gray-800 dark:hover:text-gray-300 transition-colors">About</a>
+            <a href="#" className="hover:text-gray-800 dark:hover:text-gray-300 transition-colors">Privacy</a>
+            <a href="#" className="hover:text-gray-800 dark:hover:text-gray-300 transition-colors">Terms</a>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

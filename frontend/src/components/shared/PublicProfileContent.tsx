@@ -747,113 +747,90 @@ export function PublicProfileContent({
           </div>
 
           {/* Avatar + Info */}
-          <div className="relative flex flex-col items-center -mt-16 pb-6 px-6">
-            <div className="relative z-10">
-              {authorAvatar ? (
-                <img
-                  src={authorAvatar}
-                  alt={authorName}
-                  className={`w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ${getRoleRingClass(profileData?.role)}`}
-                />
-              ) : (
-                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
-                  <span className="text-white text-4xl font-bold">{authorInitials}</span>
-                </div>
-              )}
-            </div>
-
-            <h1 className="text-2xl font-bold text-foreground mt-4 text-center">{authorName}</h1>
-            {profileData?.expertProfile?.primaryTitle && (
-              <p className="text-sm mt-1" style={{ color: profileAccent.primary }}>{profileData.expertProfile.primaryTitle}</p>
-            )}
-            {profileData?.expertProfile?.secondaryTitle && (
-              <p className="text-xs text-muted-foreground mt-0.5">{profileData.expertProfile.secondaryTitle}</p>
-            )}
-
-            {/* Location / joined date row */}
-            <div className="mt-2 flex items-center flex-wrap justify-center gap-4 text-xs text-muted-foreground">
-              {(profileData?.country || profileData?.city) && (
-                <div className="inline-flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-faint-foreground" />
-                  <span>{[localizedCity, localizedCountry].filter(Boolean).join(', ')}</span>
-                </div>
-              )}
-              {profileData?.createdAt && (
-                <div className="inline-flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-faint-foreground" />
-                  <span>{new Date(profileData.createdAt).toLocaleDateString()}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Expert Info (Trainer/Nutritionist) */}
-            {profileData?.expertProfile && (() => {
-              const ep = profileData.expertProfile
-              return (
-                <div className="mt-3 space-y-2">
-                  {/* Contact info */}
-                  <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-                    {ep.gender && (
-                      <span>{ep.gender}</span>
-                    )}
-                    {ep.phone && (
-                      <a
-                        href={`tel:${ep.phone}`}
-                        className={`flex items-center gap-1 ${profileAccent.hoverText} transition-colors`}
-                      >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>{ep.phone}</span>
-                      </a>
-                    )}
+          <div className="relative px-6 pb-6">
+            <div className="flex gap-5 -mt-14">
+              {/* Avatar */}
+              <div className="relative z-10 flex-shrink-0 self-start">
+                {authorAvatar ? (
+                  <img
+                    src={authorAvatar}
+                    alt={authorName}
+                    className={`w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10 ${getRoleRingClass(profileData?.role)}`}
+                  />
+                ) : (
+                  <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
+                    <span className="text-white text-3xl font-bold">{authorInitials}</span>
                   </div>
+                )}
+              </div>
 
-                  {/* Expert stats */}
-                  <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
-                    {ep.experienceYears != null && ep.experienceYears > 0 && (
-                      <div className="flex items-center gap-1.5">
-                        <Briefcase className="w-3.5 h-3.5" />
-                        <span>{ep.experienceYears} {tExp('yearsExperience')}</span>
+              {/* Name + Stats inline */}
+              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl font-bold text-foreground truncate">{authorName}</h1>
+                    {profileData?.expertProfile && profileData.expertProfile.ratingValue > 0 && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-full">
+                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-semibold text-yellow-500">{profileData.expertProfile.ratingValue.toFixed(1)}</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-1.5">
-                      <Award className="w-3.5 h-3.5" />
-                      <span>{ep.programsCount} {ep.programsCount !== 1 ? tExp('programs') : tExp('program')}</span>
-                    </div>
                   </div>
-
-                  {/* Rating */}
-                  <div className="flex items-center justify-center">
-                    <div className="flex items-center gap-1 px-3 py-1.5 bg-background rounded-lg">
-                      <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                      <span className="text-foreground font-semibold">
-                        {ep.ratingValue > 0 ? ep.ratingValue.toFixed(1) : '0.0'}
+                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                    {(profileData?.country || profileData?.city) && (
+                      <span className="inline-flex items-center gap-1">
+                        <Globe className="w-3 h-3" />
+                        {[localizedCity, localizedCountry].filter(Boolean).join(', ')}
                       </span>
-                      <span className="text-muted-foreground text-sm">
-                        ({ep.reviewsCount} {ep.reviewsCount !== 1 ? tc('reviews') : tExp('review')})
+                    )}
+                    {profileData?.createdAt && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(profileData.createdAt).toLocaleDateString()}
                       </span>
-                    </div>
+                    )}
                   </div>
                 </div>
-              )
-            })()}
 
-            {/* Stats grid — same style as own profile */}
-            <div className="mt-6 w-full grid grid-cols-4 divide-x divide-border rounded-xl bg-white/[0.03] border border-border-subtle py-4">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tPosts('postsTab')}</p>
+                {/* Stats */}
+                <div className="hidden sm:flex items-center gap-5">
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground transition-colors" style={{ ['--tw-group-hover-color' as string]: profileAccent.primary }}>{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tPosts('postsTab')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.followersCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.followingCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{(profileData?.followersCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('followers')}</p>
+            </div>
+
+            {/* Stats row for mobile */}
+            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tPosts('postsTab')}</p>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{(profileData?.followingCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('following')}</p>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{(profileData?.followersCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-faint-foreground">{tp('achievements')}</p>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{(profileData?.followingCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
               </div>
             </div>
 
@@ -971,6 +948,9 @@ export function PublicProfileContent({
         {/* About Section (Expert only) */}
         {profileData?.expertProfile && (
           <div className="bg-surface-3 rounded-xl border border-border p-6">
+            {profileData.expertProfile.primaryTitle && (
+              <p className="text-sm font-medium mb-3" style={{ color: profileAccent.primary }}>{profileData.expertProfile.primaryTitle}</p>
+            )}
             <h2 className="text-lg font-semibold text-foreground mb-3">{tExp('about')}</h2>
             {profileData.expertProfile.aboutText ? (
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{profileData.expertProfile.aboutText}</p>

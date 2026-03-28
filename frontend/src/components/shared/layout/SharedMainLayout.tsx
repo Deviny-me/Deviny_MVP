@@ -35,7 +35,7 @@ export function SharedMainLayout({
     <div className={`min-h-screen bg-background flex flex-col ${className || ''}`}>
       {topNav}
       
-      <div className="flex-1 max-w-[1280px] w-full mx-auto px-4 sm:px-6">
+      <div className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6">
         <div className="flex gap-6 pt-5">
           {/* Left Sidebar */}
           {showLeftSidebar && (
@@ -61,7 +61,7 @@ export function SharedMainLayout({
       {/* Footer */}
       {footer && (
         <footer className="mt-auto border-t border-border-subtle">
-          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-5">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5">
             {footer}
           </div>
         </footer>

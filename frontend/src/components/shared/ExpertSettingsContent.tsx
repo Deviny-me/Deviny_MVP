@@ -2,13 +2,14 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { User, LogOut, ChevronRight, Loader2, Moon, Sun } from 'lucide-react'
+import { User, LogOut, ChevronRight, Loader2, Moon, Sun, Globe } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { useTheme } from '@/components/theme/ThemeProvider'
+import { useLanguage, getLanguageLabel, Language } from '@/components/language/LanguageProvider'
 
 interface ExpertSettingsContentProps {
   basePath: string
@@ -20,7 +21,15 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
   const router = useRouter()
   const accent = useAccentColors()
   const { theme, toggleTheme } = useTheme()
+  const { language, setLanguage } = useLanguage()
   const isDarkMode = theme === 'dark'
+
+  const cycleLanguage = () => {
+    const langs: Language[] = ['ru', 'en', 'az']
+    const idx = langs.indexOf(language)
+    const next = langs[(idx + 1) % langs.length]
+    setLanguage(next)
+  }
   const t = useTranslations('settings')
   const tc = useTranslations('common')
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
@@ -55,7 +64,7 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-6">
+    <div className="space-y-6 pb-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
@@ -108,6 +117,16 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
             <div className={`w-10 h-6 rounded-full transition-colors ${isDarkMode ? `bg-[${accent.primary}]` : 'bg-gray-400'} p-0.5`} style={{ backgroundColor: isDarkMode ? accent.primary : undefined }}>
               <div className={`w-5 h-5 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
+          </button>
+          <button
+            onClick={cycleLanguage}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-hover-overlay"
+          >
+            <div className="flex items-center gap-3">
+              <Globe className="w-5 h-5 text-muted-foreground" />
+              <span className="text-foreground">{t('language')}</span>
+            </div>
+            <span className="text-sm text-muted-foreground">{getLanguageLabel(language)}</span>
           </button>
         </div>
       </motion.div>

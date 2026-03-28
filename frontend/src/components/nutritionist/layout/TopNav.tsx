@@ -80,7 +80,7 @@ export function TopNav() {
 
   return (
     <nav className="sticky top-0 glass-strong border-b border-border-subtle z-50">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo & Search */}
           <div className="flex items-center gap-4 flex-1 max-w-xl">

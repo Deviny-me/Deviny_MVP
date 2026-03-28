@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { 
-  Camera,
+  Pencil,
   MapPin,
   Link as LinkIcon,
   Edit2,
@@ -795,85 +795,115 @@ export default function NutritionistProfilePage() {
           <div className={`h-48 bg-gradient-to-r ${accent.gradient} relative`}>
           </div>
 
-          <div className="relative flex flex-col items-center -mt-16 pb-6 px-6">
-            <div className="relative z-10">
-              {trainer.avatarUrl ? (
-                <img
-                  src={getMediaUrl(trainer.avatarUrl) || ''}
-                  alt={trainer.fullName}
-                  className="w-32 h-32 rounded-2xl object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl"
-                />
-              ) : (
-                <div className={`w-32 h-32 rounded-2xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
-                  <span className="text-white text-4xl font-bold">
-                    {trainer.initials}
-                  </span>
-                </div>
-              )}
-              <input
-                type="file"
-                id="avatar-upload"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-1 right-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                {uploadingAvatar ? (
-                  <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+          <div className="relative px-6 pb-6">
+            {/* Avatar + Info row */}
+            <div className="flex gap-5 -mt-14">
+              {/* Avatar */}
+              <div className="relative z-10 flex-shrink-0 self-start">
+                {trainer.avatarUrl ? (
+                  <img
+                    src={getMediaUrl(trainer.avatarUrl) || ''}
+                    alt={trainer.fullName}
+                    className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10"
+                  />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+                  <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
+                    <span className="text-white text-3xl font-bold">
+                      {trainer.initials}
+                    </span>
+                  </div>
                 )}
-              </label>
-              {trainer.avatarUrl && (
-                <button
-                  onClick={handleAvatarDelete}
-                  disabled={deletingAvatar}
-                  className="absolute bottom-1 left-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-red-500/20 transition-colors"
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#28bf68] hover:bg-[#22a85c] shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors cursor-pointer z-10"
                 >
-                  {deletingAvatar ? (
-                    <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-3 h-3 text-white animate-spin" />
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    <Pencil className="w-3 h-3 text-white" />
                   )}
-                </button>
-              )}
-            </div>
+                </label>
+                {trainer.avatarUrl && (
+                  <button
+                    onClick={handleAvatarDelete}
+                    disabled={deletingAvatar}
+                    className="absolute bottom-0 left-0 p-1.5 bg-red-500 hover:bg-red-600 shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors z-10"
+                  >
+                    {deletingAvatar ? (
+                      <Loader2 className="w-3 h-3 text-white animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3 h-3 text-white" />
+                    )}
+                  </button>
+                )}
+              </div>
 
-            {/* Name and Rating - Centered */}
-            <div className="flex items-center gap-2 mt-4">
-              <h1 className="text-2xl font-bold text-foreground">{trainer.fullName}</h1>
-              {trainer.ratingValue > 0 && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-lg">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
+              {/* Name + Stats inline */}
+              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-xl font-bold text-foreground truncate">{trainer.fullName}</h1>
+                    {trainer.ratingValue > 0 && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-full">
+                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
-            <p className="text-muted-foreground text-center mt-1">{trainer.primaryTitle || t('personalNutritionist')}</p>
-            {trainer.secondaryTitle && (
-              <p className="text-sm text-faint-foreground text-center">{trainer.secondaryTitle}</p>
-            )}
 
-            {/* Stats Row */}
-            <div className="mt-5 w-full grid grid-cols-4 divide-x divide-border rounded-xl bg-white/[0.03] border border-border-subtle py-4">
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{trainer.programsCount}</p>
-                <p className="text-[11px] text-faint-foreground">{t('programs')}</p>
+                {/* Stats */}
+                <div className="hidden sm:flex items-center gap-5">
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.programsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.studentsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('students')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.ratingValue.toFixed(1)}</p>
+                    <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
+                  </div>
+                  <div className="group text-center">
+                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.achievementsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{trainer.studentsCount}</p>
-                <p className="text-[11px] text-faint-foreground">{t('students')}</p>
+            </div>
+
+            {/* Stats row for mobile */}
+            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{trainer.programsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{trainer.ratingValue.toFixed(1)}</p>
-                <p className="text-[11px] text-faint-foreground">{trainer.reviewsCount} {t('reviews')}</p>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{trainer.studentsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('students')}</p>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <p className="text-xl font-bold text-foreground">{trainer.achievementsCount}</p>
-                <p className="text-[11px] text-faint-foreground">{t('achievements')}</p>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{trainer.ratingValue.toFixed(1)}</p>
+                <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-base font-bold text-foreground">{trainer.achievementsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
               </div>
             </div>
           </div>
@@ -956,6 +986,7 @@ export default function NutritionistProfilePage() {
 
         {/* Bio Section */}
         <div className="bg-surface-3 rounded-xl border border-border p-5 mb-4">
+          <p className={`text-sm ${accent.text} font-medium mb-3`}>{trainer.primaryTitle || t('personalNutritionist')}</p>
           {about?.text ? (
             <div>
               <div className="flex items-center justify-between mb-3">
