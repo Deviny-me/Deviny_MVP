@@ -17,7 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={`${inter.className} bg-gray-50 text-gray-900`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'){}else{document.documentElement.classList.add('dark')}}catch(e){}})()` }} />
+      </head>
+      <body className={`${inter.className}`} suppressHydrationWarning>
         <Providers>
           {children}
         </Providers>

@@ -42,7 +42,7 @@ export function PhotoLightbox({
         className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
         aria-label="Close lightbox"
       >
-        <X className="w-6 h-6 text-white" />
+        <X className="w-6 h-6 text-foreground" />
       </button>
       
       <div 
@@ -55,7 +55,7 @@ export function PhotoLightbox({
           className="max-w-full max-h-[85vh] object-contain rounded-lg"
         />
         {caption && (
-          <p className="mt-3 text-center text-white text-sm">{caption}</p>
+          <p className="mt-3 text-center text-foreground text-sm">{caption}</p>
         )}
       </div>
     </div>

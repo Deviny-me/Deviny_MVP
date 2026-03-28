@@ -135,19 +135,19 @@ export default function ProgramDetailPage({
       <div className="space-y-4 pb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">{tc('back')}</span>
         </button>
-        <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+        <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/journey')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -161,13 +161,13 @@ export default function ProgramDetailPage({
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">{tc('back')}</span>
       </button>
 
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
         {/* Cover Image */}
         <div className="relative">
           {program.coverImageUrl ? (
@@ -187,14 +187,14 @@ export default function ProgramDetailPage({
           )}
           <div className="absolute top-3 left-3 flex gap-2">
             <span
-              className={`px-2 py-1 text-xs font-bold rounded text-white ${
+              className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
                 program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
               }`}
             >
               {program.programType === 'training' ? t('training') : t('nutrition')}
             </span>
             <span
-              className={`px-2 py-1 text-xs font-bold rounded text-white ${
+              className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
                 program.tier === 'Pro'
                   ? 'bg-purple-600'
                   : program.tier === 'Standard'
@@ -210,7 +210,7 @@ export default function ProgramDetailPage({
         {/* Content */}
         <div className="p-6 space-y-5">
           <div>
-            <h1 className="text-2xl font-bold text-white">{program.title}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
             <div className="flex items-center gap-2 mt-2">
               {program.trainerAvatarUrl ? (
                 <img
@@ -221,12 +221,12 @@ export default function ProgramDetailPage({
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-700" />
               )}
-              <span className="text-sm text-gray-400">{program.trainerName}</span>
+              <span className="text-sm text-muted-foreground">{program.trainerName}</span>
             </div>
           </div>
 
           {/* Rating */}
-          <div className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg border border-white/5">
+          <div className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border-subtle">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -239,24 +239,24 @@ export default function ProgramDetailPage({
                 />
               ))}
             </div>
-            <span className="text-lg text-white font-semibold">
+            <span className="text-lg text-foreground font-semibold">
               {program.averageRating > 0 ? program.averageRating.toFixed(1) : '—'}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-faint-foreground">
               ({program.totalReviews} {t('reviews')})
             </span>
           </div>
 
           {/* Description */}
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">{t('aboutProgram')}</h3>
-            <p className="text-white leading-relaxed">{program.description}</p>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('aboutProgram')}</h3>
+            <p className="text-foreground leading-relaxed">{program.description}</p>
           </div>
 
           {/* Videos */}
           {program.videoUrls.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
                 <Video className="w-4 h-4" />
                 {t('videos')} ({program.videoUrls.length})
               </h3>
@@ -273,21 +273,21 @@ export default function ProgramDetailPage({
                       {t('videoNotSupported')}
                     </video>
                     {(program.videos?.[index]?.title || program.videos?.[index]?.description) && (
-                      <div className="px-3 py-2 bg-[#0A0A0A] border-t border-white/10">
+                      <div className="px-3 py-2 bg-background border-t border-border">
                         {program.videos?.[index]?.title && (
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-foreground">
                             {program.videos[index].title}
                           </p>
                         )}
                         {program.videos?.[index]?.description && (
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             {program.videos[index].description}
                           </p>
                         )}
                       </div>
                     )}
                     {watchedVideoIndexes.has(index) && (
-                      <p className="text-xs text-green-400 px-3 py-2 bg-[#0A0A0A]">
+                      <p className="text-xs text-green-400 px-3 py-2 bg-background">
                         Watched
                       </p>
                     )}
@@ -298,22 +298,22 @@ export default function ProgramDetailPage({
           )}
 
           {program.videoUrls.length === 0 && (
-            <div className="text-center py-6 bg-[#0A0A0A] rounded-lg border border-white/5">
+            <div className="text-center py-6 bg-background rounded-lg border border-border-subtle">
               <Video className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">{t('noVideos')}</p>
+              <p className="text-sm text-faint-foreground">{t('noVideos')}</p>
             </div>
           )}
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-faint-foreground text-center">
             {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
           </p>
 
           {/* Review after completion */}
-          <div className="pt-4 border-t border-white/10 space-y-3">
-            <h3 className="text-sm font-medium text-gray-300">Program Review</h3>
+          <div className="pt-4 border-t border-border space-y-3">
+            <h3 className="text-sm font-medium text-muted-foreground">Program Review</h3>
 
             {!program.canReview && !program.hasReviewed && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-faint-foreground">
                 Finish the last video to unlock review.
               </p>
             )}
@@ -351,7 +351,7 @@ export default function ProgramDetailPage({
                   placeholder="Share your experience"
                   rows={3}
                   maxLength={1000}
-                  className="w-full px-3 py-2 bg-[#0A0A0A] border border-white/10 rounded-lg text-white text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#0c8de6]/50"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm placeholder-gray-500 resize-none focus:outline-none focus:border-[#0c8de6]/50"
                 />
 
                 {reviewError && <p className="text-sm text-red-400">{reviewError}</p>}
@@ -360,7 +360,7 @@ export default function ProgramDetailPage({
                 <button
                   onClick={handleSubmitReview}
                   disabled={reviewRating === 0 || submittingReview}
-                  className="px-4 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
                 >
                   {submittingReview ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

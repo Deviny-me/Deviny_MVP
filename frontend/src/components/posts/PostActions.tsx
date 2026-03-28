@@ -174,7 +174,7 @@ export function PostActions({
         disabled={isLikeLoading}
         className={cn(
           'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all group',
-          isLiked ? 'text-red-500 bg-red-500/[0.06]' : 'text-gray-500 hover:text-red-500 hover:bg-red-500/[0.04]'
+          isLiked ? 'text-red-500 bg-red-500/[0.06]' : 'text-faint-foreground hover:text-red-500 hover:bg-red-500/[0.04]'
         )}
         aria-label={isLiked ? 'Unlike post' : 'Like post'}
       >
@@ -192,7 +192,7 @@ export function PostActions({
       {/* Comment Button */}
       <button
         onClick={onCommentClick}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-500 hover:text-blue-500 hover:bg-blue-500/[0.04] transition-all group"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-faint-foreground hover:text-blue-500 hover:bg-blue-500/[0.04] transition-all group"
         aria-label="View comments"
       >
         <MessageCircle className="w-[18px] h-[18px] transition-transform group-hover:scale-110 group-active:scale-95" />
@@ -206,7 +206,7 @@ export function PostActions({
         onClick={handleRepostClick}
         className={cn(
           'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all group cursor-pointer',
-          isReposted ? 'text-green-500 bg-green-500/[0.06]' : 'text-gray-500 hover:text-green-500 hover:bg-green-500/[0.04]',
+          isReposted ? 'text-green-500 bg-green-500/[0.06]' : 'text-faint-foreground hover:text-green-500 hover:bg-green-500/[0.04]',
           isRepostLoading && 'opacity-70 pointer-events-none'
         )}
         aria-label={isReposted ? 'Remove repost' : 'Repost'}

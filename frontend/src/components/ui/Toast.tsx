@@ -42,7 +42,7 @@ export function Toast({
 
   return (
     <div className={cn(
-      'fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl shadow-black/20 text-white animate-in slide-in-from-bottom-2 fade-in duration-200',
+      'fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl shadow-black/20 text-foreground animate-in slide-in-from-bottom-2 fade-in duration-200',
       styles[type],
       className
     )}>

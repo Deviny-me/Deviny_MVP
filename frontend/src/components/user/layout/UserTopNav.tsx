@@ -9,7 +9,9 @@ import {
   Settings,
   LogOut,
   User,
-  Users
+  Users,
+  Sun,
+  Moon
 } from 'lucide-react'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -19,6 +21,7 @@ import { useUnreadMessages } from '@/contexts/UnreadMessagesContext'
 import { SearchBar } from '@/components/search/SearchBar'
 import { NotificationDropdown } from '@/components/shared/NotificationDropdown'
 import { useTranslations } from 'next-intl'
+import { useTheme } from '@/components/theme/ThemeProvider'
 
 export function UserTopNav() {
   const router = useRouter()
@@ -27,6 +30,7 @@ export function UserTopNav() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const { unreadCount } = useUnreadMessages()
   const { level } = useLevel()
+  const { theme, toggleTheme } = useTheme()
   const t = useTranslations('nav')
 
   const navItems = [
@@ -49,7 +53,7 @@ export function UserTopNav() {
   }
 
   return (
-    <nav className="sticky top-0 glass-strong border-b border-white/[0.06] z-50">
+    <nav className="sticky top-0 glass-strong border-b border-border-subtle z-50">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo & Search */}
@@ -79,7 +83,7 @@ export function UserTopNav() {
                       ? 'text-[#0c8de6] bg-[#0c8de6]/[0.08]'
                       : hasUnread
                       ? 'text-[#0070c4] hover:text-[#0070c4]'
-                      : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
+                      : 'text-faint-foreground hover:text-muted-foreground hover:bg-hover-overlay'
                   }`}
                   title={item.label}
                 >
@@ -90,7 +94,7 @@ export function UserTopNav() {
                   )}
                   {item.badge !== undefined && item.badge > 0 && (
                     <div className="absolute -top-0.5 right-2 min-w-[18px] h-[18px] bg-[#0c8de6] rounded-full flex items-center justify-center px-1">
-                      <span className="text-[10px] font-bold text-white">{item.badge}</span>
+                      <span className="text-[10px] font-bold text-foreground">{item.badge}</span>
                     </div>
                   )}
                 </button>
@@ -100,27 +104,34 @@ export function UserTopNav() {
 
           {/* Right: Notifications & Profile */}
           <div className="flex items-center gap-2 flex-1 justify-end">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-hover-overlay text-muted-foreground hover:text-foreground transition-all"
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <LanguageSwitcher compact />
-            <div className="w-px h-5 bg-white/[0.08]" />
+            <div className="w-px h-5 bg-border-subtle" />
             {/* Notifications */}
             <NotificationDropdown />
 
-            <div className="w-px h-5 bg-white/[0.08]" />
+            <div className="w-px h-5 bg-border-subtle" />
 
             {/* Profile Menu */}
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-white/[0.04] transition-all"
+                className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-hover-overlay transition-all"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/20">
-                  <span className="text-white text-sm font-bold">
+                  <span className="text-foreground text-sm font-bold">
                     {user?.fullName?.charAt(0) || 'U'}
                   </span>
                 </div>
                 <div className="text-left hidden lg:block">
-                  <p className="text-xs font-semibold text-white leading-tight">{t('me')}</p>
-                  <svg className={`w-3 h-3 text-gray-400 mx-auto mt-0.5 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
+                  <p className="text-xs font-semibold text-foreground leading-tight">{t('me')}</p>
+                  <svg className={`w-3 h-3 text-muted-foreground mx-auto mt-0.5 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -133,27 +144,27 @@ export function UserTopNav() {
                     className="fixed inset-0 z-40" 
                     onClick={() => setShowProfileMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
-                    <div className="p-4 border-b border-white/[0.06]">
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-50 animate-slide-down">
+                    <div className="p-4 border-b border-border-subtle">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center ring-2 ring-[#0c8de6]/20">
-                          <span className="text-white text-lg font-bold">
+                          <span className="text-foreground text-lg font-bold">
                             {user?.fullName?.charAt(0) || 'U'}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-white truncate">{user?.fullName || 'User'}</p>
-                          <p className="text-xs text-gray-500">{t('user') || 'Пользователь'}</p>
+                          <p className="font-semibold text-foreground truncate">{user?.fullName || 'User'}</p>
+                          <p className="text-xs text-faint-foreground">{t('user') || 'Пользователь'}</p>
                         </div>
                       </div>
                       {/* Level Display */}
                       {level && (
                         <div className="mt-3 p-3 bg-gradient-to-r from-[#0c8de6]/[0.06] to-[#0070c4]/[0.06] border border-[#0c8de6]/10 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-semibold text-white">Level {level.currentLevel}</span>
-                            <span className="text-[11px] text-gray-500">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>
+                            <span className="text-xs font-semibold text-foreground">Level {level.currentLevel}</span>
+                            <span className="text-[11px] text-faint-foreground">{level.currentXp} / {level.requiredXpForNextLevel} XP</span>
                           </div>
-                          <div className="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div className="w-full h-1.5 bg-border-subtle rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full transition-all duration-500 ease-out"
                               style={{ width: `${(level.currentXp / level.requiredXpForNextLevel) * 100}%` }}
@@ -181,14 +192,14 @@ export function UserTopNav() {
                           router.push('/user/settings')
                           setShowProfileMenu(false)
                         }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/[0.04] hover:text-gray-200 transition-all"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-hover-overlay hover:text-foreground transition-all"
                       >
                         <Settings className="w-[18px] h-[18px]" strokeWidth={1.5} />
                         <span className="text-sm">{t('settingsPrivacy')}</span>
                       </button>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/[0.08] hover:text-red-400 transition-all"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-red-500/[0.08] hover:text-red-400 transition-all"
                       >
                         <LogOut className="w-[18px] h-[18px]" strokeWidth={1.5} />
                         <span className="text-sm">{t('signOut')}</span>

@@ -69,7 +69,7 @@ function AchievementToast({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 80, scale: 0.9 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className="pointer-events-auto w-80 bg-[#141414] border border-white/[0.06] rounded-xl overflow-hidden shadow-2xl"
+      className="pointer-events-auto w-80 bg-surface-2 border border-border-subtle rounded-xl overflow-hidden shadow-2xl"
     >
       {/* Top gradient accent */}
       <div className={`h-1 bg-gradient-to-r ${gradient}`} />
@@ -77,7 +77,7 @@ function AchievementToast({
       <div className="p-4 flex items-start gap-3">
         {/* Icon */}
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="w-6 h-6 text-white" />
+          <Icon className="w-6 h-6 text-foreground" />
         </div>
 
         {/* Text */}
@@ -86,8 +86,8 @@ function AchievementToast({
             <Trophy className="w-3.5 h-3.5 text-yellow-400" />
             <span className="text-xs font-medium text-yellow-400 uppercase tracking-wide">Achievement Unlocked!</span>
           </div>
-          <h4 className="text-sm font-bold text-white truncate">{achievement.title}</h4>
-          <p className="text-xs text-gray-400 line-clamp-1">{achievement.description}</p>
+          <h4 className="text-sm font-bold text-foreground truncate">{achievement.title}</h4>
+          <p className="text-xs text-muted-foreground line-clamp-1">{achievement.description}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className={`text-[10px] font-medium ${rarityColor}`}>{achievement.rarity}</span>
             {achievement.xpReward > 0 && (
@@ -97,7 +97,7 @@ function AchievementToast({
         </div>
 
         {/* Close */}
-        <button onClick={onDismiss} className="text-gray-500 hover:text-white transition-colors p-1">
+        <button onClick={onDismiss} className="text-faint-foreground hover:text-foreground transition-colors p-1">
           <X className="w-4 h-4" />
         </button>
       </div>

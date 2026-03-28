@@ -205,28 +205,28 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
     <>
       <div className="space-y-4 pb-6">
         {/* Header */}
-        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
-              <p className="text-sm text-gray-400 mt-1">
+              <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+              <p className="text-sm text-muted-foreground mt-1">
                 {friends.length} {t('friendsCount')} • {pendingRequestsCount} {t('pendingRequests')}
               </p>
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-64 bg-[#0A0A0A] border border-white/[0.06] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
+                className={`w-64 bg-background border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2 border-b border-border-subtle">
             {[
               { id: 'all' as const, label: t('allFriends'), count: friends.length },
               { id: 'requests' as const, label: t('requests'), count: incomingCount },
@@ -237,7 +237,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 text-sm font-semibold transition-colors relative ${
-                  activeTab === tab.id ? accent.text : 'text-gray-400 hover:text-white'
+                  activeTab === tab.id ? accent.text : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tab.label} ({tab.count})
@@ -251,16 +251,16 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'all' && (
           <div className="grid grid-cols-1 gap-4">
             {filteredFriends.length === 0 ? (
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
                 <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">{t('noFriends')}</h3>
-                <p className="text-gray-400 text-sm">{t('startConnecting')}</p>
+                <h3 className="text-foreground font-semibold mb-2">{t('noFriends')}</h3>
+                <p className="text-muted-foreground text-sm">{t('startConnecting')}</p>
               </div>
             ) : (
               filteredFriends.map((friend) => (
                 <div
                   key={friend.id}
-                  className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
+                  className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div
@@ -274,14 +274,14 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(friend.role)}`}
                         />
                       ) : (
-                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold text-lg`}>
+                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold text-lg`}>
                           {friend.fullName?.[0] || friend.email[0].toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <h3 className="text-white font-semibold text-lg">{friend.fullName || tc('user')}</h3>
-                        <p className="text-sm text-gray-400">{friend.email}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <h3 className="text-foreground font-semibold text-lg">{friend.fullName || tc('user')}</h3>
+                        <p className="text-sm text-muted-foreground">{friend.email}</p>
+                        <p className="text-xs text-faint-foreground mt-1">
                           {t('friendsSince')} {new Date(friend.friendsSince).toLocaleDateString()}
                         </p>
                       </div>
@@ -289,7 +289,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleMessage(friend.id)}
-                        className="px-4 py-2 bg-white/[0.04] hover:bg-white/10 border border-white/[0.06] text-white rounded-lg transition-all flex items-center gap-2"
+                        className="px-4 py-2 bg-border-subtle hover:bg-white/10 border border-border-subtle text-foreground rounded-lg transition-all flex items-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm font-medium">{t('message')}</span>
@@ -301,9 +301,9 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                         title={t('removeFriend')}
                       >
                         {actionLoading === `remove-${friend.id}` ? (
-                          <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                         ) : (
-                          <UserMinus className="w-5 h-5 text-gray-400 group-hover:text-red-500" />
+                          <UserMinus className="w-5 h-5 text-muted-foreground group-hover:text-red-500" />
                         )}
                       </button>
                     </div>
@@ -318,19 +318,19 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'requests' && (
           <div className="space-y-4">
             {incomingRequests.length === 0 ? (
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
                 <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">{t('noPendingRequests')}</h3>
-                <p className="text-gray-400 text-sm">{t('requestsWillAppear')}</p>
+                <h3 className="text-foreground font-semibold mb-2">{t('noPendingRequests')}</h3>
+                <p className="text-muted-foreground text-sm">{t('requestsWillAppear')}</p>
               </div>
             ) : (
               <div>
-                <h3 className="text-white font-semibold mb-3">{t('incomingRequests')} ({incomingRequests.length})</h3>
+                <h3 className="text-foreground font-semibold mb-3">{t('incomingRequests')} ({incomingRequests.length})</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {incomingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
+                      className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                     >
                       <div className="flex items-center gap-4">
                         {request.senderAvatar ? (
@@ -340,14 +340,14 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.senderRole)}`}
                           />
                         ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
+                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold`}>
                             {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="text-white font-semibold">{request.senderFullName || tc('user')}</h3>
-                          <p className="text-sm text-gray-400">{request.senderEmail}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <h3 className="text-foreground font-semibold">{request.senderFullName || tc('user')}</h3>
+                          <p className="text-sm text-muted-foreground">{request.senderEmail}</p>
+                          <p className="text-xs text-faint-foreground mt-1">
                             {new Date(request.createdAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -355,7 +355,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
                             disabled={actionLoading === `accept-${request.id}`}
-                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg transition-all flex items-center gap-2 disabled:opacity-50`}
+                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-foreground rounded-lg transition-all flex items-center gap-2 disabled:opacity-50`}
                           >
                             {actionLoading === `accept-${request.id}` ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -367,7 +367,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           <button
                             onClick={() => handleDeclineRequest(request.id)}
                             disabled={actionLoading === `decline-${request.id}`}
-                            className="px-3 py-2 bg-white/[0.04] hover:bg-white/10 border border-white/[0.06] text-white rounded-lg transition-all disabled:opacity-50"
+                            className="px-3 py-2 bg-border-subtle hover:bg-white/10 border border-border-subtle text-foreground rounded-lg transition-all disabled:opacity-50"
                           >
                             {actionLoading === `decline-${request.id}` ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -389,19 +389,19 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'sent' && (
           <div className="space-y-4">
             {outgoingRequests.length === 0 ? (
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
                 <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">{t('noPendingSent')}</h3>
-                <p className="text-gray-400 text-sm">{t('requestsWillAppear')}</p>
+                <h3 className="text-foreground font-semibold mb-2">{t('noPendingSent')}</h3>
+                <p className="text-muted-foreground text-sm">{t('requestsWillAppear')}</p>
               </div>
             ) : (
               <div>
-                <h3 className="text-white font-semibold mb-3">{t('sentRequests')} ({outgoingRequests.length})</h3>
+                <h3 className="text-foreground font-semibold mb-3">{t('sentRequests')} ({outgoingRequests.length})</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {outgoingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
+                      className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                     >
                       <div className="flex items-center gap-4">
                         {request.receiverAvatar ? (
@@ -411,13 +411,13 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.receiverRole)}`}
                           />
                         ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
+                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-foreground font-bold`}>
                             {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
                           </div>
                         )}
                         <div className="flex-1">
-                          <h3 className="text-white font-semibold">{request.receiverFullName || tc('user')}</h3>
-                          <p className="text-sm text-gray-400">{request.receiverEmail}</p>
+                          <h3 className="text-foreground font-semibold">{request.receiverFullName || tc('user')}</h3>
+                          <p className="text-sm text-muted-foreground">{request.receiverEmail}</p>
                           <div className="flex items-center gap-1 text-xs text-yellow-500 mt-1">
                             <Clock className="w-3 h-3" />
                             <span>{t('pending')}</span>
@@ -426,7 +426,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                         <button
                           onClick={() => handleCancelRequest(request.id)}
                           disabled={actionLoading === `cancel-${request.id}`}
-                          className="px-3 py-2 bg-white/[0.04] hover:bg-red-500/10 border border-white/[0.06] text-gray-400 hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
+                          className="px-3 py-2 bg-border-subtle hover:bg-red-500/10 border border-border-subtle text-muted-foreground hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
                         >
                           {actionLoading === `cancel-${request.id}` ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -447,16 +447,16 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         {activeTab === 'following' && (
           <div className="grid grid-cols-1 gap-4">
             {following.length === 0 ? (
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-8 text-center">
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
                 <UserCheck className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">{t('notFollowingYet')}</h3>
-                <p className="text-gray-400 text-sm">{t('startConnecting')}</p>
+                <h3 className="text-foreground font-semibold mb-2">{t('notFollowingYet')}</h3>
+                <p className="text-muted-foreground text-sm">{t('startConnecting')}</p>
               </div>
             ) : (
               following.map((trainer) => (
                 <div
                   key={trainer.id}
-                  className="bg-[#141414] rounded-xl border border-white/[0.06] p-5 hover:border-white/20 transition-all"
+                  className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div
@@ -470,13 +470,13 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(trainer.role)}`}
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-foreground font-bold text-lg">
                           {trainer.fullName?.[0] || trainer.email[0].toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <h3 className="text-white font-semibold text-lg">{trainer.fullName || tc('user')}</h3>
-                        <p className="text-sm text-gray-400">{trainer.email}</p>
+                        <h3 className="text-foreground font-semibold text-lg">{trainer.fullName || tc('user')}</h3>
+                        <p className="text-sm text-muted-foreground">{trainer.email}</p>
                         {trainer.role && (
                           <span className="text-xs text-green-500">{trainer.role}</span>
                         )}

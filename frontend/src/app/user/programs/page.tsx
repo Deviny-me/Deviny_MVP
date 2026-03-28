@@ -268,33 +268,33 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
-            <p className="text-sm text-gray-400">{t('description')}</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('description')}</p>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4 space-y-3">
+        <div className="bg-surface-3 rounded-xl border border-border p-4 space-y-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-faint-foreground" />
             <input
               type="text"
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/50"
+              className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/50"
             />
           </div>
 
           <div className="flex flex-wrap gap-2">
             {/* Type Filters */}
-            <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-background rounded-lg p-1">
               <button
                 onClick={() => setFilterType('all')}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   filterType === 'all' 
-                    ? 'bg-[#0c8de6] text-white' 
-                    : 'text-gray-400 hover:text-white'
+                    ? 'bg-[#0c8de6] text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tc('all')}
@@ -309,8 +309,8 @@ export default function ProgramsPage() {
                   onClick={() => setFilterType(cat)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     filterType === cat 
-                      ? 'bg-[#0c8de6] text-white' 
-                      : 'text-gray-400 hover:text-white'
+                      ? 'bg-[#0c8de6] text-foreground' 
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -322,11 +322,11 @@ export default function ProgramsPage() {
 
             {/* Sort */}
             <div className="flex items-center gap-2 ml-auto">
-              <SortAsc className="w-4 h-4 text-gray-500" />
+              <SortAsc className="w-4 h-4 text-faint-foreground" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#0c8de6]/50"
+                className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-[#0c8de6]/50"
               >
                 <option value="newest">{t('newest')}</option>
                 <option value="popular">{t('mostPopular')}</option>
@@ -344,24 +344,24 @@ export default function ProgramsPage() {
             <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
           </div>
         ) : error ? (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+          <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
             <p className="text-red-400 mb-4">{error}</p>
             <button
               onClick={loadAllPrograms}
-              className="px-4 py-2 bg-[#0c8de6] text-white rounded-lg hover:bg-[#FF8555] transition-colors"
+              className="px-4 py-2 bg-[#0c8de6] text-foreground rounded-lg hover:bg-[#FF8555] transition-colors"
             >
               {tc('tryAgain')}
             </button>
           </div>
         ) : filteredPrograms.length === 0 ? (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#0A0A0A] flex items-center justify-center">
-              <Search className="w-8 h-8 text-gray-500" />
+          <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-background flex items-center justify-center">
+              <Search className="w-8 h-8 text-faint-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               {totalCount === 0 ? t('noPrograms') : t('noProgramsFound')}
             </h3>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {totalCount === 0 ? t('checkBackLater') : t('adjustSearchFilters')}
             </p>
           </div>
@@ -370,12 +370,12 @@ export default function ProgramsPage() {
             {filteredPrograms.map((program) => (
               <div
                 key={`${program.category}-${program.id}`}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden hover:border-white/20 transition-colors cursor-pointer"
+                className="bg-surface-3 rounded-xl border border-border overflow-hidden hover:border-border transition-colors cursor-pointer"
                 onClick={() => router.push(`/user/programs/${program.id}?category=${program.category}`)}
               >
                 <div className="flex">
                   {/* Cover Image */}
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-[#0A0A0A] relative">
+                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-background relative">
                     {program.coverImageUrl ? (
                       <img
                         src={getMediaUrl(program.coverImageUrl) || ''}
@@ -395,7 +395,7 @@ export default function ProgramsPage() {
                     )}
                     {/* Category badge — color based on creator role */}
                     <span
-                      className="absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-white flex items-center gap-0.5"
+                      className="absolute top-2 left-2 px-1.5 py-0.5 text-[10px] font-bold rounded text-foreground flex items-center gap-0.5"
                       style={{ backgroundColor: getAccentColorsByRole(program.trainerRole).primary }}
                     >
                       {program.category === 'Training' ? (
@@ -411,7 +411,7 @@ export default function ProgramsPage() {
                   {/* Content */}
                   <div className="flex-1 p-4 flex flex-col">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white line-clamp-1">{program.title}</h3>
+                      <h3 className="text-lg font-semibold text-foreground line-clamp-1">{program.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         {program.trainerAvatarUrl ? (
                           <img
@@ -421,27 +421,27 @@ export default function ProgramsPage() {
                           />
                         ) : (
                           <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})` }}>
-                            <span className="text-white text-[10px] font-bold">
+                            <span className="text-foreground text-[10px] font-bold">
                               {program.trainerName.charAt(0)}
                             </span>
                           </div>
                         )}
-                        <span className="text-sm text-gray-400">{program.trainerName}</span>
+                        <span className="text-sm text-muted-foreground">{program.trainerName}</span>
                       </div>
-                      <p className="text-sm text-gray-500 mt-2 line-clamp-2">{program.description}</p>
+                      <p className="text-sm text-faint-foreground mt-2 line-clamp-2">{program.description}</p>
 
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                          <span className="text-sm text-white">
+                          <span className="text-sm text-foreground">
                             {(program.averageRating ?? 0) > 0 ? (program.averageRating ?? 0).toFixed(1) : '-'}
                           </span>
-                          <span className="text-xs text-gray-500">({program.totalReviews ?? 0})</span>
+                          <span className="text-xs text-faint-foreground">({program.totalReviews ?? 0})</span>
                         </div>
-                        <div className="flex items-center gap-1 text-gray-400">
+                        <div className="flex items-center gap-1 text-muted-foreground">
                           <Users className="w-4 h-4" />
                           <span className="text-sm">{program.totalPurchases ?? 0}</span>
                         </div>
@@ -464,7 +464,7 @@ export default function ProgramsPage() {
                           return (
                             <span className="text-lg font-bold text-[#0c8de6]">
                               {hasMultiplePrices && (
-                                <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
+                                <span className="text-sm font-normal text-muted-foreground mr-1">{tc('from')}</span>
                               )}
                               {`$${minPrice.toFixed(2)}`}
                             </span>
@@ -485,7 +485,7 @@ export default function ProgramsPage() {
             <button
               onClick={loadMore}
               disabled={loadingMore}
-              className="px-6 py-2.5 bg-[#1A1A1A] border border-white/10 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/20 transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-2.5 bg-surface-3 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
               {loadingMore ? tc('loading') : tc('loadMore')}
@@ -495,7 +495,7 @@ export default function ProgramsPage() {
 
         {/* Results Count */}
         {!isLoading && !error && totalCount > 0 && (
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-faint-foreground">
             {tc('showingXofY', { shown: filteredPrograms.length, total: totalCount })}
           </p>
         )}

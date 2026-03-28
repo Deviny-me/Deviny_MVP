@@ -47,8 +47,8 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
     return (
       <div className="text-center py-12">
         <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-        <p className="text-gray-400">{t('noReviewsYet')}</p>
-        <p className="text-sm text-gray-500 mt-1">{t('reviewsWillAppear')}</p>
+        <p className="text-muted-foreground">{t('noReviewsYet')}</p>
+        <p className="text-sm text-faint-foreground mt-1">{t('reviewsWillAppear')}</p>
       </div>
     )
   }
@@ -58,11 +58,11 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
   return (
     <div className="space-y-4">
       {/* Summary */}
-      <div className={`bg-gradient-to-br ${accentGradient.replace('from-', 'from-').replace('to-', 'to-')} rounded-xl border border-white/[0.06] p-5 flex items-center gap-6`}
+      <div className={`bg-gradient-to-br ${accentGradient.replace('from-', 'from-').replace('to-', 'to-')} rounded-xl border border-border-subtle p-5 flex items-center gap-6`}
         style={{ background: `linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))` }}
       >
         <div className="text-center">
-          <p className="text-3xl font-bold text-white">{averageRating.toFixed(1)}</p>
+          <p className="text-3xl font-bold text-foreground">{averageRating.toFixed(1)}</p>
           <div className="flex items-center gap-0.5 mt-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -74,15 +74,15 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
         </div>
         <div className="h-12 w-px bg-white/10" />
         <div>
-          <p className="text-white font-medium">{reviews.length} {t('reviewsTotal')}</p>
-          <p className="text-sm text-gray-400">{t('acrossAllPrograms')}</p>
+          <p className="text-foreground font-medium">{reviews.length} {t('reviewsTotal')}</p>
+          <p className="text-sm text-muted-foreground">{t('acrossAllPrograms')}</p>
         </div>
       </div>
 
       {/* Review list */}
       <div className="space-y-3">
         {reviews.map((review) => (
-          <div key={review.id} className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
+          <div key={review.id} className="bg-surface-2 rounded-xl border border-border-subtle p-4">
             <div className="flex items-start gap-3">
               {/* Avatar */}
               {review.userAvatarUrl ? (
@@ -93,7 +93,7 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
                 />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-medium text-gray-400">
+                  <span className="text-sm font-medium text-muted-foreground">
                     {review.userName.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
               <div className="flex-1 min-w-0">
                 {/* Header: name + rating */}
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium text-white truncate">{review.userName}</span>
+                  <span className="font-medium text-foreground truncate">{review.userName}</span>
                   <div className="flex items-center gap-0.5 flex-shrink-0">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -124,11 +124,11 @@ export function ProfileReviewsTab({ expertId, accentText, accentGradient }: Prof
 
                 {/* Comment */}
                 {review.comment && (
-                  <p className="text-gray-300 text-sm mt-2 leading-relaxed">{review.comment}</p>
+                  <p className="text-muted-foreground text-sm mt-2 leading-relaxed">{review.comment}</p>
                 )}
 
                 {/* Date */}
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-faint-foreground mt-2">
                   {new Date(review.createdAt).toLocaleDateString(undefined, {
                     year: 'numeric', month: 'short', day: 'numeric'
                   })}

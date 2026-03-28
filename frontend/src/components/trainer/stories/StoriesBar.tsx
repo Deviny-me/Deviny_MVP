@@ -126,7 +126,7 @@ export function StoriesBar() {
 
   return (
     <>
-      <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4 overflow-hidden">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 overflow-hidden">
         <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1">
           {stories.map((story, index) => (
             <motion.button
@@ -145,7 +145,7 @@ export function StoriesBar() {
                       ? 'bg-gradient-to-br from-gray-500 to-gray-600'
                       : 'bg-gradient-to-br from-[#f07915] to-[#d4600b]'
                   }`}>
-                    <div className="p-[2px] bg-[#141414] rounded-full">
+                    <div className="p-[2px] bg-surface-2 rounded-full">
                       <img
                         src={story.userAvatar}
                         alt={story.userName}
@@ -161,17 +161,17 @@ export function StoriesBar() {
                       className="w-16 h-16 rounded-full object-cover border-2 border-[#141414]"
                     />
                     <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center border-2 border-[#141414]">
-                      <Plus className="w-3 h-3 text-white" strokeWidth={3} />
+                      <Plus className="w-3 h-3 text-foreground" strokeWidth={3} />
                     </div>
                   </div>
                 )}
                 {story.hasStory && story.userLevel > 0 && (
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-white border-2 border-[#141414]">
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-[10px] font-bold text-foreground border-2 border-[#141414]">
                     {story.userLevel}
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-300 max-w-[70px] truncate">
+              <p className="text-xs text-muted-foreground max-w-[70px] truncate">
                 {story.userName}
               </p>
             </motion.button>

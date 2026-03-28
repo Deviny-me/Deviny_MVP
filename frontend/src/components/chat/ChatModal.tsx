@@ -194,11 +194,11 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] rounded-xl border border-white/[0.06] w-full max-w-2xl h-[600px] flex flex-col"
+        className="bg-surface-2 rounded-xl border border-border-subtle w-full max-w-2xl h-[600px] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between p-4 border-b border-border-subtle">
           <div className="flex items-center gap-3">
             {otherUserAvatarUrl ? (
               <img
@@ -208,7 +208,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               />
             ) : (
               <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${peerAccent.gradient} flex items-center justify-center`}>
-                <span className="text-white text-sm font-bold">
+                <span className="text-foreground text-sm font-bold">
                   {otherUserName
                     .split(' ')
                     .map((n) => n[0])
@@ -218,14 +218,14 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               </div>
             )}
             <div>
-              <h3 className="text-lg font-semibold text-white">{otherUserName}</h3>
+              <h3 className="text-lg font-semibold text-foreground">{otherUserName}</h3>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => handleCallClick('audio')}
-              className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+              className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
               title="Start audio call"
             >
               <Phone className="w-5 h-5" />
@@ -233,21 +233,21 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
             <button
               type="button"
               onClick={() => handleCallClick('video')}
-              className={`p-2 rounded-lg text-gray-400 ${accent.hoverText} transition-colors`}
+              className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
               title="Start video call"
             >
               <Video className="w-5 h-5" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/[0.04] transition-colors"
+              className="p-2 rounded-lg hover:bg-hover-overlay transition-colors"
             >
-              <X className="w-5 h-5 text-gray-400" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
         </div>
         {callNotice && (
-          <div className="px-4 py-2 border-b border-white/[0.06]">
+          <div className="px-4 py-2 border-b border-border-subtle">
             <p className={`text-xs ${accent.text}`}>{callNotice}</p>
           </div>
         )}
@@ -265,8 +265,8 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <MessageCircle className="w-12 h-12 text-gray-600 mb-3" />
-              <p className="text-sm text-gray-400">No messages yet</p>
-              <p className="text-xs text-gray-500 mt-1">Send a message to start the conversation</p>
+              <p className="text-sm text-muted-foreground">No messages yet</p>
+              <p className="text-xs text-faint-foreground mt-1">Send a message to start the conversation</p>
             </div>
           ) : (
             messages.map((message) => {
@@ -276,21 +276,21 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                   <div className={`max-w-[70%]`}>
                     {/* Reply preview */}
                     {message.replyTo && (
-                      <div className={`mb-1 px-3 py-1.5 border-l-2 ${accent.border} bg-white/[0.04] rounded text-xs text-gray-400`}>
-                        <span className="font-medium text-gray-300">{message.replyTo.senderName}</span>
+                      <div className={`mb-1 px-3 py-1.5 border-l-2 ${accent.border} bg-border-subtle rounded text-xs text-muted-foreground`}>
+                        <span className="font-medium text-muted-foreground">{message.replyTo.senderName}</span>
                         <p className="truncate">{message.replyTo.text}</p>
                       </div>
                     )}
                     <div
                       className={`rounded-2xl p-3 ${
                         isMe
-                          ? `${accent.bg} text-white rounded-br-sm`
-                          : 'border-2 border-gray-700 bg-[#141414] text-white rounded-bl-sm'
+                          ? `${accent.bg} text-foreground rounded-br-sm`
+                          : 'border-2 border-gray-700 bg-surface-2 text-foreground rounded-bl-sm'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-wrap break-words">{message.text}</p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 px-1">
+                    <p className="text-xs text-faint-foreground mt-1 px-1">
                       {new Date(message.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -306,19 +306,19 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSendMessage} className="p-4 border-t border-white/[0.06]">
+        <form onSubmit={handleSendMessage} className="p-4 border-t border-border-subtle">
           <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
             <button
               type="button"
               onClick={() => setShowEmojiPicker(prev => !prev)}
               disabled={isSending}
-              className={`p-2 text-gray-400 ${accent.hoverText} transition-colors disabled:opacity-50`}
+              className={`p-2 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
               title="Add emoji"
             >
               <Smile className="w-5 h-5" />
             </button>
             {showEmojiPicker && (
-              <div className="absolute bottom-12 left-0 z-20 bg-[#0A0A0A] border border-white/[0.06] rounded-xl p-2 shadow-xl w-56">
+              <div className="absolute bottom-12 left-0 z-20 bg-background border border-border-subtle rounded-xl p-2 shadow-xl w-56">
                 <div className="grid grid-cols-6 gap-1">
                   {QUICK_EMOJIS.map((emoji) => (
                     <button
@@ -338,13 +338,13 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type a message..."
-              className={`flex-1 bg-[#0A0A0A] text-white rounded-lg px-4 py-2 text-sm focus:outline-none ${accent.focusBorder}`}
+              className={`flex-1 bg-background text-foreground rounded-lg px-4 py-2 text-sm focus:outline-none ${accent.focusBorder}`}
               disabled={isSending}
             />
             <button
               type="submit"
               disabled={!newMessage.trim() || isSending}
-              className={`p-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`p-2 bg-gradient-to-r ${accent.gradient} text-foreground rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isSending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

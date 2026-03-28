@@ -174,12 +174,12 @@ export function NutritionistHomeFeed() {
       />
 
       {/* Create Post Card */}
-      <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4">
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
           <div className="mb-3 flex items-center gap-2.5 px-3 py-2.5 bg-[#28bf68]/[0.06] border border-[#28bf68]/10 rounded-lg">
             <Loader2 className="w-4 h-4 text-[#28bf68] animate-spin" />
-            <span className="text-sm text-gray-300">{uploadProgress}</span>
+            <span className="text-sm text-muted-foreground">{uploadProgress}</span>
           </div>
         )}
         
@@ -187,28 +187,28 @@ export function NutritionistHomeFeed() {
           <button 
             onClick={() => photoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
             <ImageIcon className="w-5 h-5 text-[#28bf68] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{t('photo')}</span>
+            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{t('photo')}</span>
           </button>
-          <div className="w-px h-6 bg-white/[0.06]" />
+          <div className="w-px h-6 bg-border-subtle" />
           <button 
             onClick={() => videoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
             <Video className="w-5 h-5 text-[#28bf68] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{t('video')}</span>
+            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{t('video')}</span>
           </button>
-          <div className="w-px h-6 bg-white/[0.06]" />
+          <div className="w-px h-6 bg-border-subtle" />
           <button 
             onClick={() => router.push('/nutritionist/achievements')}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-white/[0.04] transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
           >
             <Award className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-gray-400 group-hover:text-gray-300">{t('achievement')}</span>
+            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{t('achievement')}</span>
           </button>
         </div>
       </div>
@@ -243,12 +243,12 @@ export function NutritionistHomeFeed() {
           ))}
         </div>
       ) : (
-        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-16 text-center">
-          <div className="w-14 h-14 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-16 text-center">
+          <div className="w-14 h-14 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
             <Flame className="w-7 h-7 text-gray-600" />
           </div>
           <h3 className="text-base font-semibold text-gray-200 mb-1.5">{t('noPosts')}</h3>
-          <p className="text-sm text-gray-500 max-w-xs mx-auto">{t('noPostsDescription')}</p>
+          <p className="text-sm text-faint-foreground max-w-xs mx-auto">{t('noPostsDescription')}</p>
         </div>
       )}
 

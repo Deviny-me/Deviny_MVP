@@ -26,7 +26,7 @@ export function ComingSoonModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className={cn(
-        'bg-[#141414] rounded-xl border border-white/[0.06] p-6 max-w-sm mx-4 text-center',
+        'bg-surface-2 rounded-xl border border-border-subtle p-6 max-w-sm mx-4 text-center',
         className
       )}>
         {icon && (
@@ -34,11 +34,11 @@ export function ComingSoonModal({
             {icon}
           </div>
         )}
-        <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-        <p className="text-sm text-gray-400 mb-6">{message}</p>
+        <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-6">{message}</p>
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+          className="w-full py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
         >
           {buttonText}
         </button>

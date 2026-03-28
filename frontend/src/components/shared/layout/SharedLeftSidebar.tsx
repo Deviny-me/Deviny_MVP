@@ -33,13 +33,13 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
   return (
     <div className={`w-60 flex-shrink-0 space-y-2 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6 scrollbar-hide ${className || ''}`}>
       {/* Navigation Links */}
-      <div className="bg-[#141414] rounded-xl border border-white/[0.06] overflow-hidden">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle overflow-hidden">
         <div className="p-1.5">
           {sections.map((section, sectionIndex) => (
             <div key={sectionIndex}>
               {section.title && (
                 <div className="px-3 pt-4 pb-2">
-                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest">
+                  <p className="text-[11px] font-semibold text-faint-foreground uppercase tracking-widest">
                     {t(section.title as any)}
                   </p>
                 </div>
@@ -54,24 +54,24 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
                       isActive
                         ? `bg-gradient-to-r ${colors.activeBg} border-l-2 ${colors.activeBorder}`
-                        : 'text-gray-400 hover:bg-white/[0.04] hover:text-gray-200'
+                        : 'text-muted-foreground hover:bg-hover-overlay hover:text-foreground'
                     }`}
                   >
                     <LinkIcon 
                       className={`w-[18px] h-[18px] transition-colors ${
                         isActive 
                           ? colors.activeIcon 
-                          : `text-gray-500 ${colors.hoverIcon}`
+                          : `text-faint-foreground ${colors.hoverIcon}`
                       }`} 
                       strokeWidth={isActive ? 2 : 1.5} 
                     />
                     <span className={`text-[13px] font-medium ${
-                      isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'
+                      isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
                     }`}>
                       {t(link.label as any)}
                     </span>
                     {link.badge !== undefined && link.badge > 0 && (
-                      <span className={`ml-auto px-1.5 py-0.5 text-[10px] font-bold ${colors.badge} text-white rounded-full min-w-[20px] text-center`}>
+                      <span className={`ml-auto px-1.5 py-0.5 text-[10px] font-bold ${colors.badge} text-foreground rounded-full min-w-[20px] text-center`}>
                         {link.badge}
                       </span>
                     )}
@@ -80,7 +80,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
               })}
               {sectionIndex < sections.length - 1 && section.title !== null && (
                 <div className="px-3 py-2.5">
-                  <div className="h-px bg-white/[0.04]"></div>
+                  <div className="h-px bg-border-subtle"></div>
                 </div>
               )}
             </div>

@@ -230,19 +230,19 @@ export default function ProgramDetailPage({
       <div className="space-y-4 pb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           <span className="text-sm font-medium">{tc('back')}</span>
         </button>
-        <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+        <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
             <span className="text-2xl">⚠️</span>
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{error || 'Program not found'}</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
           <button
             onClick={() => router.push('/user/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             {tc('back')}
           </button>
@@ -256,13 +256,13 @@ export default function ProgramDetailPage({
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">{tc('back')}</span>
       </button>
 
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
         {/* Cover Image */}
         <div className="relative">
           {program.coverImageUrl ? (
@@ -272,7 +272,7 @@ export default function ProgramDetailPage({
               className="w-full h-56 sm:h-72 object-cover"
             />
           ) : (
-            <div className="w-full h-56 sm:h-72 bg-[#0A0A0A] flex items-center justify-center">
+            <div className="w-full h-56 sm:h-72 bg-background flex items-center justify-center">
               {program.category === 'Training' ? (
                 <Dumbbell className="w-16 h-16 text-gray-600" />
               ) : program.category === 'Diet' ? (
@@ -284,7 +284,7 @@ export default function ProgramDetailPage({
           )}
           <div className="absolute top-3 left-3 flex gap-2">
             <span
-              className={`px-2 py-1 text-xs font-bold rounded text-white ${
+              className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
                 program.category === 'Training'
                   ? 'bg-blue-600'
                   : program.category === 'Diet'
@@ -304,7 +304,7 @@ export default function ProgramDetailPage({
         {/* Content */}
         <div className="p-5 space-y-4">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-2xl font-bold text-white">{program.title}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
             <div className="flex flex-col items-end flex-shrink-0">
               {(() => {
                 const availablePrices: number[] = []
@@ -323,7 +323,7 @@ export default function ProgramDetailPage({
                 return (
                   <span className="text-2xl font-bold text-[#0c8de6]">
                     {hasMultiple && (
-                      <span className="text-sm font-normal text-gray-400 mr-1">{tc('from')}</span>
+                      <span className="text-sm font-normal text-muted-foreground mr-1">{tc('from')}</span>
                     )}
                     {`$${minPrice.toFixed(2)}`}
                   </span>
@@ -334,7 +334,7 @@ export default function ProgramDetailPage({
 
           {/* Trainer */}
           <div
-            className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg cursor-pointer hover:bg-[#141414] transition-colors"
+            className="flex items-center gap-3 p-3 bg-background rounded-lg cursor-pointer hover:bg-surface-2 transition-colors"
             onClick={() => router.push(`/user/profile/${program.trainerId}`)}
           >
             {program.trainerAvatarUrl ? (
@@ -350,12 +350,12 @@ export default function ProgramDetailPage({
                   background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})`,
                 }}
               >
-                <span className="text-white font-bold">{program.trainerName.charAt(0)}</span>
+                <span className="text-foreground font-bold">{program.trainerName.charAt(0)}</span>
               </div>
             )}
             <div>
-              <p className="text-white font-medium">{program.trainerName}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-foreground font-medium">{program.trainerName}</p>
+              <p className="text-xs text-muted-foreground">
                 {program.trainerRole?.toLowerCase() === 'nutritionist' ||
                 program.trainerRole === '2'
                   ? t('viewNutritionistProfile')
@@ -368,14 +368,14 @@ export default function ProgramDetailPage({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              <span className="text-white font-medium">
+              <span className="text-foreground font-medium">
                 {(program.averageRating ?? 0) > 0
                   ? (program.averageRating ?? 0).toFixed(1)
                   : '-'}
               </span>
-              <span className="text-gray-500">({program.totalReviews ?? 0})</span>
+              <span className="text-faint-foreground">({program.totalReviews ?? 0})</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-5 h-5" />
               <span>
                 {program.totalPurchases ?? 0} {tc('purchases')}
@@ -385,8 +385,8 @@ export default function ProgramDetailPage({
 
           {/* Description */}
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">{t('aboutProgram')}</h3>
-            <p className="text-white leading-relaxed">{program.description}</p>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('aboutProgram')}</h3>
+            <p className="text-foreground leading-relaxed">{program.description}</p>
           </div>
 
           {/* Purchase Buttons */}
@@ -402,7 +402,7 @@ export default function ProgramDetailPage({
               <div>
                 <button
                   disabled={purchasing}
-                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
                   onClick={() => handlePurchase('Basic')}
                 >
                   {purchasing ? (
@@ -412,7 +412,7 @@ export default function ProgramDetailPage({
                   )}
                   {`${t('basicTier')} \u2014 ${formatPrice(program.price)}`}
                 </button>
-                <p className="text-xs text-gray-500 mt-1 text-center">{t('basicTierDesc')}</p>
+                <p className="text-xs text-faint-foreground mt-1 text-center">{t('basicTierDesc')}</p>
               </div>
             )}
 
@@ -430,8 +430,8 @@ export default function ProgramDetailPage({
                       disabled={soldOut || purchasing}
                       className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
                         soldOut
-                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90 disabled:opacity-50'
+                          ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-foreground hover:opacity-90 disabled:opacity-50'
                       }`}
                       onClick={() => !soldOut && handlePurchase('Standard')}
                     >
@@ -447,7 +447,7 @@ export default function ProgramDetailPage({
                           </span>
                         )}
                     </button>
-                    <p className="text-xs text-gray-500 mt-1 text-center">
+                    <p className="text-xs text-faint-foreground mt-1 text-center">
                       {t('standardTierDesc')}
                     </p>
                   </div>
@@ -468,8 +468,8 @@ export default function ProgramDetailPage({
                       disabled={soldOut || purchasing}
                       className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
                         soldOut
-                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90 disabled:opacity-50'
+                          ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
+                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-foreground hover:opacity-90 disabled:opacity-50'
                       }`}
                       onClick={() => !soldOut && handlePurchase('Pro')}
                     >
@@ -485,22 +485,22 @@ export default function ProgramDetailPage({
                           </span>
                         )}
                     </button>
-                    <p className="text-xs text-gray-500 mt-1 text-center">{t('proTierDesc')}</p>
+                    <p className="text-xs text-faint-foreground mt-1 text-center">{t('proTierDesc')}</p>
                   </div>
                 )
               })()}
           </div>
 
-          <p className="text-center text-xs text-gray-500">
+          <p className="text-center text-xs text-faint-foreground">
             {t('programCode')}{' '}
-            <span className="text-gray-400 font-mono">{program.code}</span>
+            <span className="text-muted-foreground font-mono">{program.code}</span>
           </p>
         </div>
       </div>
 
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
         <div className="p-5 space-y-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Star className="w-5 h-5 text-amber-400" />
             {t('reviews')} ({reviews.length})
           </h2>
@@ -511,12 +511,12 @@ export default function ProgramDetailPage({
             </div>
           ) : reviews.length === 0 ? (
             <div className="text-center py-6">
-              <p className="text-gray-500 text-sm">{t('noReviews')}</p>
+              <p className="text-faint-foreground text-sm">{t('noReviews')}</p>
             </div>
           ) : (
             <div className="space-y-3">
               {reviews.map((review) => (
-                <div key={review.id} className="p-4 bg-[#0A0A0A] rounded-lg space-y-2">
+                <div key={review.id} className="p-4 bg-background rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {review.userAvatarUrl ? (
@@ -527,14 +527,14 @@ export default function ProgramDetailPage({
                         />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                          <span className="text-foreground text-xs font-bold">
                             {review.userName.charAt(0)}
                           </span>
                         </div>
                       )}
                       <div>
-                        <p className="text-white text-sm font-medium">{review.userName}</p>
-                        <p className="text-xs text-gray-500">{new Date(review.createdAt).toLocaleDateString()}</p>
+                        <p className="text-foreground text-sm font-medium">{review.userName}</p>
+                        <p className="text-xs text-faint-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-0.5">
@@ -548,7 +548,7 @@ export default function ProgramDetailPage({
                       ))}
                     </div>
                   </div>
-                  {review.comment && <p className="text-gray-300 text-sm leading-relaxed">{review.comment}</p>}
+                  {review.comment && <p className="text-muted-foreground text-sm leading-relaxed">{review.comment}</p>}
                 </div>
               ))}
             </div>

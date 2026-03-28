@@ -31,7 +31,7 @@ export default function UserExpertProfilePage() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-gray-400">Profile not found</p>
+        <p className="text-muted-foreground">Profile not found</p>
       </div>
     )
   }

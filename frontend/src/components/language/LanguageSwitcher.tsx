@@ -55,8 +55,8 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         onClick={() => setIsOpen(!isOpen)}
         disabled={isLoading}
         className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm font-medium
-          hover:bg-white/[0.04] transition-all
-          text-gray-400
+          hover:bg-hover-overlay transition-all
+          text-muted-foreground
           disabled:opacity-50"
         title={getLanguageLabel(language)}
       >
@@ -69,7 +69,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
       {isOpen && typeof document !== 'undefined' && createPortal(
         <div
           ref={dropdownRef}
-          className="fixed bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 py-1 z-[9999] min-w-[160px] animate-slide-down"
+          className="fixed bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 py-1 z-[9999] min-w-[160px] animate-slide-down"
           style={{ top: dropdownPos.top, right: dropdownPos.right }}
         >
           {LANGUAGES.map((lang) => (
@@ -79,7 +79,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all rounded-lg mx-0.5
                 ${lang === language
                   ? 'bg-amber-500/[0.08] text-amber-400 font-medium'
-                  : 'text-gray-400 hover:bg-white/[0.04] hover:text-gray-200'
+                  : 'text-muted-foreground hover:bg-hover-overlay hover:text-foreground'
                 }`}
             >
               <span className="text-base">{getLanguageFlag(lang)}</span>

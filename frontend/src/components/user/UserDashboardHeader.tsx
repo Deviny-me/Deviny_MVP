@@ -37,16 +37,16 @@ export function UserDashboardHeader() {
             
             {/* Profile */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 rounded-full bg-emerald-600 dark:bg-emerald-500 flex items-center justify-center text-foreground font-semibold">
                 {initials}
               </div>
               <div className="hidden sm:block">
                 <p className="font-semibold text-gray-900 dark:text-neutral-50 text-sm">{user?.name || t('user')}</p>
-                <p className="text-xs text-gray-500 dark:text-neutral-400">{t('student')}</p>
+                <p className="text-xs text-faint-foreground dark:text-neutral-400">{t('student')}</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                className="p-2 text-muted-foreground dark:text-neutral-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 title={t('logout')}
               >
                 <LogOut className="w-5 h-5" />

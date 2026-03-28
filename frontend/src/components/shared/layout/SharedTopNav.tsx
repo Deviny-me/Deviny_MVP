@@ -53,7 +53,7 @@ export function SharedTopNav({
   }))
 
   return (
-    <nav className={`sticky top-0 glass-strong border-b border-white/[0.06] z-50 ${className || ''}`}>
+    <nav className={`sticky top-0 glass-strong border-b border-border-subtle z-50 ${className || ''}`}>
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
           {/* Left: Logo & Search */}
@@ -65,7 +65,7 @@ export function SharedTopNav({
             >
               <Image src="/logo-icon.png" alt="Deviny" width={32} height={32} className="rounded-lg" />
               {logoText && (
-                <span className="text-sm font-bold text-white hidden sm:block tracking-tight">{logoText}</span>
+                <span className="text-sm font-bold text-foreground hidden sm:block tracking-tight">{logoText}</span>
               )}
             </button>
 
@@ -84,10 +84,10 @@ export function SharedTopNav({
                   onClick={() => { if (!isActive(item.path)) startNavigation(); router.push(item.path) }}
                   className={`relative flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all ${
                     isActive(item.path)
-                      ? `${tc.activeText} bg-white/[0.04]`
+                      ? `${tc.activeText} bg-border-subtle`
                       : hasUnread
                       ? tc.unreadText
-                      : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
+                      : 'text-faint-foreground hover:text-muted-foreground hover:bg-hover-overlay'
                   }`}
                   title={item.label}
                 >
@@ -98,7 +98,7 @@ export function SharedTopNav({
                   )}
                   {item.badge !== undefined && item.badge > 0 && (
                     <div className={`absolute -top-0.5 right-1.5 min-w-[18px] h-[18px] ${tc.badge} rounded-full flex items-center justify-center px-1`}>
-                      <span className="text-[10px] font-bold text-white">{item.badge}</span>
+                      <span className="text-[10px] font-bold text-foreground">{item.badge}</span>
                     </div>
                   )}
                 </button>

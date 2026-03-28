@@ -4,6 +4,7 @@ import { useUser } from '@/components/user/UserProvider'
 import { useLevel } from '@/components/level/LevelProvider'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useTheme } from '@/components/theme/ThemeProvider'
 import { 
   User,
   Bell,
@@ -36,7 +37,8 @@ export default function SettingsPage() {
   const router = useRouter()
   const { user, logout } = useUser()
   const { level } = useLevel()
-  const [isDarkMode, setIsDarkMode] = useState(true)
+  const { theme, toggleTheme } = useTheme()
+  const isDarkMode = theme === 'dark'
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
     achievements: true,
@@ -65,7 +67,7 @@ export default function SettingsPage() {
           label: t('darkMode'), 
           toggle: true, 
           value: isDarkMode, 
-          action: () => setIsDarkMode(!isDarkMode) 
+          action: toggleTheme 
         },
         { icon: Globe, label: t('language'), value: t('english'), action: () => {} },
       ]
@@ -110,21 +112,21 @@ export default function SettingsPage() {
       <div className="max-w-2xl space-y-6 pb-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
-          <p className="text-sm text-gray-400">{t('description')}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('description')}</p>
         </div>
 
         {/* Profile Card */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
+        <div className="bg-surface-3 rounded-xl border border-border p-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">
+              <span className="text-foreground text-2xl font-bold">
                 {user?.fullName?.charAt(0) || tc('user').charAt(0)}
               </span>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-white">{user?.fullName || tc('user')}</h3>
-              <p className="text-sm text-gray-400">{user?.email || 'user@example.com'}</p>
+              <h3 className="font-semibold text-foreground">{user?.fullName || tc('user')}</h3>
+              <p className="text-sm text-muted-foreground">{user?.email || 'user@example.com'}</p>
               <p className="text-xs text-[#0c8de6] mt-1">Level {level?.currentLevel ?? user?.level ?? 1} • {level?.currentXp ?? user?.xp ?? 0} XP</p>
             </div>
             <button
@@ -138,29 +140,29 @@ export default function SettingsPage() {
 
         {/* Settings Sections */}
         {settingsSections.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/10">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{section.title}</h3>
+          <div key={sectionIndex} className="bg-surface-3 rounded-xl border border-border overflow-hidden">
+            <div className="px-4 py-3 border-b border-border">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{section.title}</h3>
             </div>
-            <div className="divide-y divide-white/10">
+            <div className="divide-y divide-border">
               {section.items.map((item, itemIndex) => (
                 <button
                   key={itemIndex}
                   onClick={item.action}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-hover-overlay transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <item.icon className="w-5 h-5 text-gray-400" />
-                    <span className="text-sm text-white">{item.label}</span>
+                    <item.icon className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-sm text-foreground">{item.label}</span>
                   </div>
                   {item.toggle ? (
                     <div className={`w-10 h-6 rounded-full transition-colors ${item.value ? 'bg-[#0c8de6]' : 'bg-gray-600'} p-0.5`}>
                       <div className={`w-5 h-5 rounded-full bg-white transition-transform ${item.value ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
                   ) : item.value ? (
-                    <span className="text-sm text-gray-400">{item.value}</span>
+                    <span className="text-sm text-muted-foreground">{item.value}</span>
                   ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   )}
                 </button>
               ))}
@@ -178,7 +180,7 @@ export default function SettingsPage() {
         </button>
 
         {/* Footer */}
-        <div className="text-center text-xs text-gray-500">
+        <div className="text-center text-xs text-faint-foreground">
           <p>{t('version')}</p>
           <p className="mt-1">{t('copyright')}</p>
         </div>

@@ -55,9 +55,9 @@ export function RightSidebar() {
     <div className="w-72 flex-shrink-0 space-y-4 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6 scrollbar-hide">
       {/* Recent Students */}
       {students.length > 0 && (
-        <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-4">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-white">{tFeed('recentStudents')}</h3>
+            <h3 className="text-sm font-semibold text-foreground">{tFeed('recentStudents')}</h3>
             <button
               onClick={() => router.push('/trainer/students')}
               className="text-xs text-[#f07915] hover:underline flex items-center gap-1"
@@ -70,7 +70,7 @@ export function RightSidebar() {
             {students.map((student) => (
               <div
                 key={student.id}
-                className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-hover-overlay transition-colors cursor-pointer"
               >
                 {student.avatarUrl ? (
                   <img
@@ -79,13 +79,13 @@ export function RightSidebar() {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center text-foreground text-xs font-bold">
                     {getInitials(student.name)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{student.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{student.email}</p>
+                  <p className="text-sm font-medium text-foreground truncate">{student.name}</p>
+                  <p className="text-xs text-faint-foreground truncate">{student.email}</p>
                 </div>
               </div>
             ))}
@@ -95,7 +95,7 @@ export function RightSidebar() {
 
       {/* Footer */}
       <div className="px-3 py-2">
-        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-gray-500">
+        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-faint-foreground">
           <a href="#" className="hover:text-[#f07915] hover:underline">About</a>
           <span>•</span>
           <a href="#" className="hover:text-[#f07915] hover:underline">Help Center</a>

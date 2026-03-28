@@ -61,8 +61,8 @@ export default function MyJourneyPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
-            <p className="text-sm text-gray-400">{t('description')}</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('description')}</p>
           </div>
         </div>
 
@@ -73,8 +73,8 @@ export default function MyJourneyPage() {
               onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === 'all'
-                  ? 'bg-[#0c8de6] text-white'
-                  : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
+                  ? 'bg-[#0c8de6] text-foreground'
+                  : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
               }`}
             >
               {tc('all')} ({programs.length})
@@ -84,8 +84,8 @@ export default function MyJourneyPage() {
                 onClick={() => setFilter('training')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   filter === 'training'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
+                    ? 'bg-blue-600 text-foreground'
+                    : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
                 }`}
               >
                 <Dumbbell className="w-4 h-4" /> {t('training')} ({trainingCount})
@@ -96,8 +96,8 @@ export default function MyJourneyPage() {
                 onClick={() => setFilter('meal')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   filter === 'meal'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-[#1A1A1A] text-gray-400 hover:text-white border border-white/10'
+                    ? 'bg-green-600 text-foreground'
+                    : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
                 }`}
               >
                 <Apple className="w-4 h-4" /> {t('nutrition')} ({mealCount})
@@ -115,15 +115,15 @@ export default function MyJourneyPage() {
 
         {/* Error State */}
         {error && !isLoading && (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
+          <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('errorLoading')}</h3>
-            <p className="text-sm text-gray-400 mb-4">{error}</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('errorLoading')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <button 
               onClick={loadPurchases}
-              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {tc('tryAgain')}
             </button>
@@ -137,7 +137,7 @@ export default function MyJourneyPage() {
               <div
                 key={program.purchaseId}
                 onClick={() => router.push(`/user/journey/${program.purchaseId}`)}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-[#0c8de6]/50 transition-all group"
+                className="bg-surface-3 rounded-xl border border-border overflow-hidden cursor-pointer hover:border-[#0c8de6]/50 transition-all group"
               >
                 {/* Cover */}
                 <div className="relative h-40">
@@ -157,7 +157,7 @@ export default function MyJourneyPage() {
                   )}
                   {/* Type badge */}
                   <div className="absolute top-2 left-2">
-                    <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
+                    <span className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
                       program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
                     }`}>
                       {program.programType === 'training' ? t('training') : t('nutrition')}
@@ -165,7 +165,7 @@ export default function MyJourneyPage() {
                   </div>
                   {/* Tier badge */}
                   <div className="absolute top-2 right-2">
-                    <span className={`px-2 py-1 text-xs font-bold rounded text-white ${
+                    <span className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
                       program.tier === 'Pro' ? 'bg-purple-600'
                         : program.tier === 'Standard' ? 'bg-blue-700'
                         : 'bg-gray-600'
@@ -175,7 +175,7 @@ export default function MyJourneyPage() {
                   </div>
                   {/* Video count */}
                   {program.videoUrls.length > 0 && (
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/70 px-2 py-1 rounded text-xs text-white">
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/70 px-2 py-1 rounded text-xs text-foreground">
                       <Video className="w-3 h-3" />
                       {program.videoUrls.length}
                     </div>
@@ -184,15 +184,15 @@ export default function MyJourneyPage() {
 
                 {/* Content */}
                 <div className="p-4 space-y-2">
-                  <h3 className="font-semibold text-white truncate">{program.title}</h3>
+                  <h3 className="font-semibold text-foreground truncate">{program.title}</h3>
                   {/* Rating */}
                   <div className="flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm text-white font-medium">
+                    <span className="text-sm text-foreground font-medium">
                       {program.averageRating > 0 ? program.averageRating.toFixed(1) : '—'}
                     </span>
                     {program.totalReviews > 0 && (
-                      <span className="text-xs text-gray-500">({program.totalReviews})</span>
+                      <span className="text-xs text-faint-foreground">({program.totalReviews})</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -205,9 +205,9 @@ export default function MyJourneyPage() {
                     ) : (
                       <div className="w-5 h-5 rounded-full bg-gray-700" />
                     )}
-                    <span className="text-sm text-gray-400">{program.trainerName}</span>
+                    <span className="text-sm text-muted-foreground">{program.trainerName}</span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-faint-foreground">
                     {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -218,15 +218,15 @@ export default function MyJourneyPage() {
 
         {/* Empty State */}
         {!isLoading && !error && programs.length === 0 && (
-          <div className="text-center py-12 bg-[#1A1A1A] rounded-xl border border-white/10">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#0A0A0A] flex items-center justify-center">
-              <BookOpen className="w-8 h-8 text-gray-500" />
+          <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-background flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-faint-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('noPrograms')}</h3>
-            <p className="text-sm text-gray-400 mb-4">{t('startJourney')}</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('noPrograms')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t('startJourney')}</p>
             <button
               onClick={() => router.push('/user/programs')}
-              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
             >
               {t('browsePrograms')}
             </button>
@@ -235,8 +235,8 @@ export default function MyJourneyPage() {
 
         {/* No results for filter */}
         {!isLoading && !error && programs.length > 0 && filteredPrograms.length === 0 && (
-          <div className="text-center py-8 bg-[#1A1A1A] rounded-xl border border-white/10">
-            <p className="text-gray-400">{t('noResultsFilter')}</p>
+          <div className="text-center py-8 bg-surface-3 rounded-xl border border-border">
+            <p className="text-muted-foreground">{t('noResultsFilter')}</p>
           </div>
         )}
       </div>

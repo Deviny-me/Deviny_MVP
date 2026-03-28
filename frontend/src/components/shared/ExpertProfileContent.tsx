@@ -75,7 +75,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
         {/* Back Button */}
         <button
           onClick={() => router.push(`${basePath}/experts`)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">{t('backToExperts')}</span>
@@ -90,15 +90,15 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
 
         {/* Error State */}
         {error && !isLoading && (
-          <div className="text-center py-12 bg-[#141414] rounded-xl border border-white/[0.06]">
+          <div className="text-center py-12 bg-surface-2 rounded-xl border border-border-subtle">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('profileNotAvailable')}</h3>
-            <p className="text-sm text-gray-400 mb-4">{error}</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('profileNotAvailable')}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
             <button
               onClick={() => router.push(`${basePath}/experts`)}
-              className={`px-6 py-2 bg-gradient-to-r ${accent.gradient} text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity`}
+              className={`px-6 py-2 bg-gradient-to-r ${accent.gradient} text-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity`}
             >
               {t('backToExperts')}
             </button>
@@ -113,7 +113,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
           return (
             <div className="space-y-4">
               {/* Header Card */}
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
                 <div className="flex flex-col md:flex-row items-start gap-6">
                   {/* Avatar */}
                   <div className="flex-shrink-0">
@@ -125,30 +125,30 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       />
                     ) : (
                       <div className={`w-32 h-32 rounded-xl bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center`}>
-                        <span className="text-white text-4xl font-bold">{profile.trainer.initials}</span>
+                        <span className="text-foreground text-4xl font-bold">{profile.trainer.initials}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-white">{profile.trainer.fullName}</h1>
+                    <h1 className="text-3xl font-bold text-foreground">{profile.trainer.fullName}</h1>
                     {profile.trainer.primaryTitle && (
                       <p className={`${expertAccent.text} mt-2 text-lg`}>{profile.trainer.primaryTitle}</p>
                     )}
                     {profile.trainer.secondaryTitle && (
-                      <p className="text-sm text-gray-400 mt-1">{profile.trainer.secondaryTitle}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{profile.trainer.secondaryTitle}</p>
                     )}
 
                     {/* Gender and Phone */}
                     <div className="flex flex-wrap items-center gap-3 mt-2">
                       {profile.trainer.gender && (
-                        <p className="text-sm text-gray-400">{profile.trainer.gender}</p>
+                        <p className="text-sm text-muted-foreground">{profile.trainer.gender}</p>
                       )}
                       {profile.trainer.phone && (
                         <a
                           href={`tel:${profile.trainer.phone}`}
-                          className={`flex items-center gap-1 text-sm text-gray-400 ${expertAccent.hoverText} transition-colors`}
+                          className={`flex items-center gap-1 text-sm text-muted-foreground ${expertAccent.hoverText} transition-colors`}
                         >
                           <Phone className="w-3.5 h-3.5" />
                           <span>{profile.trainer.phone}</span>
@@ -158,7 +158,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
 
                     {/* Location */}
                     {(profile.trainer.location || profile.trainer.city || profile.trainer.country) && (
-                      <div className="flex items-center gap-1 mt-3 text-sm text-gray-400">
+                      <div className="flex items-center gap-1 mt-3 text-sm text-muted-foreground">
                         <Globe className="w-4 h-4" />
                         <span>
                           {profile.trainer.location ||
@@ -170,25 +170,25 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                     {/* Stats */}
                     <div className="flex flex-wrap items-center gap-6 mt-4 text-sm">
                       {profile.trainer.experienceYears ? (
-                        <div className="flex items-center gap-2 text-gray-400">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <Briefcase className="w-4 h-4" />
                           <span>{profile.trainer.experienceYears} {t('yearsExperience')}</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 text-gray-500">
+                        <div className="flex items-center gap-2 text-faint-foreground">
                           <Briefcase className="w-4 h-4" />
                           <span>{t('noExperience')}</span>
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Award className="w-4 h-4" />
                         <span>{profile.trainer.programsCount} {profile.trainer.programsCount !== 1 ? t('programs') : t('program')}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Users className="w-4 h-4" />
                         <span>{profile.trainer.studentsCount} {profile.trainer.studentsCount !== 1 ? t('students') : t('student')}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Trophy className="w-4 h-4" />
                         <span>{profile.trainer.achievementsCount} {profile.trainer.achievementsCount !== 1 ? t('achievements') : t('achievement')}</span>
                       </div>
@@ -196,12 +196,12 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
 
                     {/* Rating */}
                     <div className="flex items-center gap-2 mt-3">
-                      <div className="flex items-center gap-1 px-3 py-1.5 bg-[#0A0A0A] rounded-lg">
+                      <div className="flex items-center gap-1 px-3 py-1.5 bg-background rounded-lg">
                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-white font-semibold">
+                        <span className="text-foreground font-semibold">
                           {profile.trainer.ratingValue > 0 ? profile.trainer.ratingValue.toFixed(1) : '0.0'}
                         </span>
-                        <span className="text-gray-400 text-sm">
+                        <span className="text-muted-foreground text-sm">
                           ({profile.trainer.reviewsCount} {profile.trainer.reviewsCount !== 1 ? tc('reviews') : t('review')})
                         </span>
                       </div>
@@ -212,7 +212,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       <div className="flex flex-wrap items-center gap-3 mt-6">
                         <button
                           onClick={() => setIsChatOpen(true)}
-                          className={`px-4 py-2 bg-gradient-to-r ${expertAccent.gradient} text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2`}
+                          className={`px-4 py-2 bg-gradient-to-r ${expertAccent.gradient} text-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity flex items-center gap-2`}
                         >
                           <MessageCircle className="w-4 h-4" />
                           {t('sendMessage')}
@@ -220,7 +220,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                         {profile.trainer.phone && (
                           <a
                             href={`tel:${profile.trainer.phone}`}
-                            className="px-4 py-2 bg-[#0A0A0A] hover:bg-white/[0.04] rounded-lg text-sm text-gray-300 transition-colors flex items-center gap-2"
+                            className="px-4 py-2 bg-background hover:bg-hover-overlay rounded-lg text-sm text-muted-foreground transition-colors flex items-center gap-2"
                           >
                             <Phone className="w-4 h-4" />
                             {t('call')}
@@ -233,18 +233,18 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
               </div>
 
               {/* About */}
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
-                <h2 className="text-xl font-semibold text-white mb-3">{t('about')}</h2>
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t('about')}</h2>
                 {profile.about?.text ? (
-                  <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-line">{profile.about.text}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{profile.about.text}</p>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">{t('noDescription')}</p>
+                  <p className="text-sm text-faint-foreground italic">{t('noDescription')}</p>
                 )}
               </div>
 
               {/* Specializations */}
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
-                <h2 className="text-xl font-semibold text-white mb-3">{t('specializations')}</h2>
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t('specializations')}</h2>
                 {profile.specializations && profile.specializations.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {profile.specializations.map((spec) => (
@@ -257,24 +257,24 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">{t('noSpecializations')}</p>
+                  <p className="text-sm text-faint-foreground italic">{t('noSpecializations')}</p>
                 )}
               </div>
 
               {/* Certificates */}
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">{t('certificates')}</h2>
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">{t('certificates')}</h2>
                 {profile.certificates && profile.certificates.length > 0 ? (
                   <div className="space-y-3">
                     {profile.certificates.map((cert) => (
-                      <div key={cert.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/[0.04] transition-colors">
+                      <div key={cert.id} className="flex items-start gap-3 p-3 bg-background rounded-lg hover:bg-hover-overlay transition-colors">
                         <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${expertAccent.gradient} flex items-center justify-center flex-shrink-0`}>
-                          <Award className="w-5 h-5 text-white" />
+                          <Award className="w-5 h-5 text-foreground" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="text-sm font-medium text-white">{cert.title}</h3>
+                          <h3 className="text-sm font-medium text-foreground">{cert.title}</h3>
                           {cert.issuer && (
-                            <p className="text-xs text-gray-400 mt-0.5">{cert.issuer} • {cert.year}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{cert.issuer} • {cert.year}</p>
                           )}
                           {cert.fileUrl && cert.fileName && (
                             <button
@@ -289,13 +289,13 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">{t('noCertificates')}</p>
+                  <p className="text-sm text-faint-foreground italic">{t('noCertificates')}</p>
                 )}
               </div>
 
               {/* Achievements */}
-              <div className="bg-[#141414] rounded-xl border border-white/[0.06] p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">{t('achievements')}</h2>
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
+                <h2 className="text-xl font-semibold text-foreground mb-4">{t('achievements')}</h2>
                 {profile.achievements && profile.achievements.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {profile.achievements.map((achievement) => {
@@ -311,14 +311,14 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                       const bgColor = toneColors[achievement.tone.toLowerCase()] || `bg-gradient-to-br ${expertAccent.gradient}`
 
                       return (
-                        <div key={achievement.id} className="flex items-start gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/[0.04] transition-colors">
+                        <div key={achievement.id} className="flex items-start gap-3 p-3 bg-background rounded-lg hover:bg-hover-overlay transition-colors">
                           <div className={`w-10 h-10 rounded-lg ${bgColor} flex items-center justify-center text-xl flex-shrink-0`}>
                             {achievement.iconKey}
                           </div>
                           <div>
-                            <h3 className="text-sm font-medium text-white">{achievement.title}</h3>
+                            <h3 className="text-sm font-medium text-foreground">{achievement.title}</h3>
                             {achievement.subtitle && (
-                              <p className="text-xs text-gray-400 mt-0.5">{achievement.subtitle}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{achievement.subtitle}</p>
                             )}
                           </div>
                         </div>
@@ -326,7 +326,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">{t('noAchievements')}</p>
+                  <p className="text-sm text-faint-foreground italic">{t('noAchievements')}</p>
                 )}
               </div>
             </div>
@@ -340,14 +340,14 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
           className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setSelectedCertificate(null)}
         >
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-[#141414] rounded-xl overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-              <h3 className="text-white font-semibold">{selectedCertificate.title}</h3>
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-surface-2 rounded-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border-subtle">
+              <h3 className="text-foreground font-semibold">{selectedCertificate.title}</h3>
               <button
                 onClick={() => setSelectedCertificate(null)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
             <div className="p-4 overflow-auto">

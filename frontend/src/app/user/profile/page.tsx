@@ -126,7 +126,7 @@ function GridCell({
 
   if (post.isRepost && !post.originalPost) {
     return (
-      <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center text-center p-2">
+      <div className="relative aspect-square bg-background overflow-hidden flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
         <p className="text-[10px] text-gray-600 leading-tight">{tPosts('deleted')}</p>
       </div>
@@ -137,7 +137,7 @@ function GridCell({
 
   return (
     <div
-      className="relative aspect-square bg-[#0A0A0A] overflow-hidden group cursor-pointer rounded-lg"
+      className="relative aspect-square bg-background overflow-hidden group cursor-pointer rounded-lg"
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('button')) return
         onSelect(postId)
@@ -170,7 +170,7 @@ function GridCell({
             )}
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                <Play className="w-5 h-5 text-foreground ml-0.5" fill="white" />
               </div>
             </div>
           </>
@@ -183,7 +183,7 @@ function GridCell({
           type="button"
           onClick={(e) => { e.stopPropagation(); doLike() }}
           disabled={isLikeLoading}
-          className={`flex items-center gap-1 text-white transition-all hover:scale-110 ${
+          className={`flex items-center gap-1 text-foreground transition-all hover:scale-110 ${
             isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500'
           }`}
         >
@@ -193,7 +193,7 @@ function GridCell({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(postId) }}
-          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-blue-400"
+          className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-blue-400"
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -203,7 +203,7 @@ function GridCell({
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(postId) }}
             disabled={deletingPostId === postId}
-            className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-red-500"
+            className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-red-500"
           >
             {deletingPostId === postId ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -234,7 +234,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white transition-colors">
+      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-foreground/70 hover:text-foreground transition-colors">
         <X className="w-8 h-8" />
       </button>
       <div className="w-fit max-w-full rounded-xl transition-all duration-300" onClick={(e) => e.stopPropagation()}>
@@ -542,7 +542,7 @@ export default function UserProfilePage() {
     <>
       <div className="pb-6">
         {/* Profile Header */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden mb-4">
+        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden mb-4">
           <div className="relative h-48 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] overflow-hidden">
             {user?.bannerUrl && (
               <img
@@ -565,9 +565,9 @@ export default function UserProfilePage() {
                 title={tp('editProfile')}
               >
                 {uploadingBanner ? (
-                  <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 text-foreground animate-spin" />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-white" />
+                  <Camera className="w-3.5 h-3.5 text-foreground" />
                 )}
               </label>
               {user?.bannerUrl && (
@@ -579,7 +579,7 @@ export default function UserProfilePage() {
                   title={tc('delete')}
                 >
                   {deletingBanner ? (
-                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 text-foreground animate-spin" />
                   ) : (
                     <Trash2 className="w-3.5 h-3.5 text-red-200" />
                   )}
@@ -592,7 +592,7 @@ export default function UserProfilePage() {
             <div className="relative z-10">
               {/* Level badge above avatar */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-2.5 py-0.5 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full border border-white/20 shadow-lg shadow-[#0c8de6]/20">
-                <span className="text-[11px] font-bold text-white whitespace-nowrap">Lv. {currentLevel}</span>
+                <span className="text-[11px] font-bold text-foreground whitespace-nowrap">Lv. {currentLevel}</span>
               </div>
               {user?.avatarUrl ? (
                 <img
@@ -602,7 +602,7 @@ export default function UserProfilePage() {
                 />
               ) : (
                 <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-[#1A1A1A] shadow-xl">
-                  <span className="text-white text-4xl font-bold">
+                  <span className="text-foreground text-4xl font-bold">
                     {user?.fullName?.charAt(0) || 'U'}
                   </span>
                 </div>
@@ -616,22 +616,22 @@ export default function UserProfilePage() {
               />
               <label
                 htmlFor="user-avatar-upload"
-                className="absolute bottom-1 right-1 p-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                className="absolute bottom-1 right-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-white/10 transition-colors cursor-pointer"
               >
                 {uploadingAvatar ? (
-                  <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-gray-400" />
+                  <Camera className="w-3.5 h-3.5 text-muted-foreground" />
                 )}
               </label>
               {user?.avatarUrl && (
                 <button
                   onClick={handleAvatarDelete}
                   disabled={deletingAvatar}
-                  className="absolute bottom-1 left-1 p-1.5 bg-[#0A0A0A]/80 backdrop-blur-sm rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
+                  className="absolute bottom-1 left-1 p-1.5 bg-background/80 backdrop-blur-sm rounded-full border border-border hover:bg-red-500/20 transition-colors"
                 >
                   {deletingAvatar ? (
-                    <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
                   ) : (
                     <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   )}
@@ -639,23 +639,23 @@ export default function UserProfilePage() {
               )}
             </div>
 
-            <h1 className="text-2xl font-bold text-white mt-4 text-center">{user?.fullName || 'User'}</h1>
+            <h1 className="text-2xl font-bold text-foreground mt-4 text-center">{user?.fullName || 'User'}</h1>
 
-            <div className="mt-2 flex items-center flex-wrap justify-center gap-4 text-xs text-gray-400">
+            <div className="mt-2 flex items-center flex-wrap justify-center gap-4 text-xs text-muted-foreground">
               <div className="inline-flex items-center gap-1.5">
                 <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
                 <span>{tp('xp')}: {currentXp.toLocaleString()}</span>
               </div>
               {joinedDate && (
                 <div className="inline-flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-gray-500" />
+                  <Calendar className="w-3.5 h-3.5 text-faint-foreground" />
                   <span>{tp('joined')}: {joinedDate.toLocaleDateString()}</span>
                 </div>
               )}
             </div>
 
             <div className="mt-3 w-full max-w-xs">
-              <div className="flex justify-between text-[11px] text-gray-400 mb-1">
+              <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
                 <span>Lv. {currentLevel}</span>
                 <span>{currentXp} / {requiredXp} XP</span>
               </div>
@@ -667,33 +667,33 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            <div className="mt-6 w-full grid grid-cols-4 divide-x divide-white/10 rounded-xl bg-white/[0.03] border border-white/[0.06] py-4">
+            <div className="mt-6 w-full grid grid-cols-4 divide-x divide-border rounded-xl bg-white/[0.03] border border-border-subtle py-4">
               <Link href="/user/journey" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-white">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500">{tp('workouts')}</p>
+                <p className="text-xl font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-faint-foreground">{tp('workouts')}</p>
               </Link>
               <Link href="/user/friends" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-white">{(user?.followersCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500">{tp('followers')}</p>
+                <p className="text-xl font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-faint-foreground">{tp('followers')}</p>
               </Link>
               <Link href="/user/friends" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-white">{(user?.followingCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500">{tp('following')}</p>
+                <p className="text-xl font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-faint-foreground">{tp('following')}</p>
               </Link>
               <Link href="/user/achievements" className="flex flex-col items-center gap-1 hover:opacity-80 transition-opacity">
-                <p className="text-xl font-bold text-white">{(user?.achievementsCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-500">{tp('achievements')}</p>
+                <p className="text-xl font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-[11px] text-faint-foreground">{tp('achievements')}</p>
               </Link>
             </div>
 
-            <div className="mt-6 w-full bg-white/[0.02] rounded-xl border border-white/[0.06] p-5">
+            <div className="mt-6 w-full bg-white/[0.02] rounded-xl border border-border-subtle p-5">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <h3 className="text-sm font-semibold text-gray-300">{tp('aboutMe')}</h3>
+                <h3 className="text-sm font-semibold text-muted-foreground">{tp('aboutMe')}</h3>
                 {!isEditingProfileInfo ? (
                   <button
                     type="button"
                     onClick={() => setIsEditingProfileInfo(true)}
-                    className="text-xs text-[#93C5FD] hover:text-white transition-colors"
+                    className="text-xs text-[#93C5FD] hover:text-foreground transition-colors"
                   >
                     {tp('editProfile')}
                   </button>
@@ -714,7 +714,7 @@ export default function UserProfilePage() {
                         : ''
                       setProfileCityInput(resetCity)
                     }}
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {tc('cancel')}
                   </button>
@@ -729,7 +729,7 @@ export default function UserProfilePage() {
                     rows={3}
                     maxLength={1000}
                     placeholder={tp('aboutMePlaceholder')}
-                    className="w-full px-3 py-2.5 text-sm bg-[#0A0A0A] border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/60 resize-none"
+                    className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/60 resize-none"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <select
@@ -738,7 +738,7 @@ export default function UserProfilePage() {
                         setProfileCountryCodeInput(e.target.value)
                         setProfileCityInput('')
                       }}
-                      className="w-full px-3 py-2.5 text-sm bg-[#0A0A0A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#0c8de6]/60"
+                      className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-[#0c8de6]/60"
                     >
                       <option value="">{tr('selectCountry')}</option>
                       {countries.map((country) => (
@@ -751,7 +751,7 @@ export default function UserProfilePage() {
                       value={profileCityInput}
                       onChange={(e) => setProfileCityInput(e.target.value)}
                       disabled={!profileCountryCodeInput}
-                      className="w-full px-3 py-2.5 text-sm bg-[#0A0A0A] border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#0c8de6]/60 disabled:opacity-50"
+                      className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-[#0c8de6]/60 disabled:opacity-50"
                     >
                       <option value="">{profileCountryCodeInput ? tr('selectCity') : tr('selectCountry')}</option>
                       {availableCities.map((city) => (
@@ -772,7 +772,7 @@ export default function UserProfilePage() {
                       type="button"
                       onClick={handleSaveProfileInfo}
                       disabled={savingProfileInfo}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50"
                     >
                       {savingProfileInfo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       {tc('save')}
@@ -781,8 +781,8 @@ export default function UserProfilePage() {
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-gray-300 leading-relaxed">{user?.bio || tp('addDescription')}</p>
-                  <div className="flex items-center gap-1.5 mt-3 text-xs text-gray-400">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{user?.bio || tp('addDescription')}</p>
+                  <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5" />
                     <span>
                       {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
@@ -796,8 +796,8 @@ export default function UserProfilePage() {
               <div className="mt-4 rounded-xl border border-[#0c8de6]/20 bg-[#0c8de6]/[0.06] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-white">{tp('fillProfile')}</p>
-                    <p className="text-xs text-gray-300 mt-1">
+                    <p className="text-sm font-semibold text-foreground">{tp('fillProfile')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {isExpertRole ? tp('fillProfileDescription') : tp('fillProfileDescriptionUser')}
                     </p>
                   </div>
@@ -812,23 +812,23 @@ export default function UserProfilePage() {
         </div>
 
         {/* Posts Section */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5 text-[#0c8de6]" />
-              <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
-              {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
+              <h3 className="font-semibold text-foreground">{tPosts('postsTab')}</h3>
+              {totalPosts > 0 && <span className="text-xs text-faint-foreground">({totalPosts})</span>}
             </div>
-            <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-background rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#0c8de6]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#0c8de6]' : 'text-faint-foreground hover:text-muted-foreground'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#0c8de6]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#0c8de6]' : 'text-faint-foreground hover:text-muted-foreground'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -841,8 +841,8 @@ export default function UserProfilePage() {
           {postIds.length === 0 && !isLoadingPosts ? (
             <div className="py-12 text-center">
               <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">{tPosts('noPublications')}</p>
-              <p className="text-sm text-gray-500 mt-1">{tp('uploadPhotoOrVideo')}</p>
+              <p className="text-muted-foreground">{tPosts('noPublications')}</p>
+              <p className="text-sm text-faint-foreground mt-1">{tp('uploadPhotoOrVideo')}</p>
             </div>
           ) : viewMode === 'grid' ? (
             <div>

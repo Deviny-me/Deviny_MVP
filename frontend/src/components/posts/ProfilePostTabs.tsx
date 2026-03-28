@@ -19,7 +19,7 @@ const tabs: { key: ProfilePostTab; label: string; icon: typeof Grid }[] = [
 export function ProfilePostTabs({ activeTab, onTabChange, disabled }: ProfilePostTabsProps) {
   const accent = useAccentColors()
   return (
-    <div className="flex items-center bg-[#111111] border-b border-white/[0.06] px-2">
+    <div className="flex items-center bg-surface-1 border-b border-border-subtle px-2">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key
         return (
@@ -32,7 +32,7 @@ export function ProfilePostTabs({ activeTab, onTabChange, disabled }: ProfilePos
                 ? accent.text
                 : disabled
                   ? 'text-gray-600 cursor-not-allowed'
-                  : 'text-gray-400 hover:text-gray-200'
+                  : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <tab.icon className="w-4 h-4" />

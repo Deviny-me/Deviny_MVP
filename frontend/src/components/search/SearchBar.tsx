@@ -152,7 +152,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
   return (
     <div ref={containerRef} className="relative flex-1 max-w-md">
       {/* Input */}
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-faint-foreground pointer-events-none" />
       <input
         ref={inputRef}
         type="text"
@@ -160,15 +160,15 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
         onChange={(e) => handleInputChange(e.target.value)}
         onFocus={() => { if (results) setIsOpen(true) }}
         placeholder={placeholder}
-        className={`w-full pl-10 pr-8 py-2 bg-white/[0.04] border border-white/[0.06] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:bg-white/[0.06] ${accent.focusBorder} focus:border-opacity-50 transition-all`}
+        className={`w-full pl-10 pr-8 py-2 bg-border-subtle border border-border-subtle rounded-lg text-sm text-foreground placeholder-gray-500 focus:outline-none focus:bg-border-subtle ${accent.focusBorder} focus:border-opacity-50 transition-all`}
       />
       {/* Loading / Clear */}
       {(isLoading || query) && (
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
           {isLoading ? (
-            <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
           ) : query ? (
-            <button onClick={handleClear} className="text-gray-400 hover:text-white transition-colors">
+            <button onClick={handleClear} className="text-muted-foreground hover:text-foreground transition-colors">
               <X className="w-4 h-4" />
             </button>
           ) : null}
@@ -177,9 +177,9 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
 
       {/* Dropdown */}
       {isOpen && (hasResults || noResults) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#141414] border border-white/[0.08] rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-[60] max-h-[400px] overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface-2 border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden z-[60] max-h-[400px] overflow-y-auto">
           {noResults && (
-            <div className="px-4 py-6 text-center text-gray-500 text-sm">
+            <div className="px-4 py-6 text-center text-faint-foreground text-sm">
               {tSearch('noResults', { query: query.trim() })}
             </div>
           )}
@@ -187,7 +187,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Users section */}
           {results && results.users.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
                 <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('users')}
               </div>
@@ -195,7 +195,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                 <button
                   key={item.id}
                   onClick={() => handleUserClick(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-hover-overlay transition-colors text-left"
                 >
                   {item.avatarUrl ? (
                     <img
@@ -205,14 +205,14 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                     />
                   ) : (
                     <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAccentColorsByRole(item.role).gradient} flex items-center justify-center flex-shrink-0`}>
-                      <span className="text-xs font-bold text-white">
+                      <span className="text-xs font-bold text-foreground">
                         {item.fullName.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-white font-medium truncate">{item.fullName}</p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-sm text-foreground font-medium truncate">{item.fullName}</p>
+                    <p className="text-xs text-muted-foreground truncate">
                       {item.role === 'Trainer' ? tSearch('trainer') : item.role === 'Nutritionist' ? tSearch('nutritionist') : tSearch('user')}
                     </p>
                   </div>
@@ -224,7 +224,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Workout Programs section */}
           {results && results.workoutPrograms.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
                 <Dumbbell className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('trainingPrograms')}
               </div>
@@ -232,7 +232,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                 <button
                   key={item.id}
                   onClick={() => handleProgramClick(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-hover-overlay transition-colors text-left"
                 >
                   {item.coverImagePath ? (
                     <img
@@ -246,8 +246,8 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-white font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-sm text-foreground font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
                       {item.code} · ${item.price} · {item.trainerName}
                     </p>
                   </div>
@@ -259,7 +259,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
           {/* Meal Programs section */}
           {results && results.mealPrograms.length > 0 && (
             <div>
-              <div className="px-3 py-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider bg-white/[0.02]">
+              <div className="px-3 py-2 text-[11px] font-semibold text-faint-foreground uppercase tracking-wider bg-white/[0.02]">
                 <UtensilsCrossed className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
                 {tSearch('nutritionPrograms')}
               </div>
@@ -267,7 +267,7 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                 <button
                   key={item.id}
                   onClick={() => handleProgramClick(item)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/[0.04] transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-hover-overlay transition-colors text-left"
                 >
                   {item.coverImagePath ? (
                     <img
@@ -281,8 +281,8 @@ export function SearchBar({ placeholder = 'Поиск...' }: SearchBarProps) {
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-white font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-gray-400 truncate">
+                    <p className="text-sm text-foreground font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
                       {item.code} · ${item.price} · {item.trainerName}
                     </p>
                   </div>

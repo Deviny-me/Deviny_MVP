@@ -147,12 +147,12 @@ export default function NutritionistProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
-            <p className="text-gray-400">{t('description')}</p>
+            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('description')}</p>
           </div>
           <button 
             onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
-            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
+            className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90 flex items-center gap-2`}
           >
             <Plus className="w-5 h-5" />
             {t('createProgram')}
@@ -169,11 +169,11 @@ export default function NutritionistProgramsPage() {
               key={cat}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4"
+              className="bg-surface-3 rounded-xl border border-border p-4"
             >
               <Icon className={`w-6 h-6 ${color} mb-2`} />
-              <p className="text-2xl font-bold text-white">{count}</p>
-              <p className="text-xs text-gray-400">{label}</p>
+              <p className="text-2xl font-bold text-foreground">{count}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
             </motion.div>
           ))}
         </div>
@@ -190,7 +190,7 @@ export default function NutritionistProgramsPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === cat
                   ? `bg-${color}-500/20 text-${color}-400 border border-${color}-500/30`
-                  : 'bg-[#1A1A1A] text-gray-400 border border-white/10 hover:border-white/20'
+                  : 'bg-surface-3 text-muted-foreground border border-border hover:border-border'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -207,13 +207,13 @@ export default function NutritionistProgramsPage() {
         {/* Search */}
         <div className="flex items-center gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="text"
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:outline-none ${accent.focusBorder}`}
+              className={`w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
             />
           </div>
         </div>
@@ -230,15 +230,15 @@ export default function NutritionistProgramsPage() {
             ) : (
               <MessageSquare className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             )}
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               {activeTab === 'Diet' ? t('noMealPrograms') : t('noConsultations')}
             </h3>
-            <p className="text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               {activeTab === 'Diet' ? t('createFirstMeal') : t('createFirstConsultation')}
             </p>
             <button 
               onClick={() => router.push(`/nutritionist/programs/new?category=${activeTab}`)}
-              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
+              className={`px-4 py-2 bg-gradient-to-r ${accent.gradient} text-foreground font-semibold rounded-lg hover:opacity-90`}
             >
               {t('createProgram')}
             </button>
@@ -251,7 +251,7 @@ export default function NutritionistProgramsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden group hover:border-white/20 transition-all cursor-pointer"
+                className="bg-surface-3 rounded-xl border border-border overflow-hidden group hover:border-border transition-all cursor-pointer"
                 onClick={() => router.push(`/nutritionist/programs/${program.id}`)}
               >
                 <div className="relative">
@@ -261,20 +261,20 @@ export default function NutritionistProgramsPage() {
                     className="w-full h-40 object-cover"
                   />
                   <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-                    <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-white`}>
+                    <span className={`px-2 py-1 text-xs font-bold rounded ${accent.bg} text-foreground`}>
                       ${program.price}
                     </span>
                     {program.standardPrice != null && (
-                      <span className="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-white">
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-blue-600 text-foreground">
                         STD ${program.standardPrice}
                       </span>
                     )}
                     {program.proPrice != null && (
-                      <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-white">
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-purple-600 text-foreground">
                         PRO ${program.proPrice}
                       </span>
                     )}
-                    <span className={`px-2 py-1 text-xs font-bold rounded text-white flex items-center gap-1 ${
+                    <span className={`px-2 py-1 text-xs font-bold rounded text-foreground flex items-center gap-1 ${
                       program.category === 'Diet' ? 'bg-green-600' : 'bg-violet-600'
                     }`}>
                       {program.category === 'Diet' ? (
@@ -284,7 +284,7 @@ export default function NutritionistProgramsPage() {
                       )}
                     </span>
                     {!program.isPublic && (
-                      <span className="px-2 py-1 text-xs font-bold rounded bg-yellow-600 text-white flex items-center gap-1">
+                      <span className="px-2 py-1 text-xs font-bold rounded bg-yellow-600 text-foreground flex items-center gap-1">
                         <EyeOff className="w-3 h-3" />{t('private')}
                       </span>
                     )}
@@ -292,7 +292,7 @@ export default function NutritionistProgramsPage() {
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
                       onClick={(e) => { e.stopPropagation(); router.push(`/nutritionist/programs/new?edit=${program.id}&category=${program.category}`) }}
-                      className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-all"
+                      className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-black/70 transition-all"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -310,11 +310,11 @@ export default function NutritionistProgramsPage() {
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className={`font-bold text-white mb-2 ${accent.hoverText} transition-colors`}>
+                  <h3 className={`font-bold text-foreground mb-2 ${accent.hoverText} transition-colors`}>
                     {program.title}
                   </h3>
-                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">{program.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{program.description}</p>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
                     {program.videoUrls && program.videoUrls.length > 0 && (
                       <div className="flex items-center gap-1">
                         <Video className="w-3.5 h-3.5" />
@@ -322,11 +322,11 @@ export default function NutritionistProgramsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                    <span className="text-xs text-gray-500">
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
+                    <span className="text-xs text-faint-foreground">
                       {t('programCode')}: {program.code}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-faint-foreground">
                       {new Date(program.createdAt).toLocaleDateString('ru-RU')}
                     </span>
                   </div>

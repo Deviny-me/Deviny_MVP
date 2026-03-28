@@ -107,7 +107,7 @@ export function RepostDialog({
             className="p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close dialog"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-faint-foreground" />
           </button>
         </div>
 
@@ -125,7 +125,7 @@ export function RepostDialog({
               maxLength={500}
               disabled={isSubmitting}
             />
-            <p className="mt-1 text-xs text-gray-400 text-right">
+            <p className="mt-1 text-xs text-muted-foreground text-right">
               {quote.length}/500
             </p>
           </div>
@@ -174,7 +174,7 @@ export function RepostDialog({
                   />
                 )}
                 {post.media.length > 1 && (
-                  <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute top-2 right-2 bg-black/60 text-foreground text-xs px-2 py-1 rounded">
                     +{post.media.length - 1}
                   </div>
                 )}
@@ -205,8 +205,8 @@ export function RepostDialog({
             className={cn(
               'px-4 py-2 text-sm font-medium rounded-full transition-colors flex items-center gap-2',
               isSubmitting
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-green-500 text-white hover:bg-green-600'
+                ? 'bg-gray-100 text-muted-foreground cursor-not-allowed'
+                : 'bg-green-500 text-foreground hover:bg-green-600'
             )}
           >
             {isSubmitting ? (
