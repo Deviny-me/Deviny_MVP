@@ -17,7 +17,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-2xl transition-all',
+          'rounded-2xl transition-all p-2 sm:p-4 md:p-6 lg:p-8 text-sm sm:text-base',
           variants[variant],
           className
         )}

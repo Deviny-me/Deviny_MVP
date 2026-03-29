@@ -56,18 +56,18 @@ export function SharedTopNav({
 
   return (
     <nav className={`sticky top-0 glass-strong border-b border-border-subtle z-50 ${className || ''}`}>
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+      <div className="max-w-full md:max-w-[1280px] mx-auto px-2 sm:px-4 md:px-6">
+        <div className="flex items-center justify-between h-11 sm:h-12 md:h-14">
           {/* Left: Logo & Search */}
-          <div className="flex items-center gap-4 flex-1 max-w-xl">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 max-w-full sm:max-w-xl">
             {/* Logo */}
             <button 
               onClick={() => { if (pathname !== basePath) startNavigation(); router.push(basePath) }}
               className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
             >
-              <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={90} height={30} className="h-7 w-auto" />
+              <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={70} height={24} className="h-5 sm:h-7 w-auto" />
               {logoText && (
-                <span className="text-sm font-bold text-foreground hidden sm:block tracking-tight">{logoText}</span>
+                <span className="text-xs sm:text-sm font-bold text-foreground hidden sm:block tracking-tight">{logoText}</span>
               )}
             </button>
 
@@ -93,8 +93,8 @@ export function SharedTopNav({
                   }`}
                   title={item.label}
                 >
-                  <ItemIcon className="w-5 h-5" strokeWidth={1.5} />
-                  <span className="text-[10px] font-medium mt-0.5 hidden lg:block">{item.label}</span>
+                  <ItemIcon className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.5} />
+                  <span className="text-[9px] sm:text-[10px] font-medium mt-0.5 hidden md:block lg:block">{item.label}</span>
                   {isActive(item.path) && (
                     <div className={`absolute bottom-0 left-2 right-2 h-0.5 ${tc.indicator} rounded-full`} />
                   )}

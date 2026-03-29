@@ -34,21 +34,18 @@ export function SharedMainLayout({
   return (
     <div className={`min-h-screen bg-background flex flex-col ${className || ''}`}>
       {topNav}
-      
-      <div className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6">
-        <div className="flex gap-6 pt-5">
+      <div className="flex-1 w-full max-w-full md:max-w-[1600px] mx-auto px-2 sm:px-4 md:px-6">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-6 pt-2 md:pt-5">
           {/* Left Sidebar */}
           {showLeftSidebar && (
             <div className="hidden lg:block">
               <SharedLeftSidebar sections={leftSidebarSections} accentColor={accentColor} />
             </div>
           )}
-
           {/* Main Content */}
-          <div className="flex-1 min-w-0 pb-8">
+          <div className="flex-1 min-w-0 pb-4 md:pb-8">
             {children}
           </div>
-
           {/* Right Sidebar */}
           {showRightSidebar && rightSidebar && (
             <div className="hidden xl:block">
@@ -57,11 +54,10 @@ export function SharedMainLayout({
           )}
         </div>
       </div>
-
       {/* Footer */}
       {footer && (
         <footer className="mt-auto border-t border-border-subtle">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-5">
+          <div className="max-w-full md:max-w-[1600px] mx-auto px-2 sm:px-4 md:px-6 py-4 md:py-5">
             {footer}
           </div>
         </footer>
