@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 import { SharedMainLayout, userConfig } from '@/components/shared/layout'
 import { UserTopNav } from './UserTopNav'
-import { UserRightSidebar } from './UserRightSidebar'
+import { UserFooter } from './UserFooter'
 
 interface UserMainLayoutProps {
   children: ReactNode
@@ -23,9 +23,11 @@ export function UserMainLayout({
     <SharedMainLayout
       topNav={<UserTopNav />}
       leftSidebarSections={userConfig.navSections}
-      rightSidebar={<UserRightSidebar />}
+      mobilePrimaryLinks={userConfig.mobilePrimaryLinks}
+      mobileSecondaryLinks={userConfig.topNavItems}
+      footer={<UserFooter />}
       showLeftSidebar={showLeftSidebar}
-      showRightSidebar={showRightSidebar}
+      showRightSidebar={false}
       accentColor="blue"
     >
       {children}

@@ -4,6 +4,7 @@ import { useUser } from '@/components/user/UserProvider'
 import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
+  Pencil,
   Check,
   MapPin,
   Calendar,
@@ -17,6 +18,8 @@ import {
   MessageCircle,
   Repeat2,
   Trash2,
+  Users,
+  Award,
 } from 'lucide-react'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -124,7 +127,7 @@ function GridCell({
 
   if (post.isRepost && !post.originalPost) {
     return (
-      <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center text-center p-2">
+      <div className="relative aspect-square bg-background overflow-hidden flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
         <p className="text-[10px] text-gray-600 leading-tight">{tPosts('deleted')}</p>
       </div>
@@ -135,7 +138,7 @@ function GridCell({
 
   return (
     <div
-      className="relative aspect-square bg-[#0A0A0A] overflow-hidden group cursor-pointer"
+      className="relative aspect-square bg-background overflow-hidden group cursor-pointer rounded-lg"
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('button')) return
         onSelect(postId)
@@ -168,7 +171,7 @@ function GridCell({
             )}
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                <Play className="w-5 h-5 text-foreground ml-0.5" fill="white" />
               </div>
             </div>
           </>
@@ -176,12 +179,12 @@ function GridCell({
       </div>
 
       {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-4">
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); doLike() }}
           disabled={isLikeLoading}
-          className={`flex items-center gap-1 text-white transition-all hover:scale-110 ${
+          className={`flex items-center gap-1 text-foreground transition-all hover:scale-110 ${
             isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500'
           }`}
         >
@@ -191,7 +194,7 @@ function GridCell({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(postId) }}
-          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-blue-400"
+          className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-blue-400"
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -201,7 +204,7 @@ function GridCell({
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(postId) }}
             disabled={deletingPostId === postId}
-            className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-red-500"
+            className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-red-500"
           >
             {deletingPostId === postId ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -232,7 +235,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white transition-colors">
+      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-foreground/70 hover:text-foreground transition-colors">
         <X className="w-8 h-8" />
       </button>
       <div className="w-fit max-w-full rounded-xl transition-all duration-300" onClick={(e) => e.stopPropagation()}>
@@ -540,8 +543,8 @@ export default function UserProfilePage() {
     <>
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="relative h-32 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] overflow-hidden">
+        <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
+          <div className="relative h-32 sm:h-40 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] overflow-hidden">
             {user?.bannerUrl && (
               <img
                 src={getMediaUrl(user.bannerUrl) || ''}
@@ -549,7 +552,7 @@ export default function UserProfilePage() {
                 className="absolute inset-0 w-full h-full object-cover"
               />
             )}
-            <div className="absolute top-2 right-2 flex items-center gap-1.5">
+            <div className="absolute top-3 right-3 flex items-center gap-1.5">
               <input
                 type="file"
                 id="user-banner-upload"
@@ -565,7 +568,7 @@ export default function UserProfilePage() {
                 {uploadingBanner ? (
                   <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
                 ) : (
-                  <Camera className="w-3.5 h-3.5 text-white" />
+                  <Pencil className="w-3.5 h-3.5 text-white" />
                 )}
               </label>
               {user?.bannerUrl && (
@@ -577,31 +580,29 @@ export default function UserProfilePage() {
                   title={tc('delete')}
                 >
                   {deletingBanner ? (
-                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 text-foreground animate-spin" />
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5 text-red-200" />
+                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
                   )}
                 </button>
               )}
             </div>
           </div>
 
-          <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-16 relative z-10">
-              <div className="relative">
-                {/* Level badge above avatar */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-2 py-0.5 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] rounded-full border border-white/20 shadow-lg">
-                  <span className="text-[11px] font-bold text-white whitespace-nowrap">Lv. {currentLevel}</span>
-                </div>
+          <div className="relative px-4 pb-4 sm:px-6 sm:pb-5">
+            {/* Avatar + Info row */}
+            <div className="-mt-10 flex flex-col gap-3 sm:-mt-12 sm:flex-row sm:gap-4">
+              {/* Avatar */}
+              <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {user?.avatarUrl ? (
                   <img
                     src={getMediaUrl(user.avatarUrl) || ''}
                     alt={user?.fullName || 'User'}
-                    className="w-32 h-32 rounded-full object-cover border-4 border-[#1A1A1A]"
+                    className="h-20 w-20 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10 sm:h-24 sm:w-24"
                   />
                 ) : (
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center border-4 border-[#1A1A1A]">
-                    <span className="text-white text-4xl font-bold">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#0c8de6] to-[#0070c4] shadow-xl dark:border-[#1A1A1A] sm:h-24 sm:w-24">
+                    <span className="text-xl font-bold text-white sm:text-2xl">
                       {user?.fullName?.charAt(0) || 'U'}
                     </span>
                   </div>
@@ -615,86 +616,117 @@ export default function UserProfilePage() {
                 />
                 <label
                   htmlFor="user-avatar-upload"
-                  className="absolute bottom-1 right-1 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#0c8de6] hover:bg-[#0a7bc9] shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors cursor-pointer z-10"
                 >
                   {uploadingAvatar ? (
-                    <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
+                    <Loader2 className="w-3 h-3 text-white animate-spin" />
                   ) : (
-                    <Camera className="w-3 h-3 text-gray-400" />
+                    <Pencil className="w-3 h-3 text-white" />
                   )}
                 </label>
                 {user?.avatarUrl && (
                   <button
                     onClick={handleAvatarDelete}
                     disabled={deletingAvatar}
-                    className="absolute bottom-1 left-1 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
+                    className="absolute bottom-0 left-0 p-1.5 bg-red-500 hover:bg-red-600 shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors z-10"
                   >
                     {deletingAvatar ? (
-                      <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
+                      <Loader2 className="w-3 h-3 text-white animate-spin" />
                     ) : (
-                      <Trash2 className="w-3 h-3 text-red-400" />
+                      <Trash2 className="w-3 h-3 text-white" />
                     )}
                   </button>
                 )}
               </div>
-              <div className="flex-1 pb-2">
-                <h1 className="text-xl font-bold text-white">{user?.fullName || 'User'}</h1>
 
-                <div className="mt-3 flex items-center gap-3 text-xs text-gray-400">
-                  <div className="inline-flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-[#3B82F6]" />
-                    <span>{tp('xp')}: {currentXp.toLocaleString()}</span>
+              {/* Name + Stats inline */}
+              <div className="flex min-w-0 flex-1 flex-col gap-3 pt-0 sm:pt-[3rem]">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                    <h2 className="page-title-compact truncate">{user?.fullName || 'User'}</h2>
+                    <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full whitespace-nowrap">
+                      Lv. {currentLevel}
+                    </span>
                   </div>
-                  {joinedDate && (
-                    <div className="inline-flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-gray-500" />
-                      <span>{tp('joined')}: {joinedDate.toLocaleDateString()}</span>
-                    </div>
-                  )}
+                  <div className="mt-2 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                    <span className="inline-flex items-center gap-1 text-center">
+                      <MapPin className="w-3 h-3" />
+                      {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
+                    </span>
+                    {joinedDate && (
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {joinedDate.toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-3">
-                  <div className="flex justify-between text-[11px] text-gray-400 mb-1">
-                    <span>Lv. {currentLevel}</span>
-                    <span>{currentXp} / {requiredXp} XP</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB] transition-all"
-                      style={{ width: `${levelProgress}%` }}
-                    />
-                  </div>
+                {/* Stats */}
+                <div className="hidden sm:grid sm:grid-cols-4 sm:gap-2 md:gap-3">
+                  <Link href="/user/journey" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('workouts')}</p>
+                  </Link>
+                  <Link href="/user/friends" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.followersCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
+                  </Link>
+                  <Link href="/user/friends" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.followingCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
+                  </Link>
+                  <Link href="/user/achievements" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
+                  </Link>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Link href="/user/journey" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
-                <p className="text-base font-bold text-white">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-400">{tp('workouts')}</p>
+            {/* Stats row for mobile */}
+            <div className="mt-4 grid grid-cols-4 gap-1 bg-surface-1/45 p-1.5 sm:hidden sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-2">
+              <Link href="/user/journey" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('workouts')}</p>
               </Link>
-              <Link href="/user/friends" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
-                <p className="text-base font-bold text-white">{(user?.followersCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-400">{tp('followers')}</p>
+              <Link href="/user/friends" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
               </Link>
-              <Link href="/user/friends" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
-                <p className="text-base font-bold text-white">{(user?.followingCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-400">{tp('following')}</p>
+              <Link href="/user/friends" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
               </Link>
-              <Link href="/user/achievements" className="rounded-lg border border-white/10 bg-[#0A0A0A] p-3 hover:border-white/20 transition-colors">
-                <p className="text-base font-bold text-white">{(user?.achievementsCount || 0).toLocaleString()}</p>
-                <p className="text-[11px] text-gray-400">{tp('achievements')}</p>
+              <Link href="/user/achievements" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
               </Link>
             </div>
 
-            <div className="mt-4 rounded-lg border border-white/10 bg-[#0A0A0A] p-3">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <p className="text-xs uppercase tracking-wide text-gray-500">{tp('aboutMe')}</p>
+            {/* XP Progress */}
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
+                <span>{currentXp.toLocaleString()} / {requiredXp.toLocaleString()} XP</span>
+              </div>
+              <div className="flex-1 h-1.5 rounded-full bg-border/50 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full transition-all"
+                  style={{ width: `${levelProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* About Me */}
+            <div className="mt-4 bg-surface-1/45 p-3 dark:bg-white/[0.02] sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tp('aboutMe')}</h3>
                 {!isEditingProfileInfo ? (
                   <button
                     type="button"
                     onClick={() => setIsEditingProfileInfo(true)}
-                    className="text-xs text-[#93C5FD] hover:text-white transition-colors"
+                    className="text-xs text-[#93C5FD] hover:text-foreground transition-colors"
                   >
                     {tp('editProfile')}
                   </button>
@@ -715,7 +747,7 @@ export default function UserProfilePage() {
                         : ''
                       setProfileCityInput(resetCity)
                     }}
-                    className="text-xs text-gray-400 hover:text-white transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {tc('cancel')}
                   </button>
@@ -723,14 +755,14 @@ export default function UserProfilePage() {
               </div>
 
               {isEditingProfileInfo ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <textarea
                     value={profileBioInput}
                     onChange={(e) => setProfileBioInput(e.target.value)}
                     rows={3}
                     maxLength={1000}
                     placeholder={tp('aboutMePlaceholder')}
-                    className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]/60 resize-none"
+                    className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/60 resize-none"
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <select
@@ -739,7 +771,7 @@ export default function UserProfilePage() {
                         setProfileCountryCodeInput(e.target.value)
                         setProfileCityInput('')
                       }}
-                      className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#3B82F6]/60"
+                      className="app-select"
                     >
                       <option value="">{tr('selectCountry')}</option>
                       {countries.map((country) => (
@@ -752,7 +784,7 @@ export default function UserProfilePage() {
                       value={profileCityInput}
                       onChange={(e) => setProfileCityInput(e.target.value)}
                       disabled={!profileCountryCodeInput}
-                      className="w-full px-3 py-2 text-sm bg-[#121212] border border-white/10 rounded-lg text-white focus:outline-none focus:border-[#3B82F6]/60 disabled:opacity-50"
+                      className="app-select disabled:opacity-50"
                     >
                       <option value="">{profileCountryCodeInput ? tr('selectCity') : tr('selectCountry')}</option>
                       {availableCities.map((city) => (
@@ -762,9 +794,9 @@ export default function UserProfilePage() {
                       ))}
                     </select>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
                     {showProfileSaved && (
-                      <span className="mr-2 inline-flex items-center gap-1 text-emerald-400 text-xs animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs animate-pulse">
                         <Check className="w-3.5 h-3.5" />
                         {tp('toasts.profileUpdated')}
                       </span>
@@ -773,7 +805,7 @@ export default function UserProfilePage() {
                       type="button"
                       onClick={handleSaveProfileInfo}
                       disabled={savingProfileInfo}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-50"
                     >
                       {savingProfileInfo && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                       {tc('save')}
@@ -782,8 +814,8 @@ export default function UserProfilePage() {
                 </div>
               ) : (
                 <>
-                  <p className="text-sm text-gray-300">{user?.bio || tp('addDescription')}</p>
-                  <div className="flex items-center gap-1 mt-3 text-xs text-gray-400">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{user?.bio || tp('addDescription')}</p>
+                  <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
                     <MapPin className="w-3.5 h-3.5" />
                     <span>
                       {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
@@ -794,18 +826,18 @@ export default function UserProfilePage() {
             </div>
 
             {completionPercent < 100 && (
-              <div className="mt-4 rounded-lg border border-[#3B82F6]/30 bg-[#3B82F6]/10 p-3">
+              <div className="mt-4 bg-[#0c8de6]/[0.05] p-3 sm:rounded-xl sm:border sm:border-[#0c8de6]/20 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-white">{tp('fillProfile')}</p>
-                    <p className="text-xs text-gray-300 mt-1">
+                    <p className="text-sm font-semibold text-foreground">{tp('fillProfile')}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {isExpertRole ? tp('fillProfileDescription') : tp('fillProfileDescriptionUser')}
                     </p>
                   </div>
                   <span className="text-xs font-semibold text-[#93C5FD]">{completionPercent}%</span>
                 </div>
                 <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#3B82F6] to-[#2563EB]" style={{ width: `${completionPercent}%` }} />
+                  <div className="h-full bg-gradient-to-r from-[#0c8de6] to-[#0070c4]" style={{ width: `${completionPercent}%` }} />
                 </div>
               </div>
             )}
@@ -813,23 +845,23 @@ export default function UserProfilePage() {
         </div>
 
         {/* Posts Section */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-          <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div className="overflow-hidden bg-surface-2/35 sm:rounded-xl sm:border sm:border-border sm:bg-surface-3">
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
-              <Grid className="w-5 h-5 text-[#3B82F6]" />
-              <h3 className="font-semibold text-white">{tPosts('postsTab')}</h3>
-              {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
+              <Grid className="w-5 h-5 text-[#0c8de6]" />
+              <h3 className="font-semibold text-foreground">{tPosts('postsTab')}</h3>
+              {totalPosts > 0 && <span className="text-xs text-faint-foreground">({totalPosts})</span>}
             </div>
-            <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-background rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#3B82F6]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-white/10 text-[#0c8de6]' : 'text-faint-foreground hover:text-muted-foreground'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#3B82F6]' : 'text-gray-500 hover:text-gray-300'}`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-white/10 text-[#0c8de6]' : 'text-faint-foreground hover:text-muted-foreground'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -841,22 +873,20 @@ export default function UserProfilePage() {
 
           {postIds.length === 0 && !isLoadingPosts ? (
             <div className="py-12 text-center">
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-10 h-10 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{tPosts('noPublications')}</h3>
-              <p className="text-sm text-gray-400">{tp('uploadPhotoOrVideo')}</p>
+              <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <p className="text-muted-foreground">{tPosts('noPublications')}</p>
+              <p className="text-sm text-faint-foreground mt-1">{tp('uploadPhotoOrVideo')}</p>
             </div>
           ) : viewMode === 'grid' ? (
             <div>
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
                 {postIds.map((id) => (
                   <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                 ))}
               </div>
               {(isLoadingPosts || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
+                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
                 </div>
               )}
             </div>
@@ -878,7 +908,7 @@ export default function UserProfilePage() {
               ))}
               {(isLoadingPosts || hasMore) && (
                 <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#3B82F6] animate-spin" />}
+                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
                 </div>
               )}
             </div>

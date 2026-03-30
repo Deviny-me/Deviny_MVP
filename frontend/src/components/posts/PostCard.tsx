@@ -131,7 +131,7 @@ export function PostCard({
   const isModal = variant === 'modal'
 
   return (
-    <div className={`bg-[#1A1A1A] rounded-lg border border-white/10 overflow-hidden transition-all duration-300 ${
+    <div className={`bg-surface-2 rounded-xl border border-border-subtle overflow-hidden transition-all duration-300 hover:border-border ${
       isModal
         ? commentsOpen && !originalDeleted
           ? 'md:w-[920px] max-w-full'
@@ -150,8 +150,8 @@ export function PostCard({
         <div className="min-w-0">
           {/* Repost indicator */}
           {isRepost && (
-            <div className="px-3 pt-2 flex items-center gap-1.5 text-gray-400 text-xs">
-              <Repeat2 className="w-3 h-3" />
+            <div className="px-4 pt-2.5 flex items-center gap-1.5 text-faint-foreground text-xs">
+              <Repeat2 className="w-3.5 h-3.5" />
               <span>Репост</span>
             </div>
           )}
@@ -167,21 +167,21 @@ export function PostCard({
                   title="Удалить репост"
                 >
                   {deletingPostId === post.id ? (
-                    <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
                   ) : (
-                    <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors" />
+                    <Trash2 className="w-4 h-4 text-faint-foreground group-hover:text-red-500 transition-colors" />
                   )}
                 </button>
               )}
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-border-subtle flex items-center justify-center">
                 <Repeat2 className="w-6 h-6 text-gray-600" />
               </div>
-              <p className="text-sm text-gray-500">Публикация была удалена</p>
+              <p className="text-sm text-faint-foreground">Публикация была удалена</p>
             </div>
           ) : (
             <>
               {/* Post Header */}
-              <div className="p-3 hover:bg-white/5 transition-colors">
+              <div className="p-3.5 hover:bg-hover-overlay transition-colors">
                 <div className="flex items-center gap-2">
                   <div
                     className="flex items-center gap-2 flex-1 cursor-pointer"
@@ -199,8 +199,8 @@ export function PostCard({
                       </div>
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-white">{authorName}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-foreground">{authorName}</p>
+                      <p className="text-xs text-faint-foreground">
                         {new Date(post.createdAt).toLocaleDateString('ru-RU', {
                           month: 'short',
                           day: 'numeric',
@@ -220,9 +220,9 @@ export function PostCard({
                       title="Удалить публикацию"
                     >
                       {deletingPostId === post.id ? (
-                        <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                        <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
                       ) : (
-                        <Trash2 className="w-4 h-4 text-gray-500 group-hover:text-red-500 transition-colors" />
+                        <Trash2 className="w-4 h-4 text-faint-foreground group-hover:text-red-500 transition-colors" />
                       )}
                     </button>
                   )}
@@ -265,7 +265,7 @@ export function PostCard({
                       {playingVideoId !== post.id && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors">
                           <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center hover:bg-white/30 transition-colors">
-                            <Video className="w-8 h-8 text-white ml-1" />
+                            <Video className="w-8 h-8 text-foreground ml-1" />
                           </div>
                         </div>
                       )}
@@ -276,13 +276,13 @@ export function PostCard({
 
               {/* Post Caption */}
               {displayCaption && (
-                <div className="px-3 py-2">
-                  <p className="text-sm text-gray-300">{displayCaption}</p>
+                <div className="px-4 py-2.5">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{displayCaption}</p>
                 </div>
               )}
 
               {/* Post Actions */}
-              <div className="px-3 py-2 border-t border-white/10">
+              <div className="px-3 py-1.5 border-t border-border-subtle">
                 <PostActions
                   postId={post.id}
                   onCommentClick={() => setCommentsOpen(prev => !prev)}
@@ -295,10 +295,10 @@ export function PostCard({
 
         {/* ===== RIGHT: Inline comments panel ===== */}
         {commentsOpen && !originalDeleted && (
-          <div className={`border-t border-white/10 flex flex-col ${
+          <div className={`border-t border-border-subtle flex flex-col ${
             isModal
-              ? 'max-h-[70vh] md:border-t-0 md:border-l'
-              : 'h-[500px] md:h-auto md:max-h-[650px] md:border-t-0 md:border-l'
+              ? 'max-h-[70vh] md:border-t-0 md:border-l md:border-border-subtle'
+              : 'h-[500px] md:h-auto md:max-h-[650px] md:border-t-0 md:border-l md:border-border-subtle'
           }`}>
             <PostCommentsPanel
               postId={post.id}

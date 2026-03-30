@@ -23,8 +23,8 @@ export function PostCommentsPanel({
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 flex-shrink-0">
-        <h3 className="text-sm font-semibold text-white">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-subtle flex-shrink-0">
+        <h3 className="text-sm font-semibold text-foreground">
           Комментарии{commentCount > 0 ? ` (${commentCount})` : ''}
         </h3>
         <button
@@ -32,7 +32,7 @@ export function PostCommentsPanel({
           className="p-1 rounded-lg hover:bg-white/10 transition-colors"
           aria-label="Закрыть комментарии"
         >
-          <X className="w-4 h-4 text-gray-400" />
+          <X className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 

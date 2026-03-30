@@ -37,7 +37,7 @@ export function LevelBadge({ className = '', showTitle = true }: LevelBadgeProps
       {/* Level Info */}
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+          <span className="text-sm font-semibold text-gray-900 dark:text-foreground">
             Уровень {level.currentLevel}
           </span>
           {showTitle && level.levelTitle && (
@@ -55,7 +55,7 @@ export function LevelBadge({ className = '', showTitle = true }: LevelBadgeProps
               style={{ width: `${level.progressPercent}%` }}
             />
           </div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+          <span className="text-xs text-faint-foreground dark:text-muted-foreground whitespace-nowrap">
             {level.currentXp}/{level.requiredXpForNextLevel} XP
           </span>
         </div>

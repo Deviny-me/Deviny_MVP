@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { 
-  Camera,
+  Pencil,
   MapPin,
   Link as LinkIcon,
   Edit2,
@@ -150,7 +150,7 @@ function NutritionistGridCell({
 
   if (post.isRepost && !post.originalPost) {
     return (
-      <div className="relative aspect-square bg-[#0A0A0A] overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-2">
+      <div className="relative aspect-square bg-background overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-2">
         <Repeat2 className="w-6 h-6 text-gray-600 mb-1" />
         <p className="text-[10px] text-gray-600 leading-tight">{tp('postDeleted')}</p>
       </div>
@@ -161,7 +161,7 @@ function NutritionistGridCell({
 
   return (
     <div
-      className="relative aspect-square bg-[#0A0A0A] overflow-hidden group cursor-pointer rounded-lg"
+      className="relative aspect-square bg-background overflow-hidden group cursor-pointer rounded-lg"
       onClick={(e) => {
         if ((e.target as HTMLElement).closest('button')) return
         onSelect(postId)
@@ -194,7 +194,7 @@ function NutritionistGridCell({
             )}
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <div className="w-10 h-10 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                <Play className="w-5 h-5 text-foreground ml-0.5" fill="white" />
               </div>
             </div>
           </>
@@ -207,7 +207,7 @@ function NutritionistGridCell({
           type="button"
           onClick={(e) => { e.stopPropagation(); doLike() }}
           disabled={isLikeLoading}
-          className={`flex items-center gap-1 text-white transition-all hover:scale-110 ${
+          className={`flex items-center gap-1 text-foreground transition-all hover:scale-110 ${
             isLikeLoading ? 'opacity-50 cursor-not-allowed' : 'hover:text-red-500'
           }`}
         >
@@ -217,7 +217,7 @@ function NutritionistGridCell({
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onSelect(postId) }}
-          className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-green-400"
+          className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-green-400"
         >
           <MessageCircle className="w-5 h-5" fill="white" />
           <span className="font-semibold">{commentCount}</span>
@@ -227,7 +227,7 @@ function NutritionistGridCell({
             type="button"
             onClick={(e) => { e.stopPropagation(); onDelete(postId) }}
             disabled={deletingPostId === postId}
-            className="flex items-center gap-1 text-white transition-all hover:scale-110 hover:text-red-500"
+            className="flex items-center gap-1 text-foreground transition-all hover:scale-110 hover:text-red-500"
           >
             {deletingPostId === postId ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -258,7 +258,7 @@ function NutritionistPostDetailModal({ postId, onClose, onDelete, deletingPostId
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-white/70 hover:text-white transition-colors">
+      <button onClick={onClose} className="absolute top-4 right-4 z-50 p-2 text-foreground/70 hover:text-foreground transition-colors">
         <X className="w-8 h-8" />
       </button>
       <div className="w-fit max-w-full rounded-xl transition-all duration-300" onClick={(e) => e.stopPropagation()}>
@@ -777,7 +777,7 @@ export default function NutritionistProfilePage() {
     return (
       <>
         <div className="text-center py-24">
-          <p className="text-gray-400">{t('toasts.profileLoadError')}</p>
+          <p className="text-muted-foreground">{t('toasts.profileLoadError')}</p>
         </div>
       </>
     )
@@ -789,24 +789,26 @@ export default function NutritionistProfilePage() {
 
   return (
     <>
-      <div className="pb-6">
+      <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden mb-6">
-          <div className={`h-40 bg-gradient-to-r ${accent.gradient} relative`}>
+        <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
+          <div className={`relative h-36 overflow-hidden bg-gradient-to-r ${accent.gradient} sm:h-48`}>
           </div>
 
-          <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-14">
-              <div className="relative">
+          <div className="relative px-4 pb-4 sm:px-6 sm:pb-6">
+            {/* Avatar + Info row */}
+            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:gap-5">
+              {/* Avatar */}
+              <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {trainer.avatarUrl ? (
                   <img
                     src={getMediaUrl(trainer.avatarUrl) || ''}
                     alt={trainer.fullName}
-                    className="w-28 h-28 rounded-xl object-cover border-4 border-[#1A1A1A]"
+                    className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-xl ring-2 ring-white/10 dark:border-[#1A1A1A] sm:h-28 sm:w-28"
                   />
                 ) : (
-                  <div className={`w-28 h-28 rounded-xl bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-[#1A1A1A]`}>
-                    <span className="text-white text-3xl font-bold">
+                  <div className={`flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br ${accent.gradient} shadow-xl dark:border-[#1A1A1A] sm:h-28 sm:w-28`}>
+                    <span className="text-2xl font-bold text-white sm:text-3xl">
                       {trainer.initials}
                     </span>
                   </div>
@@ -820,119 +822,157 @@ export default function NutritionistProfilePage() {
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
+                  className="absolute bottom-0 right-0 p-1.5 bg-[#28bf68] hover:bg-[#22a85c] shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors cursor-pointer z-10"
                 >
                   {uploadingAvatar ? (
-                    <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                    <Loader2 className="w-3 h-3 text-white animate-spin" />
                   ) : (
-                    <Camera className="w-3.5 h-3.5 text-gray-400" />
+                    <Pencil className="w-3 h-3 text-white" />
                   )}
                 </label>
                 {trainer.avatarUrl && (
                   <button
                     onClick={handleAvatarDelete}
                     disabled={deletingAvatar}
-                    className="absolute bottom-0 left-0 p-1.5 bg-[#0A0A0A] rounded-full border border-white/10 hover:bg-red-500/20 transition-colors"
+                    className="absolute bottom-0 left-0 p-1.5 bg-red-500 hover:bg-red-600 shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors z-10"
                   >
                     {deletingAvatar ? (
-                      <Loader2 className="w-3.5 h-3.5 text-gray-400 animate-spin" />
+                      <Loader2 className="w-3 h-3 text-white animate-spin" />
                     ) : (
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                      <Trash2 className="w-3 h-3 text-white" />
                     )}
                   </button>
                 )}
-                {trainer.achievementsCount > 0 && (
-                  <div className={`absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-gradient-to-r ${accent.gradient} border-2 border-[#1A1A1A] flex items-center justify-center shadow-lg`}>
-                    <Award className="w-5 h-5 text-white" />
-                  </div>
-                )}
               </div>
 
-              <div className="flex-1 flex items-end justify-between pb-1">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h1 className="text-2xl font-bold text-white">{trainer.fullName}</h1>
+              {/* Name + Stats inline */}
+              <div className="flex min-w-0 flex-1 flex-col gap-4 pt-0 sm:pt-[3.75rem]">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                    <h1 className="page-title-compact truncate">{trainer.fullName}</h1>
                     {trainer.ratingValue > 0 && (
-                      <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-lg">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-full">
+                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                        <span className="text-xs font-semibold text-yellow-500">{trainer.ratingValue.toFixed(1)}</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-400">{trainer.primaryTitle || t('personalNutritionist')}</p>
-                  {trainer.secondaryTitle && (
-                    <p className="text-sm text-gray-500">{trainer.secondaryTitle}</p>
-                  )}
+                  <div className="mt-2 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
+                    </span>
+                  </div>
                 </div>
+
+                {/* Stats */}
+                <div className="hidden sm:grid sm:grid-cols-4 sm:gap-2 md:gap-3">
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.programsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
+                  </div>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.studentsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('students')}</p>
+                  </div>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.ratingValue.toFixed(1)}</p>
+                    <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
+                  </div>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.achievementsCount}</p>
+                    <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats row for mobile */}
+            <div className="mt-4 grid grid-cols-4 gap-1 bg-surface-1/45 p-1.5 sm:hidden sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-2">
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.programsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
+              </div>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.studentsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('students')}</p>
+              </div>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.ratingValue.toFixed(1)}</p>
+                <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
+              </div>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.achievementsCount}</p>
+                <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Contact & Location Info */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {(trainer.location || trainer.city || trainer.country) && (
-            <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditLocationModal(true)}
-                className={`absolute top-2 right-2 p-1 text-gray-500 ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
+                className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
               >
                 <Edit2 className="w-3 h-3" />
               </button>
-              <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <MapPin className="w-4 h-4" />
                 <span className="text-xs">{t('location')}</span>
               </div>
-              <p className="text-white text-sm font-medium truncate">
+              <p className="text-foreground text-sm font-medium truncate">
                 {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
               </p>
             </div>
           )}
           
           {trainer.phone && (
-            <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditPhoneModal(true)}
-                className={`absolute top-2 right-2 p-1 text-gray-500 ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
+                className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
               >
                 <Edit2 className="w-3 h-3" />
               </button>
-              <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Phone className="w-4 h-4" />
                 <span className="text-xs">{t('phoneLabel')}</span>
               </div>
-              <p className="text-white text-sm font-medium">{trainer.phone}</p>
+              <p className="text-foreground text-sm font-medium">{trainer.phone}</p>
             </div>
           )}
           
           {trainer.experienceYears !== null && trainer.experienceYears !== undefined && (
-            <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditExperienceModal(true)}
-                className={`absolute top-2 right-2 p-1 text-gray-500 ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
+                className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
               >
                 <Edit2 className="w-3 h-3" />
               </button>
-              <div className="flex items-center gap-2 text-gray-400 mb-1">
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Briefcase className="w-4 h-4" />
                 <span className="text-xs">{t('experience')}</span>
               </div>
-              <p className="text-white text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? t('yearSingular') : trainer.experienceYears < 5 ? t('yearFew') : t('yearMany')}</p>
+              <p className="text-foreground text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? t('yearSingular') : trainer.experienceYears < 5 ? t('yearFew') : t('yearMany')}</p>
             </div>
           )}
 
-          <div className="relative bg-white/5 rounded-xl border border-white/10 p-3 group">
+          <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
             <button
               onClick={() => setShowEditGenderModal(true)}
-              className={`absolute top-2 right-2 p-1 text-gray-500 ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
+              className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
             >
               <Edit2 className="w-3 h-3" />
             </button>
-            <div className="flex items-center gap-2 text-gray-400 mb-1">
+            <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <User className="w-4 h-4" />
               <span className="text-xs">{t('genderLabel')}</span>
             </div>
-            <p className="text-white text-sm font-medium">
+            <p className="text-foreground text-sm font-medium">
               {trainer.gender === 'Male' || trainer.gender === 'male'
                 ? t('male')
                 : trainer.gender === 'Female' || trainer.gender === 'female'
@@ -945,11 +985,12 @@ export default function NutritionistProfilePage() {
         </div>
 
         {/* Bio Section */}
-        <div className={`bg-gradient-to-br ${accent.gradientBg} rounded-xl border border-white/10 p-4 mb-6`}>
+        <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+          <p className={`text-sm ${accent.text} font-medium mb-3`}>{trainer.primaryTitle || t('personalNutritionist')}</p>
           {about?.text ? (
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-gray-400">{t('aboutMe')}</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">{t('aboutMe')}</h3>
                 <button 
                   onClick={() => setShowAboutModal(true)}
                   className={`text-xs ${accent.text} hover:underline`}
@@ -957,12 +998,12 @@ export default function NutritionistProfilePage() {
                   {tc('change')}
                 </button>
               </div>
-              <p className="text-gray-300 leading-relaxed">{about.text}</p>
+              <p className="text-muted-foreground leading-relaxed">{about.text}</p>
             </div>
           ) : (
             <button 
               onClick={() => setShowAboutModal(true)}
-              className="w-full py-3 text-gray-500 hover:text-gray-400 flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 text-faint-foreground hover:text-muted-foreground flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="w-4 h-4" />
               {t('addDescription')}
@@ -970,35 +1011,11 @@ export default function NutritionistProfilePage() {
           )}
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className={`bg-gradient-to-br ${accent.gradientBg10} rounded-xl border ${accent.borderMuted} p-4 text-center`}>
-            <BookOpen className={`w-6 h-6 ${accent.text} mx-auto mb-2`} />
-            <p className="text-2xl font-bold text-white">{trainer.programsCount}</p>
-            <p className="text-xs text-gray-400">{t('programs')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 p-4 text-center">
-            <Users className="w-6 h-6 text-green-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.studentsCount}</p>
-            <p className="text-xs text-gray-400">{t('students')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 p-4 text-center">
-            <Star className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.ratingValue.toFixed(1)}</p>
-            <p className="text-xs text-gray-400">{trainer.reviewsCount} {t('reviews')}</p>
-          </div>
-          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 p-4 text-center">
-            <Award className="w-6 h-6 text-purple-400 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-white">{trainer.achievementsCount}</p>
-            <p className="text-xs text-gray-400">{t('achievements')}</p>
-          </div>
-        </div>
-
         {/* Specializations */}
         {specializations.length > 0 && (
-          <div className="mb-6">
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-400">{t('specializations')}</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">{t('specializations')}</h3>
               <button
                 onClick={() => setShowSpecializationModal(true)}
                 className={`text-xs ${accent.text} hover:underline flex items-center gap-1`}
@@ -1011,7 +1028,7 @@ export default function NutritionistProfilePage() {
               {specializations.map((spec) => (
                 <span
                   key={spec.id}
-                  className={`px-3 py-1.5 bg-gradient-to-r ${accent.gradientBg10} border ${accent.borderMuted} text-gray-300 rounded-lg text-sm flex items-center gap-2`}
+                  className={`flex items-center gap-2 rounded-lg border ${accent.borderMuted} bg-gradient-to-r ${accent.gradientBg10} px-3 py-1.5 text-sm text-muted-foreground`}
                 >
                   {spec.name}
                   <button 
@@ -1032,10 +1049,10 @@ export default function NutritionistProfilePage() {
         )}
 
         {specializations.length === 0 && (
-          <div className="mb-6">
+          <div>
             <button
               onClick={() => setShowSpecializationModal(true)}
-              className={`w-full py-3 border-2 border-dashed border-white/10 rounded-xl text-gray-500 hover:text-gray-400 ${accent.hoverBorderMuted} transition-colors flex items-center justify-center gap-2`}
+              className={`w-full py-3 border-2 border-dashed border-border rounded-xl text-faint-foreground hover:text-muted-foreground ${accent.hoverBorderMuted} transition-colors flex items-center justify-center gap-2`}
             >
               <Plus className="w-4 h-4" />
               {t('addSpecialization')}
@@ -1045,10 +1062,10 @@ export default function NutritionistProfilePage() {
 
         {/* Achievements Preview */}
         {achievements.length > 0 && (
-          <div className="mb-6">
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-400">{t('achievements')}</h3>
-              <span className="text-xs text-gray-500">{achievements.length} {tc('total')}</span>
+              <h3 className="text-sm font-medium text-muted-foreground">{t('achievements')}</h3>
+              <span className="text-xs text-faint-foreground">{achievements.length} {tc('total')}</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {achievements.slice(0, 6).map((achievement) => (
@@ -1059,22 +1076,22 @@ export default function NutritionistProfilePage() {
                       ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30'
                       : achievement.tone === 'silver'
                       ? 'bg-gradient-to-r from-gray-400/20 to-gray-500/20 border border-gray-400/30'
-                      : 'bg-white/5 border border-white/10'
+                      : 'bg-white/5 border border-border'
                   }`}
                 >
                   <Award className={`w-4 h-4 ${
                     achievement.tone === 'gold' ? 'text-amber-400' : 
-                    achievement.tone === 'silver' ? 'text-gray-400' : 'text-gray-500'
+                    achievement.tone === 'silver' ? 'text-muted-foreground' : 'text-faint-foreground'
                   }`} />
                   <div>
                     <p className={`text-sm font-medium ${
                       achievement.tone === 'gold' ? 'text-amber-300' : 
-                      achievement.tone === 'silver' ? 'text-gray-300' : 'text-gray-400'
+                      achievement.tone === 'silver' ? 'text-muted-foreground' : 'text-muted-foreground'
                     }`}>
                       {achievement.title}
                     </p>
                     {achievement.subtitle && (
-                      <p className="text-xs text-gray-500">{achievement.subtitle}</p>
+                      <p className="text-xs text-faint-foreground">{achievement.subtitle}</p>
                     )}
                   </div>
                 </div>
@@ -1084,22 +1101,22 @@ export default function NutritionistProfilePage() {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 border-b border-white/10 mb-6">
+        <div className="-mx-1 flex gap-1 overflow-x-auto border-b border-border pb-1 scrollbar-hide">
           {(['posts', 'reviews', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 font-medium capitalize transition-all relative ${
+              className={`relative shrink-0 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium capitalize transition-all ${
                 activeTab === tab
-                  ? accent.text
-                  : 'text-gray-400 hover:text-white'
+                  ? `${accent.text} bg-surface-1`
+                  : 'text-muted-foreground hover:bg-surface-1 hover:text-foreground'
               }`}
             >
               {tab === 'posts' ? t('posts') : tab === 'reviews' ? t('reviews') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="nutritionistProfileTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${accent.gradient}`}
+                  className={`absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r ${accent.gradient}`}
                 />
               )}
             </button>
@@ -1108,23 +1125,23 @@ export default function NutritionistProfilePage() {
 
         {/* Content */}
         {activeTab === 'posts' && (
-          <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
-            <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+          <div className="overflow-hidden bg-surface-2/35 sm:rounded-xl sm:border sm:border-border sm:bg-surface-3">
+            <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <Grid className={`w-5 h-5 ${accent.text}`} />
-                <h3 className="font-semibold text-white">{t('publications')}</h3>
-                {totalPosts > 0 && <span className="text-xs text-gray-500">({totalPosts})</span>}
+                <h3 className="font-semibold text-foreground">{t('publications')}</h3>
+                {totalPosts > 0 && <span className="text-xs text-faint-foreground">({totalPosts})</span>}
               </div>
-              <div className="flex items-center gap-1 bg-[#0A0A0A] rounded-lg p-0.5">
+              <div className="flex items-center gap-1 bg-background rounded-lg p-0.5">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? `bg-white/10 ${accent.text}` : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? `bg-white/10 ${accent.text}` : 'text-faint-foreground hover:text-muted-foreground'}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? `bg-white/10 ${accent.text}` : 'text-gray-500 hover:text-gray-300'}`}
+                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? `bg-white/10 ${accent.text}` : 'text-faint-foreground hover:text-muted-foreground'}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -1136,12 +1153,12 @@ export default function NutritionistProfilePage() {
             {postIds.length === 0 && !isLoadingPosts ? (
               <div className="py-12 text-center">
                 <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">{t('noPosts')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('createFirstPost')}</p>
+                <p className="text-muted-foreground">{t('noPosts')}</p>
+                <p className="text-sm text-faint-foreground mt-1">{t('createFirstPost')}</p>
               </div>
             ) : viewMode === 'grid' ? (
               <div>
-                <div className="grid grid-cols-3 gap-2 p-2">
+                <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
                   {postIds.map((id) => (
                     <NutritionistGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                   ))}
@@ -1182,7 +1199,7 @@ export default function NutritionistProfilePage() {
           <div className="space-y-4">
             <button
               onClick={() => setShowCertificateModal(true)}
-              className={`w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
+              className={`w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-muted-foreground hover:text-foreground ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
             >
               <Upload className="w-5 h-5" />
               {t('addCertificate')}
@@ -1191,17 +1208,17 @@ export default function NutritionistProfilePage() {
             {certificates.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
                 {certificates.map((cert) => (
-                  <div key={cert.id} className="bg-[#1A1A1A] rounded-xl border border-white/10 p-4">
+                  <div key={cert.id} className="bg-surface-3 rounded-xl border border-border p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h4 className="font-semibold text-white">{cert.title}</h4>
-                        {cert.issuer && <p className="text-sm text-gray-400">{cert.issuer}</p>}
-                        <p className="text-xs text-gray-500">{cert.year}</p>
+                        <h4 className="font-semibold text-foreground">{cert.title}</h4>
+                        {cert.issuer && <p className="text-sm text-muted-foreground">{cert.issuer}</p>}
+                        <p className="text-xs text-faint-foreground">{cert.year}</p>
                       </div>
                       <button
                         onClick={() => handleDeleteCertificate(cert.id)}
                         disabled={deleting === cert.id}
-                        className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                        className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
                       >
                         {deleting === cert.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1224,7 +1241,7 @@ export default function NutritionistProfilePage() {
             ) : (
               <div className="text-center py-8">
                 <Award className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">{t('noCertificates')}</p>
+                <p className="text-muted-foreground">{t('noCertificates')}</p>
               </div>
             )}
           </div>
@@ -1234,7 +1251,7 @@ export default function NutritionistProfilePage() {
           <div className="space-y-4">
             <button
               onClick={() => setShowSpecializationModal(true)}
-              className={`w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-gray-400 hover:text-white ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
+              className={`w-full py-4 border-2 border-dashed border-white/20 rounded-xl text-muted-foreground hover:text-foreground ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
             >
               <Plus className="w-5 h-5" />
               {t('addSpecialization')}
@@ -1245,13 +1262,13 @@ export default function NutritionistProfilePage() {
                 {specializations.map((spec) => (
                   <div 
                     key={spec.id} 
-                    className="px-4 py-2 bg-[#1A1A1A] rounded-xl border border-white/10 flex items-center gap-2"
+                    className="px-4 py-2 bg-surface-3 rounded-xl border border-border flex items-center gap-2"
                   >
-                    <span className="text-white">{spec.name}</span>
+                    <span className="text-foreground">{spec.name}</span>
                     <button
                       onClick={() => handleDeleteSpecialization(spec.id)}
                       disabled={deleting === spec.id}
-                      className="text-gray-400 hover:text-red-400 transition-colors"
+                      className="text-muted-foreground hover:text-red-400 transition-colors"
                     >
                       {deleting === spec.id ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1265,7 +1282,7 @@ export default function NutritionistProfilePage() {
             ) : (
               <div className="text-center py-8">
                 <TrendingUp className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">{t('noSpecializations')}</p>
+                <p className="text-muted-foreground">{t('noSpecializations')}</p>
               </div>
             )}
           </div>
@@ -1283,7 +1300,7 @@ export default function NutritionistProfilePage() {
                         ? 'bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/30'
                         : achievement.tone === 'silver'
                         ? 'bg-gradient-to-br from-gray-400/10 to-gray-500/10 border-gray-400/30'
-                        : 'bg-[#1A1A1A] border-white/10'
+                        : 'bg-surface-3 border-border'
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -1296,18 +1313,18 @@ export default function NutritionistProfilePage() {
                       }`}>
                         <Award className={`w-6 h-6 ${
                           achievement.tone === 'gold' ? 'text-amber-400' : 
-                          achievement.tone === 'silver' ? 'text-gray-400' : 'text-gray-500'
+                          achievement.tone === 'silver' ? 'text-muted-foreground' : 'text-faint-foreground'
                         }`} />
                       </div>
                       <div className="flex-1">
                         <h4 className={`font-semibold ${
                           achievement.tone === 'gold' ? 'text-amber-300' : 
-                          achievement.tone === 'silver' ? 'text-gray-300' : 'text-white'
+                          achievement.tone === 'silver' ? 'text-muted-foreground' : 'text-foreground'
                         }`}>
                           {achievement.title}
                         </h4>
                         {achievement.subtitle && (
-                          <p className="text-sm text-gray-400 mt-0.5">{achievement.subtitle}</p>
+                          <p className="text-sm text-muted-foreground mt-0.5">{achievement.subtitle}</p>
                         )}
                       </div>
                     </div>
@@ -1317,8 +1334,8 @@ export default function NutritionistProfilePage() {
             ) : (
               <div className="text-center py-12">
                 <Award className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">{t('noAchievements')}</p>
-                <p className="text-sm text-gray-500 mt-1">{t('achievementsWillAppear')}</p>
+                <p className="text-muted-foreground">{t('noAchievements')}</p>
+                <p className="text-sm text-faint-foreground mt-1">{t('achievementsWillAppear')}</p>
               </div>
             )}
           </div>
@@ -1338,12 +1355,12 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg"
+              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">{t('aboutMe')}</h2>
-                  <button onClick={() => setShowAboutModal(false)} className="text-gray-400 hover:text-white">
+                  <h2 className="text-xl font-bold text-foreground">{t('aboutMe')}</h2>
+                  <button onClick={() => setShowAboutModal(false)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
@@ -1351,7 +1368,7 @@ export default function NutritionistProfilePage() {
                   value={aboutText}
                   onChange={(e) => setAboutText(e.target.value)}
                   rows={5}
-                  className={`w-full px-4 py-3 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} resize-none mb-4`}
+                  className={`w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder} resize-none mb-4`}
                   placeholder={t('aboutMePlaceholder')}
                 />
                 <button
@@ -1373,50 +1390,50 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg"
+              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">{t('addCertificate')}</h2>
-                  <button onClick={() => setShowCertificateModal(false)} className="text-gray-400 hover:text-white">
+                  <h2 className="text-xl font-bold text-foreground">{t('addCertificate')}</h2>
+                  <button onClick={() => setShowCertificateModal(false)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <form onSubmit={handleAddCertificate} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('certificateName')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('certificateName')}</label>
                     <input
                       type="text"
                       value={certTitle}
                       onChange={(e) => setCertTitle(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('certificateNamePlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('organization')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('organization')}</label>
                     <input
                       type="text"
                       value={certIssuer}
                       onChange={(e) => setCertIssuer(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('organizationPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('year')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('year')}</label>
                     <input
                       type="number"
                       value={certYear}
                       onChange={(e) => setCertYear(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('file')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('file')}</label>
                     <label className={`flex items-center justify-center w-full py-4 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}>
-                      <Upload className="w-5 h-5 text-gray-400 mr-2" />
-                      <span className="text-sm text-gray-400">
+                      <Upload className="w-5 h-5 text-muted-foreground mr-2" />
+                      <span className="text-sm text-muted-foreground">
                         {certFile ? certFile.name : t('selectFile')}
                       </span>
                       <input
@@ -1447,22 +1464,22 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg"
+              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">{t('addSpecialization')}</h2>
-                  <button onClick={() => setShowSpecializationModal(false)} className="text-gray-400 hover:text-white">
+                  <h2 className="text-xl font-bold text-foreground">{t('addSpecialization')}</h2>
+                  <button onClick={() => setShowSpecializationModal(false)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <form onSubmit={handleAddSpecialization} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('specializations')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('specializations')}</label>
                     <select
                       value={specName}
                       onChange={(e) => setSpecName(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                     >
                       <option value="">{t('selectSpecialization')}</option>
                       <option value={t('specializationOptions.strength')}>{t('specializationOptions.strength')}</option>
@@ -1512,55 +1529,55 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-[#1A1A1A] rounded-2xl border border-white/10 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-white">{t('editProfile')}</h2>
-                  <button onClick={() => setShowEditProfileModal(false)} className="text-gray-400 hover:text-white">
+                  <h2 className="text-xl font-bold text-foreground">{t('editProfile')}</h2>
+                  <button onClick={() => setShowEditProfileModal(false)} className="text-muted-foreground hover:text-foreground">
                     <X className="w-6 h-6" />
                   </button>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('primarySpecialty')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('primarySpecialty')}</label>
                     <input
                       type="text"
                       value={editPrimaryTitle}
                       onChange={(e) => setEditPrimaryTitle(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('primarySpecialtyPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('secondarySpecialty')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('secondarySpecialty')}</label>
                     <input
                       type="text"
                       value={editSecondaryTitle}
                       onChange={(e) => setEditSecondaryTitle(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('secondarySpecialtyPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('experienceYears')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('experienceYears')}</label>
                     <input
                       type="number"
                       value={editExperienceYears}
                       onChange={(e) => setEditExperienceYears(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder="5"
                       min="0"
                       max="50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">{t('location')}</label>
+                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('location')}</label>
                     <input
                       type="text"
                       value={editLocationDisplay}
                       readOnly
-                      className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                       placeholder={t('locationPlaceholder')}
                     />
                   </div>
@@ -1586,13 +1603,13 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative w-full max-w-4xl max-h-[90vh] bg-[#1A1A1A] rounded-xl overflow-hidden"
+              className="relative w-full max-w-4xl max-h-[90vh] bg-surface-3 rounded-xl overflow-hidden"
             >
-              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-[#1A1A1A] border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">{t('certificate')}</h2>
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-surface-3 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">{t('certificate')}</h2>
                 <button
                   onClick={() => setViewingCertificate(null)}
-                  className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1614,11 +1631,11 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">{t('changeLocation')}</h2>
-                <button onClick={() => setShowEditLocationModal(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">{t('changeLocation')}</h2>
+                <button onClick={() => setShowEditLocationModal(false)} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1629,7 +1646,7 @@ export default function NutritionistProfilePage() {
                     setEditLocationCountryCode(e.target.value)
                     setEditLocationCity('')
                   }}
-                  className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                  className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                 >
                   <option value="">{tr('selectCountry')}</option>
                   {locationCountries.map(country => (
@@ -1640,7 +1657,7 @@ export default function NutritionistProfilePage() {
                   value={editLocationCity}
                   onChange={(e) => setEditLocationCity(e.target.value)}
                   disabled={!editLocationCountryCode}
-                  className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder} disabled:opacity-50`}
+                  className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder} disabled:opacity-50`}
                 >
                   <option value="">{editLocationCountryCode ? tr('selectCity') : tr('selectCountry')}</option>
                   {locationCities.map(city => (
@@ -1666,11 +1683,11 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">{t('changePhone')}</h2>
-                <button onClick={() => setShowEditPhoneModal(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">{t('changePhone')}</h2>
+                <button onClick={() => setShowEditPhoneModal(false)} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1679,7 +1696,7 @@ export default function NutritionistProfilePage() {
                   type="tel"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                  className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                   placeholder={t('phonePlaceholder')}
                 />
                 <button
@@ -1701,11 +1718,11 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">{t('changeExperience')}</h2>
-                <button onClick={() => setShowEditExperienceModal(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">{t('changeExperience')}</h2>
+                <button onClick={() => setShowEditExperienceModal(false)} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1714,7 +1731,7 @@ export default function NutritionistProfilePage() {
                   type="number"
                   value={editExperienceYears}
                   onChange={(e) => setEditExperienceYears(e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                  className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                   placeholder="5"
                   min="0"
                 />
@@ -1737,11 +1754,11 @@ export default function NutritionistProfilePage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden"
+              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">{t('changeGender')}</h2>
-                <button onClick={() => setShowEditGenderModal(false)} className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <h2 className="text-xl font-bold text-foreground">{t('changeGender')}</h2>
+                <button onClick={() => setShowEditGenderModal(false)} className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1749,7 +1766,7 @@ export default function NutritionistProfilePage() {
                 <select
                   value={editGender}
                   onChange={(e) => setEditGender(e.target.value)}
-                  className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.focusBorder}`}
+                  className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
                 >
                   <option value="">{t('selectGender')}</option>
                   <option value="Male">{t('male')}</option>

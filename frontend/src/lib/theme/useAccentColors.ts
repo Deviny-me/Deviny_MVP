@@ -28,29 +28,29 @@ export function getAccentColors(roleOrIsNutritionist: RoleType | boolean) {
   }
 
   const colors = {
-    nutritionist: { primary: '#22c55e', secondary: '#16a34a' },
-    trainer:      { primary: '#FF6B35', secondary: '#FF0844' },
-    user:         { primary: '#3B82F6', secondary: '#2563EB' },
+    nutritionist: { primary: '#28bf68', secondary: '#1c9e52' },
+    trainer:      { primary: '#f07915', secondary: '#d4600b' },
+    user:         { primary: '#0c8de6', secondary: '#0070c4' },
   }[role]
 
   const tw = {
     nutritionist: {
-      heroGlow: 'from-green-500 to-emerald-600',
-      heroText: 'from-green-500 to-emerald-600',
-      featureCard1Bg: 'bg-green-500/10',   featureCard1Text: 'text-green-500',
-      featureCard2Bg: 'bg-emerald-500/10',  featureCard2Text: 'text-emerald-500',
+      heroGlow: 'from-nutritionist-500 to-nutritionist-600',
+      heroText: 'from-nutritionist-500 to-nutritionist-600',
+      featureCard1Bg: 'bg-nutritionist-500/10',   featureCard1Text: 'text-nutritionist-500',
+      featureCard2Bg: 'bg-nutritionist-400/10',  featureCard2Text: 'text-nutritionist-400',
     },
     trainer: {
-      heroGlow: 'from-yellow-500 to-amber-600',
-      heroText: 'from-yellow-500 to-amber-600',
-      featureCard1Bg: 'bg-amber-500/10',   featureCard1Text: 'text-amber-500',
-      featureCard2Bg: 'bg-orange-500/10',   featureCard2Text: 'text-orange-500',
+      heroGlow: 'from-trainer-500 to-trainer-600',
+      heroText: 'from-trainer-500 to-trainer-600',
+      featureCard1Bg: 'bg-trainer-500/10',   featureCard1Text: 'text-trainer-500',
+      featureCard2Bg: 'bg-trainer-400/10',   featureCard2Text: 'text-trainer-400',
     },
     user: {
-      heroGlow: 'from-blue-500 to-blue-600',
-      heroText: 'from-blue-500 to-blue-600',
-      featureCard1Bg: 'bg-blue-500/10',    featureCard1Text: 'text-blue-500',
-      featureCard2Bg: 'bg-sky-500/10',     featureCard2Text: 'text-sky-500',
+      heroGlow: 'from-user-500 to-user-600',
+      heroText: 'from-user-500 to-user-600',
+      featureCard1Bg: 'bg-user-500/10',    featureCard1Text: 'text-user-500',
+      featureCard2Bg: 'bg-user-400/10',     featureCard2Text: 'text-user-400',
     },
   }[role]
 
@@ -124,9 +124,9 @@ export function getAccentColors(roleOrIsNutritionist: RoleType | boolean) {
 export function getRoleRingClass(role: string | number | undefined | null): string {
   if (!role) return ''
   const r = String(role).toLowerCase()
-  if (r === 'nutritionist' || r === '3') return 'ring-2 ring-[#22c55e]'
-  if (r === 'trainer' || r === '1') return 'ring-2 ring-[#FF6B35]'
-  if (r === 'user' || r === '0') return 'ring-2 ring-[#3B82F6]'
+  if (r === 'nutritionist' || r === '3') return 'ring-2 ring-[#28bf68]'
+  if (r === 'trainer' || r === '1') return 'ring-2 ring-[#f07915]'
+  if (r === 'user' || r === '0') return 'ring-2 ring-[#0c8de6]'
   return ''
 }
 

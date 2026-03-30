@@ -54,14 +54,14 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
             <MainIcon className="w-16 h-16 text-white" />
           </div>
           <motion.div
-            className="absolute -top-2 -right-2 w-10 h-10 bg-[#1A1A1A] border border-white/10 rounded-full flex items-center justify-center"
+            className="absolute -top-2 -right-2 w-10 h-10 bg-surface-2 border border-border-subtle rounded-full flex items-center justify-center"
             animate={{ rotate: 360 }}
             transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
           >
             <Globe className={`w-5 h-5 ${accent.text}`} />
           </motion.div>
           <motion.div
-            className="absolute -bottom-2 -left-2 w-10 h-10 bg-[#1A1A1A] border border-white/10 rounded-full flex items-center justify-center"
+            className="absolute -bottom-2 -left-2 w-10 h-10 bg-surface-2 border border-border-subtle rounded-full flex items-center justify-center"
             animate={{ rotate: -360 }}
             transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
           >
@@ -71,7 +71,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
 
         {/* Title */}
         <motion.h1
-          className="text-3xl md:text-4xl font-bold text-white mb-4"
+          className="text-3xl md:text-4xl font-bold text-foreground mb-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
@@ -84,7 +84,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
 
         {/* Description */}
         <motion.p
-          className="text-gray-400 text-lg mb-8 leading-relaxed"
+          className="text-muted-foreground text-lg mb-8 leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
@@ -104,12 +104,12 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
             const bgClasses = [accent.bgMuted, accent.featureCard2Bg ?? accent.bgMuted, accent.featureCard1Bg ?? accent.bgMuted]
             const textClasses = [accent.text, accent.textSecondary ?? accent.text, accent.featureCard1Text ?? accent.text]
             return (
-              <div key={i} className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4">
+              <div key={i} className="bg-surface-2 border border-border-subtle rounded-xl p-4">
                 <div className={`w-10 h-10 ${bgClasses[i % 3]} rounded-lg flex items-center justify-center mx-auto mb-3`}>
                   <Icon className={`w-5 h-5 ${textClasses[i % 3]}`} />
                 </div>
-                <h3 className="text-white font-medium mb-1">{t(feature.titleKey)}</h3>
-                <p className="text-xs text-gray-500">{t(feature.descKey)}</p>
+                <h3 className="text-foreground font-medium mb-1">{t(feature.titleKey)}</h3>
+                <p className="text-xs text-faint-foreground">{t(feature.descKey)}</p>
               </div>
             )
           })}
@@ -130,7 +130,7 @@ export function ComingSoonPage({ icon: MainIcon, ns, features }: ComingSoonPageP
 
         {/* Progress indicator */}
         <motion.div className="mt-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center justify-center gap-2 text-sm text-faint-foreground">
             <div className={`w-2 h-2 ${accent.bg} rounded-full animate-pulse`} />
             <span>{tc('inDevelopment')}</span>
           </div>

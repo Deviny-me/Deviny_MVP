@@ -3,7 +3,7 @@
 import { ReactNode } from 'react'
 import { SharedMainLayout, nutritionistConfig } from '@/components/shared/layout'
 import { TopNav } from './TopNav'
-import { RightSidebar } from './RightSidebar'
+import { NutritionistFooter } from './NutritionistFooter'
 
 interface MainLayoutProps {
   children: ReactNode
@@ -23,9 +23,11 @@ export function MainLayout({
     <SharedMainLayout
       topNav={<TopNav />}
       leftSidebarSections={nutritionistConfig.navSections}
-      rightSidebar={<RightSidebar />}
+      mobilePrimaryLinks={nutritionistConfig.mobilePrimaryLinks}
+      mobileSecondaryLinks={nutritionistConfig.topNavItems}
+      footer={<NutritionistFooter />}
       showLeftSidebar={showLeftSidebar}
-      showRightSidebar={showRightSidebar}
+      showRightSidebar={false}
       accentColor="green"
     >
       {children}

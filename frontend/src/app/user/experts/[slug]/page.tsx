@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -31,14 +31,14 @@ export default function UserExpertProfilePage() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-gray-400">Profile not found</p>
+        <p className="text-muted-foreground">Profile not found</p>
       </div>
     )
   }
 
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <Loader2 className="w-8 h-8 text-[#3B82F6] animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
     </div>
   )
 }

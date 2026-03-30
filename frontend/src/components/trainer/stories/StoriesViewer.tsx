@@ -94,7 +94,7 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative w-full max-w-md h-[80vh] bg-[#0A0A0A] rounded-xl overflow-hidden"
+          className="relative w-full max-w-md h-[80vh] bg-background rounded-xl overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Progress Bars */}
@@ -130,8 +130,8 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">{story.userName}</p>
-                  <p className="text-xs text-white/70">{currentStory?.timestamp}</p>
+                  <p className="text-sm font-bold text-foreground">{story.userName}</p>
+                  <p className="text-xs text-foreground/70">{currentStory?.timestamp}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -139,13 +139,13 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                   onClick={() => setIsPaused(!isPaused)}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <MoreHorizontal className="w-5 h-5 text-white" />
+                  <MoreHorizontal className="w-5 h-5 text-foreground" />
                 </button>
                 <button
                   onClick={onClose}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5 text-white" />
+                  <X className="w-5 h-5 text-foreground" />
                 </button>
               </div>
             </div>
@@ -183,24 +183,24 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  className="bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-white/10"
+                  className="bg-black/60 backdrop-blur-xl rounded-xl p-4 border border-border-subtle"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#FF6B35] to-[#FF0844] flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#f07915] to-[#d4600b] flex items-center justify-center">
                         <Flame className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-white/70">Completed Workout</p>
-                        <p className="text-sm font-bold text-white">{currentStory.workout.name}</p>
+                        <p className="text-xs text-foreground/70">Completed Workout</p>
+                        <p className="text-sm font-bold text-foreground">{currentStory.workout.name}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 text-[#FF6B35]">
+                      <div className="flex items-center gap-1 text-[#f07915]">
                         <Zap className="w-4 h-4" fill="currentColor" />
                         <span className="text-lg font-bold">+{currentStory.workout.xpEarned}</span>
                       </div>
-                      <p className="text-xs text-white/70">XP Earned</p>
+                      <p className="text-xs text-foreground/70">XP Earned</p>
                     </div>
                   </div>
                 </motion.div>
@@ -214,14 +214,14 @@ export function StoriesViewer({ story, onClose }: StoriesViewerProps) {
               <input
                 type="text"
                 placeholder={`Reply to ${story.userName}...`}
-                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#FF6B35]"
+                className="flex-1 px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-sm text-foreground placeholder:text-foreground/50 focus:outline-none focus:border-[#f07915]"
                 onClick={() => setIsPaused(true)}
                 onBlur={() => setIsPaused(false)}
               />
               <button className="p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full hover:bg-white/20 transition-colors">
-                <Heart className="w-5 h-5 text-white" />
+                <Heart className="w-5 h-5 text-foreground" />
               </button>
-              <button className="p-3 bg-gradient-to-r from-[#FF6B35] to-[#FF0844] rounded-full hover:opacity-90 transition-opacity">
+              <button className="p-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] rounded-full hover:opacity-90 transition-opacity">
                 <Send className="w-5 h-5 text-white" />
               </button>
             </div>

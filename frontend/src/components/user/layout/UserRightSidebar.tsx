@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { 
-  Flame,
   Star,
   X,
   Users,
@@ -45,7 +44,7 @@ function ProgramDetailModal({
       onClick={onClose}
     >
       <div 
-        className="bg-[#1A1A1A] rounded-xl border border-white/10 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-surface-2 rounded-xl border border-border-subtle max-w-lg w-full max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Cover */}
@@ -57,7 +56,7 @@ function ProgramDetailModal({
               className="w-full h-48 object-cover"
             />
           ) : (
-            <div className="w-full h-48 bg-[#0A0A0A] flex items-center justify-center">
+            <div className="w-full h-48 bg-background flex items-center justify-center">
               <Dumbbell className="w-16 h-16 text-gray-600" />
             </div>
           )}
@@ -65,7 +64,7 @@ function ProgramDetailModal({
             onClick={onClose}
             className="absolute top-3 right-3 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-5 h-5 text-foreground" />
           </button>
         </div>
 
@@ -73,10 +72,10 @@ function ProgramDetailModal({
         <div className="p-5 space-y-4">
           {/* Title & Price */}
           <div className="flex items-start justify-between gap-4">
-            <h2 className="text-xl font-bold text-white">{program.title}</h2>
+            <h2 className="text-xl font-bold text-foreground">{program.title}</h2>
             <div className="flex flex-col items-end flex-shrink-0">
               <span className={`text-2xl font-bold ${
-                program.price === 0 ? 'text-green-400' : 'text-[#3B82F6]'
+                program.price === 0 ? 'text-green-400' : 'text-[#0c8de6]'
               }`}>
                 {formatPrice(program.price)}
               </span>
@@ -90,7 +89,7 @@ function ProgramDetailModal({
 
           {/* Trainer */}
           <div 
-            className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg cursor-pointer hover:bg-[#141414] transition-colors"
+            className="flex items-center gap-3 p-3 bg-background rounded-lg cursor-pointer hover:bg-surface-2 transition-colors"
             onClick={() => {
               console.log('Navigating to trainer profile:', {
                 trainerSlug: program.trainerSlug,
@@ -108,15 +107,15 @@ function ProgramDetailModal({
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
                 <span className="text-white font-bold">
                   {program.trainerName.charAt(0)}
                 </span>
               </div>
             )}
             <div>
-              <p className="text-white font-medium">{program.trainerName}</p>
-              <p className="text-xs text-gray-400">{tp('viewTrainerProfile')}</p>
+              <p className="text-foreground font-medium">{program.trainerName}</p>
+              <p className="text-xs text-muted-foreground">{tp('viewTrainerProfile')}</p>
             </div>
           </div>
 
@@ -124,12 +123,12 @@ function ProgramDetailModal({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              <span className="text-white font-medium">
+              <span className="text-foreground font-medium">
                 {program.averageRating > 0 ? program.averageRating.toFixed(1) : tc('noRating')}
               </span>
-              <span className="text-gray-500">({program.totalReviews} {tc('reviews')})</span>
+              <span className="text-faint-foreground">({program.totalReviews} {tc('reviews')})</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-400">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-5 h-5" />
               <span>{program.totalPurchases} {tc('purchases')}</span>
             </div>
@@ -137,14 +136,14 @@ function ProgramDetailModal({
 
           {/* Description */}
           <div>
-            <h3 className="text-sm font-medium text-gray-400 mb-2">{tp('aboutProgram')}</h3>
-            <p className="text-white leading-relaxed">{program.description}</p>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">{tp('aboutProgram')}</h3>
+            <p className="text-foreground leading-relaxed">{program.description}</p>
           </div>
 
           {/* Purchase Buttons */}
           <div className="space-y-2">
             <button
-              className="w-full py-3 bg-gradient-to-r from-[#3B82F6] to-[#2563EB] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               onClick={() => {
                 // TODO: Implement purchase flow
                 alert(tp('purchaseComingSoon'))
@@ -168,8 +167,8 @@ function ProgramDetailModal({
           </div>
 
           {/* Program Code */}
-          <p className="text-center text-xs text-gray-500">
-            {tp('programCode')} <span className="text-gray-400 font-mono">{program.code}</span>
+          <p className="text-center text-xs text-faint-foreground">
+            {tp('programCode')} <span className="text-muted-foreground font-mono">{program.code}</span>
           </p>
         </div>
       </div>
@@ -183,25 +182,6 @@ export function UserRightSidebar() {
 
   return (
     <div className="w-72 flex-shrink-0 space-y-2 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto pb-6">
-      {/* Footer */}
-      <div className="px-3 py-2">
-        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-gray-500">
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('about')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('helpCenter')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('privacy')}</a>
-          <span>•</span>
-          <a href="#" className="hover:text-[#3B82F6] hover:underline">{ts('terms')}</a>
-        </div>
-        <div className="mt-2 flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-[#3B82F6] to-[#2563EB] flex items-center justify-center">
-            <Flame className="w-3 h-3 text-white" strokeWidth={2.5} />
-          </div>
-          <p className="text-[10px] text-gray-600">{ts('copyright')}</p>
-        </div>
-      </div>
-
       {/* Program Detail Modal */}
       {selectedProgram && (
         <ProgramDetailModal

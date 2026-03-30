@@ -9,6 +9,7 @@ import { MainLayout } from '@/components/nutritionist/layout/MainLayout'
 import { LanguageProvider } from '@/components/language/LanguageProvider'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 import { AchievementBridge } from '@/components/shared/AchievementBridge'
+import { Spinner } from '@/components/ui/Spinner'
 
 // Routes where right sidebar should be hidden
 const HIDE_RIGHT_SIDEBAR = [
@@ -17,6 +18,8 @@ const HIDE_RIGHT_SIDEBAR = [
   '/nutritionist/discovery', '/nutritionist/challenges', '/nutritionist/achievements',
   '/nutritionist/dashboard',
 ]
+// Routes where both sidebars should be hidden
+const HIDE_ALL_SIDEBARS: string[] = []
 
 export default function NutritionistDashboardLayout({
   children,
@@ -28,7 +31,8 @@ export default function NutritionistDashboardLayout({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const checkedRef = useRef(false)
 
-  const showRightSidebar = !HIDE_RIGHT_SIDEBAR.some(r => pathname?.startsWith(r))
+  const showLeftSidebar = !HIDE_ALL_SIDEBARS.some(r => pathname?.startsWith(r))
+  const showRightSidebar = !HIDE_RIGHT_SIDEBAR.some(r => pathname?.startsWith(r)) && showLeftSidebar
 
   useEffect(() => {
     if (checkedRef.current) return
@@ -64,8 +68,8 @@ export default function NutritionistDashboardLayout({
 
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#22c55e]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner size="lg" color="nutritionist" />
       </div>
     )
   }
@@ -77,7 +81,7 @@ export default function NutritionistDashboardLayout({
           <UnreadNotificationsProvider>
             <LevelProvider>
               <AchievementBridge>
-                <MainLayout showRightSidebar={showRightSidebar}>
+                <MainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
                   {children}
                 </MainLayout>
               </AchievementBridge>

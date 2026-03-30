@@ -39,7 +39,7 @@ export default function AchievementsContent() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <p className="text-red-400 mb-2">Failed to load achievements</p>
-          <p className="text-sm text-gray-500">{error}</p>
+          <p className="text-sm text-faint-foreground">{error}</p>
         </div>
       </div>
     )
@@ -52,18 +52,21 @@ export default function AchievementsContent() {
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
+      <div>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">{t('subtitle')}</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1A1A1A] dark:to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
-            <p className="text-gray-400">{t('subtitle')}</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('unlocked')}</p>
           </div>
           <div className="text-right">
             <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>
               {data.unlockedCount}/{data.totalCount}
             </div>
-            <p className="text-sm text-gray-400">{t('unlocked')}</p>
+            <p className="text-sm text-muted-foreground">{t('unlocked')}</p>
           </div>
         </div>
       </div>
@@ -73,7 +76,7 @@ export default function AchievementsContent() {
         title={t('unlocked')}
         count={unlocked.length}
         icon={<Trophy className="w-5 h-5 text-yellow-400" />}
-        emptyIcon={<Trophy className="w-8 h-8 text-gray-400" />}
+        emptyIcon={<Trophy className="w-8 h-8 text-muted-foreground" />}
         emptyTitle={t('noAchievements')}
         emptyText={t('completeToUnlock')}
         items={unlocked}
@@ -85,7 +88,7 @@ export default function AchievementsContent() {
       <Section
         title={t('locked')}
         count={locked.length}
-        icon={<Lock className="w-5 h-5 text-gray-500" />}
+        icon={<Lock className="w-5 h-5 text-faint-foreground" />}
         emptyIcon={<Award className="w-8 h-8 text-yellow-400" />}
         emptyTitle={t('allUnlocked')}
         emptyText=""
@@ -121,15 +124,15 @@ function Section({
   if (count === 0) {
     return (
       <div>
-        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
           {icon} {title} (0)
         </h3>
-        <div className="bg-[#1A1A1A] rounded-xl border border-white/10 p-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-12 text-center">
+          <div className="w-16 h-16 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
             {emptyIcon}
           </div>
-          <h3 className="text-lg font-semibold text-white mb-2">{emptyTitle}</h3>
-          <p className="text-sm text-gray-400">{emptyText}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">{emptyTitle}</h3>
+          <p className="text-sm text-muted-foreground">{emptyText}</p>
         </div>
       </div>
     )
@@ -137,7 +140,7 @@ function Section({
 
   return (
     <div>
-      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
         {icon} {title} ({count})
       </h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -154,13 +157,13 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
   const gradient = accentCardGradient
   const borderCls = achievement.isUnlocked
     ? getRarityBorder(achievement.rarity)
-    : 'border-white/5'
+    : 'border-border-subtle'
   const glowCls = achievement.isUnlocked ? getRarityGlow(achievement.rarity) : ''
   const rarityColor = getRarityLabelColor(achievement.rarity)
 
   return (
     <div
-      className={`bg-[#1A1A1A] rounded-xl border ${borderCls} p-4 hover:scale-105 transition-all cursor-pointer group ${glowCls}`}
+      className={`bg-surface-2 rounded-xl border ${borderCls} p-4 hover:scale-105 transition-all cursor-pointer group ${glowCls}`}
     >
       <div className="flex flex-col items-center text-center">
         {/* Icon */}
@@ -174,8 +177,8 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
             </>
           ) : (
             <>
-              <div className="w-16 h-16 rounded-2xl bg-[#0A0A0A] flex items-center justify-center opacity-30 group-hover:opacity-40 transition-opacity">
-                <Icon className="w-8 h-8 text-gray-400" />
+              <div className="w-16 h-16 rounded-2xl bg-background flex items-center justify-center opacity-30 group-hover:opacity-40 transition-opacity">
+                <Icon className="w-8 h-8 text-muted-foreground" />
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Lock className="w-6 h-6 text-gray-600" />
@@ -184,10 +187,10 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
           )}
         </div>
 
-        <h4 className={`font-semibold text-sm mb-1 ${achievement.isUnlocked ? 'text-white' : 'text-gray-400'}`}>
+        <h4 className={`font-semibold text-sm mb-1 ${achievement.isUnlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
           {achievement.title}
         </h4>
-        <p className={`text-xs mb-2 ${achievement.isUnlocked ? 'text-gray-400' : 'text-gray-500'}`}>
+        <p className={`text-xs mb-2 ${achievement.isUnlocked ? 'text-muted-foreground' : 'text-faint-foreground'}`}>
           {achievement.description}
         </p>
 
@@ -201,7 +204,7 @@ function AchievementCard({ achievement, accentText, accentCardGradient }: { achi
 
         {/* Date unlocked */}
         {achievement.isUnlocked && achievement.awardedAt && (
-          <p className="text-[10px] text-gray-500 mt-1">
+          <p className="text-[10px] text-faint-foreground mt-1">
             {new Date(achievement.awardedAt).toLocaleDateString()}
           </p>
         )}

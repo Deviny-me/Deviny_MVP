@@ -28,9 +28,9 @@ const toast = {
 }
 
 const accent = {
-  gradient: 'from-[#FF6B35] to-[#FF0844]',
-  border: 'focus:border-[#FF6B35]',
-  hoverBorder: 'hover:border-[#FF6B35]/50',
+  gradient: 'from-[#f07915] to-[#d4600b]',
+  border: 'focus:border-[#f07915]',
+  hoverBorder: 'hover:border-[#f07915]/50',
 }
 
 type VideoBlock = {
@@ -269,43 +269,45 @@ export default function TrainerProgramFormPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#FF6B35] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#f07915] animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="space-y-4 pb-6 max-w-2xl mx-auto">
+      <div>
+        <h1 className="page-title">
+          {isEditing
+            ? formCategory === 'Training'
+              ? t('editTrainingProgram')
+              : formCategory === 'Diet'
+              ? t('editMealProgram')
+              : t('editConsultation')
+            : formCategory === 'Training'
+            ? t('newTrainingProgram')
+            : formCategory === 'Diet'
+            ? t('newMealProgram')
+            : t('newConsultation')}
+        </h1>
+      </div>
+
       {/* Back button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">{tc('back')}</span>
       </button>
 
-      <div className="bg-[#1A1A1A] rounded-xl border border-white/10 overflow-hidden">
+      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-white mb-6">
-            {isEditing
-              ? formCategory === 'Training'
-                ? t('editTrainingProgram')
-                : formCategory === 'Diet'
-                ? t('editMealProgram')
-                : t('editConsultation')
-              : formCategory === 'Training'
-              ? t('newTrainingProgram')
-              : formCategory === 'Diet'
-              ? t('newMealProgram')
-              : t('newConsultation')}
-          </h1>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Program Category Selector — only for new programs */}
             {!isEditing && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   {t('programType')}
                 </label>
                 <div className="flex gap-3">
@@ -315,7 +317,7 @@ export default function TrainerProgramFormPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                       formCategory === 'Training'
                         ? 'border-blue-500 bg-blue-500/10 text-blue-400'
-                        : 'border-white/10 text-gray-400 hover:border-white/20'
+                        : 'border-border text-muted-foreground hover:border-border'
                     }`}
                   >
                     <Dumbbell className="w-5 h-5" />
@@ -327,7 +329,7 @@ export default function TrainerProgramFormPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                       formCategory === 'Diet'
                         ? 'border-green-500 bg-green-500/10 text-green-400'
-                        : 'border-white/10 text-gray-400 hover:border-white/20'
+                        : 'border-border text-muted-foreground hover:border-border'
                     }`}
                   >
                     <Apple className="w-5 h-5" />
@@ -339,7 +341,7 @@ export default function TrainerProgramFormPage() {
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                       formCategory === 'Consultation'
                         ? 'border-violet-500 bg-violet-500/10 text-violet-400'
-                        : 'border-white/10 text-gray-400 hover:border-white/20'
+                        : 'border-border text-muted-foreground hover:border-border'
                     }`}
                   >
                     <MessageSquare className="w-5 h-5" />
@@ -351,7 +353,7 @@ export default function TrainerProgramFormPage() {
 
             {/* Cover Image */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('coverImage')}
               </label>
               <div className="relative">
@@ -368,7 +370,7 @@ export default function TrainerProgramFormPage() {
                         setCoverImage(null)
                         setCoverPreview(null)
                       }}
-                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full text-foreground hover:bg-black/70"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -377,8 +379,8 @@ export default function TrainerProgramFormPage() {
                   <label
                     className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}
                   >
-                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-400">{t('clickToUpload')}</span>
+                    <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">{t('clickToUpload')}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -392,89 +394,89 @@ export default function TrainerProgramFormPage() {
 
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('nameLabel')}
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border}`}
+                className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.border}`}
                 placeholder={t('namePlaceholder')}
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('descriptionLabel')}
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border} resize-none`}
+                className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.border} resize-none`}
                 placeholder={t('descriptionPlaceholder')}
               />
             </div>
 
             {/* Detailed Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('detailedDescriptionLabel')}
               </label>
               <textarea
                 value={detailedDescription}
                 onChange={(e) => setDetailedDescription(e.target.value)}
                 rows={5}
-                className={`w-full px-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border} resize-none`}
+                className={`w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.border} resize-none`}
                 placeholder={t('detailedDescriptionPlaceholder')}
               />
             </div>
 
             {/* Price — Basic Tier */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('basicPriceLabel')}
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="number"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   min="0"
                   step="0.01"
-                  className={`w-full pl-10 pr-4 py-2.5 bg-[#0A0A0A] border border-white/10 rounded-lg text-white focus:outline-none ${accent.border}`}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none ${accent.border}`}
                   placeholder="0.00"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500">{t('basicPriceHint')}</p>
+              <p className="mt-1 text-xs text-faint-foreground">{t('basicPriceHint')}</p>
             </div>
 
             {/* Standard Tier */}
-            <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
+            <div className="p-4 bg-background rounded-lg border border-border space-y-3">
               <h4 className="text-sm font-semibold text-blue-400">{t('standardTierLabel')}</h4>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   {t('standardPriceLabel')}
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="number"
                     value={standardPrice}
                     onChange={(e) => setStandardPrice(e.target.value)}
                     min="0"
                     step="0.01"
-                    className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border}`}
+                    className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border}`}
                     placeholder={t('standardPricePlaceholder')}
                   />
                 </div>
               </div>
               {standardPrice && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     {t('maxStandardSpotsLabel')}
                   </label>
                   <input
@@ -483,37 +485,37 @@ export default function TrainerProgramFormPage() {
                     onChange={(e) => setMaxStandardSpots(e.target.value)}
                     min="1"
                     step="1"
-                    className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border}`}
+                    className={`w-full px-4 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border}`}
                     placeholder={t('maxSpotsPlaceholder')}
                   />
                 </div>
               )}
-              <p className="text-xs text-gray-500">{t('standardTierHint')}</p>
+              <p className="text-xs text-faint-foreground">{t('standardTierHint')}</p>
             </div>
 
             {/* Pro Tier */}
-            <div className="p-4 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
+            <div className="p-4 bg-background rounded-lg border border-border space-y-3">
               <h4 className="text-sm font-semibold text-purple-400">{t('proTierLabel')}</h4>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
                   {t('proPriceLabel')}
                 </label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
                     type="number"
                     value={proPrice}
                     onChange={(e) => setProPrice(e.target.value)}
                     min="0"
                     step="0.01"
-                    className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border}`}
+                    className={`w-full pl-9 pr-4 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border}`}
                     placeholder={t('proPricePlaceholder')}
                   />
                 </div>
               </div>
               {proPrice && (
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
                     {t('maxProSpotsLabel')}
                   </label>
                   <input
@@ -522,17 +524,17 @@ export default function TrainerProgramFormPage() {
                     onChange={(e) => setMaxProSpots(e.target.value)}
                     min="1"
                     step="1"
-                    className={`w-full px-4 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border}`}
+                    className={`w-full px-4 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border}`}
                     placeholder={t('maxSpotsPlaceholder')}
                   />
                 </div>
               )}
-              <p className="text-xs text-gray-500">{t('proTierHint')}</p>
+              <p className="text-xs text-faint-foreground">{t('proTierHint')}</p>
             </div>
 
             {/* Visibility Toggle */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-muted-foreground mb-2">
                 {t('visibility')}
               </label>
               <button
@@ -554,7 +556,7 @@ export default function TrainerProgramFormPage() {
                     <p className={`text-sm font-medium ${isPublic ? 'text-green-400' : 'text-yellow-400'}`}>
                       {isPublic ? t('visibilityPublic') : t('visibilityPrivate')}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-faint-foreground">
                       {isPublic ? t('visibilityPublicHint') : t('visibilityPrivateHint')}
                     </p>
                   </div>
@@ -572,14 +574,14 @@ export default function TrainerProgramFormPage() {
             {/* Training Videos — hide for consultations */}
             {formCategory !== 'Consultation' && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   {t('trainingVideos')}
                 </label>
                 <div className="space-y-3">
                   {videoBlocks.map((block, index) => (
-                    <div key={block.id} className="p-3 bg-[#0A0A0A] rounded-lg border border-white/10 space-y-3">
+                    <div key={block.id} className="p-3 bg-background rounded-lg border border-border space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-gray-300">{t('exerciseBlock', { number: index + 1 })}</p>
+                        <p className="text-sm font-medium text-muted-foreground">{t('exerciseBlock', { number: index + 1 })}</p>
                         <button
                           type="button"
                           onClick={() => removeVideoBlock(index)}
@@ -594,7 +596,7 @@ export default function TrainerProgramFormPage() {
                         type="text"
                         value={block.title}
                         onChange={(e) => handleVideoTextChange(index, 'title', e.target.value)}
-                        className={`w-full px-3 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border}`}
+                        className={`w-full px-3 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border}`}
                         placeholder={t('exerciseTitlePlaceholder')}
                       />
 
@@ -602,15 +604,15 @@ export default function TrainerProgramFormPage() {
                         value={block.description}
                         onChange={(e) => handleVideoTextChange(index, 'description', e.target.value)}
                         rows={2}
-                        className={`w-full px-3 py-2 bg-[#111] border border-white/10 rounded-lg text-white text-sm focus:outline-none ${accent.border} resize-none`}
+                        className={`w-full px-3 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.border} resize-none`}
                         placeholder={t('exerciseDescriptionPlaceholder')}
                       />
 
                       <label
                         className={`flex items-center justify-center w-full py-2.5 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}
                       >
-                        <Video className="w-5 h-5 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-400">
+                        <Video className="w-5 h-5 text-muted-foreground mr-2" />
+                        <span className="text-sm text-muted-foreground">
                           {block.file ? block.file.name : t('addVideo')}
                         </span>
                         <input
@@ -626,7 +628,7 @@ export default function TrainerProgramFormPage() {
                   <button
                     type="button"
                     onClick={addVideoBlock}
-                    className={`w-full py-2.5 border border-white/20 rounded-lg text-sm text-gray-300 hover:text-white ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
+                    className={`w-full py-2.5 border border-white/20 rounded-lg text-sm text-muted-foreground hover:text-foreground ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
                   >
                     <Plus className="w-4 h-4" />
                     {t('addExerciseBlock')}

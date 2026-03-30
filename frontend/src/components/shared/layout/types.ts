@@ -43,6 +43,7 @@ export interface LayoutConfig {
   searchPlaceholder: string
   navSections: NavSection[]
   topNavItems: TopNavItem[]
+  mobilePrimaryLinks: NavLink[]
 }
 
 /**

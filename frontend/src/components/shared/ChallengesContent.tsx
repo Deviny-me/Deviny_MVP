@@ -38,7 +38,7 @@ export default function ChallengesContent() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <p className="text-red-400 mb-2">Failed to load challenges</p>
-          <p className="text-sm text-gray-500">{error}</p>
+          <p className="text-sm text-faint-foreground">{error}</p>
         </div>
       </div>
     )
@@ -48,11 +48,11 @@ export default function ChallengesContent() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-            <Target className="w-10 h-10 text-gray-400" />
+          <div className="w-20 h-20 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
+            <Target className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">{t('noChallenges')}</h2>
-          <p className="text-gray-400">{t('checkBackLater')}</p>
+          <h2 className="text-xl font-bold text-foreground mb-2">{t('noChallenges')}</h2>
+          <p className="text-muted-foreground">{t('checkBackLater')}</p>
         </div>
       </div>
     )
@@ -63,18 +63,21 @@ export default function ChallengesContent() {
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] rounded-xl border border-white/10 p-6">
+      <div>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">Complete challenges to earn achievements and XP</p>
+      </div>
+
+      <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1A1A1A] dark:to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
-            <p className="text-gray-400">Complete challenges to earn achievements and XP</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('completed')}</p>
           </div>
           <div className="text-right">
             <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>
               {data.completedCount}/{data.totalCount}
             </div>
-            <p className="text-sm text-gray-400">{t('completed')}</p>
+            <p className="text-sm text-muted-foreground">{t('completed')}</p>
           </div>
         </div>
       </div>
@@ -82,7 +85,7 @@ export default function ChallengesContent() {
       {/* Active challenges */}
       {active.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Target className={`w-5 h-5 ${accentIcon}`} />
             {t('active')} ({active.length})
           </h3>
@@ -97,7 +100,7 @@ export default function ChallengesContent() {
       {/* Completed challenges */}
       {completed.length > 0 && (
         <div>
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-green-400" />
             {t('completed')} ({completed.length})
           </h3>
@@ -119,7 +122,7 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
   const gradient = c.achievementColorKey ? getGradient(c.achievementColorKey) : accentGradient
 
   return (
-    <div className={`bg-[#1A1A1A] rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-white/10'} p-5 hover:border-white/20 transition-all`}>
+    <div className={`bg-surface-2 rounded-xl border ${isCompleted ? 'border-green-500/30' : 'border-border-subtle'} p-5 hover:border-border transition-all`}>
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0 ${isCompleted ? '' : 'opacity-70'}`}>
@@ -129,7 +132,7 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
-            <h4 className="font-bold text-white">{c.title}</h4>
+            <h4 className="font-bold text-foreground">{c.title}</h4>
             {isCompleted && (
               <span className="flex items-center gap-1 text-xs font-medium text-green-400">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -137,15 +140,15 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-400 mb-3">{c.description}</p>
+          <p className="text-sm text-muted-foreground mb-3">{c.description}</p>
 
           {/* Progress bar */}
           <div>
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+            <div className="flex items-center justify-between text-xs text-faint-foreground mb-1">
               <span>{t('progress')}</span>
               <span>{item.currentValue}/{item.targetValue}</span>
             </div>
-            <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
+            <div className="h-2 bg-background rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   isCompleted
@@ -159,15 +162,15 @@ function ChallengeCard({ item, accentGradient, t }: { item: UserChallengeProgres
 
           {/* Reward badge */}
           {c.achievementTitle && (
-            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full">
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-border-subtle rounded-full">
               <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-              <span className="text-xs text-gray-300">{t('reward')} {c.achievementTitle}</span>
+              <span className="text-xs text-muted-foreground">{t('reward')} {c.achievementTitle}</span>
             </div>
           )}
 
           {/* Completed date */}
           {isCompleted && item.completedAt && (
-            <p className="text-[11px] text-gray-500 mt-2">
+            <p className="text-[11px] text-faint-foreground mt-2">
               Completed {new Date(item.completedAt).toLocaleDateString()}
             </p>
           )}

@@ -132,7 +132,7 @@ export function PostComments({
   if (isLoading) {
     return (
       <div className={cn('flex justify-center py-8', className)}>
-        <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-faint-foreground" />
       </div>
     )
   }
@@ -142,7 +142,7 @@ export function PostComments({
       {/* Comments List */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
         {comments.length === 0 ? (
-          <p className="text-center text-gray-500 py-8 text-sm">
+          <p className="text-center text-faint-foreground py-8 text-sm">
             Пока нет комментариев. Будьте первым!
           </p>
         ) : (
@@ -167,15 +167,15 @@ export function PostComments({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="bg-white/5 rounded-2xl px-3 py-2">
-                    <p className="text-xs font-semibold text-white">
+                    <p className="text-xs font-semibold text-foreground">
                       {comment.author.firstName} {comment.author.lastName}
                     </p>
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap break-words mt-0.5">
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words mt-0.5">
                       {comment.content}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 mt-1 px-2">
-                    <span className="text-[11px] text-gray-500">
+                    <span className="text-[11px] text-faint-foreground">
                       {formatTimeAgo(comment.createdAt)}
                     </span>
                     
@@ -184,7 +184,7 @@ export function PostComments({
                       <button
                         onClick={() => handleDeleteComment(comment.id)}
                         disabled={deletingIds.has(comment.id)}
-                        className="text-[11px] text-gray-500 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                        className="text-[11px] text-faint-foreground hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                         aria-label="Удалить комментарий"
                       >
                         {deletingIds.has(comment.id) ? (
@@ -204,7 +204,7 @@ export function PostComments({
               <button
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                className="w-full py-2 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1"
+                className="w-full py-2 text-xs text-faint-foreground hover:text-muted-foreground transition-colors flex items-center justify-center gap-1"
               >
                 {isLoadingMore ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -221,7 +221,7 @@ export function PostComments({
       </div>
 
       {/* Input — fixed at bottom */}
-      <form onSubmit={handleSubmitComment} className="px-4 py-3 border-t border-white/10 flex gap-2 flex-shrink-0">
+      <form onSubmit={handleSubmitComment} className="px-4 py-3 border-t border-border-subtle flex gap-2 flex-shrink-0">
         <input
           ref={inputRef}
           type="text"
@@ -229,7 +229,7 @@ export function PostComments({
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Написать комментарий..."
-          className={`flex-1 px-4 py-2 text-sm bg-white/5 border border-white/10 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 ${accent.focusBorder}`}
+          className={`flex-1 px-4 py-2 text-sm bg-border-subtle border border-border-subtle rounded-full text-foreground placeholder-gray-500 focus:outline-none focus:ring-1 ${accent.focusBorder}`}
           disabled={isSubmitting}
           maxLength={1000}
         />
@@ -239,7 +239,7 @@ export function PostComments({
           className={cn(
             'p-2 rounded-full transition-colors flex-shrink-0',
             newComment.trim() && !isSubmitting
-              ? `${accent.bg} text-white hover:opacity-90`
+              ? `${accent.bg} text-foreground hover:opacity-90`
               : 'bg-white/5 text-gray-600 cursor-not-allowed'
           )}
           aria-label="Отправить"

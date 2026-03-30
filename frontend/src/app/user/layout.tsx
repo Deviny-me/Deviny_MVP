@@ -10,15 +10,16 @@ import { UnreadNotificationsProvider } from '@/contexts/UnreadNotificationsConte
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { UserAchievementBridge } from '@/components/user/UserAchievementBridge'
 import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
+import { Spinner } from '@/components/ui/Spinner'
 
 // Routes where right sidebar should be hidden
 const HIDE_RIGHT_SIDEBAR = [
   '/user/challenges', '/user/settings', '/user/schedule',
   '/user/leaderboards', '/user/live', '/user/experts', '/user/discovery',
-  '/user/achievements',
+  '/user/achievements', '/user/messages',
 ]
 // Routes where both sidebars should be hidden
-const HIDE_ALL_SIDEBARS = ['/user/messages']
+const HIDE_ALL_SIDEBARS: string[] = []
 
 export default function UserDashboardLayout({
   children,
@@ -65,8 +66,8 @@ export default function UserDashboardLayout({
 
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3B82F6]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner size="lg" color="user" />
       </div>
     )
   }

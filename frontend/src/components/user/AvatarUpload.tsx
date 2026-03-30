@@ -61,19 +61,19 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
           />
         ) : (
           <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-gray-300">
-            <User className="w-16 h-16 text-gray-500" />
+            <User className="w-16 h-16 text-faint-foreground" />
           </div>
         )}
         
         {uploading && (
           <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
+            <Loader2 className="w-8 h-8 text-foreground animate-spin" />
           </div>
         )}
       </div>
 
       <div className="flex gap-2">
-        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-foreground rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           {uploading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -98,7 +98,7 @@ export default function AvatarUpload({ avatarUrl, onAvatarChanged }: AvatarUploa
           <button
             onClick={handleDeleteAvatar}
             disabled={uploading || deleting}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-red-500 text-foreground rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {deleting ? (
               <>

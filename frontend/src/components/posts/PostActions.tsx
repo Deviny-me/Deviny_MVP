@@ -167,37 +167,37 @@ export function PostActions({
   if (!post) return null
 
   return (
-    <div className={cn('flex items-center gap-4', className)}>
+    <div className={cn('flex items-center gap-1', className)}>
       {/* Like Button */}
       <button
         onClick={handleLikeClick}
         disabled={isLikeLoading}
         className={cn(
-          'flex items-center gap-1.5 transition-colors group',
-          isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+          'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all group',
+          isLiked ? 'text-red-500 bg-red-500/[0.06]' : 'text-faint-foreground hover:text-red-500 hover:bg-red-500/[0.04]'
         )}
         aria-label={isLiked ? 'Unlike post' : 'Like post'}
       >
         <Heart
           className={cn(
-            'w-5 h-5 transition-transform group-hover:scale-110',
+            'w-[18px] h-[18px] transition-transform group-hover:scale-110 group-active:scale-95',
             isLiked && 'fill-current'
           )}
         />
         {likeCount > 0 && (
-          <span className="text-sm font-medium">{formatCount(likeCount)}</span>
+          <span className="text-[13px] font-medium">{formatCount(likeCount)}</span>
         )}
       </button>
 
       {/* Comment Button */}
       <button
         onClick={onCommentClick}
-        className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors group"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-faint-foreground hover:text-blue-500 hover:bg-blue-500/[0.04] transition-all group"
         aria-label="View comments"
       >
-        <MessageCircle className="w-5 h-5 transition-transform group-hover:scale-110" />
+        <MessageCircle className="w-[18px] h-[18px] transition-transform group-hover:scale-110 group-active:scale-95" />
         {commentCount > 0 && (
-          <span className="text-sm font-medium">{formatCount(commentCount)}</span>
+          <span className="text-[13px] font-medium">{formatCount(commentCount)}</span>
         )}
       </button>
 
@@ -205,20 +205,20 @@ export function PostActions({
       <button
         onClick={handleRepostClick}
         className={cn(
-          'flex items-center gap-1.5 transition-colors group cursor-pointer',
-          isReposted ? 'text-green-500' : 'text-gray-500 hover:text-green-500',
+          'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all group cursor-pointer',
+          isReposted ? 'text-green-500 bg-green-500/[0.06]' : 'text-faint-foreground hover:text-green-500 hover:bg-green-500/[0.04]',
           isRepostLoading && 'opacity-70 pointer-events-none'
         )}
         aria-label={isReposted ? 'Remove repost' : 'Repost'}
       >
         <Repeat2
           className={cn(
-            'w-5 h-5 transition-transform group-hover:scale-110',
+            'w-[18px] h-[18px] transition-transform group-hover:scale-110 group-active:scale-95',
             isReposted && 'stroke-[2.5]'
           )}
         />
         {repostCount > 0 && (
-          <span className="text-sm font-medium">{formatCount(repostCount)}</span>
+          <span className="text-[13px] font-medium">{formatCount(repostCount)}</span>
         )}
       </button>
     </div>
