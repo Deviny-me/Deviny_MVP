@@ -63,12 +63,15 @@ export default function ChallengesContent() {
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Header */}
+      <div>
+        <h1 className="page-title">{t('title')}</h1>
+        <p className="page-subtitle">Complete challenges to earn achievements and XP</p>
+      </div>
+
       <div className="bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1A1A1A] dark:to-[#0A0A0A] rounded-xl border border-border-subtle p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">{t('title')}</h1>
-            <p className="text-muted-foreground">Complete challenges to earn achievements and XP</p>
+            <p className="text-sm font-medium text-muted-foreground">{t('completed')}</p>
           </div>
           <div className="text-right">
             <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>

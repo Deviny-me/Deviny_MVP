@@ -264,7 +264,7 @@ export default function TrainerProgramDetailPage({
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
+          <h1 className="page-title">{program.title}</h1>
 
           {/* Stats */}
           <div className="flex items-center gap-6">

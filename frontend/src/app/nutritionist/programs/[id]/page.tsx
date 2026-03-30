@@ -172,7 +172,7 @@ export default function NutritionistProgramDetailPage({
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
+          <h1 className="page-title">{program.title}</h1>
 
           {/* Videos count */}
           {program.videoUrls && program.videoUrls.length > 0 && (

@@ -367,6 +367,12 @@ export function PublicProfileContent({
   const [selectedCertificate, setSelectedCertificate] = useState<{ fileUrl: string; title: string } | null>(null)
 
   useEffect(() => {
+    // Defensive reset: route transitions after full-screen overlays can leave body scroll locked.
+    document.body.style.overflow = ''
+    document.documentElement.style.overflow = ''
+  }, [])
+
+  useEffect(() => {
     if (!userId) return
     let cancelled = false
     ;(async () => {
@@ -734,9 +740,9 @@ export function PublicProfileContent({
     <>
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
+        <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
           {/* Banner */}
-          <div className={`relative h-48 bg-gradient-to-r ${profileAccent.gradient} overflow-hidden`}>
+          <div className={`relative h-32 overflow-hidden bg-gradient-to-r ${profileAccent.gradient} sm:h-40`}>
             {authorBanner && (
               <img
                 src={authorBanner}
@@ -747,28 +753,28 @@ export function PublicProfileContent({
           </div>
 
           {/* Avatar + Info */}
-          <div className="relative px-6 pb-6">
-            <div className="flex gap-5 -mt-14">
+          <div className="relative px-4 pb-4 sm:px-6 sm:pb-5">
+            <div className="-mt-10 flex flex-col gap-3 sm:-mt-12 sm:flex-row sm:gap-4">
               {/* Avatar */}
-              <div className="relative z-10 flex-shrink-0 self-start">
+              <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {authorAvatar ? (
                   <img
                     src={authorAvatar}
                     alt={authorName}
-                    className={`w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10 ${getRoleRingClass(profileData?.role)}`}
+                    className={`h-20 w-20 rounded-full border-4 border-white object-cover shadow-xl ring-2 ring-white/10 dark:border-[#1A1A1A] sm:h-24 sm:w-24 ${getRoleRingClass(profileData?.role)}`}
                   />
                 ) : (
-                  <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${profileAccent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
-                    <span className="text-white text-3xl font-bold">{authorInitials}</span>
+                  <div className={`flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br ${profileAccent.gradient} shadow-xl dark:border-[#1A1A1A] sm:h-24 sm:w-24`}>
+                    <span className="text-xl font-bold text-white sm:text-2xl">{authorInitials}</span>
                   </div>
                 )}
               </div>
 
               {/* Name + Stats inline */}
-              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <h1 className="text-xl font-bold text-foreground truncate">{authorName}</h1>
+              <div className="flex min-w-0 flex-1 flex-col gap-3 pt-0 sm:pt-[3rem]">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                    <h1 className="page-title-compact truncate">{authorName}</h1>
                     {profileData?.expertProfile && profileData.expertProfile.ratingValue > 0 && (
                       <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-full">
                         <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
@@ -776,7 +782,7 @@ export function PublicProfileContent({
                       </div>
                     )}
                   </div>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-2 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                     {(profileData?.country || profileData?.city) && (
                       <span className="inline-flex items-center gap-1">
                         <Globe className="w-3 h-3" />
@@ -793,21 +799,21 @@ export function PublicProfileContent({
                 </div>
 
                 {/* Stats */}
-                <div className="hidden sm:flex items-center gap-5">
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground transition-colors" style={{ ['--tw-group-hover-color' as string]: profileAccent.primary }}>{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
+                <div className="hidden sm:grid sm:grid-cols-4 sm:gap-2 md:gap-3">
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors md:text-base" style={{ color: undefined }}>{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tPosts('postsTab')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.followersCount || 0).toLocaleString()}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors md:text-base">{(profileData?.followersCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.followingCount || 0).toLocaleString()}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors md:text-base">{(profileData?.followingCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground transition-colors">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors md:text-base">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
                   </div>
                 </div>
@@ -815,28 +821,28 @@ export function PublicProfileContent({
             </div>
 
             {/* Stats row for mobile */}
-            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
+            <div className="mt-4 grid grid-cols-4 gap-1 bg-surface-1/45 p-1.5 sm:hidden sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-2">
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(profileData?.postsCount ?? totalPosts).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tPosts('postsTab')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{(profileData?.followersCount || 0).toLocaleString()}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(profileData?.followersCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{(profileData?.followingCount || 0).toLocaleString()}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(profileData?.followingCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(profileData?.achievementsCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
               </div>
             </div>
 
             {/* Social Action Buttons */}
             {!relationshipLoading && relationship && !relationship.isBlockedByThem && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-5">
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                 {/* Friend button */}
                 {relationship.isFriend ? (
                   <button
@@ -947,11 +953,11 @@ export function PublicProfileContent({
 
         {/* About Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-surface-3 rounded-xl border border-border p-6">
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
             {profileData.expertProfile.primaryTitle && (
               <p className="text-sm font-medium mb-3" style={{ color: profileAccent.primary }}>{profileData.expertProfile.primaryTitle}</p>
             )}
-            <h2 className="text-lg font-semibold text-foreground mb-3">{tExp('about')}</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{tExp('about')}</h2>
             {profileData.expertProfile.aboutText ? (
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{profileData.expertProfile.aboutText}</p>
             ) : (
@@ -962,8 +968,8 @@ export function PublicProfileContent({
 
         {/* Specializations Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-surface-3 rounded-xl border border-border p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-3">{tExp('specializations')}</h2>
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{tExp('specializations')}</h2>
             {profileData.expertProfile.specializations.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {profileData.expertProfile.specializations.map((spec) => (
@@ -983,8 +989,8 @@ export function PublicProfileContent({
 
         {/* Certificates Section (Expert only) */}
         {profileData?.expertProfile && (
-          <div className="bg-surface-3 rounded-xl border border-border p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">{tExp('certificates')}</h2>
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{tExp('certificates')}</h2>
             {profileData.expertProfile.certificates.length > 0 ? (
               <div className="space-y-3">
                 {profileData.expertProfile.certificates.map((cert) => (
@@ -1016,8 +1022,8 @@ export function PublicProfileContent({
         )}
 
         {/* Posts Section */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <div className="overflow-hidden bg-surface-2/35 sm:rounded-xl sm:border sm:border-border sm:bg-surface-3">
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5" style={{ color: accentColor }} />
               <h3 className="font-semibold text-foreground">{tPosts('postsTab')}</h3>
@@ -1063,7 +1069,7 @@ export function PublicProfileContent({
             </div>
           ) : viewMode === 'grid' ? (
             <div>
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
                 {postIds.map((id) => (
                   <GridCell key={id} postId={id} onSelect={setSelectedPostId} />
                 ))}

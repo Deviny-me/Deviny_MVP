@@ -147,6 +147,7 @@ export default function ChatInbox() {
   const [uploading, setUploading] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const lastVisibleMessageIdRef = useRef<string | null>(null)
   const selectedConvIdRef = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -355,8 +356,26 @@ export default function ChatInbox() {
 
   // ─── scroll to bottom on new messages ───
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const latestMessageId = messages[messages.length - 1]?.id ?? null
+    if (!latestMessageId) {
+      lastVisibleMessageIdRef.current = null
+      return
+    }
+
+    if (lastVisibleMessageIdRef.current === null) {
+      lastVisibleMessageIdRef.current = latestMessageId
+      return
+    }
+
+    if (lastVisibleMessageIdRef.current !== latestMessageId) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      lastVisibleMessageIdRef.current = latestMessageId
+    }
   }, [messages])
+
+  useEffect(() => {
+    lastVisibleMessageIdRef.current = null
+  }, [selectedConvId])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -836,7 +855,7 @@ export default function ChatInbox() {
 
   // ─── render ───
   return (
-    <div className="relative bg-surface-2 rounded-xl border border-border-subtle overflow-hidden h-[calc(100vh-130px)]">
+    <div className="relative h-[calc(100vh-130px)] overflow-hidden md:rounded-xl md:border md:border-border-subtle md:bg-surface-2">
       {incomingCall && (
         <div className="absolute top-4 right-4 z-30 p-3 rounded-lg border border-border-subtle bg-background shadow-xl w-72">
           <p className="text-sm text-foreground font-semibold">Incoming {incomingCall.callType} call</p>
@@ -859,16 +878,19 @@ export default function ChatInbox() {
           </div>
         </div>
       )}
-      <div className="flex h-full">
+      <div className="flex h-full min-h-[calc(100dvh-10rem)] flex-col overflow-hidden md:flex-row md:rounded-xl md:border md:border-border-subtle md:bg-surface-3">
         {/* ── Left: Conversations List ── */}
         <div
-          className={`w-80 border-r border-border-subtle flex flex-col ${
+          className={`flex min-h-0 w-full flex-col border-b border-border-subtle md:w-80 md:border-b-0 md:border-r ${
             selectedConvId ? 'hidden md:flex' : 'flex'
           }`}
         >
           {/* Header + search */}
-          <div className="p-4 border-b border-border-subtle">
-            <h2 className="text-lg font-bold text-foreground mb-3">Messages</h2>
+          <div className="border-b border-border-subtle p-4">
+            <h1 className="page-title mb-1 text-xl sm:text-2xl md:text-lg">Messages</h1>
+            <p className="mb-3 text-sm text-muted-foreground">
+              {filteredConvs.length > 0 ? `${filteredConvs.length} conversations` : 'Your recent chats will appear here'}
+            </p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -907,36 +929,41 @@ export default function ChatInbox() {
                       )
                     )
                   }}
-                  className={`w-full flex items-center gap-3 p-4 hover:bg-hover-overlay transition-colors ${
-                    selectedConvId === conv.id ? 'bg-white/5' : ''
+                  className={`w-full border-b border-border-subtle/10 p-4 text-left transition-colors ${
+                    selectedConvId === conv.id
+                      ? 'bg-white/5'
+                      : 'hover:bg-hover-overlay'
                   }`}
+                  style={{ borderBottomColor: 'var(--separator-color)' }}
                 >
-                  <Avatar
-                    url={avatarUrl(conv.peerUser.avatarUrl)}
-                    name={conv.peerUser.fullName}
-                    size={48}
-                    role={conv.peerUser.role}
-                  />
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold text-foreground text-sm truncate">
-                        {conv.peerUser.fullName}
+                  <div className="flex items-center gap-3">
+                    <Avatar
+                      url={avatarUrl(conv.peerUser.avatarUrl)}
+                      name={conv.peerUser.fullName}
+                      size={48}
+                      role={conv.peerUser.role}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {conv.peerUser.fullName}
+                        </p>
+                        <span className="text-xs text-faint-foreground">
+                          {formatRelative(conv.lastMessageAt)}
+                        </span>
+                      </div>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {conv.lastMessageText ?? 'No messages yet'}
                       </p>
-                      <span className="text-xs text-faint-foreground">
-                        {formatRelative(conv.lastMessageAt)}
-                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {conv.lastMessageText ?? 'No messages yet'}
-                    </p>
+                    {conv.unreadCount > 0 && (
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full ${accent.bg}`}>
+                        <span className="text-[10px] font-bold text-foreground">
+                          {conv.unreadCount}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  {conv.unreadCount > 0 && (
-                    <div className={`w-5 h-5 ${accent.bg} rounded-full flex items-center justify-center`}>
-                      <span className="text-[10px] font-bold text-foreground">
-                        {conv.unreadCount}
-                      </span>
-                    </div>
-                  )}
                 </button>
               ))
             )}
@@ -945,13 +972,16 @@ export default function ChatInbox() {
 
         {/* ── Right: Chat Thread ── */}
         {selectedConvId ? (
-          <div className="flex-1 flex flex-col">
+          <div className="flex min-h-0 flex-1 flex-col bg-background md:bg-transparent">
             {/* Header */}
-            <div className="p-4 border-b border-border-subtle">
+            <div
+              className="border-b bg-surface-2 px-3 py-2.5 md:border-border-subtle md:bg-transparent md:p-4"
+              style={{ borderBottomColor: 'var(--separator-color)' }}
+            >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <button
-                    className="md:hidden p-1"
+                    className="rounded-lg p-1.5 md:hidden"
                     onClick={() => setSelectedConvId(null)}
                   >
                     <ArrowLeft className="w-5 h-5 text-muted-foreground" />
@@ -984,7 +1014,7 @@ export default function ChatInbox() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto bg-background px-3 py-3 space-y-3 md:bg-transparent md:p-4">
               {loadingMsgs ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
@@ -1008,7 +1038,7 @@ export default function ChatInbox() {
                       key={msg.id}
                       className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className="flex items-end gap-2 max-w-[75%]">
+                      <div className="flex max-w-[88%] items-end gap-2 sm:max-w-[75%]">
                         {!isMe && (
                           <Avatar
                             url={avatarUrl(msg.senderAvatarUrl)}
@@ -1038,7 +1068,7 @@ export default function ChatInbox() {
                             className={`group relative rounded-2xl px-4 py-2.5 ${
                               isMe
                                 ? `${accent.bg} text-foreground rounded-br-sm`
-                                : 'border-2 border-gray-700 bg-surface-2 text-foreground rounded-bl-sm'
+                                : 'border border-border-subtle bg-surface-2 text-foreground shadow-sm rounded-bl-sm'
                             }`}
                           >
                             {/* Attachment */}
@@ -1053,7 +1083,7 @@ export default function ChatInbox() {
                                   <img
                                     src={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
                                     alt={msg.attachmentFileName || 'Image'}
-                                    className="max-w-[260px] max-h-[200px] rounded-lg object-cover"
+                                    className="max-h-[200px] max-w-[220px] rounded-lg object-cover sm:max-w-[260px]"
                                   />
                                 </a>
                               ) : (
@@ -1118,7 +1148,10 @@ export default function ChatInbox() {
 
             {/* Pending file preview */}
             {pendingFile && (
-              <div className="px-4 pt-2 flex items-center gap-2 border-t border-border-subtle">
+              <div
+                className="flex items-center gap-2 border-t bg-surface-2 px-3 pt-2 md:border-border-subtle md:bg-transparent md:px-4"
+                style={{ borderTopColor: 'var(--separator-color)' }}
+              >
                 {pendingFile.contentType.startsWith('image/') ? (
                   <ImageIcon className={`w-4 h-4 ${accent.text}`} />
                 ) : (
@@ -1136,7 +1169,10 @@ export default function ChatInbox() {
 
             {/* Reply preview bar */}
             {replyTo && (
-              <div className="px-4 pt-2 flex items-center gap-2 border-t border-border-subtle">
+              <div
+                className="flex items-center gap-2 border-t bg-surface-2 px-3 pt-2 md:border-border-subtle md:bg-transparent md:px-4"
+                style={{ borderTopColor: 'var(--separator-color)' }}
+              >
                 <Reply className={`w-4 h-4 ${accent.text}`} />
                 <div className="flex-1 text-xs text-muted-foreground truncate">
                   <span className="font-semibold text-foreground">
@@ -1151,8 +1187,11 @@ export default function ChatInbox() {
             )}
 
             {/* Input */}
-            <div className="p-4 border-t border-border-subtle">
-              <div className="flex items-center gap-2 relative" ref={emojiPickerRef}>
+            <div
+              className="border-t bg-surface-2 md:border-border-subtle md:bg-surface-3 md:p-4"
+              style={{ borderTopColor: 'var(--separator-color)' }}
+            >
+              <div className="relative flex items-end gap-2" ref={emojiPickerRef}>
                 {/* Hidden file input */}
                 <input
                   ref={fileInputRef}
@@ -1165,7 +1204,7 @@ export default function ChatInbox() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || sending}
-                  className={`p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
+                  className={`rounded-full p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
                   title="Attach file"
                 >
                   {uploading ? (
@@ -1178,13 +1217,13 @@ export default function ChatInbox() {
                   type="button"
                   onClick={() => setShowEmojiPicker(prev => !prev)}
                   disabled={sending}
-                  className={`p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
+                  className={`rounded-full p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
                   title="Add emoji"
                 >
                   <Smile className="w-5 h-5" />
                 </button>
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 left-12 z-20 bg-background border border-border-subtle rounded-xl p-2 shadow-xl w-56">
+                  <div className="absolute bottom-14 left-0 z-20 w-56 rounded-xl border border-border-subtle bg-background p-2 shadow-xl sm:left-12">
                     <div className="grid grid-cols-6 gap-1">
                       {QUICK_EMOJIS.map(emoji => (
                         <button
@@ -1207,12 +1246,12 @@ export default function ChatInbox() {
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={sending}
-                  className={`flex-1 bg-background border border-border-subtle rounded-full px-4 py-2.5 text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
+                  className={`min-w-0 flex-1 bg-background border border-border-subtle/70 rounded-full px-4 py-2.5 text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
                 />
                 <button
                   onClick={handleSend}
                   disabled={sending || (!inputText.trim() && !pendingFile)}
-                  className={`p-2.5 bg-gradient-to-r ${accent.gradient} rounded-full hover:opacity-90 transition-opacity disabled:opacity-50`}
+                  className={`rounded-full p-2.5 bg-gradient-to-r ${accent.gradient} hover:opacity-90 transition-opacity disabled:opacity-50`}
                 >
                   {sending ? (
                     <Loader2 className="w-5 h-5 text-foreground animate-spin" />
@@ -1224,8 +1263,8 @@ export default function ChatInbox() {
             </div>
 
             {callStatus !== 'idle' && activeCallPeerName && (
-              <div className="border-t border-border-subtle p-3 bg-background">
-                <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="border-t border-border-subtle bg-background p-3">
+                <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{activeCallType === 'video' ? 'Video call' : 'Audio call'} with {activeCallPeerName}</p>
                     <p className="text-xs text-muted-foreground capitalize">{callStatus}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}</p>
@@ -1262,7 +1301,7 @@ export default function ChatInbox() {
 
                 <audio ref={remoteAudioRef} autoPlay />
                 {activeCallType === 'video' && (
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
                     <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
                   </div>

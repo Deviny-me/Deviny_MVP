@@ -23,6 +23,8 @@ export function UserMainLayout({
     <SharedMainLayout
       topNav={<UserTopNav />}
       leftSidebarSections={userConfig.navSections}
+      mobilePrimaryLinks={userConfig.mobilePrimaryLinks}
+      mobileSecondaryLinks={userConfig.topNavItems}
       footer={<UserFooter />}
       showLeftSidebar={showLeftSidebar}
       showRightSidebar={false}

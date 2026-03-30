@@ -26,7 +26,8 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
   const pathname = usePathname()
   const t = useTranslations('nav')
 
-  const isActivePath = (path: string) => pathname === path
+  const isActivePath = (path: string) =>
+    pathname === path || (path.split('/').length > 2 && pathname?.startsWith(`${path}/`))
 
   const colors = colorMap[accentColor]
 

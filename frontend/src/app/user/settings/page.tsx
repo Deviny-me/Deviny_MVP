@@ -121,7 +121,7 @@ export default function SettingsPage() {
       <div className="space-y-6 pb-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+          <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('description')}</p>
         </div>
 

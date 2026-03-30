@@ -14,7 +14,7 @@ import {
   Moon
 } from 'lucide-react'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { fetchNutritionistProfile } from '@/lib/api/nutritionistProfileApi'
 import { TrainerProfileResponse } from '@/types/trainerProfile'
@@ -33,6 +33,7 @@ export function TopNav() {
   const t = useTranslations('nav')
   const tSearch = useTranslations('search')
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const { unreadCount } = useUnreadMessages()
   const { level } = useLevel()
@@ -64,6 +65,19 @@ export function TopNav() {
     loadProfile()
   })
 
+  useEffect(() => {
+    if (!showProfileMenu) return
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [showProfileMenu])
+
   const navItems = [
     { icon: Users, label: t('friends'), path: '/nutritionist/friends', badge: undefined },
     { icon: MessageCircle, label: t('messages'), path: '/nutritionist/messages', badge: unreadCount > 0 ? unreadCount : undefined },
@@ -71,7 +85,7 @@ export function TopNav() {
     { icon: Settings, label: t('settings'), path: '/nutritionist/settings', badge: undefined },
   ]
 
-  const isActive = (path: string) => pathname === path
+  const isActive = (path: string) => pathname === path || (path.split('/').length > 2 && pathname?.startsWith(`${path}/`))
 
   const handleLogout = async () => {
     await logout()
@@ -80,10 +94,10 @@ export function TopNav() {
 
   return (
     <nav className="sticky top-0 glass-strong border-b border-border-subtle z-50">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6">
+        <div className="flex flex-wrap items-center gap-y-2 py-2 md:h-14 md:flex-nowrap md:justify-between md:py-0">
           {/* Left: Logo & Search */}
-          <div className="flex items-center gap-4 flex-1 max-w-xl">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0 md:max-w-xl">
             {/* Logo */}
             <button 
               onClick={() => { if (pathname !== '/nutritionist') startNavigation(); router.push('/nutritionist') }}
@@ -91,13 +105,13 @@ export function TopNav() {
             >
               <Image src={theme === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Deviny" width={90} height={30} className="h-7 w-auto" />
             </button>
-
-            {/* Search */}
-            <SearchBar placeholder={tSearch('nutritionistPlaceholder')} />
+            <div className="hidden md:block flex-1 min-w-0">
+              <SearchBar placeholder={tSearch('nutritionistPlaceholder')} />
+            </div>
           </div>
 
           {/* Center: Navigation */}
-          <div className="flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => {
               const hasUnread = item.badge !== undefined && item.badge > 0
               return (
@@ -114,7 +128,7 @@ export function TopNav() {
                   title={item.label}
                 >
                   <item.icon className="w-5 h-5" strokeWidth={1.5} />
-                  <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+                  <span className="mt-0.5 text-[10px] font-medium whitespace-nowrap">{item.label}</span>
                   {isActive(item.path) && (
                     <div className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#28bf68] rounded-full" />
                   )}
@@ -129,7 +143,7 @@ export function TopNav() {
           </div>
 
           {/* Right: Notifications & Profile */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-none justify-end md:flex-1">
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-hover-overlay text-muted-foreground hover:text-foreground transition-all"
@@ -137,15 +151,16 @@ export function TopNav() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
+            <SearchBar mobileModal placeholder={tSearch('nutritionistPlaceholder')} />
             <LanguageSwitcher compact />
-            <div className="w-px h-5 bg-border-subtle" />
+            <div className="hidden sm:block w-px h-5 bg-border-subtle" />
             {/* Notifications */}
             <NotificationDropdown />
 
-            <div className="w-px h-5 bg-border-subtle" />
+            <div className="hidden sm:block w-px h-5 bg-border-subtle" />
 
             {/* Profile Menu */}
-            <div className="relative">
+            <div ref={profileMenuRef} className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 p-1.5 pr-3 rounded-lg hover:bg-hover-overlay transition-all"
@@ -174,11 +189,8 @@ export function TopNav() {
               {/* Dropdown Menu */}
               {showProfileMenu && (
                 <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setShowProfileMenu(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-surface-2 border border-border rounded-xl overflow-hidden z-50 animate-slide-down" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
+                  <div className="fixed inset-0 z-40" />
+                  <div className="absolute right-0 top-full mt-2 w-[min(18rem,calc(100vw-1.5rem))] bg-surface-2 border border-border rounded-xl overflow-hidden z-50 animate-slide-down" style={{ boxShadow: 'var(--dropdown-shadow)' }}>
                     <div className="p-4 border-b border-border-subtle">
                       <div className="flex items-center gap-3">
                         {profile?.trainer?.avatarUrl ? (

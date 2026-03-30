@@ -23,6 +23,8 @@ export function MainLayout({
     <SharedMainLayout
       topNav={<TopNav />}
       leftSidebarSections={trainerConfig.navSections}
+      mobilePrimaryLinks={trainerConfig.mobilePrimaryLinks}
+      mobileSecondaryLinks={trainerConfig.topNavItems}
       footer={<TrainerFooter />}
       showLeftSidebar={showLeftSidebar}
       showRightSidebar={false}

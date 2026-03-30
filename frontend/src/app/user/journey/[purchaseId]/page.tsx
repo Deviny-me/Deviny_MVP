@@ -210,7 +210,7 @@ export default function ProgramDetailPage({
         {/* Content */}
         <div className="p-6 space-y-5">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
+            <h1 className="page-title">{program.title}</h1>
             <div className="flex items-center gap-2 mt-2">
               {program.trainerAvatarUrl ? (
                 <img

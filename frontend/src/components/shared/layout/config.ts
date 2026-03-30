@@ -60,6 +60,12 @@ export const trainerConfig: LayoutConfig = {
     { icon: MessageCircle, label: 'messages', path: '/trainer/messages' },
     { icon: User, label: 'myProfile', path: '/trainer/profile' },
     { icon: Settings, label: 'settings', path: '/trainer/settings' },
+  ],
+  mobilePrimaryLinks: [
+    { icon: Home, label: 'home', path: '/trainer' },
+    { icon: BarChart3, label: 'dashboard', path: '/trainer/dashboard' },
+    { icon: Users, label: 'students', path: '/trainer/students' },
+    { icon: MessageCircle, label: 'messages', path: '/trainer/messages' },
   ]
 }
 
@@ -104,6 +110,12 @@ export const userConfig: LayoutConfig = {
     { icon: MessageCircle, label: 'messages', path: '/user/messages' },
     { icon: User, label: 'profile', path: '/user/profile' },
     { icon: Settings, label: 'settings', path: '/user/settings' },
+  ],
+  mobilePrimaryLinks: [
+    { icon: Home, label: 'home', path: '/user' },
+    { icon: Compass, label: 'discover', path: '/user/discovery' },
+    { icon: BookOpen, label: 'myJourney', path: '/user/journey' },
+    { icon: MessageCircle, label: 'messages', path: '/user/messages' },
   ]
 }
 
@@ -149,6 +161,12 @@ export const nutritionistConfig: LayoutConfig = {
     { icon: MessageCircle, label: 'messages', path: '/nutritionist/messages' },
     { icon: User, label: 'myProfile', path: '/nutritionist/profile' },
     { icon: Settings, label: 'settings', path: '/nutritionist/settings' },
+  ],
+  mobilePrimaryLinks: [
+    { icon: Home, label: 'home', path: '/nutritionist' },
+    { icon: BarChart3, label: 'dashboard', path: '/nutritionist/dashboard' },
+    { icon: Users, label: 'clients', path: '/nutritionist/clients' },
+    { icon: MessageCircle, label: 'messages', path: '/nutritionist/messages' },
   ]
 }
 

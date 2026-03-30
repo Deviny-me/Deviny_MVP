@@ -789,26 +789,26 @@ export default function NutritionistProfilePage() {
 
   return (
     <>
-      <div className="pb-6">
+      <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden mb-4">
-          <div className={`h-48 bg-gradient-to-r ${accent.gradient} relative`}>
+        <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
+          <div className={`relative h-36 overflow-hidden bg-gradient-to-r ${accent.gradient} sm:h-48`}>
           </div>
 
-          <div className="relative px-6 pb-6">
+          <div className="relative px-4 pb-4 sm:px-6 sm:pb-6">
             {/* Avatar + Info row */}
-            <div className="flex gap-5 -mt-14">
+            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:gap-5">
               {/* Avatar */}
-              <div className="relative z-10 flex-shrink-0 self-start">
+              <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {trainer.avatarUrl ? (
                   <img
                     src={getMediaUrl(trainer.avatarUrl) || ''}
                     alt={trainer.fullName}
-                    className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10"
+                    className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-xl ring-2 ring-white/10 dark:border-[#1A1A1A] sm:h-28 sm:w-28"
                   />
                 ) : (
-                  <div className={`w-28 h-28 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl`}>
-                    <span className="text-white text-3xl font-bold">
+                  <div className={`flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br ${accent.gradient} shadow-xl dark:border-[#1A1A1A] sm:h-28 sm:w-28`}>
+                    <span className="text-2xl font-bold text-white sm:text-3xl">
                       {trainer.initials}
                     </span>
                   </div>
@@ -846,10 +846,10 @@ export default function NutritionistProfilePage() {
               </div>
 
               {/* Name + Stats inline */}
-              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <h1 className="text-xl font-bold text-foreground truncate">{trainer.fullName}</h1>
+              <div className="flex min-w-0 flex-1 flex-col gap-4 pt-0 sm:pt-[3.75rem]">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                    <h1 className="page-title-compact truncate">{trainer.fullName}</h1>
                     {trainer.ratingValue > 0 && (
                       <div className="flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 rounded-full">
                         <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
@@ -857,7 +857,7 @@ export default function NutritionistProfilePage() {
                       </div>
                     )}
                   </div>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="mt-2 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                     <span className="inline-flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
@@ -866,21 +866,21 @@ export default function NutritionistProfilePage() {
                 </div>
 
                 {/* Stats */}
-                <div className="hidden sm:flex items-center gap-5">
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.programsCount}</p>
+                <div className="hidden sm:grid sm:grid-cols-4 sm:gap-2 md:gap-3">
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.programsCount}</p>
                     <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.studentsCount}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.studentsCount}</p>
                     <p className="text-[10px] text-muted-foreground">{t('students')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.ratingValue.toFixed(1)}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.ratingValue.toFixed(1)}</p>
                     <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
                   </div>
-                  <div className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#28bf68] transition-colors">{trainer.achievementsCount}</p>
+                  <div className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#28bf68] md:text-base">{trainer.achievementsCount}</p>
                     <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
                   </div>
                 </div>
@@ -888,21 +888,21 @@ export default function NutritionistProfilePage() {
             </div>
 
             {/* Stats row for mobile */}
-            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{trainer.programsCount}</p>
+            <div className="mt-4 grid grid-cols-4 gap-1 bg-surface-1/45 p-1.5 sm:hidden sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-2">
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.programsCount}</p>
                 <p className="text-[10px] text-muted-foreground">{t('programs')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{trainer.studentsCount}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.studentsCount}</p>
                 <p className="text-[10px] text-muted-foreground">{t('students')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{trainer.ratingValue.toFixed(1)}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.ratingValue.toFixed(1)}</p>
                 <p className="text-[10px] text-muted-foreground">{trainer.reviewsCount} {t('reviews')}</p>
               </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-foreground">{trainer.achievementsCount}</p>
+              <div className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{trainer.achievementsCount}</p>
                 <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
               </div>
             </div>
@@ -910,9 +910,9 @@ export default function NutritionistProfilePage() {
         </div>
 
         {/* Contact & Location Info */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {(trainer.location || trainer.city || trainer.country) && (
-            <div className="relative bg-white/5 rounded-xl border border-border p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditLocationModal(true)}
                 className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
@@ -930,7 +930,7 @@ export default function NutritionistProfilePage() {
           )}
           
           {trainer.phone && (
-            <div className="relative bg-white/5 rounded-xl border border-border p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditPhoneModal(true)}
                 className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
@@ -946,7 +946,7 @@ export default function NutritionistProfilePage() {
           )}
           
           {trainer.experienceYears !== null && trainer.experienceYears !== undefined && (
-            <div className="relative bg-white/5 rounded-xl border border-border p-3 group">
+            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <button
                 onClick={() => setShowEditExperienceModal(true)}
                 className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
@@ -961,7 +961,7 @@ export default function NutritionistProfilePage() {
             </div>
           )}
 
-          <div className="relative bg-white/5 rounded-xl border border-border p-3 group">
+          <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
             <button
               onClick={() => setShowEditGenderModal(true)}
               className={`absolute top-2 right-2 p-1 text-faint-foreground ${accent.hoverText} opacity-0 group-hover:opacity-100 transition-opacity`}
@@ -985,7 +985,7 @@ export default function NutritionistProfilePage() {
         </div>
 
         {/* Bio Section */}
-        <div className="bg-surface-3 rounded-xl border border-border p-5 mb-4">
+        <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
           <p className={`text-sm ${accent.text} font-medium mb-3`}>{trainer.primaryTitle || t('personalNutritionist')}</p>
           {about?.text ? (
             <div>
@@ -1013,7 +1013,7 @@ export default function NutritionistProfilePage() {
 
         {/* Specializations */}
         {specializations.length > 0 && (
-          <div className="mb-6">
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-muted-foreground">{t('specializations')}</h3>
               <button
@@ -1028,7 +1028,7 @@ export default function NutritionistProfilePage() {
               {specializations.map((spec) => (
                 <span
                   key={spec.id}
-                  className={`px-3 py-1.5 bg-gradient-to-r ${accent.gradientBg10} border ${accent.borderMuted} text-muted-foreground rounded-lg text-sm flex items-center gap-2`}
+                  className={`flex items-center gap-2 rounded-lg border ${accent.borderMuted} bg-gradient-to-r ${accent.gradientBg10} px-3 py-1.5 text-sm text-muted-foreground`}
                 >
                   {spec.name}
                   <button 
@@ -1049,7 +1049,7 @@ export default function NutritionistProfilePage() {
         )}
 
         {specializations.length === 0 && (
-          <div className="mb-6">
+          <div>
             <button
               onClick={() => setShowSpecializationModal(true)}
               className={`w-full py-3 border-2 border-dashed border-border rounded-xl text-faint-foreground hover:text-muted-foreground ${accent.hoverBorderMuted} transition-colors flex items-center justify-center gap-2`}
@@ -1062,7 +1062,7 @@ export default function NutritionistProfilePage() {
 
         {/* Achievements Preview */}
         {achievements.length > 0 && (
-          <div className="mb-6">
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-muted-foreground">{t('achievements')}</h3>
               <span className="text-xs text-faint-foreground">{achievements.length} {tc('total')}</span>
@@ -1101,22 +1101,22 @@ export default function NutritionistProfilePage() {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 border-b border-border mb-6">
+        <div className="-mx-1 flex gap-1 overflow-x-auto border-b border-border pb-1 scrollbar-hide">
           {(['posts', 'reviews', 'certificates', 'specializations', 'achievements'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-3 font-medium capitalize transition-all relative ${
+              className={`relative shrink-0 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium capitalize transition-all ${
                 activeTab === tab
-                  ? accent.text
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? `${accent.text} bg-surface-1`
+                  : 'text-muted-foreground hover:bg-surface-1 hover:text-foreground'
               }`}
             >
               {tab === 'posts' ? t('posts') : tab === 'reviews' ? t('reviews') : tab === 'certificates' ? t('certificates') : tab === 'specializations' ? t('specializations') : t('achievements')}
               {activeTab === tab && (
                 <motion.div
                   layoutId="nutritionistProfileTab"
-                  className={`absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r ${accent.gradient}`}
+                  className={`absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r ${accent.gradient}`}
                 />
               )}
             </button>
@@ -1125,8 +1125,8 @@ export default function NutritionistProfilePage() {
 
         {/* Content */}
         {activeTab === 'posts' && (
-          <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="overflow-hidden bg-surface-2/35 sm:rounded-xl sm:border sm:border-border sm:bg-surface-3">
+            <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <Grid className={`w-5 h-5 ${accent.text}`} />
                 <h3 className="font-semibold text-foreground">{t('publications')}</h3>
@@ -1158,7 +1158,7 @@ export default function NutritionistProfilePage() {
               </div>
             ) : viewMode === 'grid' ? (
               <div>
-                <div className="grid grid-cols-3 gap-2 p-2">
+                <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
                   {postIds.map((id) => (
                     <NutritionistGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                   ))}

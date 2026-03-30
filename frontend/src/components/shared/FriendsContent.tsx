@@ -204,46 +204,50 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
   return (
     <>
       <div className="space-y-4 pb-6">
-        {/* Header */}
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {friends.length} {t('friendsCount')} • {pendingRequestsCount} {t('pendingRequests')}
-              </p>
-            </div>
-            <div className="relative">
+        <div>
+          <h1 className="page-title">{t('title')}</h1>
+          <p className="page-subtitle">
+            {friends.length} {t('friendsCount')} • {pendingRequestsCount} {t('pendingRequests')}
+          </p>
+        </div>
+
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-6">
+          <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm font-medium text-muted-foreground">{t('searchPlaceholder')}</div>
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className={`w-64 bg-background border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
+                className={`w-full bg-background border border-border-subtle rounded-lg pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
               />
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-border-subtle">
-            {[
-              { id: 'all' as const, label: t('allFriends'), count: friends.length },
-              { id: 'requests' as const, label: t('requests'), count: incomingCount },
-              { id: 'sent' as const, label: t('tabs.sent'), count: outgoingRequests.length },
-              { id: 'following' as const, label: t('tabs.following'), count: following.length },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2.5 text-sm font-semibold transition-colors relative ${
-                  activeTab === tab.id ? accent.text : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label} ({tab.count})
-                {activeTab === tab.id && <div className={`absolute bottom-0 left-0 right-0 h-0.5 ${accent.bg}`} />}
-              </button>
-            ))}
+          <div className="-mx-1 overflow-x-auto border-b border-border-subtle pb-1">
+            <div className="flex min-w-max items-center gap-2 px-1">
+              {[
+                { id: 'all' as const, label: t('allFriends'), count: friends.length },
+                { id: 'requests' as const, label: t('requests'), count: incomingCount },
+                { id: 'sent' as const, label: t('tabs.sent'), count: outgoingRequests.length },
+                { id: 'following' as const, label: t('tabs.following'), count: following.length },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? `${accent.bg} text-foreground`
+                      : 'bg-background text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -262,9 +266,9 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   key={friend.id}
                   className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div
-                      className="flex items-center gap-4 flex-1 cursor-pointer"
+                      className="flex items-center gap-4 flex-1 cursor-pointer min-w-0"
                       onClick={() => router.push(`${basePath}/profile/${friend.id}`)}
                     >
                       {friend.avatar ? (
@@ -278,18 +282,18 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           {friend.fullName?.[0] || friend.email[0].toUpperCase()}
                         </div>
                       )}
-                      <div>
-                        <h3 className="text-foreground font-semibold text-lg">{friend.fullName || tc('user')}</h3>
-                        <p className="text-sm text-muted-foreground">{friend.email}</p>
+                      <div className="min-w-0">
+                        <h3 className="text-foreground font-semibold text-base sm:text-lg truncate">{friend.fullName || tc('user')}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{friend.email}</p>
                         <p className="text-xs text-faint-foreground mt-1">
                           {t('friendsSince')} {new Date(friend.friendsSince).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 sm:justify-end">
                       <button
                         onClick={() => handleMessage(friend.id)}
-                        className="px-4 py-2 bg-border-subtle hover:bg-white/10 border border-border-subtle text-foreground rounded-lg transition-all flex items-center gap-2"
+                        className="flex-1 sm:flex-none px-4 py-2 bg-border-subtle hover:bg-white/10 border border-border-subtle text-foreground rounded-lg transition-all flex items-center justify-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4" />
                         <span className="text-sm font-medium">{t('message')}</span>
@@ -332,7 +336,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                       key={request.id}
                       className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         {request.senderAvatar ? (
                           <img
                             src={getMediaUrl(request.senderAvatar) || request.senderAvatar}
@@ -344,14 +348,14 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
                           </div>
                         )}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h3 className="text-foreground font-semibold">{request.senderFullName || tc('user')}</h3>
-                          <p className="text-sm text-muted-foreground">{request.senderEmail}</p>
+                          <p className="text-sm text-muted-foreground truncate">{request.senderEmail}</p>
                           <p className="text-xs text-faint-foreground mt-1">
                             {new Date(request.createdAt).toLocaleDateString()}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-2 sm:flex-row">
                           <button
                             onClick={() => handleAcceptRequest(request.id)}
                             disabled={actionLoading === `accept-${request.id}`}
@@ -403,7 +407,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                       key={request.id}
                       className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                     >
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         {request.receiverAvatar ? (
                           <img
                             src={getMediaUrl(request.receiverAvatar) || request.receiverAvatar}
@@ -415,9 +419,9 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                             {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
                           </div>
                         )}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <h3 className="text-foreground font-semibold">{request.receiverFullName || tc('user')}</h3>
-                          <p className="text-sm text-muted-foreground">{request.receiverEmail}</p>
+                          <p className="text-sm text-muted-foreground truncate">{request.receiverEmail}</p>
                           <div className="flex items-center gap-1 text-xs text-yellow-500 mt-1">
                             <Clock className="w-3 h-3" />
                             <span>{t('pending')}</span>
@@ -426,7 +430,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                         <button
                           onClick={() => handleCancelRequest(request.id)}
                           disabled={actionLoading === `cancel-${request.id}`}
-                          className="px-3 py-2 bg-border-subtle hover:bg-red-500/10 border border-border-subtle text-muted-foreground hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
+                          className="w-full sm:w-auto px-3 py-2 bg-border-subtle hover:bg-red-500/10 border border-border-subtle text-muted-foreground hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
                         >
                           {actionLoading === `cancel-${request.id}` ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -458,9 +462,9 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   key={trainer.id}
                   className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div
-                      className="flex items-center gap-4 flex-1 cursor-pointer"
+                      className="flex items-center gap-4 flex-1 cursor-pointer min-w-0"
                       onClick={() => router.push(`${basePath}/profile/${trainer.id}`)}
                     >
                       {trainer.avatar ? (
@@ -474,9 +478,9 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                           {trainer.fullName?.[0] || trainer.email[0].toUpperCase()}
                         </div>
                       )}
-                      <div>
-                        <h3 className="text-foreground font-semibold text-lg">{trainer.fullName || tc('user')}</h3>
-                        <p className="text-sm text-muted-foreground">{trainer.email}</p>
+                      <div className="min-w-0">
+                        <h3 className="text-foreground font-semibold text-base sm:text-lg truncate">{trainer.fullName || tc('user')}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{trainer.email}</p>
                         {trainer.role && (
                           <span className="text-xs text-green-500">{trainer.role}</span>
                         )}
@@ -485,7 +489,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                     <button
                       onClick={() => handleUnfollow(trainer.id)}
                       disabled={actionLoading === `unfollow-${trainer.id}`}
-                      className="px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                      className="w-full sm:w-auto px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
                     >
                       {actionLoading === `unfollow-${trainer.id}` ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

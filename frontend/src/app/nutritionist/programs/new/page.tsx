@@ -175,6 +175,18 @@ export default function NutritionistProgramFormPage() {
 
   return (
     <div className="space-y-4 pb-6 max-w-2xl mx-auto">
+      <div>
+        <h1 className="page-title">
+          {isEditing
+            ? formCategory === 'Diet'
+              ? t('editMealProgram')
+              : t('editConsultation')
+            : formCategory === 'Diet'
+            ? t('newMealProgram')
+            : t('newConsultation')}
+        </h1>
+      </div>
+
       {/* Back button */}
       <button
         onClick={() => router.back()}
@@ -186,16 +198,6 @@ export default function NutritionistProgramFormPage() {
 
       <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-foreground mb-6">
-            {isEditing
-              ? formCategory === 'Diet'
-                ? t('editMealProgram')
-                : t('editConsultation')
-              : formCategory === 'Diet'
-              ? t('newMealProgram')
-              : t('newConsultation')}
-          </h1>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Category Selector — only for new programs */}
             {!isEditing && (

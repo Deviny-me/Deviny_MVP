@@ -8,6 +8,7 @@ import {
   Users,
   Loader2,
   SortAsc,
+  ChevronDown,
   Dumbbell,
   Apple,
   MessageSquare,
@@ -268,13 +269,13 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <h1 className="page-title">{t('title')}</h1>
             <p className="text-sm text-muted-foreground">{t('description')}</p>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-surface-3 rounded-xl border border-border p-4 space-y-3">
+        <div className="bg-surface-3 rounded-xl border border-border p-4 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-faint-foreground" />
             <input
@@ -286,47 +287,51 @@ export default function ProgramsPage() {
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             {/* Type Filters */}
-            <div className="flex items-center gap-1 bg-background rounded-lg p-1">
-              <button
-                onClick={() => setFilterType('all')}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filterType === 'all' 
-                    ? 'bg-[#0c8de6] text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tc('all')}
-              </button>
-              {([
-                { cat: 'Training' as FilterType, icon: Dumbbell, label: t('training'), count: allPrograms.filter(p => p.category === 'Training').length },
-                { cat: 'Diet' as FilterType, icon: Apple, label: t('nutrition'), count: allPrograms.filter(p => p.category === 'Diet').length },
-                { cat: 'Consultation' as FilterType, icon: MessageSquare, label: t('consultation'), count: allPrograms.filter(p => p.category === 'Consultation').length },
-              ]).map(({ cat, icon: Icon, label, count }) => (
+            <div className="-mx-1 overflow-x-auto pb-1">
+              <div className="flex min-w-max items-center gap-1 rounded-lg bg-background p-1">
                 <button
-                  key={cat}
-                  onClick={() => setFilterType(cat)}
+                  onClick={() => setFilterType('all')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    filterType === cat 
+                    filterType === 'all'
                       ? 'bg-[#0c8de6] text-foreground' 
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                  <span className="text-xs opacity-70">({count})</span>
+                  {tc('all')}
                 </button>
-              ))}
+                {([
+                  { cat: 'Training' as FilterType, icon: Dumbbell, label: t('training'), count: allPrograms.filter(p => p.category === 'Training').length },
+                  { cat: 'Diet' as FilterType, icon: Apple, label: t('nutrition'), count: allPrograms.filter(p => p.category === 'Diet').length },
+                  { cat: 'Consultation' as FilterType, icon: MessageSquare, label: t('consultation'), count: allPrograms.filter(p => p.category === 'Consultation').length },
+                ]).map(({ cat, icon: Icon, label, count }) => (
+                  <button
+                    key={cat}
+                    onClick={() => setFilterType(cat)}
+                    className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      filterType === cat 
+                        ? 'bg-[#0c8de6] text-foreground' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                    <span className="text-xs opacity-70">({count})</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Sort */}
-            <div className="flex items-center gap-2 ml-auto">
-              <SortAsc className="w-4 h-4 text-faint-foreground" />
+            <div className="w-full sm:w-auto lg:min-w-[220px]">
+              <div className="relative">
+                <SortAsc className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint-foreground" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint-foreground" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm text-foreground focus:outline-none focus:border-[#0c8de6]/50"
+                className="h-12 w-full appearance-none rounded-2xl border border-[rgba(148,163,184,0.18)] bg-background pl-10 pr-10 text-sm font-medium text-foreground transition-colors focus:border-[rgba(148,163,184,0.28)] focus:outline-none"
               >
                 <option value="newest">{t('newest')}</option>
                 <option value="popular">{t('mostPopular')}</option>
@@ -334,6 +339,7 @@ export default function ProgramsPage() {
                 <option value="price-low">{t('priceLowToHigh')}</option>
                 <option value="price-high">{t('priceHighToLow')}</option>
               </select>
+              </div>
             </div>
           </div>
         </div>
@@ -373,9 +379,9 @@ export default function ProgramsPage() {
                 className="bg-surface-3 rounded-xl border border-border overflow-hidden hover:border-border transition-colors cursor-pointer"
                 onClick={() => router.push(`/user/programs/${program.id}?category=${program.category}`)}
               >
-                <div className="flex">
+                <div className="flex flex-col sm:flex-row">
                   {/* Cover Image */}
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 bg-background relative">
+                  <div className="h-48 w-full flex-shrink-0 bg-background relative sm:h-40 sm:w-40">
                     {program.coverImageUrl ? (
                       <img
                         src={getMediaUrl(program.coverImageUrl) || ''}
@@ -409,9 +415,9 @@ export default function ProgramsPage() {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 p-4 flex flex-col">
+                  <div className="flex flex-1 flex-col p-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground line-clamp-1">{program.title}</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-foreground line-clamp-2">{program.title}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         {program.trainerAvatarUrl ? (
                           <img
@@ -432,8 +438,8 @@ export default function ProgramsPage() {
 
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                      <div className="flex items-center gap-4">
+                    <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-1">
                           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                           <span className="text-sm text-foreground">
@@ -446,7 +452,7 @@ export default function ProgramsPage() {
                           <span className="text-sm">{program.totalPurchases ?? 0}</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col sm:items-end">
                         {(() => {
                           // Collect all available tier prices (only non-null tiers)
                           const availablePrices: number[] = []

@@ -6,7 +6,8 @@ import {
   Video,
   Award,
   Flame,
-  Loader2
+  Loader2,
+  Upload,
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useUser } from '@/components/user/UserProvider'
@@ -118,7 +119,12 @@ export function UserHomeFeed() {
   }
 
   return (
-    <div className="space-y-4 pb-8">
+    <div className="space-y-5 pb-8">
+      <div>
+        <h1 className="page-title">{tf('title')}</h1>
+        <p className="page-subtitle">{tf('noPostsDescription')}</p>
+      </div>
+
       {/* Hidden file inputs */}
       <input
         ref={photoInputRef}
@@ -138,7 +144,7 @@ export function UserHomeFeed() {
       />
 
       {/* Create Post Card */}
-      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4">
+      <section className="bg-surface-2 rounded-2xl border border-border-subtle p-4 sm:p-5">
         {/* Upload Progress */}
         {isUploading && uploadProgress && (
           <div className="mb-3 flex items-center gap-2.5 px-3 py-2.5 bg-[#0c8de6]/[0.06] border border-[#0c8de6]/10 rounded-lg">
@@ -146,43 +152,49 @@ export function UserHomeFeed() {
             <span className="text-sm text-muted-foreground">{uploadProgress}</span>
           </div>
         )}
-        
-        <div className="flex items-center gap-1.5">
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button 
             onClick={() => photoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#0c8de6]/35 hover:bg-[#0c8de6]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ImageIcon className="w-5 h-5 text-[#0c8de6] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{tf('photo')}</span>
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0c8de6]/12 transition-colors group-hover:bg-[#0c8de6]/18">
+                <ImageIcon className="h-4.5 w-4.5 text-[#0c8de6] transition-transform group-hover:scale-110" strokeWidth={1.9} />
+              </span>
+              <span className="text-[13px] font-semibold text-foreground">{tf('photo')}</span>
+            </span>
+            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#0c8de6]" />
           </button>
-          <div className="w-px h-6 bg-border-subtle" />
           <button 
             onClick={() => videoInputRef.current?.click()}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#0c8de6]/35 hover:bg-[#0c8de6]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Video className="w-5 h-5 text-[#0c8de6] group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{tf('video')}</span>
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0c8de6]/12 transition-colors group-hover:bg-[#0c8de6]/18">
+                <Video className="h-4.5 w-4.5 text-[#0c8de6] transition-transform group-hover:scale-110" strokeWidth={1.9} />
+              </span>
+              <span className="text-[13px] font-semibold text-foreground">{tf('video')}</span>
+            </span>
+            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#0c8de6]" />
           </button>
-          <div className="w-px h-6 bg-border-subtle" />
           <button 
             onClick={() => router.push('/user/achievements')}
             disabled={isUploading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg hover:bg-hover-overlay transition-all disabled:opacity-40 disabled:cursor-not-allowed group"
+            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#0c8de6]/35 hover:bg-[#0c8de6]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <Award className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" strokeWidth={1.5} />
-            <span className="text-[13px] font-medium text-muted-foreground group-hover:text-muted-foreground">{tf('achievement')}</span>
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0c8de6]/12 transition-colors group-hover:bg-[#0c8de6]/18">
+                <Award className="h-4.5 w-4.5 text-[#0c8de6] transition-transform group-hover:scale-110" strokeWidth={1.9} />
+              </span>
+              <span className="text-[13px] font-semibold text-foreground">{tf('achievement')}</span>
+            </span>
+            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#0c8de6]" />
           </button>
         </div>
-      </div>
-
-      {/* Separator */}
-      <div className="flex items-center gap-3 px-1">
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <span className="text-[11px] text-gray-600 font-medium uppercase tracking-wider">{tf('title')}</span>
-        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-      </div>
+      </section>
 
       {/* Feed Posts or Empty State */}
       {feedLoading ? (
@@ -207,7 +219,7 @@ export function UserHomeFeed() {
           ))}
         </div>
       ) : (
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-16 text-center">
+        <div className="bg-surface-2 rounded-2xl border border-border-subtle p-8 sm:p-16 text-center">
           <div className="w-14 h-14 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
             <Flame className="w-7 h-7 text-gray-600" />
           </div>

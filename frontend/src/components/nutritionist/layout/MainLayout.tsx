@@ -23,6 +23,8 @@ export function MainLayout({
     <SharedMainLayout
       topNav={<TopNav />}
       leftSidebarSections={nutritionistConfig.navSections}
+      mobilePrimaryLinks={nutritionistConfig.mobilePrimaryLinks}
+      mobileSecondaryLinks={nutritionistConfig.topNavItems}
       footer={<NutritionistFooter />}
       showLeftSidebar={showLeftSidebar}
       showRightSidebar={false}

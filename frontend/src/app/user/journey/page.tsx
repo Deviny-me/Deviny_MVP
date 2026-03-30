@@ -61,17 +61,18 @@ export default function MyJourneyPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <h1 className="page-title">{t('title')}</h1>
             <p className="text-sm text-muted-foreground">{t('description')}</p>
           </div>
         </div>
 
         {/* Filter Tabs (only if there are programs) */}
         {!isLoading && !error && programs.length > 0 && (
-          <div className="flex gap-2">
+          <div className="-mx-1 overflow-x-auto pb-1">
+            <div className="flex min-w-max gap-2 px-1">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === 'all'
                   ? 'bg-[#0c8de6] text-foreground'
                   : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
@@ -82,7 +83,7 @@ export default function MyJourneyPage() {
             {trainingCount > 0 && (
               <button
                 onClick={() => setFilter('training')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   filter === 'training'
                     ? 'bg-blue-600 text-foreground'
                     : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
@@ -94,7 +95,7 @@ export default function MyJourneyPage() {
             {mealCount > 0 && (
               <button
                 onClick={() => setFilter('meal')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   filter === 'meal'
                     ? 'bg-green-600 text-foreground'
                     : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
@@ -103,6 +104,7 @@ export default function MyJourneyPage() {
                 <Apple className="w-4 h-4" /> {t('nutrition')} ({mealCount})
               </button>
             )}
+            </div>
           </div>
         )}
 
@@ -132,7 +134,7 @@ export default function MyJourneyPage() {
 
         {/* Programs Grid */}
         {!isLoading && !error && filteredPrograms.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredPrograms.map((program) => (
               <div
                 key={program.purchaseId}
@@ -183,8 +185,8 @@ export default function MyJourneyPage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-4 space-y-2">
-                  <h3 className="font-semibold text-foreground truncate">{program.title}</h3>
+                <div className="p-4 space-y-3">
+                  <h3 className="font-semibold text-foreground line-clamp-2 min-h-[3rem]">{program.title}</h3>
                   {/* Rating */}
                   <div className="flex items-center gap-1.5">
                     <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
@@ -195,7 +197,7 @@ export default function MyJourneyPage() {
                       <span className="text-xs text-faint-foreground">({program.totalReviews})</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     {program.trainerAvatarUrl ? (
                       <img
                         src={getMediaUrl(program.trainerAvatarUrl) || ''}
@@ -205,11 +207,17 @@ export default function MyJourneyPage() {
                     ) : (
                       <div className="w-5 h-5 rounded-full bg-gray-700" />
                     )}
-                    <span className="text-sm text-muted-foreground">{program.trainerName}</span>
+                    <span className="text-sm text-muted-foreground truncate">{program.trainerName}</span>
                   </div>
-                  <p className="text-xs text-faint-foreground">
-                    {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
-                  </p>
+                  <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+                    <p className="text-xs text-faint-foreground">
+                      {t('purchased')} {new Date(program.purchasedAt).toLocaleDateString()}
+                    </p>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground">
+                      <PlayCircle className="h-3.5 w-3.5 text-[#0c8de6]" />
+                      Open
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

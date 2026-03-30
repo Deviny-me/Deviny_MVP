@@ -123,12 +123,12 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+        <h1 className="page-title">{t('title')}</h1>
         <p className="text-muted-foreground text-sm">{t('subtitle')}</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <StatCard
           icon={Users}
           value={stats.totalStudents}
@@ -150,10 +150,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Monthly Sales Chart */}
-      <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-5 h-5" style={{ color: accentColor }} />
-          <h2 className="text-lg font-semibold text-foreground">{t('monthlySales')}</h2>
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">{t('monthlySales')}</h2>
         </div>
         {stats.totalProgramsSold === 0 ? (
           <EmptyChartState message={t('noSalesYet')} />
@@ -190,10 +190,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       {/* Two-column Layout: Tier Distribution + Students Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Tier Distribution Pie Chart */}
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <PieChartIcon className="w-5 h-5" style={{ color: accentColor }} />
-            <h2 className="text-lg font-semibold text-foreground">{t('tierDistribution')}</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">{t('tierDistribution')}</h2>
           </div>
           {totalTierSales === 0 ? (
             <EmptyChartState message={t('noSalesYet')} />
@@ -227,10 +227,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
         </div>
 
         {/* Monthly Students Chart */}
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5" style={{ color: accentColor }} />
-            <h2 className="text-lg font-semibold text-foreground">{t('monthlyStudents')}</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">{t('monthlyStudents')}</h2>
           </div>
           {stats.totalStudents === 0 ? (
             <EmptyChartState message={t('noStudentsYet')} />
@@ -258,10 +258,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Program Performance Table */}
-      <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-4">
           <Layers className="w-5 h-5" style={{ color: accentColor }} />
-          <h2 className="text-lg font-semibold text-foreground">{t('programPerformance')}</h2>
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">{t('programPerformance')}</h2>
         </div>
         {stats.programStats.length === 0 ? (
           <div className="text-center py-8">
@@ -319,10 +319,10 @@ export function DashboardContent({ accentColor, accentGradient, role }: Dashboar
       </div>
 
       {/* Recent Students */}
-      <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+      <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
         <div className="flex items-center gap-2 mb-4">
           <Users className="w-5 h-5" style={{ color: accentColor }} />
-          <h2 className="text-lg font-semibold text-foreground">{t('recentStudents')}</h2>
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">{t('recentStudents')}</h2>
         </div>
         {stats.recentStudents.length === 0 ? (
           <div className="text-center py-8">
@@ -377,17 +377,17 @@ function StatCard({
   accentColor: string
 }) {
   return (
-    <div className="bg-surface-2 rounded-xl border border-border-subtle p-5">
+    <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 sm:p-5">
       <div className="flex items-center gap-3">
         <div
-          className="w-11 h-11 rounded-lg flex items-center justify-center"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center shrink-0"
           style={{ backgroundColor: accentColor + '20' }}
         >
           <Icon className="w-5 h-5" style={{ color: accentColor }} />
         </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+        <div className="min-w-0">
+          <p className="text-xl sm:text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-sm text-muted-foreground leading-tight">{label}</p>
         </div>
       </div>
     </div>

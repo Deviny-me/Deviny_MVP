@@ -258,7 +258,7 @@ export default function ProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('title')}</h1>
+            <h1 className="page-title">{t('title')}</h1>
             <p className="text-muted-foreground">{t('description')}</p>
           </div>
           <button 

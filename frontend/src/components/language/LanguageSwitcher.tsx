@@ -70,8 +70,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         <div
           ref={dropdownRef}
           className="fixed bg-surface-2 border border-border rounded-xl py-1 z-[9999] min-w-[160px] animate-slide-down"
-          style={{ boxShadow: 'var(--dropdown-shadow)' }}
-          style={{ top: dropdownPos.top, right: dropdownPos.right }}
+          style={{ boxShadow: 'var(--dropdown-shadow)', top: dropdownPos.top, right: dropdownPos.right }}
         >
           {LANGUAGES.map((lang) => (
             <button

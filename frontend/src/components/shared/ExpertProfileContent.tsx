@@ -132,7 +132,7 @@ export function ExpertProfileContent({ basePath }: ExpertProfileContentProps) {
 
                   {/* Info */}
                   <div className="flex-1">
-                    <h1 className="text-3xl font-bold text-foreground">{profile.trainer.fullName}</h1>
+                    <h1 className="page-title-compact">{profile.trainer.fullName}</h1>
                     {profile.trainer.primaryTitle && (
                       <p className={`${expertAccent.text} mt-2 text-lg`}>{profile.trainer.primaryTitle}</p>
                     )}

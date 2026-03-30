@@ -541,10 +541,10 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <div className="pb-6">
+      <div className="space-y-4 pb-6">
         {/* Profile Header */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden mb-4">
-          <div className="relative h-48 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] overflow-hidden">
+        <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
+          <div className="relative h-32 sm:h-40 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] overflow-hidden">
             {user?.bannerUrl && (
               <img
                 src={getMediaUrl(user.bannerUrl) || ''}
@@ -589,20 +589,20 @@ export default function UserProfilePage() {
             </div>
           </div>
 
-          <div className="relative px-6 pb-6">
+          <div className="relative px-4 pb-4 sm:px-6 sm:pb-5">
             {/* Avatar + Info row */}
-            <div className="flex gap-5 -mt-14">
+            <div className="-mt-10 flex flex-col gap-3 sm:-mt-12 sm:flex-row sm:gap-4">
               {/* Avatar */}
-              <div className="relative z-10 flex-shrink-0 self-start">
+              <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {user?.avatarUrl ? (
                   <img
                     src={getMediaUrl(user.avatarUrl) || ''}
                     alt={user?.fullName || 'User'}
-                    className="w-28 h-28 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10"
+                    className="h-20 w-20 rounded-full object-cover border-4 border-white dark:border-[#1A1A1A] shadow-xl ring-2 ring-white/10 sm:h-24 sm:w-24"
                   />
                 ) : (
-                  <div className="w-28 h-28 rounded-full bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center border-4 border-white dark:border-[#1A1A1A] shadow-xl">
-                    <span className="text-white text-3xl font-bold">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#0c8de6] to-[#0070c4] shadow-xl dark:border-[#1A1A1A] sm:h-24 sm:w-24">
+                    <span className="text-xl font-bold text-white sm:text-2xl">
                       {user?.fullName?.charAt(0) || 'U'}
                     </span>
                   </div>
@@ -640,16 +640,16 @@ export default function UserProfilePage() {
               </div>
 
               {/* Name + Stats inline */}
-              <div className="flex-1 min-w-0 pt-[3.75rem] flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <h1 className="text-xl font-bold text-foreground truncate">{user?.fullName || 'User'}</h1>
+              <div className="flex min-w-0 flex-1 flex-col gap-3 pt-0 sm:pt-[3rem]">
+                <div className="min-w-0 text-center sm:text-left">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
+                    <h2 className="page-title-compact truncate">{user?.fullName || 'User'}</h2>
                     <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full whitespace-nowrap">
                       Lv. {currentLevel}
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
+                  <div className="mt-2 flex flex-col items-center gap-2 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                    <span className="inline-flex items-center gap-1 text-center">
                       <MapPin className="w-3 h-3" />
                       {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
                     </span>
@@ -663,21 +663,21 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* Stats */}
-                <div className="hidden sm:flex items-center gap-5">
-                  <Link href="/user/journey" className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground mt--0.5">{tp('workouts')}</p>
+                <div className="hidden sm:grid sm:grid-cols-4 sm:gap-2 md:gap-3">
+                  <Link href="/user/journey" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{tp('workouts')}</p>
                   </Link>
-                  <Link href="/user/friends" className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.followersCount || 0).toLocaleString()}</p>
+                  <Link href="/user/friends" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.followersCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
                   </Link>
-                  <Link href="/user/friends" className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.followingCount || 0).toLocaleString()}</p>
+                  <Link href="/user/friends" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.followingCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
                   </Link>
-                  <Link href="/user/achievements" className="group text-center">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#0c8de6] transition-colors">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                  <Link href="/user/achievements" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.achievementsCount || 0).toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
                   </Link>
                 </div>
@@ -685,28 +685,28 @@ export default function UserProfilePage() {
             </div>
 
             {/* Stats row for mobile */}
-            <div className="flex sm:hidden items-center justify-around mt-4 py-3 rounded-xl bg-surface-1 dark:bg-white/[0.03] border border-border-subtle">
-              <Link href="/user/journey" className="text-center">
-                <p className="text-base font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
+            <div className="mt-4 grid grid-cols-4 gap-1 bg-surface-1/45 p-1.5 sm:hidden sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-2">
+              <Link href="/user/journey" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.workoutsCompleted || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('workouts')}</p>
               </Link>
-              <Link href="/user/friends" className="text-center">
-                <p className="text-base font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
+              <Link href="/user/friends" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.followersCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('followers')}</p>
               </Link>
-              <Link href="/user/friends" className="text-center">
-                <p className="text-base font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
+              <Link href="/user/friends" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.followingCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
               </Link>
-              <Link href="/user/achievements" className="text-center">
-                <p className="text-base font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
+              <Link href="/user/achievements" className="rounded-lg px-1.5 py-2 text-center">
+                <p className="text-sm font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
               </Link>
             </div>
 
             {/* XP Progress */}
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
                 <span>{currentXp.toLocaleString()} / {requiredXp.toLocaleString()} XP</span>
               </div>
@@ -719,8 +719,8 @@ export default function UserProfilePage() {
             </div>
 
             {/* About Me */}
-            <div className="mt-4 bg-surface-1 dark:bg-white/[0.02] rounded-xl border border-border-subtle p-4">
-              <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="mt-4 bg-surface-1/45 p-3 dark:bg-white/[0.02] sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tp('aboutMe')}</h3>
                 {!isEditingProfileInfo ? (
                   <button
@@ -771,7 +771,7 @@ export default function UserProfilePage() {
                         setProfileCountryCodeInput(e.target.value)
                         setProfileCityInput('')
                       }}
-                      className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-[#0c8de6]/60"
+                      className="app-select"
                     >
                       <option value="">{tr('selectCountry')}</option>
                       {countries.map((country) => (
@@ -784,7 +784,7 @@ export default function UserProfilePage() {
                       value={profileCityInput}
                       onChange={(e) => setProfileCityInput(e.target.value)}
                       disabled={!profileCountryCodeInput}
-                      className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-xl text-foreground focus:outline-none focus:border-[#0c8de6]/60 disabled:opacity-50"
+                      className="app-select disabled:opacity-50"
                     >
                       <option value="">{profileCountryCodeInput ? tr('selectCity') : tr('selectCountry')}</option>
                       {availableCities.map((city) => (
@@ -794,9 +794,9 @@ export default function UserProfilePage() {
                       ))}
                     </select>
                   </div>
-                  <div className="flex justify-end">
+                  <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-end">
                     {showProfileSaved && (
-                      <span className="mr-2 inline-flex items-center gap-1 text-emerald-400 text-xs animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs animate-pulse">
                         <Check className="w-3.5 h-3.5" />
                         {tp('toasts.profileUpdated')}
                       </span>
@@ -826,7 +826,7 @@ export default function UserProfilePage() {
             </div>
 
             {completionPercent < 100 && (
-              <div className="mt-4 rounded-xl border border-[#0c8de6]/20 bg-[#0c8de6]/[0.06] p-4">
+              <div className="mt-4 bg-[#0c8de6]/[0.05] p-3 sm:rounded-xl sm:border sm:border-[#0c8de6]/20 sm:p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{tp('fillProfile')}</p>
@@ -845,8 +845,8 @@ export default function UserProfilePage() {
         </div>
 
         {/* Posts Section */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <div className="overflow-hidden bg-surface-2/35 sm:rounded-xl sm:border sm:border-border sm:bg-surface-3">
+          <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Grid className="w-5 h-5 text-[#0c8de6]" />
               <h3 className="font-semibold text-foreground">{tPosts('postsTab')}</h3>
@@ -879,7 +879,7 @@ export default function UserProfilePage() {
             </div>
           ) : viewMode === 'grid' ? (
             <div>
-              <div className="grid grid-cols-3 gap-2 p-2">
+              <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
                 {postIds.map((id) => (
                   <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
                 ))}

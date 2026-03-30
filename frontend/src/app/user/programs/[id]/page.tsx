@@ -304,7 +304,7 @@ export default function ProgramDetailPage({
         {/* Content */}
         <div className="p-5 space-y-4">
           <div className="flex items-start justify-between gap-4">
-            <h1 className="text-2xl font-bold text-foreground">{program.title}</h1>
+            <h1 className="page-title">{program.title}</h1>
             <div className="flex flex-col items-end flex-shrink-0">
               {(() => {
                 const availablePrices: number[] = []
