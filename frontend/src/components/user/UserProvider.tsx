@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode, useEffect } from 'react'
 import { authService } from '@/features/auth/services/authService'
 import { API_URL } from '@/lib/config'
+import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 interface UserData {
   id: string
@@ -185,6 +186,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(() => ({ user, updateUser, refreshUser, isLoading, logout }), [user, updateUser, refreshUser, isLoading, logout])
+
+  // Refresh user data when follows/friends/profile change via SignalR
+  useRealtimeScopeRefresh(['follows', 'friends', 'profile'], refreshUser, { enabled: !!user })
 
   return (
     <UserContext.Provider value={value}>

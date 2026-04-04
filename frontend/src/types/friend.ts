@@ -25,10 +25,10 @@ export interface FriendRequestDto {
 }
 
 export enum FriendRequestStatus {
-  Pending = 0,
-  Accepted = 1,
-  Declined = 2,
-  Cancelled = 3,
+  Pending = 'Pending',
+  Accepted = 'Accepted',
+  Declined = 'Declined',
+  Cancelled = 'Cancelled',
 }
 
 export interface RelationshipStatus {

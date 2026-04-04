@@ -8,6 +8,7 @@ public interface IUserRepository
     Task<User?> GetByIdAsync(Guid id);
     Task<User> CreateAsync(User user);
     Task<User> UpdateAsync(User user);
+    Task DeleteAsync(Guid userId, CancellationToken ct = default);
     Task<RefreshToken> AddRefreshTokenAsync(RefreshToken token);
     Task<RefreshToken?> GetRefreshTokenAsync(string token);
     Task RevokeRefreshTokenAsync(string token);

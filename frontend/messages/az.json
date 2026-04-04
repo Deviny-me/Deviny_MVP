@@ -211,6 +211,7 @@
     "chat": "Çat",
     "finance": "Maliyyə",
     "trainer": "Məşqçi",
+    "user": "İstifadəçi",
     "nutritionist": "Dietoloq",
     "trainerPlatform": "Məşqçi platforması",
     "dashboard": "İdarə paneli",
@@ -273,6 +274,10 @@
     "connectionError": "Bağlantı xətası",
     "passwordsDontMatch": "Şifrələr uyğun gəlmir",
     "wrongPassword": "Yanlış cari şifrə",
+    "deleteAccountPasswordLabel": "Təsdiq üçün şifrənizi daxil edin",
+    "deleteAccountPasswordPlaceholder": "Şifrəniz",
+    "deleteAccountConfirmButton": "Bəli, hesabı sil",
+    "deleteAccountError": "Hesab silinə bilmədi. Yenidən cəhd edin.",
     "deleteConfirmation": "Hesabınızı silmək istədiyinizə əminsiniz? Bu əməliyyat geri dönülməzdir və bütün məlumatlarınız silinəcək."
   },
 
@@ -980,6 +985,7 @@
     "friendsAndFollowing": "Dostlar və izlədiklərim",
     "noFriendsYet": "Hələ dostunuz yoxdur. Ünsiyyətə başlayın!",
     "removeFriendConfirm": "Bu dostu silmək istədiyinizə əminsiniz?",
+    "removeFriend": "Dostu sil",
     "noPendingSent": "Göndərilmiş sorğu yoxdur",
     "cancel": "Ləğv et",
     "notFollowingYet": "Hələ heç bir məşqçini izləmirsiniz",
@@ -1111,6 +1117,7 @@
     "newPrograms": "Yeni proqramlar",
     "messages": "Mesajlar",
     "signOut": "Çıxış",
+    "deleteAccount": "Hesabı sil",
     "edit": "Redaktə et",
     "version": "Deviny Fitness v1.0.0",
     "copyright": "© 2026 Bütün hüquqlar qorunur"

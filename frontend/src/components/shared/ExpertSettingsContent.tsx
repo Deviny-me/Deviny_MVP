@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
-import { User, LogOut, ChevronRight, Loader2, Moon, Sun, Globe } from 'lucide-react'
+import { User, LogOut, Trash2, ChevronRight, Loader2, Moon, Sun, Globe } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -10,6 +10,7 @@ import { TrainerProfileResponse } from '@/types/trainerProfile'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { useTheme } from '@/components/theme/ThemeProvider'
 import { useLanguage, getLanguageLabel, Language } from '@/components/language/LanguageProvider'
+import { DeleteAccountModal } from '@/components/shared/DeleteAccountModal'
 
 interface ExpertSettingsContentProps {
   basePath: string
@@ -34,6 +35,7 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
   const tc = useTranslations('common')
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +55,10 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
   const handleLogout = async () => {
     await logout()
     router.push('/auth/login')
+  }
+
+  const handleDeleteSuccess = () => {
+    window.location.href = '/auth/login'
   }
 
   if (loading) {
@@ -142,6 +148,24 @@ export function ExpertSettingsContent({ basePath, fetchProfile }: ExpertSettings
         <LogOut className="w-5 h-5" />
         <span className="font-medium">{tc('logout')}</span>
       </motion.button>
+
+      {/* Delete Account Button */}
+      <motion.button
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        onClick={() => setShowDeleteModal(true)}
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-red-500/20 text-red-500/70 rounded-xl hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/40 transition-all"
+      >
+        <Trash2 className="w-4 h-4" />
+        <span className="text-sm font-medium">{t('deleteAccount')}</span>
+      </motion.button>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onSuccess={handleDeleteSuccess}
+      />
     </div>
   )
 }

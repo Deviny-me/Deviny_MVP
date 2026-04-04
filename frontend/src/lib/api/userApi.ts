@@ -1,4 +1,5 @@
 import { API_URL, fetchWithAuth } from '@/lib/config'
+import { chatConnection } from '@/lib/signalr/chatConnection'
 
 export interface UpdateUserProfileRequest {
   bio?: string
@@ -86,4 +87,29 @@ export async function updateUserProfile(request: UpdateUserProfileRequest): Prom
   }
 
   return response.json()
+}
+
+export async function deleteAccount(password: string): Promise<void> {
+  const response = await fetchWithAuth(`${API_URL}/me/account`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  })
+
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || errorData.error || 'Failed to delete account')
+  }
+
+  // Аккаунт удалён — очищаем всё локальное состояние
+  try {
+    chatConnection.clearHandlers()
+    await chatConnection.stop()
+  } catch { /* ignore */ }
+
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('user')
+  localStorage.removeItem('selectedRole')
+  sessionStorage.removeItem('accessToken')
+  sessionStorage.removeItem('user')
 }

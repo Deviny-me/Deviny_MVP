@@ -11,6 +11,7 @@ import {
   Shield,
   Globe,
   LogOut,
+  Trash2,
   ChevronRight,
   Moon,
   Sun,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useLanguage, getLanguageLabel, Language } from '@/components/language/LanguageProvider'
+import { DeleteAccountModal } from '@/components/shared/DeleteAccountModal'
 
 interface SettingsItem {
   icon: LucideIcon
@@ -47,10 +49,15 @@ export default function SettingsPage() {
     newPrograms: false,
     messages: true,
   })
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const handleLogout = () => {
     logout()
     router.push('/auth/login')
+  }
+
+  const handleDeleteSuccess = () => {
+    window.location.href = '/auth/login'
   }
 
   const cycleLanguage = () => {
@@ -187,7 +194,22 @@ export default function SettingsPage() {
           <LogOut className="w-5 h-5" />
           <span className="font-semibold">{t('signOut')}</span>
         </button>
+
+        {/* Delete Account Button */}
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 border border-red-500/20 text-red-500/70 rounded-xl hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/40 transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span className="text-sm font-medium">{t('deleteAccount')}</span>
+        </button>
       </div>
+
+      <DeleteAccountModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onSuccess={handleDeleteSuccess}
+      />
     </>
   )
 }

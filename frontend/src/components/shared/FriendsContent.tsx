@@ -44,6 +44,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [incomingCount, setIncomingCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
 
   useEffect(() => {
     loadData()
@@ -78,24 +79,29 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
     }
   }, [activeTab, t])
 
-  // Load incoming count on mount for badge
+  // Load badge counts on mount
   useEffect(() => {
-    friendsApi.getIncomingRequests().then(data => setIncomingCount(data.length)).catch(() => {})
+    friendsApi.getIncomingRequests().then(data =>
+      setIncomingCount(data.filter(r => r.status === FriendRequestStatus.Pending).length)
+    ).catch(() => {})
+    followsApi.getMyFollowing(1, 1).then(data => setFollowingCount(data.totalCount)).catch(() => {})
   }, [])
 
   const loadData = async () => {
     try {
       setLoading(true)
       if (activeTab === 'all') {
-        const [friendsData, incomingData, outgoingData] = await Promise.all([
+        const [friendsData, incomingData, outgoingData, followingData] = await Promise.all([
           friendsApi.getMyFriends(1, 100),
           friendsApi.getIncomingRequests(),
           friendsApi.getOutgoingRequests(),
+          followsApi.getMyFollowing(1, 1),
         ])
         setFriends(friendsData.items)
         setIncomingRequests(incomingData.filter(r => r.status === FriendRequestStatus.Pending))
         setOutgoingRequests(outgoingData.filter(r => r.status === FriendRequestStatus.Pending))
         setIncomingCount(incomingData.filter(r => r.status === FriendRequestStatus.Pending).length)
+        setFollowingCount(followingData.totalCount)
       } else if (activeTab === 'requests') {
         const data = await friendsApi.getIncomingRequests()
         setIncomingRequests(data.filter(r => r.status === FriendRequestStatus.Pending))
@@ -106,6 +112,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
       } else if (activeTab === 'following') {
         const data = await followsApi.getMyFollowing(1, 100)
         setFollowing(data.items)
+        setFollowingCount(data.totalCount)
       }
     } catch (error) {
       console.error('Error loading data:', error)
@@ -233,7 +240,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                 { id: 'all' as const, label: t('allFriends'), count: friends.length },
                 { id: 'requests' as const, label: t('requests'), count: incomingCount },
                 { id: 'sent' as const, label: t('tabs.sent'), count: outgoingRequests.length },
-                { id: 'following' as const, label: t('tabs.following'), count: following.length },
+                { id: 'following' as const, label: t('tabs.following'), count: followingCount },
               ].map((tab) => (
                 <button
                   key={tab.id}
