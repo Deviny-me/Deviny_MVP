@@ -211,6 +211,7 @@
     "chat": "Чат",
     "finance": "Финансы",
     "trainer": "Тренер",
+    "user": "Пользователь",
     "nutritionist": "Нутрициолог",
     "trainerPlatform": "Платформа тренера",
     "dashboard": "Панель управления",
@@ -273,6 +274,10 @@
     "connectionError": "Ошибка подключения",
     "passwordsDontMatch": "Пароли не совпадают",
     "wrongPassword": "Неверный текущий пароль",
+    "deleteAccountPasswordLabel": "Введите пароль для подтверждения",
+    "deleteAccountPasswordPlaceholder": "Ваш пароль",
+    "deleteAccountConfirmButton": "Да, удалить аккаунт",
+    "deleteAccountError": "Не удалось удалить аккаунт. Попробуйте снова.",
     "deleteConfirmation": "Вы уверены, что хотите удалить аккаунт? Это действие необратимо и все ваши данные будут удалены."
   },
 
@@ -980,6 +985,7 @@
     "friendsAndFollowing": "Друзья и подписки",
     "noFriendsYet": "У вас пока нет друзей. Начните общаться!",
     "removeFriendConfirm": "Вы уверены, что хотите удалить этого друга?",
+    "removeFriend": "Удалить из друзей",
     "noPendingSent": "Нет отправленных запросов",
     "cancel": "Отменить",
     "notFollowingYet": "Вы ещё ни на кого не подписаны",
@@ -1111,6 +1117,7 @@
     "newPrograms": "Новые программы",
     "messages": "Сообщения",
     "signOut": "Выйти",
+    "deleteAccount": "Удалить аккаунт",
     "edit": "Изменить",
     "version": "Deviny Fitness v1.0.0",
     "copyright": "© 2026 Все права защищены"

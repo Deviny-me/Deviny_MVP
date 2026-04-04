@@ -211,6 +211,7 @@
     "chat": "Chat",
     "finance": "Finance",
     "trainer": "Trainer",
+    "user": "User",
     "nutritionist": "Nutritionist",
     "trainerPlatform": "Trainer platform",
     "dashboard": "Dashboard",
@@ -273,6 +274,10 @@
     "connectionError": "Connection error",
     "passwordsDontMatch": "Passwords do not match",
     "wrongPassword": "Wrong current password",
+    "deleteAccountPasswordLabel": "Enter your password to confirm",
+    "deleteAccountPasswordPlaceholder": "Your password",
+    "deleteAccountConfirmButton": "Yes, delete account",
+    "deleteAccountError": "Failed to delete account. Please try again.",
     "deleteConfirmation": "Are you sure you want to delete your account? This action is irreversible and all your data will be deleted."
   },
 
@@ -980,6 +985,7 @@
     "friendsAndFollowing": "Friends & Following",
     "noFriendsYet": "No friends yet. Start connecting!",
     "removeFriendConfirm": "Are you sure you want to remove this friend?",
+    "removeFriend": "Remove friend",
     "noPendingSent": "No pending requests sent",
     "cancel": "Cancel",
     "notFollowingYet": "Not following any trainers yet",
@@ -1111,6 +1117,7 @@
     "newPrograms": "New Programs",
     "messages": "Messages",
     "signOut": "Sign Out",
+    "deleteAccount": "Delete account",
     "edit": "Edit",
     "version": "Deviny Fitness v1.0.0",
     "copyright": "© 2026 All rights reserved"

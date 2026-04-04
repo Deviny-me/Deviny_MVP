@@ -146,7 +146,8 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
       trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trainer.primaryTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trainer.specializations.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesRole = roleFilter === 'all' || trainer.role === roleFilter
+    const normalizedRole = String(trainer.role ?? '').trim().toLowerCase()
+    const matchesRole = roleFilter === 'all' || normalizedRole === roleFilter.toLowerCase()
     return matchesSearch && matchesRole
   })
 

@@ -1,13 +1,8 @@
 // Centralized API configuration
-// Use relative URLs when available (will be proxied by Next.js), otherwise fallback to direct backend URL
-const isServer = typeof window === 'undefined';
-const isDev = process.env.NODE_ENV === 'development';
-
-// For API requests: use Next.js proxy (relative URLs) in development
-// For media/images: always use direct backend URL (not proxied to avoid issues)
-export const API_BASE_URL = !isServer && isDev ? '' : (process.env.NEXT_PUBLIC_API_URL || 'https://api.deviny.me');
+// Always use the hosted backend (or NEXT_PUBLIC_API_URL override) for all environments.
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export const API_URL = `${API_BASE_URL}/api`;
-export const MEDIA_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.deviny.me';
+export const MEDIA_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Helper to refresh access token
 async function refreshAccessToken(): Promise<string | null> {

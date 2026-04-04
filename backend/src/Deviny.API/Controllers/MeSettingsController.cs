@@ -1,8 +1,10 @@
 using Deviny.API.DTOs.Requests;
 using Deviny.API.DTOs.Responses;
 using Deviny.API.DTOs.Shared;
+using Deviny.Application.Features.Users.Commands;
 using Deviny.Domain.Entities;
 using Deviny.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,14 +15,32 @@ namespace Deviny.API.Controllers;
 public class MeSettingsController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
+    private readonly IMediator _mediator;
     private const string ThemeCookieName = "deviny_theme";
     private const string LanguageCookieName = "deviny_language";
     private static readonly string[] ValidThemes = ["light", "dark"];
     private static readonly string[] ValidLanguages = ["ru", "en"];
 
-    public MeSettingsController(ApplicationDbContext context)
+    public MeSettingsController(ApplicationDbContext context, IMediator mediator)
     {
         _context = context;
+        _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Удалить аккаунт текущего пользователя. Требует подтверждения паролем.
+    /// </summary>
+    [HttpDelete("account")]
+    public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
+    {
+        var userId = GetCurrentUserId();
+
+        await _mediator.Send(new DeleteAccountCommand(userId, request.Password));
+
+        // Очистить refresh token cookie
+        Response.Cookies.Delete("refreshToken");
+
+        return NoContent();
     }
 
     /// <summary>
