@@ -25,7 +25,8 @@ const roleConfig = {
 const inputBase = 'w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-white/[0.04] text-gray-900 dark:text-white placeholder:text-gray-400 transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:border-transparent'
 const inputOk = 'border-gray-200 dark:border-white/[0.1] focus:ring-primary-500'
 const inputErr = 'border-red-400 focus:ring-red-500'
-const selectBase = 'w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-white/[0.04] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
+const selectBase = 'w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
+const selectPhoneCode = 'w-28 flex-shrink-0 px-3 py-3.5 rounded-xl border bg-white/80 dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
 
 function RegisterPageContent() {
   const searchParams = useSearchParams()
@@ -398,11 +399,11 @@ function RegisterPageContent() {
           {/* Phone */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('phone')}{isProfessional ? ' *' : ''}</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0">
               <select
                 value={phoneCountryCode}
                 onChange={(e) => { setPhoneCountryCode(e.target.value); setPhone('') }}
-                className={cn(selectBase, 'w-28 flex-shrink-0', errors.phone ? inputErr : inputOk)}
+                className={cn(selectPhoneCode, errors.phone ? inputErr : inputOk)}
                 disabled={loading}
               >
                 {countries.map((c) => (
@@ -413,7 +414,7 @@ function RegisterPageContent() {
                 type="tel"
                 value={phone}
                 onChange={handlePhoneChange}
-                className={cn(inputBase, 'flex-1', errors.phone ? inputErr : inputOk)}
+                className={cn(inputBase, 'flex-1 min-w-0', errors.phone ? inputErr : inputOk)}
                 placeholder={phoneFormat.replace(/X/g, '9')}
                 disabled={loading}
               />
@@ -567,7 +568,7 @@ function RegisterPageContent() {
             size="lg"
             fullWidth
             type="submit"
-            disabled={loading || isSendingOtp}
+            disabled={loading || isSendingOtp || !termsAccepted}
           >
             {(loading || isSendingOtp) ? (
               <span className="flex items-center gap-2">
@@ -584,7 +585,7 @@ function RegisterPageContent() {
         </div>
 
         {/* Links */}
-        <div className="text-center">
+        <div className="text-center pt-3">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {tr('hasAccount')}{' '}
             <Link

@@ -252,7 +252,7 @@ function LoginPageContent() {
         </div>
 
         {/* Links */}
-        <div className="text-center">
+        <div className="text-center pt-3">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {t('login.noAccount')}{' '}
             <Link

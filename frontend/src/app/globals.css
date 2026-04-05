@@ -29,6 +29,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --background: #0A0A0A;
     --surface-1: #111111;
     --surface-2: #141414;
@@ -244,6 +245,17 @@ button, a, input, textarea, select {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Fix native select/option colors in dark mode — must be outside @layer to override Tailwind utilities */
+.dark select {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.dark select option {
+  background-color: #1a1a1a;
+  color: #ffffff;
 }
 
 /* Auth page keyframes */
