@@ -537,7 +537,7 @@ export default function NutritionistProfilePage() {
       <div className="space-y-4 pb-6">
         {/* Profile Header */}
         <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
-          <div className={`relative h-36 overflow-hidden bg-gradient-to-r ${accent.gradient} sm:h-48`}>
+          <div className={`relative h-32 overflow-hidden bg-gradient-to-r ${accent.gradient} sm:h-40`}>
             {trainer.bannerUrl && (
               <img
                 src={getMediaUrl(trainer.bannerUrl) || ''}
@@ -549,18 +549,18 @@ export default function NutritionistProfilePage() {
 
           <div className="relative px-4 pb-4 sm:px-6 sm:pb-6">
             {/* Avatar + Info row */}
-            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:gap-5">
+            <div className="-mt-10 flex flex-col gap-3 sm:-mt-12 sm:flex-row sm:gap-4">
               {/* Avatar */}
               <div className="relative z-10 flex-shrink-0 self-center sm:self-start">
                 {trainer.avatarUrl ? (
                   <img
                     src={getMediaUrl(trainer.avatarUrl) || ''}
                     alt={trainer.fullName}
-                    className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-xl ring-2 ring-white/10 dark:border-[#1A1A1A] sm:h-28 sm:w-28"
+                    className="h-20 w-20 rounded-full border-4 border-white object-cover shadow-xl ring-2 ring-white/10 dark:border-[#1A1A1A] sm:h-24 sm:w-24"
                   />
                 ) : (
-                  <div className={`flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br ${accent.gradient} shadow-xl dark:border-[#1A1A1A] sm:h-28 sm:w-28`}>
-                    <span className="text-2xl font-bold text-white sm:text-3xl">
+                  <div className={`flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br ${accent.gradient} shadow-xl dark:border-[#1A1A1A] sm:h-24 sm:w-24`}>
+                    <span className="text-xl font-bold text-white sm:text-2xl">
                       {trainer.initials}
                     </span>
                   </div>
@@ -568,7 +568,7 @@ export default function NutritionistProfilePage() {
               </div>
 
               {/* Name + Stats inline */}
-              <div className="flex min-w-0 flex-1 flex-col gap-4 pt-0 sm:pt-[3.75rem]">
+              <div className="flex min-w-0 flex-1 flex-col gap-3 pt-0 sm:pt-[3rem]">
                 <div className="min-w-0 text-center sm:text-left">
                   <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-2.5">
                     <h1 className="page-title-compact truncate">{trainer.fullName}</h1>
@@ -628,71 +628,41 @@ export default function NutritionistProfilePage() {
                 <p className="text-[10px] text-muted-foreground">{t('achievements')}</p>
               </div>
             </div>
+
+            {/* Bio Section */}
+            <div className="mt-4 bg-surface-1/45 p-3 dark:bg-white/[0.02] sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+              <p className={`text-sm ${accent.text} font-medium mb-3`}>{trainer.primaryTitle || t('personalNutritionist')}</p>
+              {about?.text ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('aboutMe')}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{about.text}</p>
+                </div>
+              ) : (
+                <p className="text-faint-foreground text-sm">{t('addDescription')}</p>
+              )}
+            </div>
+
+            {/* Profile Settings Button */}
+            <Link
+              href="/nutritionist/profile/settings"
+              className={`mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r ${accent.gradient} text-white text-sm font-semibold hover:opacity-90 transition-opacity`}
+            >
+              <Settings className="w-4 h-4" />
+              {t('profileSettings')}
+            </Link>
           </div>
         </div>
 
-        {/* Contact & Location Info */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {(trainer.location || trainer.city || trainer.country) && (
-            <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <MapPin className="w-4 h-4" />
-                <span className="text-xs">{t('location')}</span>
-              </div>
-              <p className="text-foreground text-sm font-medium truncate">
-                {trainer.location || [localizedCity, localizedCountry].filter(Boolean).join(', ') || t('notSpecified')}
-              </p>
-            </div>
-          )}
-          
-          {trainer.experienceYears !== null && trainer.experienceYears !== undefined && (
-            <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Briefcase className="w-4 h-4" />
-                <span className="text-xs">{t('experience')}</span>
-              </div>
-              <p className="text-foreground text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? t('yearSingular') : trainer.experienceYears < 5 ? t('yearFew') : t('yearMany')}</p>
-            </div>
-          )}
-
+        {/* Experience */}
+        {trainer.experienceYears !== null && trainer.experienceYears !== undefined && (
           <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <User className="w-4 h-4" />
-              <span className="text-xs">{t('genderLabel')}</span>
+              <Briefcase className="w-4 h-4" />
+              <span className="text-xs">{t('experience')}</span>
             </div>
-            <p className="text-foreground text-sm font-medium">
-              {trainer.gender === 'Male' || trainer.gender === 'male'
-                ? t('male')
-                : trainer.gender === 'Female' || trainer.gender === 'female'
-                  ? t('female')
-                  : trainer.gender === 'Other' || trainer.gender === 'other'
-                    ? t('other')
-                    : t('notSpecified')}
-            </p>
+            <p className="text-foreground text-sm font-medium">{trainer.experienceYears} {trainer.experienceYears === 1 ? t('yearSingular') : trainer.experienceYears < 5 ? t('yearFew') : t('yearMany')}</p>
           </div>
-        </div>
-
-        {/* Profile Settings Button */}
-        <Link
-          href="/nutritionist/profile/settings"
-          className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r ${accent.gradient} text-white text-sm font-semibold hover:opacity-90 transition-opacity`}
-        >
-          <Settings className="w-4 h-4" />
-          {t('profileSettings')}
-        </Link>
-
-        {/* Bio Section */}
-        <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
-          <p className={`text-sm ${accent.text} font-medium mb-3`}>{trainer.primaryTitle || t('personalNutritionist')}</p>
-          {about?.text ? (
-            <div>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('aboutMe')}</h3>
-              <p className="text-muted-foreground leading-relaxed">{about.text}</p>
-            </div>
-          ) : (
-            <p className="text-faint-foreground text-sm">{t('addDescription')}</p>
-          )}
-        </div>
+        )}
 
         {/* Specializations */}
         {specializations.length > 0 && (
