@@ -42,7 +42,9 @@ export class ChatConnection {
     if (!token) throw new Error('No access token found. Please login again.')
 
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${MEDIA_BASE_URL}/hubs/chat?access_token=${token}`)
+      .withUrl(`${MEDIA_BASE_URL}/hubs/chat`, {
+        accessTokenFactory: () => token,
+      })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (ctx) => {
           // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, then keep retrying every 30s

@@ -1,8 +1,8 @@
 // Centralized API configuration
 // Always use the hosted backend (or NEXT_PUBLIC_API_URL override) for all environments.
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.deviny.me';
 export const API_URL = `${API_BASE_URL}/api`;
-export const MEDIA_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const MEDIA_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.deviny.me';
 
 // Helper to refresh access token
 async function refreshAccessToken(): Promise<string | null> {
