@@ -287,11 +287,23 @@ export default function ChatInbox() {
       console.error('[Chat] error:', err)
     }
 
+    // Re-join conversation group + reload data after SignalR reconnects
+    const handleReconnected = () => {
+      console.log('[Chat] SignalR reconnected, re-joining groups and reloading data')
+      const activeConvId = selectedConvIdRef.current
+      if (activeConvId) {
+        chatConnection.joinConversation(activeConvId).catch(() => {})
+        loadMessages(activeConvId)
+      }
+      loadConversations()
+    }
+
     chatConnection.onReceiveMessage(handleReceiveMessage)
     chatConnection.onConversationUpdated(handleConversationUpdated)
     chatConnection.onMessagesRead(handleMessagesRead)
     chatConnection.onNewConversation(handleNewConversation)
     chatConnection.onError(handleError)
+    chatConnection.onReconnected(handleReconnected)
 
     chatConnection.start().catch(console.error)
 
@@ -301,8 +313,9 @@ export default function ChatInbox() {
       chatConnection.off('MessagesRead', handleMessagesRead)
       chatConnection.off('NewConversation', handleNewConversation)
       chatConnection.off('Error', handleError)
+      chatConnection.offReconnected(handleReconnected)
     }
-  }, [loadConversations])
+  }, [loadConversations, loadMessages])
 
   // ─── handle userId from URL (deep link into a DM) ───
   // Runs ONLY once per deep-link to prevent overriding manual contact selection

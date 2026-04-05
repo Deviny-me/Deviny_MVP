@@ -10,6 +10,7 @@ import { UnreadNotificationsProvider } from '@/contexts/UnreadNotificationsConte
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { UserAchievementBridge } from '@/components/user/UserAchievementBridge'
 import { UserMainLayout } from '@/components/user/layout/UserMainLayout'
+import { RealtimeToastContainer } from '@/components/shared/RealtimeToast'
 import { Spinner } from '@/components/ui/Spinner'
 
 // Routes where right sidebar should be hidden
@@ -80,6 +81,7 @@ export default function UserDashboardLayout({
             <UnreadNotificationsProvider>
               <LevelProvider>
                 <UserAchievementBridge>
+                  <RealtimeToastContainer />
                   <UserMainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
                     {children}
                   </UserMainLayout>

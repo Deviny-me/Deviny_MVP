@@ -1,5 +1,6 @@
 using FluentValidation;
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Features.Notifications.Events;
 using Deviny.Domain.Enums;
 using MediatR;
 
@@ -23,10 +24,14 @@ public class DeclineFriendRequestCommandValidator : AbstractValidator<DeclineFri
 public class DeclineFriendRequestCommandHandler : IRequestHandler<DeclineFriendRequestCommand, Unit>
 {
     private readonly IFriendRequestRepository _friendRequestRepository;
+    private readonly IMediator _mediator;
 
-    public DeclineFriendRequestCommandHandler(IFriendRequestRepository friendRequestRepository)
+    public DeclineFriendRequestCommandHandler(
+        IFriendRequestRepository friendRequestRepository,
+        IMediator mediator)
     {
         _friendRequestRepository = friendRequestRepository;
+        _mediator = mediator;
     }
 
     public async Task<Unit> Handle(DeclineFriendRequestCommand request, CancellationToken cancellationToken)
@@ -44,6 +49,15 @@ public class DeclineFriendRequestCommandHandler : IRequestHandler<DeclineFriendR
         friendRequest.RespondedAt = DateTime.UtcNow;
 
         await _friendRequestRepository.UpdateAsync(friendRequest);
+
+        // Publish real-time notification event
+        await _mediator.Publish(new FriendRequestDeclinedEvent
+        {
+            RequestId = friendRequest.Id,
+            DeclinerId = friendRequest.Receiver.Id,
+            DeclinerName = friendRequest.Receiver.FullName,
+            OriginalSenderId = friendRequest.SenderId
+        }, cancellationToken);
 
         return Unit.Value;
     }

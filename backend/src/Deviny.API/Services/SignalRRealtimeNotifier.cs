@@ -48,6 +48,13 @@ public class SignalRRealtimeNotifier : IRealtimeNotifier
         _logger.LogDebug("Sent friend request accepted notification to user {UserId}", userId);
     }
 
+    public async Task SendFriendRequestDeclinedAsync(Guid userId, object requestData, CancellationToken ct = default)
+    {
+        var group = $"user:{userId.ToString().ToLowerInvariant()}";
+        await _hubContext.Clients.Group(group).SendAsync("FriendRequestDeclined", requestData, ct);
+        _logger.LogDebug("Sent friend request declined notification to user {UserId}", userId);
+    }
+
     public async Task SendFriendRemovedAsync(Guid userId, object data, CancellationToken ct = default)
     {
         var group = $"user:{userId.ToString().ToLowerInvariant()}";

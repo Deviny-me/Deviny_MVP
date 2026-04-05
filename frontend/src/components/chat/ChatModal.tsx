@@ -105,10 +105,21 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
     }
 
     chatConnection.onReceiveMessage(handleReceiveMessage)
+
+    // Re-join conversation group on reconnect
+    const handleReconnected = () => {
+      const activeConvId = conversationIdRef.current
+      if (activeConvId) {
+        chatConnection.joinConversation(activeConvId).catch(() => {})
+      }
+    }
+    chatConnection.onReconnected(handleReconnected)
+
     chatConnection.start().catch(console.error)
 
     return () => {
       chatConnection.off('ReceiveMessage', handleReceiveMessage)
+      chatConnection.offReconnected(handleReconnected)
     }
   }, [currentUserId])
 

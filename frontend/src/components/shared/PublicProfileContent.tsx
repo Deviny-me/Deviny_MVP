@@ -378,7 +378,7 @@ export function PublicProfileContent({
     ;(async () => {
       try {
         setProfileLoading(true)
-        const response = await fetch(`/api/users/${userId}/profile`)
+        const response = await fetchWithAuth(`${API_URL}/users/${userId}/profile`)
         if (response.ok && !cancelled) {
           const data = await response.json()
           setProfileData({
@@ -484,12 +484,26 @@ export function PublicProfileContent({
       }
     }
 
+    const handleFriendRequestDeclined = (data: { requestId: number; declinerId: string; declinerName: string }) => {
+      if (data.declinerId === userId) {
+        setRelationship(prev => prev ? {
+          ...prev,
+          hasPendingRequest: false,
+          pendingRequestId: undefined,
+          isRequestSender: false,
+        } : prev)
+        setToast({ message: `${data.declinerName} ${tUp('requestDeclined')}`, type: 'info' })
+      }
+    }
+
     chatConnection.onFriendRequestAccepted(handleFriendRequestAccepted)
+    chatConnection.onFriendRequestDeclined(handleFriendRequestDeclined)
     chatConnection.onFriendRemoved(handleFriendRemoved)
     chatConnection.onFriendRequestReceived(handleFriendRequestReceived)
 
     return () => {
       chatConnection.off('FriendRequestAccepted', handleFriendRequestAccepted)
+      chatConnection.off('FriendRequestDeclined', handleFriendRequestDeclined)
       chatConnection.off('FriendRemoved', handleFriendRemoved)
       chatConnection.off('FriendRequestReceived', handleFriendRequestReceived)
     }

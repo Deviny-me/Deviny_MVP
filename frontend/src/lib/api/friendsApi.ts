@@ -94,6 +94,11 @@ export const followsApi = {
   getMyFollowing: async (page = 1, pageSize = 30): Promise<PagedResponse<FriendDto>> => {
     return apiRequest<PagedResponse<FriendDto>>(`/me/follows?page=${page}&pageSize=${pageSize}`);
   },
+
+  // Get my followers (paginated)
+  getMyFollowers: async (page = 1, pageSize = 30): Promise<PagedResponse<FriendDto>> => {
+    return apiRequest<PagedResponse<FriendDto>>(`/me/follows/followers?page=${page}&pageSize=${pageSize}`);
+  },
 };
 
 export const blocksApi = {

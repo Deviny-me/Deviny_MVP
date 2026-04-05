@@ -12,6 +12,12 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure wwwroot is found regardless of working directory
+var wwwrootPath = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+    Directory.CreateDirectory(wwwrootPath);
+builder.Environment.WebRootPath = wwwrootPath;
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

@@ -71,7 +71,7 @@ export default function SettingsPage() {
     {
       title: t('account'),
       items: [
-        { icon: User, label: t('editProfile'), action: () => router.push('/user/profile') },
+        { icon: User, label: t('editProfile'), action: () => router.push('/user/profile/settings') },
         { icon: Shield, label: t('privacySecurity'), action: () => {} },
       ]
     },

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { usePathname } from 'next/navigation'
 import { messagesApi } from '@/lib/api/messagesApi'
@@ -15,6 +15,7 @@ const UnreadMessagesContext = createContext<UnreadMessagesContextType | undefine
 
 export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
+  const prevUnreadCountRef = useRef(0)
   const pathname = usePathname()
   const isMessagesPage = pathname?.includes('/messages')
 
@@ -34,12 +35,13 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
     fetchUnreadCount()
   }, [fetchUnreadCount])
 
-  // 2) Reset when user navigates to messages page
+  // 2) Re-fetch from server when user navigates to messages page
+  //    (MarkRead will fire UnreadCountUpdated, but we also re-fetch for accuracy)
   useEffect(() => {
     if (isMessagesPage) {
-      setUnreadCount(0)
+      fetchUnreadCount()
     }
-  }, [isMessagesPage])
+  }, [isMessagesPage, fetchUnreadCount])
 
   // 3) SignalR subscription — register handler, then start connection
   useEffect(() => {
@@ -48,12 +50,15 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
 
     const handleUnreadCountUpdated = (data: { totalUnreadCount: number }) => {
       if (mounted) {
-        // Keep badge at zero while user is inside the messages page.
-        if (isMessagesPage) {
-          setUnreadCount(0)
-          return
+        // Play notification sound when unread count increases
+        if (data.totalUnreadCount > prevUnreadCountRef.current) {
+          try {
+            const audio = new Audio('/sounds/message.wav')
+            audio.volume = 0.5
+            audio.play().catch(() => {})
+          } catch {}
         }
-
+        prevUnreadCountRef.current = data.totalUnreadCount
         setUnreadCount(data.totalUnreadCount)
       }
     }
@@ -76,7 +81,7 @@ export function UnreadMessagesProvider({ children }: { children: ReactNode }) {
       chatConnection.off('UnreadCountUpdated', handleUnreadCountUpdated)
       chatConnection.offReconnected(handleReconnected)
     }
-  }, [fetchUnreadCount, isMessagesPage])
+  }, [fetchUnreadCount])
 
   const incrementUnread = useCallback(() => setUnreadCount(prev => prev + 1), [])
   const resetUnread = useCallback(() => setUnreadCount(0), [])

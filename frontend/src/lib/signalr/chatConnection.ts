@@ -45,10 +45,8 @@ export class ChatConnection {
       .withUrl(`${MEDIA_BASE_URL}/hubs/chat?access_token=${token}`)
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (ctx) => {
-          if (ctx.previousRetryCount < 5) {
-            return Math.min(1000 * Math.pow(2, ctx.previousRetryCount), 30000)
-          }
-          return null
+          // Exponential backoff: 1s, 2s, 4s, 8s, 16s, 30s, then keep retrying every 30s
+          return Math.min(1000 * Math.pow(2, ctx.previousRetryCount), 30000)
         },
       })
       .configureLogging(signalR.LogLevel.Information)
@@ -155,7 +153,7 @@ export class ChatConnection {
   }
 
   onReceiveMessage(cb: (msg: MessageDto) => void) { this._on('ReceiveMessage', cb) }
-  onConversationUpdated(cb: (data: { conversationId: string; lastMessageText: string; lastMessageAt: string; senderId: string; messageId: string }) => void) { this._on('ConversationUpdated', cb) }
+  onConversationUpdated(cb: (data: { conversationId: string; lastMessageText: string; lastMessageAt: string; senderId: string; senderName?: string; senderAvatarUrl?: string | null; messageId: string }) => void) { this._on('ConversationUpdated', cb) }
   onNewConversation(cb: (data: { conversationId: string; messageDto: MessageDto }) => void) { this._on('NewConversation', cb) }
   onMessagesRead(cb: (data: { conversationId: string; messageIds: string[]; readBy: string; readAt: string }) => void) { this._on('MessagesRead', cb) }
   onUserTyping(cb: (data: { conversationId: string; userId: string }) => void) { this._on('UserTyping', cb) }
@@ -169,6 +167,7 @@ export class ChatConnection {
   onNotificationCountUpdated(cb: (data: { unreadCount: number }) => void) { this._on('NotificationCountUpdated', cb) }
   onFriendRequestReceived(cb: (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => void) { this._on('FriendRequestReceived', cb) }
   onFriendRequestAccepted(cb: (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => void) { this._on('FriendRequestAccepted', cb) }
+  onFriendRequestDeclined(cb: (data: { requestId: number; declinerId: string; declinerName: string }) => void) { this._on('FriendRequestDeclined', cb) }
   onFriendRemoved(cb: (data: { removedByUserId: string; removedByName: string }) => void) { this._on('FriendRemoved', cb) }
   onCallOffer(cb: (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: 'audio' | 'video'; offer: RTCSessionDescriptionInit }) => void) { this._on('CallOffer', cb) }
   onCallAnswer(cb: (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => void) { this._on('CallAnswer', cb) }

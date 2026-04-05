@@ -1,5 +1,6 @@
 import { RoleType } from '@/features/auth/types/role.types'
 import { API_URL } from '@/lib/config'
+import { clearRememberMePreferences } from '@/lib/utils/cookies'
 
 export interface LoginRequestDto {
   email: string
@@ -44,7 +45,132 @@ export interface RegisterRequestDto {
   verificationDocument?: File
 }
 
+export interface SendOtpResponseDto {
+  message: string
+  expiresInMinutes: number
+}
+
+export interface VerifyOtpResponseDto {
+  message: string
+  verified: boolean
+}
+
 export const authService = {
+  async sendOtp(email: string): Promise<SendOtpResponseDto> {
+    const response = await fetch(`${API_URL}/auth/send-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!response.ok) {
+      let message = 'Failed to send OTP'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        message = 'SERVER_UNAVAILABLE'
+      }
+      throw new Error(message)
+    }
+
+    return response.json()
+  },
+
+  async verifyOtp(email: string, otpCode: string): Promise<VerifyOtpResponseDto> {
+    const response = await fetch(`${API_URL}/auth/verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otpCode }),
+    })
+
+    if (!response.ok) {
+      let message = 'Verification failed'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        message = 'SERVER_UNAVAILABLE'
+      }
+      throw new Error(message)
+    }
+
+    return response.json()
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string; expiresInMinutes?: number }> {
+    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    })
+
+    if (!response.ok) {
+      let message = 'Failed to send reset code'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        message = 'SERVER_UNAVAILABLE'
+      }
+      throw new Error(message)
+    }
+
+    return response.json()
+  },
+
+  async verifyResetOtp(email: string, otpCode: string): Promise<{ message: string; verified: boolean }> {
+    const response = await fetch(`${API_URL}/auth/verify-reset-otp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otpCode }),
+    })
+
+    if (!response.ok) {
+      let message = 'Verification failed'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        message = 'SERVER_UNAVAILABLE'
+      }
+      throw new Error(message)
+    }
+
+    return response.json()
+  },
+
+  async resetPassword(email: string, otpCode: string, newPassword: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, otpCode, newPassword }),
+    })
+
+    if (!response.ok) {
+      let message = 'Password reset failed'
+      try {
+        const error = await response.json()
+        message = error.message || message
+      } catch {
+        message = 'SERVER_UNAVAILABLE'
+      }
+      throw new Error(message)
+    }
+
+    return response.json()
+  },
+
   async login(data: LoginRequestDto): Promise<LoginResponseDto> {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -157,5 +283,7 @@ export const authService = {
     sessionStorage.removeItem('accessToken')
     localStorage.removeItem('user')
     sessionStorage.removeItem('user')
+    // Clear remember me cookies on logout
+    clearRememberMePreferences()
   },
 }

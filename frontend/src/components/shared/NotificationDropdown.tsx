@@ -102,6 +102,14 @@ export function NotificationDropdown() {
   useEffect(() => {
     const handleNewNotification = (data: { id: string; type: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
       console.log('[Notifications] Real-time notification received:', data)
+
+      // Play notification sound
+      try {
+        const audio = new Audio('/sounds/message.wav')
+        audio.volume = 0.4
+        audio.play().catch(() => {})
+      } catch {}
+
       // Prepend to notifications list if already loaded
       if (hasLoaded) {
         setNotifications(prev => [{

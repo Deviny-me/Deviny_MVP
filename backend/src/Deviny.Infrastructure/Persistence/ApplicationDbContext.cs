@@ -32,6 +32,9 @@ public class ApplicationDbContext : DbContext
     // Verification
     public DbSet<VerificationDocument> VerificationDocuments { get; set; } = null!;
     
+    // Email OTP
+    public DbSet<EmailOtp> EmailOtps { get; set; } = null!;
+    
     // User Posts (Media)
     public DbSet<UserPost> UserPosts { get; set; } = null!;
     public DbSet<PostMedia> PostMedia { get; set; } = null!;

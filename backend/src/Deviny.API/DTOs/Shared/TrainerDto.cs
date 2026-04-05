@@ -6,6 +6,7 @@ public class TrainerDto
     public required Guid UserId { get; set; }
     public required string FullName { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? BannerUrl { get; set; }
     public required string Initials { get; set; }
     public string? PrimaryTitle { get; set; }
     public string? SecondaryTitle { get; set; }

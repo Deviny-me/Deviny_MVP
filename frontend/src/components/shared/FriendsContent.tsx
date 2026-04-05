@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Search,
   Users,
@@ -32,19 +32,25 @@ interface FriendsContentProps {
 export function FriendsContent({ basePath }: FriendsContentProps) {
   const accent = useAccentColors()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const t = useTranslations('friends')
   const tc = useTranslations('common')
-  const [activeTab, setActiveTab] = useState<'all' | 'requests' | 'sent' | 'following'>('all')
+  const initialTab = (['all', 'requests', 'sent', 'following', 'followers'] as const).includes(searchParams.get('tab') as any)
+    ? (searchParams.get('tab') as 'all' | 'requests' | 'sent' | 'following' | 'followers')
+    : 'all'
+  const [activeTab, setActiveTab] = useState<'all' | 'requests' | 'sent' | 'following' | 'followers'>(initialTab)
   const [friends, setFriends] = useState<FriendDto[]>([])
   const [incomingRequests, setIncomingRequests] = useState<FriendRequestDto[]>([])
   const [outgoingRequests, setOutgoingRequests] = useState<FriendRequestDto[]>([])
   const [following, setFollowing] = useState<FriendDto[]>([])
+  const [followers, setFollowers] = useState<FriendDto[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [incomingCount, setIncomingCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
+  const [followersCount, setFollowersCount] = useState(0)
 
   useEffect(() => {
     loadData()
@@ -85,6 +91,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
       setIncomingCount(data.filter(r => r.status === FriendRequestStatus.Pending).length)
     ).catch(() => {})
     followsApi.getMyFollowing(1, 1).then(data => setFollowingCount(data.totalCount)).catch(() => {})
+    followsApi.getMyFollowers(1, 1).then(data => setFollowersCount(data.totalCount)).catch(() => {})
   }, [])
 
   const loadData = async () => {
@@ -113,6 +120,10 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         const data = await followsApi.getMyFollowing(1, 100)
         setFollowing(data.items)
         setFollowingCount(data.totalCount)
+      } else if (activeTab === 'followers') {
+        const data = await followsApi.getMyFollowers(1, 100)
+        setFollowers(data.items)
+        setFollowersCount(data.totalCount)
       }
     } catch (error) {
       console.error('Error loading data:', error)
@@ -240,6 +251,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                 { id: 'all' as const, label: t('allFriends'), count: friends.length },
                 { id: 'requests' as const, label: t('requests'), count: incomingCount },
                 { id: 'sent' as const, label: t('tabs.sent'), count: outgoingRequests.length },
+                { id: 'followers' as const, label: t('tabs.followers'), count: followersCount },
                 { id: 'following' as const, label: t('tabs.following'), count: followingCount },
               ].map((tab) => (
                 <button
@@ -450,6 +462,52 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Followers */}
+        {activeTab === 'followers' && (
+          <div className="grid grid-cols-1 gap-4">
+            {followers.length === 0 ? (
+              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
+                <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-foreground font-semibold mb-2">{t('noFollowersYet')}</h3>
+                <p className="text-muted-foreground text-sm">{t('startConnecting')}</p>
+              </div>
+            ) : (
+              followers.map((follower) => (
+                <div
+                  key={follower.id}
+                  className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
+                >
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div
+                      className="flex items-center gap-4 flex-1 cursor-pointer min-w-0"
+                      onClick={() => router.push(`${basePath}/profile/${follower.id}`)}
+                    >
+                      {follower.avatar ? (
+                        <img
+                          src={getMediaUrl(follower.avatar) || follower.avatar}
+                          alt={follower.fullName || follower.email}
+                          className={`w-16 h-16 rounded-full object-cover ${getRoleRingClass(follower.role)}`}
+                        />
+                      ) : (
+                        <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold text-lg`}>
+                          {follower.fullName?.[0] || follower.email[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="text-foreground font-semibold text-base sm:text-lg truncate">{follower.fullName || tc('user')}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{follower.email}</p>
+                        {follower.role && (
+                          <span className="text-xs text-muted-foreground">{follower.role}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}

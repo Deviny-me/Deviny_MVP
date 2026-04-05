@@ -29,6 +29,8 @@ public static class DependencyInjection
         // Configuration - IOptions pattern for strongly-typed settings
         services.Configure<FileStorageSettings>(
             configuration.GetSection(FileStorageSettings.SectionName));
+        services.Configure<EmailSettings>(
+            configuration.GetSection(EmailSettings.SectionName));
         
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
@@ -51,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IMealProgramRepository, MealProgramRepository>();
         services.AddScoped<IProgramPurchaseRepository, ProgramPurchaseRepository>();
         services.AddScoped<IProgramReviewRepository, ProgramReviewRepository>();
+        services.AddScoped<IOtpRepository, OtpRepository>();
         
         // Services
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -63,6 +66,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ITrainerRatingService, TrainerRatingService>();
         services.AddScoped<IUserRatingService, UserRatingService>();
+        services.AddScoped<IEmailService, EmailService>();
         
         return services;
     }

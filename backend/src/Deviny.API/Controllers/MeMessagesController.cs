@@ -103,6 +103,8 @@ public class MeMessagesController : BaseApiController
                     lastMessageText = result.Text,
                     lastMessageAt = result.CreatedAt,
                     senderId = currentUserId,
+                    senderName = result.SenderName,
+                    senderAvatarUrl = result.SenderAvatarUrl,
                     messageId = result.Id
                 });
             }
