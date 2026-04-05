@@ -9,10 +9,12 @@ import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
 import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
 import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon, User, Dumbbell, Apple, ArrowLeft } from 'lucide-react'
-import { COUNTRIES_DATA, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName, translateCityName } from '@/lib/data/countries'
+import { COUNTRIES_DATA, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName } from '@/lib/data/countries'
 import { Spinner } from '@/components/ui/Spinner'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { cn } from '@/lib/utils/cn'
+import { OtpVerification } from '@/features/auth/components/OtpVerification'
+import { authService } from '@/features/auth/services/authService'
 
 const roleConfig = {
   user:         { icon: User,     iconBg: 'bg-gradient-to-br from-user-100 to-user-200 dark:from-user-500/20 dark:to-user-600/20', iconColor: 'text-user-600 dark:text-user-400', gradientLine: 'from-user-400 via-user-500 to-user-600' },
@@ -31,7 +33,13 @@ function RegisterPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const t = useTranslations('auth')
   const tr = useTranslations('auth.register')
+  const tv = useTranslations('auth.validation')
   const { language } = useLanguage()
+  
+  // Registration step: 'form' | 'otp'
+  const [step, setStep] = useState<'form' | 'otp'>('form')
+  const [isSendingOtp, setIsSendingOtp] = useState(false)
+  const [otpError, setOtpError] = useState<string | null>(null)
   
   const [role, setRole] = useState<RoleType | null>(null)
   const [firstName, setFirstName] = useState('')
@@ -52,7 +60,7 @@ function RegisterPageContent() {
   const [dragActive, setDragActive] = useState(false)
 
   const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
-  const selectedCountryName = countryCode ? getCountryName(countryCode, language) : ''
+  const selectedCountryName = countryCode ? getCountryName(countryCode, 'en') : ''
   const countries = getCountries(language)
 
   const phoneCountryData = COUNTRIES_DATA[phoneCountryCode]
@@ -93,10 +101,12 @@ function RegisterPageContent() {
     e.preventDefault()
     if (!role) return
     clearErrors()
+    setOtpError(null)
     
-    const fullPhone = (role === 'trainer' || role === 'nutritionist') && phone 
+    // Validate form first (using useRegister's validation logic)
+    const fullPhone = phone 
       ? `${COUNTRIES_DATA[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
-      : phone
+      : undefined
     
     const formData: RegisterFormData = {
       firstName,
@@ -107,15 +117,62 @@ function RegisterPageContent() {
       termsAccepted,
       phone: fullPhone,
       gender,
-      country: selectedCountryName,
-      city: translateCityName(city, language),
+      country: selectedCountryName || undefined,
+      city: city || undefined,
     }
 
     if (role === 'trainer' || role === 'nutritionist') {
       formData.verificationDocument = verificationDocument || undefined
     }
     
+    // Send OTP to email before registration
+    setIsSendingOtp(true)
+    try {
+      await authService.sendOtp(email)
+      setStep('otp')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send OTP'
+      const errorMap: Record<string, string> = {
+        'EMAIL_ALREADY_REGISTERED': tv('emailAlreadyRegistered'),
+        'SERVER_UNAVAILABLE': tv('serverUnavailable'),
+      }
+      setOtpError(errorMap[message] || message)
+    } finally {
+      setIsSendingOtp(false)
+    }
+  }
+
+  const handleOtpVerified = async () => {
+    if (!role) return
+    
+    const fullPhone = phone 
+      ? `${COUNTRIES_DATA[phoneCountryCode]?.phoneCode || ''} ${phone}`.trim()
+      : undefined
+    
+    const formData: RegisterFormData = {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      termsAccepted,
+      phone: fullPhone,
+      gender,
+      country: selectedCountryName || undefined,
+      city: city || undefined,
+    }
+
+    if (role === 'trainer' || role === 'nutritionist') {
+      formData.verificationDocument = verificationDocument || undefined
+    }
+    
+    // Now complete the registration
     await register(formData, role)
+  }
+
+  const handleBackFromOtp = () => {
+    setStep('form')
+    setOtpError(null)
   }
 
   const handleDrag = (e: React.DragEvent) => {
@@ -173,6 +230,18 @@ function RegisterPageContent() {
   const isProfessional = isTrainer || isNutritionist
   const cfg = roleConfig[role]
   const Icon = cfg.icon
+
+  // Show OTP verification step
+  if (step === 'otp') {
+    return (
+      <OtpVerification
+        email={email}
+        onVerified={handleOtpVerified}
+        onBack={handleBackFromOtp}
+        variant={role}
+      />
+    )
+  }
 
   return (
     <div className="w-full max-w-xl mx-auto py-4 animate-fade-in-up">
@@ -301,101 +370,101 @@ function RegisterPageContent() {
             {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>}
           </div>
 
-          {/* Professional fields */}
+          {/* Additional fields (all roles) */}
+          <div className="border-t border-gray-200/40 dark:border-white/[0.06] pt-5 mt-5">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+              <span className="w-6 h-px bg-gray-300 dark:bg-white/10" />
+              {isProfessional ? tr('professionalInfo') : tr('additionalInfo')}
+            </p>
+          </div>
+
+          {/* Gender */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('gender')}{isProfessional ? ' *' : ''}</label>
+            <select
+              value={gender || ''}
+              onChange={(e) => setGender(e.target.value as GenderType || undefined)}
+              className={cn(selectBase, errors.gender ? inputErr : inputOk)}
+              disabled={loading}
+            >
+              <option value="">{tr('selectGender')}</option>
+              {GENDERS.map((g) => (
+                <option key={g.value} value={g.value}>{g.label}</option>
+              ))}
+            </select>
+            {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('phone')}{isProfessional ? ' *' : ''}</label>
+            <div className="flex gap-2">
+              <select
+                value={phoneCountryCode}
+                onChange={(e) => { setPhoneCountryCode(e.target.value); setPhone('') }}
+                className={cn(selectBase, 'w-28 flex-shrink-0', errors.phone ? inputErr : inputOk)}
+                disabled={loading}
+              >
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>{COUNTRIES_DATA[c.code].phoneCode}</option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                value={phone}
+                onChange={handlePhoneChange}
+                className={cn(inputBase, 'flex-1', errors.phone ? inputErr : inputOk)}
+                placeholder={phoneFormat.replace(/X/g, '9')}
+                disabled={loading}
+              />
+            </div>
+            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+          </div>
+
+          {/* Location */}
+          <div className="border-t border-gray-200/40 dark:border-white/[0.06] pt-5 mt-5">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5 flex items-center gap-2">
+              <span className="w-6 h-px bg-gray-300 dark:bg-white/10" />
+              {tr('locationInfo')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('country')}{isProfessional ? ' *' : ''}</label>
+              <select
+                value={countryCode}
+                onChange={(e) => { setCountryCode(e.target.value); setCity('') }}
+                className={cn(selectBase, errors.country ? inputErr : inputOk)}
+                disabled={loading}
+              >
+                <option value="">{tr('selectCountry')}</option>
+                {countries.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
+              {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('city')}{isProfessional ? ' *' : ''}</label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className={cn(selectBase, errors.city ? inputErr : inputOk)}
+                disabled={loading || !countryCode}
+              >
+                <option value="">{countryCode ? tr('selectCity') : tr('selectCountry')}</option>
+                {availableCities.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+              {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+            </div>
+          </div>
+
+          {/* Professional-only: Document upload */}
           {isProfessional && (
             <>
-              <div className="border-t border-gray-200/40 dark:border-white/[0.06] pt-5 mt-5">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <span className="w-6 h-px bg-gray-300 dark:bg-white/10" />
-                  {tr('professionalInfo')}
-                </p>
-              </div>
-
-              {/* Gender */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('gender')}</label>
-                <select
-                  value={gender || ''}
-                  onChange={(e) => setGender(e.target.value as GenderType || undefined)}
-                  className={cn(selectBase, errors.gender ? inputErr : inputOk)}
-                  disabled={loading}
-                >
-                  <option value="">{tr('selectGender')}</option>
-                  {GENDERS.map((g) => (
-                    <option key={g.value} value={g.value}>{g.label}</option>
-                  ))}
-                </select>
-                {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('phone')} *</label>
-                <div className="flex gap-2">
-                  <select
-                    value={phoneCountryCode}
-                    onChange={(e) => { setPhoneCountryCode(e.target.value); setPhone('') }}
-                    className={cn(selectBase, 'w-28 flex-shrink-0', errors.phone ? inputErr : inputOk)}
-                    disabled={loading}
-                  >
-                    {countries.map((c) => (
-                      <option key={c.code} value={c.code}>{COUNTRIES_DATA[c.code].phoneCode}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={handlePhoneChange}
-                    className={cn(inputBase, 'flex-1', errors.phone ? inputErr : inputOk)}
-                    placeholder={phoneFormat.replace(/X/g, '9')}
-                    disabled={loading}
-                  />
-                </div>
-                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
-              </div>
-
-              {/* Location */}
-              <div className="border-t border-gray-200/40 dark:border-white/[0.06] pt-5 mt-5">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <span className="w-6 h-px bg-gray-300 dark:bg-white/10" />
-                  {tr('locationInfo')}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('country')}</label>
-                  <select
-                    value={countryCode}
-                    onChange={(e) => { setCountryCode(e.target.value); setCity('') }}
-                    className={cn(selectBase, errors.country ? inputErr : inputOk)}
-                    disabled={loading}
-                  >
-                    <option value="">{tr('selectCountry')}</option>
-                    {countries.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
-                    ))}
-                  </select>
-                  {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('city')}</label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className={cn(selectBase, errors.city ? inputErr : inputOk)}
-                    disabled={loading || !countryCode}
-                  >
-                    <option value="">{countryCode ? tr('selectCity') : tr('selectCountry')}</option>
-                    {availableCities.map((c) => (
-                      <option key={c.value} value={c.value}>{c.label}</option>
-                    ))}
-                  </select>
-                  {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
-                </div>
-              </div>
-
-              {/* Document upload */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('documentLabel')}</label>
                 
@@ -485,17 +554,25 @@ function RegisterPageContent() {
             {errors.termsAccepted && <p className="mt-1 text-sm text-red-600">{errors.termsAccepted}</p>}
           </div>
 
+          {/* OTP Error display */}
+          {otpError && (
+            <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/20 rounded-2xl text-red-700 dark:text-red-400 text-sm">
+              <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 animate-pulse" />
+              {otpError}
+            </div>
+          )}
+
           <Button
             variant={isNutritionist ? 'nutritionist' : isTrainer ? 'trainer' : 'user'}
             size="lg"
             fullWidth
             type="submit"
-            disabled={loading}
+            disabled={loading || isSendingOtp}
           >
-            {loading ? (
+            {(loading || isSendingOtp) ? (
               <span className="flex items-center gap-2">
                 <Spinner size="sm" color="white" />
-                {tr('submitting')}
+                {isSendingOtp ? tr('sendingOtp') : tr('submitting')}
               </span>
             ) : tr('submit')}
           </Button>

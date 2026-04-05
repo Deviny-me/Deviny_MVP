@@ -11,6 +11,7 @@ export interface TrainerDto {
   userId: string
   fullName: string
   avatarUrl: string | null
+  bannerUrl: string | null
   initials: string
   primaryTitle: string | null
   secondaryTitle: string | null

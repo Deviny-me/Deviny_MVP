@@ -2,10 +2,13 @@ using Deviny.API.DTOs.Requests;
 using Deviny.API.DTOs.Responses;
 using Deviny.API.DTOs.Shared;
 using Deviny.Application.Common.Interfaces;
+using Deviny.Application.Common.Settings;
 using Deviny.Application.Features.Auth.Commands;
 using Deviny.Application.Features.Auth.DTOs;
+using Deviny.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Deviny.API.Controllers;
 
@@ -17,17 +20,270 @@ public class AuthController : ControllerBase
     private readonly IUserRepository _userRepository;
     private readonly IMediator _mediator;
     private readonly ITokenService _tokenService;
+    private readonly IOtpRepository _otpRepository;
+    private readonly IEmailService _emailService;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly EmailSettings _emailSettings;
 
     public AuthController(
         LoginCommandHandler loginHandler,
         IUserRepository userRepository,
         IMediator mediator,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IOtpRepository otpRepository,
+        IEmailService emailService,
+        IPasswordHasher passwordHasher,
+        IOptions<EmailSettings> emailSettings)
     {
         _loginHandler = loginHandler;
         _userRepository = userRepository;
         _mediator = mediator;
         _tokenService = tokenService;
+        _otpRepository = otpRepository;
+        _emailService = emailService;
+        _passwordHasher = passwordHasher;
+        _emailSettings = emailSettings.Value;
+    }
+
+    /// <summary>
+    /// Sends an OTP code to the specified email address for verification.
+    /// </summary>
+    [HttpPost("send-otp")]
+    public async Task<ActionResult> SendOtp([FromBody] SendOtpRequest request)
+    {
+        try
+        {
+            // Check if email is already registered
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                return Conflict(new { message = "EMAIL_ALREADY_REGISTERED" });
+            }
+
+            // Invalidate any existing OTPs for this email
+            await _otpRepository.InvalidateAllForEmailAsync(request.Email);
+
+            // Generate 6-digit OTP
+            var random = new Random();
+            var otpCode = random.Next(100000, 999999).ToString();
+
+            // Create OTP record
+            var otp = new EmailOtp
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email.ToLower(),
+                OtpCode = otpCode,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_emailSettings.OtpExpirationMinutes),
+                IsUsed = false,
+                Attempts = 0,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _otpRepository.CreateAsync(otp);
+
+            // Send email
+            await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+
+            return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Verifies an OTP code for the specified email address.
+    /// </summary>
+    [HttpPost("verify-otp")]
+    public async Task<ActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            var otp = await _otpRepository.GetByEmailAndCodeAsync(request.Email, request.OtpCode);
+
+            if (otp == null)
+            {
+                return BadRequest(new { message = "INVALID_OTP" });
+            }
+
+            if (otp.IsUsed)
+            {
+                return BadRequest(new { message = "OTP_ALREADY_USED" });
+            }
+
+            if (otp.ExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "OTP_EXPIRED" });
+            }
+
+            if (otp.Attempts >= _emailSettings.MaxOtpAttempts)
+            {
+                return BadRequest(new { message = "TOO_MANY_ATTEMPTS" });
+            }
+
+            // Check if code matches
+            if (otp.OtpCode != request.OtpCode)
+            {
+                await _otpRepository.IncrementAttemptsAsync(otp.Id);
+                return BadRequest(new { message = "INVALID_OTP" });
+            }
+
+            // Mark as used
+            await _otpRepository.MarkAsUsedAsync(otp.Id);
+
+            return Ok(new { message = "EMAIL_VERIFIED", verified = true });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "VERIFICATION_FAILED" });
+        }
+    }
+
+    /// <summary>
+    /// Initiates password reset by sending OTP to the user's email.
+    /// </summary>
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        try
+        {
+            // Check if user exists
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+            {
+                // Don't reveal if email exists or not for security
+                return Ok(new { message = "OTP_SENT_IF_EXISTS" });
+            }
+
+            // Invalidate any existing password reset OTPs for this email
+            await _otpRepository.InvalidateAllForEmailAsync(request.Email, "password_reset");
+
+            // Generate 6-digit OTP
+            var random = new Random();
+            var otpCode = random.Next(100000, 999999).ToString();
+
+            // Create OTP record
+            var otp = new EmailOtp
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email.ToLower(),
+                OtpCode = otpCode,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(_emailSettings.OtpExpirationMinutes),
+                IsUsed = false,
+                Attempts = 0,
+                Purpose = "password_reset",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _otpRepository.CreateAsync(otp);
+
+            // Send password reset email
+            await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+
+            return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Forgot password error: {ex}");
+            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP" });
+        }
+    }
+
+    /// <summary>
+    /// Verifies the password reset OTP.
+    /// </summary>
+    [HttpPost("verify-reset-otp")]
+    public async Task<ActionResult> VerifyResetOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            var otp = await _otpRepository.GetByEmailAndCodeAsync(request.Email, request.OtpCode, "password_reset");
+
+            if (otp == null)
+            {
+                return BadRequest(new { message = "INVALID_OTP" });
+            }
+
+            if (otp.IsUsed)
+            {
+                return BadRequest(new { message = "OTP_ALREADY_USED" });
+            }
+
+            if (otp.ExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "OTP_EXPIRED" });
+            }
+
+            if (otp.Attempts >= _emailSettings.MaxOtpAttempts)
+            {
+                return BadRequest(new { message = "TOO_MANY_ATTEMPTS" });
+            }
+
+            // Check if code matches
+            if (otp.OtpCode != request.OtpCode)
+            {
+                await _otpRepository.IncrementAttemptsAsync(otp.Id);
+                return BadRequest(new { message = "INVALID_OTP" });
+            }
+
+            // Don't mark as used yet - will be marked when password is actually reset
+            return Ok(new { message = "OTP_VERIFIED", verified = true });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "VERIFICATION_FAILED" });
+        }
+    }
+
+    /// <summary>
+    /// Resets the user's password after OTP verification.
+    /// </summary>
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            // Verify OTP again
+            var otp = await _otpRepository.GetByEmailAndCodeAsync(request.Email, request.OtpCode, "password_reset");
+
+            if (otp == null || otp.IsUsed || otp.ExpiresAt < DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "INVALID_OR_EXPIRED_OTP" });
+            }
+
+            // Get user
+            var user = await _userRepository.GetByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return BadRequest(new { message = "USER_NOT_FOUND" });
+            }
+
+            // Hash new password
+            var passwordHash = _passwordHasher.HashPassword(request.NewPassword);
+            
+            // Update user password
+            user.PasswordHash = passwordHash;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userRepository.UpdateAsync(user);
+
+            // Mark OTP as used
+            await _otpRepository.MarkAsUsedAsync(otp.Id);
+
+            // Revoke all refresh tokens for security
+            foreach (var token in user.RefreshTokens.Where(t => t.RevokedAt == null))
+            {
+                await _userRepository.RevokeRefreshTokenAsync(token.Token);
+            }
+
+            return Ok(new { message = "PASSWORD_RESET_SUCCESS" });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "PASSWORD_RESET_FAILED" });
+        }
     }
 
     [HttpPost("login")]
@@ -74,6 +330,13 @@ public class AuthController : ControllerBase
     {
         try
         {
+            // Verify that email has been verified via OTP
+            var isEmailVerified = await _otpRepository.IsEmailVerifiedAsync(request.Email);
+            if (!isEmailVerified)
+            {
+                return BadRequest(new { message = "EMAIL_NOT_VERIFIED" });
+            }
+
             // Validate file for trainers and nutritionists
             if (request.Role == Domain.Enums.UserRole.Trainer || request.Role == Domain.Enums.UserRole.Nutritionist)
             {

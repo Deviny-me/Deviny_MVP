@@ -9,6 +9,7 @@ public interface IRealtimeNotifier
     Task SendUnreadCountAsync(Guid userId, int count, CancellationToken ct = default);
     Task SendFriendRequestReceivedAsync(Guid receiverId, object requestData, CancellationToken ct = default);
     Task SendFriendRequestAcceptedAsync(Guid userId, object requestData, CancellationToken ct = default);
+    Task SendFriendRequestDeclinedAsync(Guid userId, object requestData, CancellationToken ct = default);
     Task SendFriendRemovedAsync(Guid userId, object data, CancellationToken ct = default);
     Task SendEntityChangedAsync(
         Guid userId,

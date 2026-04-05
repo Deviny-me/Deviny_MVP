@@ -16,6 +16,32 @@ function FloatingShape({ className }: { className?: string }) {
 
 function AuthLayoutInner({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
+
+  useEffect(() => {
+    // Redirect authenticated users to their dashboard
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const isExpired = payload.exp * 1000 < Date.now()
+        if (!isExpired) {
+          const role = payload.role ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
+          if (role === 'Trainer' || role === '1') {
+            window.location.replace('/trainer')
+            return
+          } else if (role === 'Nutritionist' || role === '3') {
+            window.location.replace('/nutritionist')
+            return
+          } else {
+            window.location.replace('/user')
+            return
+          }
+        }
+      } catch { /* malformed token — let them stay on auth */ }
+    }
+    setAuthChecked(true)
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem('theme')
@@ -66,7 +92,7 @@ function AuthLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Form area */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-4 sm:px-8 pb-8">
-        {children}
+        {authChecked ? children : null}
       </div>
 
       {/* Footer */}

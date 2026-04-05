@@ -109,6 +109,7 @@ public class NutritionistProfileController : BaseApiController
                     UserId = user.Id,
                     FullName = user.FullName,
                     AvatarUrl = user.AvatarUrl,
+                    BannerUrl = user.BannerUrl,
                     Initials = initials,
                     PrimaryTitle = profile.PrimaryTitle,
                     SecondaryTitle = profile.SecondaryTitle,
@@ -588,6 +589,86 @@ public class NutritionistProfileController : BaseApiController
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Ошибка при удалении аватара", error = ex.Message });
+        }
+    }
+
+    [HttpPost("me/banner")]
+    public async Task<ActionResult> UploadBanner([FromForm] IFormFile file)
+    {
+        try
+        {
+            var user = await GetNutritionistUserAsync();
+
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "File is required" });
+
+            if (file.Length > 8 * 1024 * 1024)
+                return BadRequest(new { message = "File size must not exceed 8MB" });
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(file.FileName).ToLower();
+            if (!allowedExtensions.Contains(fileExtension))
+                return BadRequest(new { message = "Allowed formats: JPG, JPEG, PNG, GIF, WEBP" });
+
+            if (!string.IsNullOrEmpty(user.BannerUrl))
+            {
+                var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.BannerUrl.TrimStart('/'));
+                if (System.IO.File.Exists(oldPath))
+                    System.IO.File.Delete(oldPath);
+            }
+
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "banners");
+            Directory.CreateDirectory(uploadPath);
+            var filePath = Path.Combine(uploadPath, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var bannerUrl = $"/uploads/banners/{fileName}";
+            user.BannerUrl = bannerUrl;
+            await _userRepository.UpdateAsync(user);
+
+            return Ok(new { message = "Banner uploaded", bannerUrl });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error uploading banner", error = ex.Message });
+        }
+    }
+
+    [HttpDelete("me/banner")]
+    public async Task<ActionResult> DeleteBanner()
+    {
+        try
+        {
+            var user = await GetNutritionistUserAsync();
+
+            if (string.IsNullOrEmpty(user.BannerUrl))
+                return NotFound(new { message = "Banner not found" });
+
+            var bannerPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", user.BannerUrl.TrimStart('/'));
+            if (System.IO.File.Exists(bannerPath))
+                System.IO.File.Delete(bannerPath);
+
+            user.BannerUrl = null;
+            await _userRepository.UpdateAsync(user);
+
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error deleting banner", error = ex.Message });
         }
     }
 

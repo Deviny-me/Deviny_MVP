@@ -11,6 +11,7 @@ import { Eye, EyeOff, User, Dumbbell, Apple, ArrowLeft, Check } from 'lucide-rea
 import { Spinner } from '@/components/ui/Spinner'
 import { useLogin } from '@/features/auth/hooks/useLogin'
 import { cn } from '@/lib/utils/cn'
+import { getRememberMePreferences, saveRememberMePreferences, clearRememberMePreferences } from '@/lib/utils/cookies'
 
 const roleConfig = {
   user:         { icon: User,     iconBg: 'bg-gradient-to-br from-user-100 to-user-200 dark:from-user-500/20 dark:to-user-600/20', iconColor: 'text-user-600 dark:text-user-400', ring: 'focus-within:ring-user-500', gradientLine: 'from-user-400 via-user-500 to-user-600' },
@@ -33,6 +34,18 @@ function LoginPageContent() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const { login, isLoading, error, setError } = useLogin()
+
+  // Load remembered preferences from cookies on mount
+  useEffect(() => {
+    const prefs = getRememberMePreferences()
+    if (prefs.rememberMe && prefs.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: prefs.email,
+        rememberMe: true,
+      }))
+    }
+  }, [])
 
   useEffect(() => {
     const roleFromQuery = searchParams.get('role') as RoleType
@@ -84,6 +97,13 @@ function LoginPageContent() {
         role,
         rememberMe: formData.rememberMe,
       })
+
+      // Save or clear remember me preferences in cookies
+      if (formData.rememberMe) {
+        saveRememberMePreferences(formData.email, role)
+      } else {
+        clearRememberMePreferences()
+      }
 
       router.push(role === 'user' ? '/user' : role === 'nutritionist' ? '/nutritionist' : '/trainer')
     } catch (err) {
@@ -203,7 +223,7 @@ function LoginPageContent() {
             </label>
 
             <Link
-              href="#"
+              href={`/auth/forgot-password?role=${role}`}
               className="text-sm text-primary-600 hover:text-primary-700 hover:underline underline-offset-2 font-medium transition-all"
             >
               {t('login.forgotPassword')}

@@ -3,11 +3,10 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { 
-  Pencil,
   MapPin,
   Link as LinkIcon,
-  Edit2,
   Users,
   BookOpen,
   Star,
@@ -21,8 +20,6 @@ import {
   Plus,
   Trash2,
   Award,
-  Phone,
-  Mail,
   Globe,
   User,
   Briefcase,
@@ -32,13 +29,13 @@ import {
   List,
   Play,
   Repeat2,
+  Settings,
 } from 'lucide-react'
-import { fetchTrainerProfile, updateAbout, uploadCertificate, deleteCertificate, addSpecialization, deleteSpecialization, updateTrainerProfile, uploadTrainerAvatar, deleteTrainerAvatar } from '@/lib/api/trainerProfileApi'
+import { fetchTrainerProfile, uploadCertificate, deleteCertificate, addSpecialization, deleteSpecialization } from '@/lib/api/trainerProfileApi'
 import { TrainerProfileResponse, CertificateDto, SpecializationDto } from '@/types/trainerProfile'
 import { postsApi } from '@/lib/api/postsApi'
-import { updateUserProfile } from '@/lib/api/userApi'
 import { useLanguage } from '@/components/language/LanguageProvider'
-import { getCitiesForCountry, getCountries, getCountryName, localizeCityName, localizeCountryName, resolveCountryCodeByName, translateCityName } from '@/lib/data/countries'
+import { localizeCityName, localizeCountryName } from '@/lib/data/countries'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import { getMediaUrl } from '@/lib/config'
@@ -274,7 +271,6 @@ export default function ProfilePage() {
   const t = useTranslations('profile')
   const tp = useTranslations('posts')
   const tc = useTranslations('common')
-  const tr = useTranslations('auth.register')
   const { language } = useLanguage()
   const { user } = useAuth()
   const isNutritionist = user?.role === 'nutritionist'
@@ -297,19 +293,12 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements' | 'reviews'>('posts')
   
-  // Edit modals
-  const [showAboutModal, setShowAboutModal] = useState(false)
+  // Content modals
   const [showCertificateModal, setShowCertificateModal] = useState(false)
   const [showSpecializationModal, setShowSpecializationModal] = useState(false)
-  const [showEditProfileModal, setShowEditProfileModal] = useState(false)
-  const [showEditLocationModal, setShowEditLocationModal] = useState(false)
-  const [showEditPhoneModal, setShowEditPhoneModal] = useState(false)
-  const [showEditExperienceModal, setShowEditExperienceModal] = useState(false)
-  const [showEditGenderModal, setShowEditGenderModal] = useState(false)
   const [viewingCertificate, setViewingCertificate] = useState<string | null>(null)
   
   // Form states
-  const [aboutText, setAboutText] = useState('')
   const [certTitle, setCertTitle] = useState('')
   const [certIssuer, setCertIssuer] = useState('')
   const [certYear, setCertYear] = useState(new Date().getFullYear().toString())
@@ -318,67 +307,14 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [deletingAvatar, setDeletingAvatar] = useState(false)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [toastData, setToastData] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  
-  // Edit profile form states
-  const [editPrimaryTitle, setEditPrimaryTitle] = useState('')
-  const [editSecondaryTitle, setEditSecondaryTitle] = useState('')
-  const [editExperienceYears, setEditExperienceYears] = useState('')
-  const [editLocationCountryCode, setEditLocationCountryCode] = useState('')
-  const [editLocationCity, setEditLocationCity] = useState('')
-  const [editPhone, setEditPhone] = useState('')
-  const [editGender, setEditGender] = useState('')
-
-  const normalizeGenderValue = (value?: string | null): 'Male' | 'Female' | 'Other' | '' => {
-    if (!value) return ''
-    const normalized = value.trim().toLowerCase()
-    if (normalized === 'male') return 'Male'
-    if (normalized === 'female') return 'Female'
-    if (normalized === 'other') return 'Other'
-    return ''
-  }
-
-  const locationCountries = getCountries(language)
-  const locationCities = editLocationCountryCode ? getCitiesForCountry(editLocationCountryCode, language) : []
-  const editLocationDisplay = [
-    editLocationCity ? translateCityName(editLocationCity, language) : '',
-    editLocationCountryCode ? getCountryName(editLocationCountryCode, language) : ''
-  ].filter(Boolean).join(', ')
-
-  const syncLocationEditor = useCallback((country?: string | null, city?: string | null) => {
-    const countryCode = resolveCountryCodeByName(country) || ''
-    setEditLocationCountryCode(countryCode)
-
-    if (!countryCode || !city) {
-      setEditLocationCity('')
-      return
-    }
-
-    const matchedCity = getCitiesForCountry(countryCode, language).find(c =>
-      c.value.toLowerCase() === city.toLowerCase() ||
-      c.label.toLowerCase() === city.toLowerCase() ||
-      translateCityName(c.value, language).toLowerCase() === city.toLowerCase()
-    )
-
-    setEditLocationCity(matchedCity?.value || '')
-  }, [language])
 
   const loadProfile = async () => {
     try {
       setLoading(true)
       const data = await fetchTrainerProfile()
       setProfile(data)
-      setAboutText(data.about?.text || '')
-      // Set edit form initial values
-      setEditPrimaryTitle(data.trainer?.primaryTitle || '')
-      setEditSecondaryTitle(data.trainer?.secondaryTitle || '')
-      setEditExperienceYears(data.trainer?.experienceYears?.toString() || '')
-      setEditPhone(data.trainer?.phone || '')
-      setEditGender(normalizeGenderValue(data.trainer?.gender))
-      syncLocationEditor(data.trainer?.country, data.trainer?.city)
     } catch (error) {
       console.error('Failed to load profile:', error)
       setToastData({ message: t('toasts.profileLoadError'), type: 'error' })
@@ -453,25 +389,6 @@ export default function ProfilePage() {
     return () => observer.disconnect()
   }, [postsHasMore, isLoadingPosts, handleLoadMorePosts, activeTab])
 
-  useEffect(() => {
-    if (!profile?.trainer) return
-    syncLocationEditor(profile.trainer.country, profile.trainer.city)
-  }, [language, profile?.trainer?.country, profile?.trainer?.city, syncLocationEditor])
-
-  const handleSaveAbout = async () => {
-    try {
-      setSaving(true)
-      await updateAbout(aboutText)
-      setToastData({ message: t('toasts.infoUpdated'), type: 'success' })
-      setShowAboutModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update about:', error)
-      setToastData({ message: t('toasts.infoUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const handleAddCertificate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -563,180 +480,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleSaveLocation = async () => {
-    if (!editLocationCountryCode || !editLocationCity) {
-      setToastData({ message: t('toasts.fillRequiredFields'), type: 'error' })
-      return
-    }
-
-    try {
-      setSaving(true)
-      const country = getCountryName(editLocationCountryCode, language)
-      const city = translateCityName(editLocationCity, language)
-      const location = [city, country].filter(Boolean).join(', ')
-
-      await Promise.all([
-        updateTrainerProfile({ location }),
-        updateUserProfile({ country, city }),
-      ])
-
-      setToastData({ message: t('toasts.locationUpdated'), type: 'success' })
-      setShowEditLocationModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update location:', error)
-      setToastData({ message: t('toasts.locationUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleSavePhone = async () => {
-    try {
-      setSaving(true)
-      await updateUserProfile({
-        phone: editPhone.trim(),
-      })
-      setToastData({ message: t('toasts.phoneUpdated'), type: 'success' })
-      setShowEditPhoneModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update phone:', error)
-      setToastData({ message: t('toasts.phoneUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleSaveExperience = async () => {
-    try {
-      setSaving(true)
-      await updateTrainerProfile({
-        experienceYears: parseInt(editExperienceYears) || 0,
-      })
-      setToastData({ message: t('toasts.experienceUpdated'), type: 'success' })
-      setShowEditExperienceModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update experience:', error)
-      setToastData({ message: t('toasts.experienceUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleSaveGender = async () => {
-    try {
-      setSaving(true)
-      const normalizedGender = normalizeGenderValue(editGender)
-      await updateTrainerProfile({
-        gender: normalizedGender || '',
-      })
-      setToastData({ message: t('toasts.genderUpdated'), type: 'success' })
-      setShowEditGenderModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update gender:', error)
-      setToastData({ message: t('toasts.genderUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file
-    if (!file.type.startsWith('image/')) {
-      setToastData({ message: t('toasts.avatarSelectImage'), type: 'error' })
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setToastData({ message: t('toasts.avatarSizeLimit'), type: 'error' })
-      return
-    }
-
-    try {
-      setUploadingAvatar(true)
-      const response = await uploadTrainerAvatar(file)
-      
-      // Update profile immediately with new avatar URL
-      if (profile && response.avatarUrl) {
-        setProfile({
-          ...profile,
-          trainer: {
-            ...profile.trainer,
-            avatarUrl: response.avatarUrl
-          }
-        })
-        
-        // Dispatch custom event to notify other components
-        window.dispatchEvent(new CustomEvent('trainerAvatarUpdated', { 
-          detail: { avatarUrl: response.avatarUrl } 
-        }))
-      }
-      
-      setToastData({ message: t('toasts.avatarUpdated'), type: 'success' })
-      await loadProfile()
-    } catch (error) {
-      console.error('Failed to upload avatar:', error)
-      setToastData({ message: t('toasts.avatarUploadError'), type: 'error' })
-    } finally {
-      setUploadingAvatar(false)
-    }
-  }
-
-  const handleAvatarDelete = async () => {
-    if (!confirm(t('toasts.avatarDeleteConfirm'))) return
-    try {
-      setDeletingAvatar(true)
-      await deleteTrainerAvatar()
-
-      if (profile) {
-        setProfile({
-          ...profile,
-          trainer: {
-            ...profile.trainer,
-            avatarUrl: ''
-          }
-        })
-
-        window.dispatchEvent(new CustomEvent('trainerAvatarUpdated', {
-          detail: { avatarUrl: null }
-        }))
-      }
-
-      setToastData({ message: t('toasts.avatarDeleted'), type: 'success' })
-    } catch (error) {
-      console.error('Failed to delete avatar:', error)
-      setToastData({ message: t('toasts.avatarDeleteError'), type: 'error' })
-    } finally {
-      setDeletingAvatar(false)
-    }
-  }
-
-  const handleSaveProfile = async () => {
-    try {
-      setSaving(true)
-      await updateTrainerProfile({
-        primaryTitle: editPrimaryTitle || undefined,
-        secondaryTitle: editSecondaryTitle || undefined,
-        experienceYears: editExperienceYears ? parseInt(editExperienceYears) : undefined,
-        location: editLocationDisplay || undefined
-      })
-      setToastData({ message: t('toasts.profileUpdated'), type: 'success' })
-      setShowEditProfileModal(false)
-      loadProfile()
-    } catch (error) {
-      console.error('Failed to update profile:', error)
-      setToastData({ message: t('toasts.profileUpdateError'), type: 'error' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
   const handleDeletePost = async (postId: string) => {
     if (!confirm(tp('deleteConfirm'))) {
       return
@@ -789,6 +532,13 @@ export default function ProfilePage() {
         <div className="-mx-3 -mt-2 overflow-hidden bg-surface-2/35 sm:-mx-4 md:mx-0 md:mt-0 md:rounded-xl md:border md:border-border md:bg-surface-3">
           {/* Cover */}
           <div className="relative h-36 overflow-hidden bg-gradient-to-r from-[#f07915] to-[#d4600b] sm:h-48">
+            {trainer.bannerUrl && (
+              <img
+                src={getMediaUrl(trainer.bannerUrl) || ''}
+                alt="Profile banner"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
           </div>
 
           <div className="relative px-4 pb-4 sm:px-6 sm:pb-6">
@@ -808,36 +558,6 @@ export default function ProfilePage() {
                       {trainer.initials}
                     </span>
                   </div>
-                )}
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 p-1.5 bg-[#f07915] hover:bg-[#d96a12] shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors cursor-pointer z-10"
-                >
-                  {uploadingAvatar ? (
-                    <Loader2 className="w-3 h-3 text-white animate-spin" />
-                  ) : (
-                    <Pencil className="w-3 h-3 text-white" />
-                  )}
-                </label>
-                {trainer.avatarUrl && (
-                  <button
-                    onClick={handleAvatarDelete}
-                    disabled={deletingAvatar}
-                    className="absolute bottom-0 left-0 p-1.5 bg-red-500 hover:bg-red-600 shadow-lg rounded-full border-2 border-white dark:border-[#1A1A1A] transition-colors z-10"
-                  >
-                    {deletingAvatar ? (
-                      <Loader2 className="w-3 h-3 text-white animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3 h-3 text-white" />
-                    )}
-                  </button>
                 )}
               </div>
 
@@ -906,16 +626,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Contact & Location Info */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {/* Location */}
           {(trainer.location || trainer.city || trainer.country) && (
-            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-              <button
-                onClick={() => setShowEditLocationModal(true)}
-                className="absolute top-2 right-2 p-1 text-faint-foreground hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
+            <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <MapPin className="w-4 h-4" />
                 <span className="text-xs">{t('location')}</span>
@@ -926,32 +640,9 @@ export default function ProfilePage() {
             </div>
           )}
           
-          {/* Phone */}
-          {trainer.phone && (
-            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-              <button
-                onClick={() => setShowEditPhoneModal(true)}
-                className="absolute top-2 right-2 p-1 text-faint-foreground hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                <Phone className="w-4 h-4" />
-                <span className="text-xs">{t('phoneLabel')}</span>
-              </div>
-              <p className="text-foreground text-sm font-medium">{trainer.phone}</p>
-            </div>
-          )}
-          
           {/* Experience */}
           {trainer.experienceYears !== null && trainer.experienceYears !== undefined && (
-            <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-              <button
-                onClick={() => setShowEditExperienceModal(true)}
-                className="absolute top-2 right-2 p-1 text-faint-foreground hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
+            <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Briefcase className="w-4 h-4" />
                 <span className="text-xs">{t('experience')}</span>
@@ -961,13 +652,7 @@ export default function ProfilePage() {
           )}
 
           {/* Gender */}
-          <div className="group relative bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
-            <button
-              onClick={() => setShowEditGenderModal(true)}
-              className="absolute top-2 right-2 p-1 text-faint-foreground hover:text-[#f07915] opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Edit2 className="w-3 h-3" />
-            </button>
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1">
             <div className="flex items-center gap-2 text-muted-foreground mb-1">
               <User className="w-4 h-4" />
               <span className="text-xs">{t('genderLabel')}</span>
@@ -985,79 +670,42 @@ export default function ProfilePage() {
           
         </div>
 
+        {/* Profile Settings Button */}
+        <Link
+          href="/trainer/profile/settings"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          <Settings className="w-4 h-4" />
+          {t('profileSettings')}
+        </Link>
+
         {/* Bio Section */}
         <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
           <p className="text-sm text-[#f07915] font-medium mb-3">{trainer.primaryTitle || (isNutritionist ? t('personalNutritionist') : t('personalTrainer'))}</p>
           {about?.text ? (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-muted-foreground">{t('aboutMe')}</h3>
-                <button 
-                  onClick={() => setShowAboutModal(true)}
-                  className="text-xs text-[#f07915] hover:underline"
-                >
-                  {tc('change')}
-                </button>
-              </div>
+              <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('aboutMe')}</h3>
               <p className="text-muted-foreground leading-relaxed">{about.text}</p>
             </div>
           ) : (
-            <button 
-              onClick={() => setShowAboutModal(true)}
-              className="w-full py-3 text-faint-foreground hover:text-muted-foreground flex items-center justify-center gap-2 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              {t('addDescription')}
-            </button>
+            <p className="text-faint-foreground text-sm">{t('addDescription')}</p>
           )}
         </div>
 
         {/* Specializations */}
         {specializations.length > 0 && (
           <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-muted-foreground">{t('specializations')}</h3>
-              <button
-                onClick={() => setShowSpecializationModal(true)}
-                className="text-xs text-[#f07915] hover:underline flex items-center gap-1"
-              >
-                <Plus className="w-3 h-3" />
-                {tc('add')}
-              </button>
-            </div>
+            <h3 className="text-sm font-medium text-muted-foreground mb-3">{t('specializations')}</h3>
             <div className="flex flex-wrap gap-2">
               {specializations.map((spec) => (
                 <span
                   key={spec.id}
-                  className="flex items-center gap-2 rounded-lg border border-[#f07915]/20 bg-gradient-to-r from-[#f07915]/10 to-[#d4600b]/10 px-3 py-1.5 text-sm text-muted-foreground"
+                  className="rounded-lg border border-[#f07915]/20 bg-gradient-to-r from-[#f07915]/10 to-[#d4600b]/10 px-3 py-1.5 text-sm text-muted-foreground"
                 >
                   {spec.name}
-                  <button 
-                    onClick={() => handleDeleteSpecialization(spec.id)}
-                    disabled={deleting === spec.id}
-                    className="hover:text-red-400 transition-colors"
-                  >
-                    {deleting === spec.id ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <X className="w-3 h-3" />
-                    )}
-                  </button>
                 </span>
               ))}
             </div>
-          </div>
-        )}
-
-        {specializations.length === 0 && (
-          <div>
-            <button
-              onClick={() => setShowSpecializationModal(true)}
-              className="w-full py-3 border-2 border-dashed border-border rounded-xl text-faint-foreground hover:text-muted-foreground hover:border-[#f07915]/30 transition-colors flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              {t('addSpecialization')}
-            </button>
           </div>
         )}
 
@@ -1350,41 +998,6 @@ export default function ProfilePage() {
           />
         )}
 
-        {/* About Modal */}
-        {showAboutModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg"
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-foreground">{t('aboutMe')}</h2>
-                  <button onClick={() => setShowAboutModal(false)} className="text-muted-foreground hover:text-foreground">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <textarea
-                  value={aboutText}
-                  onChange={(e) => setAboutText(e.target.value)}
-                  rows={5}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915] resize-none mb-4"
-                  placeholder={t('aboutMePlaceholder')}
-                />
-                <button
-                  onClick={handleSaveAbout}
-                  disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {tc('save')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
         {/* Certificate Modal */}
         {showCertificateModal && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -1524,80 +1137,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Edit Profile Modal */}
-        {showEditProfileModal && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-surface-3 rounded-2xl border border-border w-full max-w-lg max-h-[90vh] overflow-y-auto"
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-foreground">{t('editProfile')}</h2>
-                  <button onClick={() => setShowEditProfileModal(false)} className="text-muted-foreground hover:text-foreground">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('primarySpecialty')}</label>
-                    <input
-                      type="text"
-                      value={editPrimaryTitle}
-                      onChange={(e) => setEditPrimaryTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                      placeholder={t('primarySpecialtyPlaceholder')}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('secondarySpecialty')}</label>
-                    <input
-                      type="text"
-                      value={editSecondaryTitle}
-                      onChange={(e) => setEditSecondaryTitle(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                      placeholder={t('secondarySpecialtyPlaceholder')}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('experienceYears')}</label>
-                    <input
-                      type="number"
-                      value={editExperienceYears}
-                      onChange={(e) => setEditExperienceYears(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                      placeholder="5"
-                      min="0"
-                      max="50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('location')}</label>
-                    <input
-                      type="text"
-                      value={editLocationDisplay}
-                      readOnly
-                      className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                      placeholder={t('locationPlaceholder')}
-                    />
-                  </div>
-                  <div className="pt-2">
-                    <button
-                      onClick={handleSaveProfile}
-                      disabled={saving}
-                      className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                      {tc('save')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
         {/* Certificate Viewer Modal */}
         {viewingCertificate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
@@ -1626,178 +1165,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Edit Location Modal */}
-        {showEditLocationModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-xl font-bold text-foreground">{t('changeLocation')}</h2>
-                <button
-                  onClick={() => setShowEditLocationModal(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <select
-                  value={editLocationCountryCode}
-                  onChange={(e) => {
-                    setEditLocationCountryCode(e.target.value)
-                    setEditLocationCity('')
-                  }}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                >
-                  <option value="">{tr('selectCountry')}</option>
-                  {locationCountries.map(country => (
-                    <option key={country.code} value={country.code}>{country.name}</option>
-                  ))}
-                </select>
-                <select
-                  value={editLocationCity}
-                  onChange={(e) => setEditLocationCity(e.target.value)}
-                  disabled={!editLocationCountryCode}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915] disabled:opacity-50"
-                >
-                  <option value="">{editLocationCountryCode ? tr('selectCity') : tr('selectCountry')}</option>
-                  {locationCities.map(city => (
-                    <option key={city.value} value={city.value}>{city.label}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={handleSaveLocation}
-                  disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {tc('save')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Edit Phone Modal */}
-        {showEditPhoneModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-xl font-bold text-foreground">{t('changePhone')}</h2>
-                <button
-                  onClick={() => setShowEditPhoneModal(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <input
-                  type="tel"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                  placeholder={t('phonePlaceholder')}
-                />
-                <button
-                  onClick={handleSavePhone}
-                  disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {tc('save')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Edit Experience Modal */}
-        {showEditExperienceModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-xl font-bold text-foreground">{t('changeExperience')}</h2>
-                <button
-                  onClick={() => setShowEditExperienceModal(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <input
-                  type="number"
-                  value={editExperienceYears}
-                  onChange={(e) => setEditExperienceYears(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                  placeholder="5"
-                  min="0"
-                />
-                <button
-                  onClick={handleSaveExperience}
-                  disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {tc('save')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-
-        {/* Edit Gender Modal */}
-        {showEditGenderModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full max-w-md bg-surface-3 rounded-xl border border-border overflow-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-border">
-                <h2 className="text-xl font-bold text-foreground">{t('changeGender')}</h2>
-                <button
-                  onClick={() => setShowEditGenderModal(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-hover-overlay transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <select
-                  value={editGender}
-                  onChange={(e) => setEditGender(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:border-[#f07915]"
-                >
-                  <option value="">{t('selectGender')}</option>
-                  <option value="Male">{t('male')}</option>
-                  <option value="Female">{t('female')}</option>
-                  <option value="Other">{t('other')}</option>
-                </select>
-                <button
-                  onClick={handleSaveGender}
-                  disabled={saving}
-                  className="w-full py-3 bg-gradient-to-r from-[#f07915] to-[#d4600b] text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {tc('save')}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </div>
 
       {/* Post Detail Modal */}

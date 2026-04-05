@@ -247,3 +247,31 @@ export async function updateTrainerProfile(data: UpdateTrainerProfileRequest): P
   }
 }
 
+export async function uploadTrainerBanner(file: File): Promise<{ bannerUrl: string }> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetchWithAuth(`${API_URL}/trainer/me/banner`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to upload banner')
+  }
+
+  return response.json()
+}
+
+export async function deleteTrainerBanner(): Promise<void> {
+  const response = await fetchWithAuth(`${API_URL}/trainer/me/banner`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok && response.status !== 204) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to delete banner')
+  }
+}
+

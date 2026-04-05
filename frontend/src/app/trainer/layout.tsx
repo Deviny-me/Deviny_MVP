@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { UnreadMessagesProvider } from '@/contexts/UnreadMessagesContext'
 import { UnreadNotificationsProvider } from '@/contexts/UnreadNotificationsContext'
+import { UserProvider } from '@/components/user/UserProvider'
 import { TrainerAchievementBridge } from '@/components/trainer/TrainerAchievementBridge'
 import { LevelProvider } from '@/components/level/LevelProvider'
 import { MainLayout } from '@/components/trainer/layout/MainLayout'
 import { LanguageProvider } from '@/components/language/LanguageProvider'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
+import { RealtimeToastContainer } from '@/components/shared/RealtimeToast'
 import { Spinner } from '@/components/ui/Spinner'
 
 // Routes where right sidebar should be hidden
@@ -77,17 +79,20 @@ export default function TrainerDashboardLayout({
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <UnreadMessagesProvider>
-          <UnreadNotificationsProvider>
-            <LevelProvider>
-              <TrainerAchievementBridge>
-                <MainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
-                  {children}
-                </MainLayout>
-              </TrainerAchievementBridge>
-            </LevelProvider>
-          </UnreadNotificationsProvider>
-        </UnreadMessagesProvider>
+        <UserProvider>
+          <UnreadMessagesProvider>
+            <UnreadNotificationsProvider>
+              <LevelProvider>
+                <TrainerAchievementBridge>
+                  <RealtimeToastContainer />
+                  <MainLayout showLeftSidebar={showLeftSidebar} showRightSidebar={showRightSidebar}>
+                    {children}
+                  </MainLayout>
+                </TrainerAchievementBridge>
+              </LevelProvider>
+            </UnreadNotificationsProvider>
+          </UnreadMessagesProvider>
+        </UserProvider>
       </LanguageProvider>
     </ThemeProvider>
   )

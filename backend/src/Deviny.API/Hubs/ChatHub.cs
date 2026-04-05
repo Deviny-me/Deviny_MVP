@@ -109,6 +109,8 @@ public class ChatHub : Hub
                     lastMessageText = messageDto.Text,
                     lastMessageAt = messageDto.CreatedAt,
                     senderId = senderGuid,
+                    senderName = messageDto.SenderName,
+                    senderAvatarUrl = messageDto.SenderAvatarUrl,
                     messageId = messageDto.Id
                 });
             }
@@ -183,6 +185,8 @@ public class ChatHub : Hub
                     lastMessageText = messageDto.Text,
                     lastMessageAt = messageDto.CreatedAt,
                     senderId = senderGuid,
+                    senderName = messageDto.SenderName,
+                    senderAvatarUrl = messageDto.SenderAvatarUrl,
                     messageId = messageDto.Id
                 });
             }

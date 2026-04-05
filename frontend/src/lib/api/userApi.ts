@@ -2,6 +2,8 @@ import { API_URL, fetchWithAuth } from '@/lib/config'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 
 export interface UpdateUserProfileRequest {
+  firstName?: string
+  lastName?: string
   bio?: string
   country?: string
   city?: string
@@ -112,4 +114,16 @@ export async function deleteAccount(password: string): Promise<void> {
   localStorage.removeItem('selectedRole')
   sessionStorage.removeItem('accessToken')
   sessionStorage.removeItem('user')
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  const response = await fetchWithAuth(`${API_URL}/user/change-password`, {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || 'Failed to change password')
+  }
 }

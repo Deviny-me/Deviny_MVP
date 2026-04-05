@@ -88,4 +88,18 @@ public class MeFollowsController : BaseApiController
         var result = await _mediator.Send(query);
         return Ok(result);
     }
+
+    [HttpGet("followers")]
+    public async Task<ActionResult<PagedResponse<FriendDto>>> GetMyFollowers(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 30)
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
+
+        var userId = GetCurrentUserId();
+        var query = new GetMyFollowersQuery { UserId = userId, Page = page, PageSize = pageSize };
+        var result = await _mediator.Send(query);
+        return Ok(result);
+    }
 }
