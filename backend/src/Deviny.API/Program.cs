@@ -106,9 +106,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Allow localhost for development
-        policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:3002")
-              .SetIsOriginAllowed(origin => origin.StartsWith("http://localhost:"))
+        // Allow localhost for development and production frontend
+        policy.WithOrigins(
+                  "http://localhost:3000", "http://localhost:3001", "http://localhost:3002",
+                  "https://app.deviny.me")
+              .SetIsOriginAllowed(origin =>
+                  origin.StartsWith("http://localhost:") ||
+                  origin == "https://app.deviny.me")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
