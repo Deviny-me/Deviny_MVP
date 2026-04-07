@@ -1,0 +1,27 @@
+name: Deploy to VPS using Docker
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/deviny
+
+            echo "Pulling latest changes..."
+            git pull origin master
+
+            echo "Rebuilding containers..."
+            docker compose -p deviny -f docker-compose.deviny.yml up -d --build --pull
+
+            echo "Success!"
