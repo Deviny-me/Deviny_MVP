@@ -22,6 +22,6 @@ jobs:
             git pull origin master
 
             echo "Rebuilding containers..."
-            docker compose -p deviny -f docker-compose.deviny.yml up -d --build --pull
+            docker compose -p deviny -f docker-compose.deviny.yml up -d --build --pull missing
 
             echo "Success!"
