@@ -14,16 +14,17 @@ services:
 
   api:
     build:
-      context: ./backend/src/Deviny.API
+      context: .
     container_name: deviny_api
     depends_on:
       - db
     restart: always
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres
     ports:
-      - "5000:5000"
+      - "8080:8080"
 
 volumes:
   postgres_data:
