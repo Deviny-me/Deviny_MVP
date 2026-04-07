@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: deviny-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: DevinyDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - deviny_pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend/src/Deviny.API
+    container_name: deviny_api
+    depends_on:
+      - db
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=localhost;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres
+    ports:
+      - "5000:8080"
+
+volumes:
+  postgres_data:
