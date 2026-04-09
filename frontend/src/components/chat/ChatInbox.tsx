@@ -463,14 +463,28 @@ export default function ChatInbox() {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
         {
-          urls: [
-            'turn:openrelay.metered.ca:80',
-            'turn:openrelay.metered.ca:443',
-            'turn:openrelay.metered.ca:443?transport=tcp',
-          ],
-          username: 'openrelayproject',
-          credential: 'openrelayproject',
+          urls: 'turn:a.relay.metered.ca:80',
+          username: 'e8dd65b92f6b1f4e0f28fa30',
+          credential: 'uWdJjTvhMVeSNJka',
+        },
+        {
+          urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+          username: 'e8dd65b92f6b1f4e0f28fa30',
+          credential: 'uWdJjTvhMVeSNJka',
+        },
+        {
+          urls: 'turn:a.relay.metered.ca:443',
+          username: 'e8dd65b92f6b1f4e0f28fa30',
+          credential: 'uWdJjTvhMVeSNJka',
+        },
+        {
+          urls: 'turns:a.relay.metered.ca:443?transport=tcp',
+          username: 'e8dd65b92f6b1f4e0f28fa30',
+          credential: 'uWdJjTvhMVeSNJka',
         },
       ],
     })
@@ -496,6 +510,13 @@ export default function ChatInbox() {
           remoteStream.addTrack(track)
         }
       })
+      // Ensure media elements have the stream assigned (covers late-render)
+      if (remoteVideoRef.current && !remoteVideoRef.current.srcObject) {
+        remoteVideoRef.current.srcObject = remoteStream
+      }
+      if (remoteAudioRef.current && !remoteAudioRef.current.srcObject) {
+        remoteAudioRef.current.srcObject = remoteStream
+      }
       setCallStatus('connected')
     }
 
