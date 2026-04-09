@@ -24,6 +24,7 @@ public class AuthController : ControllerBase
     private readonly IEmailService _emailService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly EmailSettings _emailSettings;
+    private readonly IWebHostEnvironment _env;
 
     public AuthController(
         LoginCommandHandler loginHandler,
@@ -33,7 +34,8 @@ public class AuthController : ControllerBase
         IOtpRepository otpRepository,
         IEmailService emailService,
         IPasswordHasher passwordHasher,
-        IOptions<EmailSettings> emailSettings)
+        IOptions<EmailSettings> emailSettings,
+        IWebHostEnvironment env)
     {
         _loginHandler = loginHandler;
         _userRepository = userRepository;
@@ -43,6 +45,19 @@ public class AuthController : ControllerBase
         _emailService = emailService;
         _passwordHasher = passwordHasher;
         _emailSettings = emailSettings.Value;
+        _env = env;
+    }
+
+    private CookieOptions CreateRefreshCookieOptions()
+    {
+        var isProduction = !_env.IsDevelopment();
+        return new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isProduction,
+            SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax,
+            Path = "/"
+        };
     }
 
     /// <summary>
@@ -293,13 +308,7 @@ public class AuthController : ControllerBase
         {
             var response = await _loginHandler.Handle(request);
             
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // HTTP in development
-                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
-                Path = "/"
-            };
+            var cookieOptions = CreateRefreshCookieOptions();
 
             // Remember me: persistent cookie (30 days). Otherwise: session cookie (deleted on browser close).
             if (request.RememberMe)
@@ -385,14 +394,9 @@ public class AuthController : ControllerBase
 
             var response = await _mediator.Send(command);
             
-            Response.Cookies.Append("refreshToken", response.RefreshToken, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // HTTP in development
-                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
-                Expires = DateTimeOffset.UtcNow.AddDays(7),
-                Path = "/"
-            });
+            var registerCookieOptions = CreateRefreshCookieOptions();
+            registerCookieOptions.Expires = DateTimeOffset.UtcNow.AddDays(7);
+            Response.Cookies.Append("refreshToken", response.RefreshToken, registerCookieOptions);
 
             return StatusCode(201, response);
         }
@@ -469,13 +473,7 @@ public class AuthController : ControllerBase
             });
 
             // Set new refresh token cookie
-            var refreshCookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false, // HTTP in development
-                SameSite = SameSiteMode.Lax, // Same-site via Next.js proxy
-                Path = "/"
-            };
+            var refreshCookieOptions = CreateRefreshCookieOptions();
 
             // Preserve original remember-me preference: persistent cookie vs session cookie.
             if (wasRememberMe)
