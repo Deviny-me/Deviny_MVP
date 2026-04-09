@@ -102,17 +102,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Build allowed CORS origins from configuration + defaults
+var corsOrigins = new List<string>
+{
+    "http://localhost:3000", "http://localhost:3001", "http://localhost:3002",
+    "https://app.deviny.me", "https://deviny.me", "https://www.deviny.me"
+};
+var clientAppUrl = builder.Configuration["ClientAppUrl"];
+if (!string.IsNullOrEmpty(clientAppUrl) && !corsOrigins.Contains(clientAppUrl))
+    corsOrigins.Add(clientAppUrl);
+// Additional origins from config (semicolon-separated)
+var extraOrigins = builder.Configuration["CorsOrigins"];
+if (!string.IsNullOrEmpty(extraOrigins))
+{
+    foreach (var o in extraOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        if (!corsOrigins.Contains(o)) corsOrigins.Add(o);
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Allow localhost for development and production frontend
-        policy.WithOrigins(
-                  "http://localhost:3000", "http://localhost:3001", "http://localhost:3002",
-                  "https://app.deviny.me")
+        policy.WithOrigins(corsOrigins.ToArray())
               .SetIsOriginAllowed(origin =>
                   origin.StartsWith("http://localhost:") ||
-                  origin == "https://app.deviny.me")
+                  corsOrigins.Contains(origin))
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()

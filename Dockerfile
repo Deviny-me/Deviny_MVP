@@ -12,5 +12,5 @@ WORKDIR /app
 COPY --from=build /app/out ./
 RUN mkdir -p /app/uploads
 
-EXPOSE 5000
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "Deviny.API.dll"]

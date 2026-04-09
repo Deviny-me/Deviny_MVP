@@ -23,6 +23,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres
+      ClientAppUrl: https://app.deviny.me
+      CorsOrigins: "https://app.deviny.me;https://deviny.me;https://www.deviny.me"
+      FileStorage__BaseUrl: https://api.deviny.me
     ports:
       - "8080:8080"
 

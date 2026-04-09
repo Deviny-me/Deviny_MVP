@@ -321,7 +321,9 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(new { message = ex.Message });
+            // Log the real error but don't expose internal details to the client
+            Console.Error.WriteLine($"Login error: {ex.GetType().Name}: {ex.Message}");
+            return StatusCode(500, new { message = "An internal error occurred. Please try again later." });
         }
     }
 

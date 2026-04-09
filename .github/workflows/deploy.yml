@@ -24,4 +24,13 @@ jobs:
             echo "Rebuilding containers..."
             docker compose -p deviny -f docker-compose.deviny.yml up -d --build --pull missing
 
+            echo "Waiting for Postgres to be ready..."
+            sleep 5
+
+            echo "Ensuring Postgres password is correct..."
+            docker exec deviny-postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';" || true
+
+            echo "Restarting API to pick up DB connection..."
+            docker restart deviny_api
+
             echo "Success!"
