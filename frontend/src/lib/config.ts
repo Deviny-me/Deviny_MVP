@@ -76,6 +76,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
   let response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   // If unauthorized, try to refresh token and retry
@@ -99,6 +100,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
       response = await fetch(url, {
         ...options,
         headers: retryHeaders,
+        credentials: 'include',
       });
     } else {
       // Redirect to login if refresh failed

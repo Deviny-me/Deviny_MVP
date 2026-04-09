@@ -63,6 +63,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        credentials: 'include',
       })
 
       if (response.ok) {
@@ -75,6 +76,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
+            credentials: 'include',
           })
           if (levelResponse.ok) {
             levelData = await levelResponse.json()

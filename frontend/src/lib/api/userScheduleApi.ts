@@ -8,6 +8,12 @@ import type {
 } from '@/types/schedule';
 import { API_URL, getAuthHeader } from '@/lib/config';
 
+const authHeaders = () => ({ headers: getAuthHeader(), credentials: 'include' as RequestCredentials });
+const authJsonHeaders = () => ({
+  headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+  credentials: 'include' as RequestCredentials,
+});
+
 export const userScheduleApi = {
   async getEvents(query?: GetEventsQuery): Promise<ScheduleEvent[]> {
     const params = new URLSearchParams();
@@ -16,7 +22,7 @@ export const userScheduleApi = {
 
     const response = await fetch(
       `${API_URL}/user/me/schedule/events?${params}`,
-      { headers: getAuthHeader() }
+      authHeaders()
     );
 
     if (!response.ok) throw new Error('Failed to fetch events');
@@ -26,7 +32,7 @@ export const userScheduleApi = {
   async getEvent(id: string): Promise<ScheduleEvent> {
     const response = await fetch(
       `${API_URL}/user/me/schedule/events/${id}`,
-      { headers: getAuthHeader() }
+      authHeaders()
     );
 
     if (!response.ok) throw new Error('Failed to fetch event');
@@ -36,10 +42,7 @@ export const userScheduleApi = {
   async createEvent(data: CreateScheduleEventRequest): Promise<ScheduleEvent> {
     const response = await fetch(`${API_URL}/user/me/schedule/events`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeader(),
-      },
+      ...authJsonHeaders(),
       body: JSON.stringify(data),
     });
 
@@ -55,10 +58,7 @@ export const userScheduleApi = {
       `${API_URL}/user/me/schedule/events/${id}/reschedule`,
       {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeader(),
-        },
+        ...authJsonHeaders(),
         body: JSON.stringify(data),
       }
     );
@@ -75,10 +75,7 @@ export const userScheduleApi = {
       `${API_URL}/user/me/schedule/events/${id}`,
       {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeader(),
-        },
+        ...authJsonHeaders(),
         body: JSON.stringify(data),
       }
     );
@@ -95,7 +92,7 @@ export const userScheduleApi = {
       `${API_URL}/user/me/schedule/events/${id}`,
       {
         method: 'DELETE',
-        headers: getAuthHeader(),
+        ...authHeaders(),
       }
     );
 
@@ -107,7 +104,7 @@ export const userScheduleApi = {
       `${API_URL}/user/me/schedule/events/${id}/start-call`,
       {
         method: 'POST',
-        headers: getAuthHeader(),
+        ...authHeaders(),
       }
     );
 
@@ -121,7 +118,7 @@ export const userScheduleApi = {
 
     const response = await fetch(
       `${API_URL}/user/me/schedule/stats?${params}`,
-      { headers: getAuthHeader() }
+      authHeaders()
     );
 
     if (!response.ok) throw new Error('Failed to fetch stats');

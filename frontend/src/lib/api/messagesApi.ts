@@ -60,6 +60,7 @@ export const messagesApi = {
     const response = await fetch(`${API_URL}/chat/files/upload`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'include',
       body: formData,
     })
     if (!response.ok) {
