@@ -91,7 +91,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 // Support SignalR token from query string
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    (path.StartsWithSegments("/hubs") || path.StartsWithSegments("/api/hubs")))
                 {
                     context.Token = accessToken;
                 }
@@ -202,5 +203,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat").RequireCors("AllowFrontend");
+app.MapHub<ChatHub>("/api/hubs/chat").RequireCors("AllowFrontend");
 
 app.Run();
