@@ -21,6 +21,14 @@ jobs:
             echo "Pulling latest changes..."
             git pull origin master
 
+            # Ensure nginx config supports WebSocket for SignalR
+            echo "Updating nginx config for WebSocket support..."
+            if [ -f "nginx/api.deviny.me.conf" ]; then
+              cp nginx/api.deviny.me.conf /etc/nginx/sites-available/api.deviny.me
+              ln -sf /etc/nginx/sites-available/api.deviny.me /etc/nginx/sites-enabled/api.deviny.me
+              nginx -t && systemctl reload nginx && echo "Nginx updated."
+            fi
+
             echo "Rebuilding containers..."
             docker compose -p deviny -f docker-compose.deviny.yml up -d --build --pull missing
 
