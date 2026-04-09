@@ -28,7 +28,14 @@ jobs:
             sleep 5
 
             echo "Ensuring Postgres password is correct..."
-            docker exec deviny-postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';" || true
+            docker exec deviny-postgres psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';" 2>/dev/null \
+              || docker exec -e PGPASSWORD=postgres deviny-postgres psql -U postgres -c "SELECT 1;" 2>/dev/null \
+              || (echo "Password reset failed, recreating DB volume..." && \
+                  docker compose -p deviny -f docker-compose.deviny.yml down -v && \
+                  docker compose -p deviny -f docker-compose.deviny.yml up -d --build)
+
+            echo "Waiting for services to stabilize..."
+            sleep 5
 
             echo "Restarting API to pick up DB connection..."
             docker restart deviny_api
