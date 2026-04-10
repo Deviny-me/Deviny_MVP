@@ -513,7 +513,6 @@ export default function ChatInbox() {
 
     pc.ontrack = (event) => {
       console.log('[WebRTC] ontrack fired:', event.track.kind, 'readyState:', event.track.readyState, 'muted:', event.track.muted)
-      // Some browsers may fire ontrack without associating streams
       if (event.streams[0]) {
         event.streams[0].getTracks().forEach(track => {
           const exists = remoteStream.getTracks().some(t => t.id === track.id)
@@ -525,24 +524,34 @@ export default function ChatInbox() {
         remoteStream.addTrack(event.track)
       }
       console.log('[WebRTC] Remote stream tracks:', remoteStream.getTracks().map(t => `${t.kind}:${t.readyState}:muted=${t.muted}`))
-      // Assign stream to media elements and explicitly play (required for Chrome autoplay policy)
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream
-        remoteVideoRef.current.play().catch(e => console.warn('[WebRTC] Remote video play blocked:', e))
-      }
-      if (remoteAudioRef.current) {
-        remoteAudioRef.current.srcObject = remoteStream
-        remoteAudioRef.current.play().catch(e => console.warn('[WebRTC] Remote audio play blocked:', e))
-      }
+      // Don't re-assign srcObject here — callback refs and the useEffect handle it.
+      // Don't call play() here — it causes AbortError when ontrack fires multiple times.
       setCallStatus('connected')
+    }
+
+    // Play remote media once ICE connection is established and media can flow
+    const playRemoteMedia = () => {
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.play().catch(e => console.warn('[WebRTC] Remote audio play failed:', e))
+      }
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.play().catch(e => console.warn('[WebRTC] Remote video play failed:', e))
+      }
     }
 
     pc.oniceconnectionstatechange = () => {
       console.log('[WebRTC] ICE connection state:', pc.iceConnectionState)
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        // Media can now flow — trigger playback
+        playRemoteMedia()
+      }
     }
 
     pc.onconnectionstatechange = () => {
       console.log('[WebRTC] Connection state:', pc.connectionState)
+      if (pc.connectionState === 'connected') {
+        playRemoteMedia()
+      }
       if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
         clearCallMedia()
       }
