@@ -46,6 +46,8 @@ services:
       DOTNET_GCHeapHardLimit: 0x40000000
     ports:
       - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
     deploy:
       resources:
         limits:
@@ -53,3 +55,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
