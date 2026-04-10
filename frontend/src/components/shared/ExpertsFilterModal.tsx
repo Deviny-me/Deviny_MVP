@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
-import { getCountries, getCitiesForCountry, translateCityName } from '@/lib/data/countries'
+import { getCountries, getCitiesForCountry } from '@/lib/data/countries'
 import type { ExpertsFilterParams } from '@/lib/api/trainersApi'
 
 interface ExpertsFilterModalProps {
@@ -130,8 +130,8 @@ export function ExpertsFilterModal({ isOpen, onClose, onApply, currentFilters }:
                 >
                   <option value="">{t('allCities')}</option>
                   {cities.map((c) => (
-                    <option key={c} value={c}>
-                      {translateCityName(c, language)}
+                    <option key={c.value} value={c.value}>
+                      {c.label}
                     </option>
                   ))}
                 </select>
