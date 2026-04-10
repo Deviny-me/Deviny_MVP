@@ -7,27 +7,49 @@ services:
       POSTGRES_DB: DevinyDB
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    shm_size: '128mb'
+    command: >
+      postgres
+      -c shared_buffers=128MB
+      -c max_connections=60
+      -c work_mem=4MB
+      -c maintenance_work_mem=64MB
+      -c effective_cache_size=256MB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d DevinyDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   api:
     build:
       context: .
     container_name: deviny_api
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: always
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres;Pooling=true;Minimum Pool Size=2;Maximum Pool Size=50;Connection Idle Lifetime=300;Keepalive=30;Timeout=15
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=DevinyDB;Username=postgres;Password=postgres;Pooling=true;Minimum Pool Size=1;Maximum Pool Size=20;Connection Idle Lifetime=300;Keepalive=30;Timeout=30
       ClientAppUrl: https://app.deviny.me
       CorsOrigins: "https://app.deviny.me;https://deviny.me;https://www.deviny.me"
       FileStorage__BaseUrl: https://api.deviny.me
+      DOTNET_GCHeapHardLimit: 0x40000000
     ports:
       - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
 volumes:
   postgres_data:
