@@ -471,28 +471,28 @@ export default function ChatInbox() {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
         {
-          urls: 'turn:a.relay.metered.ca:80',
-          username: 'e8dd65b92f6b1f4e0f28fa30',
-          credential: 'uWdJjTvhMVeSNJka',
+          urls: 'stun:deviny.metered.live:80',
         },
         {
-          urls: 'turn:a.relay.metered.ca:80?transport=tcp',
-          username: 'e8dd65b92f6b1f4e0f28fa30',
-          credential: 'uWdJjTvhMVeSNJka',
+          urls: 'turn:deviny.metered.live:80',
+          username: 'd8737c92a2465bc58996d30e',
+          credential: 'xUMUEBHKIWMG3RUR',
         },
         {
-          urls: 'turn:a.relay.metered.ca:443',
-          username: 'e8dd65b92f6b1f4e0f28fa30',
-          credential: 'uWdJjTvhMVeSNJka',
+          urls: 'turn:deviny.metered.live:80?transport=tcp',
+          username: 'd8737c92a2465bc58996d30e',
+          credential: 'xUMUEBHKIWMG3RUR',
         },
         {
-          urls: 'turns:a.relay.metered.ca:443?transport=tcp',
-          username: 'e8dd65b92f6b1f4e0f28fa30',
-          credential: 'uWdJjTvhMVeSNJka',
+          urls: 'turn:deviny.metered.live:443',
+          username: 'd8737c92a2465bc58996d30e',
+          credential: 'xUMUEBHKIWMG3RUR',
+        },
+        {
+          urls: 'turns:deviny.metered.live:443?transport=tcp',
+          username: 'd8737c92a2465bc58996d30e',
+          credential: 'xUMUEBHKIWMG3RUR',
         },
       ],
     })
