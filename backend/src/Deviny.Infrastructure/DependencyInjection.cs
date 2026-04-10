@@ -16,14 +16,15 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContextPool<ApplicationDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
+                      .CommandTimeout(30)
                       .EnableRetryOnFailure(
-                          maxRetryCount: 10,
-                          maxRetryDelay: TimeSpan.FromSeconds(30),
-                          errorCodesToAdd: Array.Empty<string>()))
+                          maxRetryCount: 3,
+                          maxRetryDelay: TimeSpan.FromSeconds(5),
+                          errorCodesToAdd: null))
             .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
         
         // Configuration - IOptions pattern for strongly-typed settings
