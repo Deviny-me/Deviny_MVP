@@ -13,10 +13,13 @@ import {
   UserCheck,
   UserPlus,
   MapPin,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { trainersApi } from '@/lib/api/trainersApi'
+import { ExpertsFilterModal } from '@/components/shared/ExpertsFilterModal'
+import type { ExpertsFilterParams } from '@/lib/api/trainersApi'
 import { followsApi } from '@/lib/api/friendsApi'
 import { PublicTrainerDto } from '@/types/trainer'
 import { FriendDto } from '@/types/friend'
@@ -45,6 +48,9 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [filters, setFilters] = useState<ExpertsFilterParams>({})
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const activeFilterCount = [filters.country, filters.city, filters.gender, filters.specialization, filters.minRating && filters.minRating > 0 ? 'r' : ''].filter(Boolean).length
   const PAGE_SIZE = 20
 
   useEffect(() => {
@@ -69,13 +75,13 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
     }
 
     fetchData()
-  }, [])
+  }, [filters])
 
   const loadMore = async () => {
     try {
       setLoadingMore(true)
       const nextPage = page + 1
-      const data = await trainersApi.getAll(nextPage, PAGE_SIZE)
+      const data = await trainersApi.getAll(nextPage, PAGE_SIZE, filters)
       setTrainers(prev => [...prev, ...data.items])
       setPage(nextPage)
       setHasMore(trainers.length + data.items.length < data.totalCount)
@@ -90,7 +96,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
     const fetchData = async () => {
       try {
         const [data, followingData] = await Promise.all([
-          trainersApi.getAll(1, PAGE_SIZE),
+          trainersApi.getAll(1, PAGE_SIZE, filters),
           followsApi.getMyFollowing(1, 100).catch(() => ({ items: [] as FriendDto[], totalCount: 0, page: 1, pageSize: 100 })),
         ])
         setTrainers(data.items)
@@ -160,6 +166,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
   }
 
   return (
+    <>
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div>
@@ -167,16 +174,32 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
         <p className="text-muted-foreground">{t('description')}</p>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder={t('searchPlaceholder')}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full bg-surface-2 border border-border-subtle rounded-xl pl-12 pr-4 py-3 text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
-        />
+      {/* Search + Filter */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder={t('searchPlaceholder')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={`w-full bg-surface-2 border border-border-subtle rounded-xl pl-12 pr-4 py-3 text-foreground placeholder:text-faint-foreground focus:outline-none ${accent.focusBorder}`}
+          />
+        </div>
+        <button
+          onClick={() => setShowFilterModal(true)}
+          className="relative flex items-center justify-center w-12 h-12 bg-surface-2 border border-border-subtle rounded-xl hover:border-border transition-colors shrink-0"
+        >
+          <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
+          {activeFilterCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+              style={{ background: accent.primary }}
+            >
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Role Filter */}
@@ -344,5 +367,13 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
         </div>
       )}
     </div>
+
+    <ExpertsFilterModal
+      isOpen={showFilterModal}
+      onClose={() => setShowFilterModal(false)}
+      onApply={setFilters}
+      currentFilters={filters}
+    />
+    </>
   )
 }

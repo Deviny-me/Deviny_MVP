@@ -229,7 +229,8 @@
       "resetting": "Sıfırlanır...",
       "resetFailed": "Şifrə sıfırlana bilmədi",
       "successTitle": "Şifrə sıfırlandı!",
-      "successMessage": "Şifrəniz uğurla dəyişdirildi. İndi yeni şifrə ilə daxil ola bilərsiniz."
+      "successMessage": "Şifrəniz uğurla dəyişdirildi. İndi yeni şifrə ilə daxil ola bilərsiniz.",
+      "accountNotFound": "Bu email ünvanı ilə hesab tapılmadı"
     }
   },
 
@@ -832,7 +833,24 @@
     "activityWillAppear": "Müştəri fəaliyyəti burada görünəcək",
     "topPrograms": "Top proqramlar",
     "noPrograms": "Hələ proqramınız yoxdur",
-    "viewAllPrograms": "Bütün proqramlara bax"
+    "viewAllPrograms": "Bütün proqramlara bax",
+    "title": "İdarə Paneli",
+    "totalStudents": "Ümumi Tələbələr",
+    "totalPrograms": "Proqramlarım",
+    "monthlySales": "Aylıq Satışlar",
+    "tierDistribution": "Səviyyə Paylanması",
+    "monthlyStudents": "Ayda Yeni Tələbələr",
+    "programPerformance": "Proqram Performansı",
+    "recentStudents": "Son Tələbələr",
+    "program": "Proqram",
+    "type": "Növ",
+    "students": "Tələbələr",
+    "sales": "Satışlar",
+    "newStudents": "Yeni Tələbələr",
+    "noSalesYet": "Hələ satış məlumatı yoxdur. Satışlarınız burada görünəcək.",
+    "noStudentsYet": "Hələ tələbə yoxdur. Proqramlarınızı aldıqdan sonra burada görünəcəklər.",
+    "noProgramsYet": "Hələ proqram yoxdur. Başlamaq üçün ilk proqramınızı yaradın.",
+    "retry": "Yenidən Cəhd Edin"
   },
 
   "clients": {
@@ -883,7 +901,14 @@
     "streakChallengesDesc": "Seriyanızı davam etdirin",
     "exclusiveRewards": "Eksklüziv Mükafatlar",
     "exclusiveRewardsDesc": "Unikal nişanlar və bonuslar",
-    "challengeTypes": "Çağırış Növləri"
+    "challengeTypes": "Çağırış Növləri",
+    "noChallenges": "Mövcud çağırış yoxdur",
+    "checkBackLater": "Yeni çağırışlar üçün sonra yoxlayın!",
+    "active": "Aktiv",
+    "completed": "Tamamlanmış",
+    "progress": "İrəliləyiş",
+    "reward": "Mükafat:",
+    "done": "Tamamlandı"
   },
 
   "leaderboards": {
@@ -1010,7 +1035,24 @@
     "filterTrainers": "Məşqçilər",
     "filterNutritionists": "Dietoloqlar",
     "loadMore": "Daha çox yüklə",
-    "loading": "Yüklənir..."
+    "loading": "Yüklənir...",
+    "filter": {
+      "title": "Filtrlər",
+      "reset": "Sıfırla",
+      "apply": "Filtrləri tətbiq et",
+      "country": "Ölkə",
+      "allCountries": "Bütün ölkələr",
+      "city": "Şəhər",
+      "allCities": "Bütün şəhərlər",
+      "gender": "Cins",
+      "anyGender": "Hamısı",
+      "male": "Kişi",
+      "female": "Qadın",
+      "specialization": "İxtisas",
+      "specializationPlaceholder": "məs. Yoqa, Boks...",
+      "minRating": "Minimum reytinq",
+      "any": "Hamısı"
+    }
   },
 
   "friends": {
@@ -1218,7 +1260,22 @@
     "reviewPlaceholder": "Bu proqram haqqında təcrübənizi paylaşın... (isteğe bağlı)",
     "submitReview": "Rəy göndər",
     "reviewSuccess": "Rəyiniz uğurla göndərildi!",
-    "noReviews": "Hələ rəy yoxdur. İlk rəy yazan siz olun!"
+    "noReviews": "Hələ rəy yoxdur. İlk rəy yazan siz olun!",
+    "filter": {
+      "title": "Proqramları filtrləyin",
+      "reset": "Sıfırla",
+      "apply": "Tətbiq et",
+      "minRating": "Minimum reytinq",
+      "any": "İstənilən",
+      "priceRange": "Qiymət aralığı",
+      "minPrice": "Min",
+      "maxPrice": "Maks",
+      "programTier": "Proqram paketi",
+      "allTiers": "Hamısı",
+      "basic": "Əsas",
+      "standard": "Standart",
+      "pro": "Pro"
+    }
   },
 
   "userRightSidebar": {
@@ -1252,38 +1309,6 @@
     "xpReward": "XP"
   },
 
-  "challenges": {
-    "title": "Çağırışlar",
-    "noChallenges": "Mövcud çağırış yoxdur",
-    "checkBackLater": "Yeni çağırışlar üçün sonra yoxlayın!",
-    "active": "Aktiv",
-    "completed": "Tamamlanmış",
-    "progress": "İrəliləyiş",
-    "reward": "Mükafat:",
-    "done": "Tamamlandı"
-  },
-
-  "dashboard": {
-    "title": "İdarə Paneli",
-    "subtitle": "Tələbələriniz, proqramlarınız və satış performansınızın icmalı",
-    "totalStudents": "Ümumi Tələbələr",
-    "programsSold": "Satılan Proqramlar",
-    "totalPrograms": "Proqramlarım",
-    "monthlySales": "Aylıq Satışlar",
-    "tierDistribution": "Səviyyə Paylanması",
-    "monthlyStudents": "Ayda Yeni Tələbələr",
-    "programPerformance": "Proqram Performansı",
-    "recentStudents": "Son Tələbələr",
-    "program": "Proqram",
-    "type": "Növ",
-    "students": "Tələbələr",
-    "sales": "Satışlar",
-    "newStudents": "Yeni Tələbələr",
-    "noSalesYet": "Hələ satış məlumatı yoxdur. Satışlarınız burada görünəcək.",
-    "noStudentsYet": "Hələ tələbə yoxdur. Proqramlarınızı aldıqdan sonra burada görünəcəklər.",
-    "noProgramsYet": "Hələ proqram yoxdur. Başlamaq üçün ilk proqramınızı yaradın.",
-    "retry": "Yenidən Cəhd Edin"
-  },
   "profileSettings": {
     "title": "Profil Parametrləri",
     "subtitle": "Profil məlumatlarınızı idarə edin",

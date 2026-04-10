@@ -229,7 +229,8 @@
       "resetting": "Сброс...",
       "resetFailed": "Не удалось сбросить пароль",
       "successTitle": "Пароль сброшен!",
-      "successMessage": "Ваш пароль успешно изменён. Теперь вы можете войти с новым паролем."
+      "successMessage": "Ваш пароль успешно изменён. Теперь вы можете войти с новым паролем.",
+      "accountNotFound": "Аккаунт с таким email не найден"
     }
   },
 
@@ -832,7 +833,24 @@
     "activityWillAppear": "Активность клиентов будет отображаться здесь",
     "topPrograms": "Топ программы",
     "noPrograms": "У вас пока нет программ",
-    "viewAllPrograms": "Смотреть все программы"
+    "viewAllPrograms": "Смотреть все программы",
+    "title": "Панель управления",
+    "totalStudents": "Всего учеников",
+    "totalPrograms": "Мои программы",
+    "monthlySales": "Продажи по месяцам",
+    "tierDistribution": "Распределение по тарифам",
+    "monthlyStudents": "Новые ученики по месяцам",
+    "programPerformance": "Эффективность программ",
+    "recentStudents": "Последние ученики",
+    "program": "Программа",
+    "type": "Тип",
+    "students": "Ученики",
+    "sales": "Продажи",
+    "newStudents": "Новые ученики",
+    "noSalesYet": "Данных о продажах пока нет. Ваши продажи появятся здесь.",
+    "noStudentsYet": "Учеников пока нет. Они появятся после покупки ваших программ.",
+    "noProgramsYet": "Программ пока нет. Создайте первую программу, чтобы начать.",
+    "retry": "Попробовать снова"
   },
 
   "clients": {
@@ -883,7 +901,14 @@
     "streakChallengesDesc": "Поддерживайте свою серию",
     "exclusiveRewards": "Эксклюзивные награды",
     "exclusiveRewardsDesc": "Уникальные значки и бонусы",
-    "challengeTypes": "Типы челленджей"
+    "challengeTypes": "Типы челленджей",
+    "noChallenges": "Нет доступных челленджей",
+    "checkBackLater": "Загляните позже за новыми челленджами!",
+    "active": "Активные",
+    "completed": "Завершённые",
+    "progress": "Прогресс",
+    "reward": "Награда:",
+    "done": "Выполнено"
   },
 
   "leaderboards": {
@@ -1010,7 +1035,24 @@
     "filterTrainers": "Тренеры",
     "filterNutritionists": "Нутрициологи",
     "loadMore": "Загрузить ещё",
-    "loading": "Загрузка..."
+    "loading": "Загрузка...",
+    "filter": {
+      "title": "Фильтры",
+      "reset": "Сбросить",
+      "apply": "Применить фильтры",
+      "country": "Страна",
+      "allCountries": "Все страны",
+      "city": "Город",
+      "allCities": "Все города",
+      "gender": "Пол",
+      "anyGender": "Любой",
+      "male": "Мужской",
+      "female": "Женский",
+      "specialization": "Специализация",
+      "specializationPlaceholder": "напр. Йога, Бокс...",
+      "minRating": "Минимальный рейтинг",
+      "any": "Любой"
+    }
   },
 
   "friends": {
@@ -1218,7 +1260,22 @@
     "reviewPlaceholder": "Поделитесь опытом использования программы... (необязательно)",
     "submitReview": "Отправить отзыв",
     "reviewSuccess": "Ваш отзыв успешно отправлен!",
-    "noReviews": "Пока нет отзывов. Будьте первым!"
+    "noReviews": "Пока нет отзывов. Будьте первым!",
+    "filter": {
+      "title": "Фильтр программ",
+      "reset": "Сбросить",
+      "apply": "Применить",
+      "minRating": "Минимальный рейтинг",
+      "any": "Любой",
+      "priceRange": "Диапазон цены",
+      "minPrice": "Мин",
+      "maxPrice": "Макс",
+      "programTier": "Пакет программы",
+      "allTiers": "Все",
+      "basic": "Базовый",
+      "standard": "Стандарт",
+      "pro": "Pro"
+    }
   },
 
   "userRightSidebar": {
@@ -1252,38 +1309,6 @@
     "xpReward": "XP"
   },
 
-  "challenges": {
-    "title": "Челленджи",
-    "noChallenges": "Нет доступных челленджей",
-    "checkBackLater": "Загляните позже за новыми челленджами!",
-    "active": "Активные",
-    "completed": "Завершённые",
-    "progress": "Прогресс",
-    "reward": "Награда:",
-    "done": "Выполнено"
-  },
-
-  "dashboard": {
-    "title": "Панель управления",
-    "subtitle": "Обзор ваших учеников, программ и продаж",
-    "totalStudents": "Всего учеников",
-    "programsSold": "Продано программ",
-    "totalPrograms": "Мои программы",
-    "monthlySales": "Продажи по месяцам",
-    "tierDistribution": "Распределение по тарифам",
-    "monthlyStudents": "Новые ученики по месяцам",
-    "programPerformance": "Эффективность программ",
-    "recentStudents": "Последние ученики",
-    "program": "Программа",
-    "type": "Тип",
-    "students": "Ученики",
-    "sales": "Продажи",
-    "newStudents": "Новые ученики",
-    "noSalesYet": "Данных о продажах пока нет. Ваши продажи появятся здесь.",
-    "noStudentsYet": "Учеников пока нет. Они появятся после покупки ваших программ.",
-    "noProgramsYet": "Программ пока нет. Создайте первую программу, чтобы начать.",
-    "retry": "Попробовать снова"
-  },
   "profileSettings": {
     "title": "Настройки профиля",
     "subtitle": "Управление информацией профиля",

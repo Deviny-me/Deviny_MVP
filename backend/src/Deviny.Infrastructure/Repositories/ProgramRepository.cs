@@ -112,11 +112,37 @@ public class ProgramRepository : IProgramRepository
             .ToListAsync();
     }
 
-    public async Task<(List<ProgramWithStatsDto> Items, int TotalCount)> GetAllPublicWithStatsPagedAsync(int page, int pageSize)
+    public async Task<(List<ProgramWithStatsDto> Items, int TotalCount)> GetAllPublicWithStatsPagedAsync(int page, int pageSize,
+        decimal? minPrice = null, decimal? maxPrice = null, double? minRating = null, string? tier = null, int? minSales = null)
     {
         var query = _context.TrainingPrograms
             .AsNoTracking()
             .Where(p => !p.IsDeleted && p.IsPublic);
+
+        // Price filters
+        if (minPrice.HasValue)
+            query = query.Where(p => p.Price >= minPrice.Value
+                || (p.StandardPrice != null && p.StandardPrice >= minPrice.Value)
+                || (p.ProPrice != null && p.ProPrice >= minPrice.Value));
+        if (maxPrice.HasValue)
+            query = query.Where(p => p.Price <= maxPrice.Value);
+
+        // Tier filter
+        if (!string.IsNullOrEmpty(tier))
+        {
+            if (tier.Equals("Standard", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(p => p.StandardPrice != null);
+            else if (tier.Equals("Pro", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(p => p.ProPrice != null);
+        }
+
+        // Rating filter (DB-level)
+        if (minRating.HasValue && minRating.Value > 0)
+            query = query.Where(p => p.Reviews.Any() && p.Reviews.Average(r => (double)r.Rating) >= minRating.Value);
+
+        // Sales filter (DB-level)
+        if (minSales.HasValue && minSales.Value > 0)
+            query = query.Where(p => p.Purchases.Count(pu => pu.Status == ProgramPurchaseStatus.Active) >= minSales.Value);
 
         var totalCount = await query.CountAsync();
 

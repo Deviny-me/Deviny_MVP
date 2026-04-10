@@ -25,6 +25,7 @@ public class AuthController : ControllerBase
     private readonly IPasswordHasher _passwordHasher;
     private readonly EmailSettings _emailSettings;
     private readonly IWebHostEnvironment _env;
+    private readonly ILogger<AuthController> _logger;
 
     public AuthController(
         LoginCommandHandler loginHandler,
@@ -35,7 +36,8 @@ public class AuthController : ControllerBase
         IEmailService emailService,
         IPasswordHasher passwordHasher,
         IOptions<EmailSettings> emailSettings,
-        IWebHostEnvironment env)
+        IWebHostEnvironment env,
+        ILogger<AuthController> logger)
     {
         _loginHandler = loginHandler;
         _userRepository = userRepository;
@@ -46,6 +48,7 @@ public class AuthController : ControllerBase
         _passwordHasher = passwordHasher;
         _emailSettings = emailSettings.Value;
         _env = env;
+        _logger = logger;
     }
 
     private CookieOptions CreateRefreshCookieOptions()
@@ -168,8 +171,7 @@ public class AuthController : ControllerBase
             var user = await _userRepository.GetByEmailAsync(request.Email);
             if (user == null)
             {
-                // Don't reveal if email exists or not for security
-                return Ok(new { message = "OTP_SENT_IF_EXISTS" });
+                return NotFound(new { message = "ACCOUNT_NOT_FOUND" });
             }
 
             // Invalidate any existing password reset OTPs for this email
@@ -330,8 +332,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log the real error but don't expose internal details to the client
-            Console.Error.WriteLine($"Login error: {ex.GetType().Name}: {ex.Message}");
+            _logger.LogError(ex, "Login failed for email: {Email}", request.Email);
             return StatusCode(500, new { message = "An internal error occurred. Please try again later." });
         }
     }

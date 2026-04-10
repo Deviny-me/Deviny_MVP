@@ -229,7 +229,8 @@
       "resetting": "Resetting...",
       "resetFailed": "Failed to reset password",
       "successTitle": "Password reset!",
-      "successMessage": "Your password has been successfully changed. You can now log in with your new password."
+      "successMessage": "Your password has been successfully changed. You can now log in with your new password.",
+      "accountNotFound": "No account found with this email address"
     }
   },
 
@@ -832,7 +833,25 @@
     "activityWillAppear": "Client activity will appear here",
     "topPrograms": "Top programs",
     "noPrograms": "You don't have any programs yet",
-    "viewAllPrograms": "View all programs"
+    "viewAllPrograms": "View all programs",
+    "title": "Dashboard",
+    "totalStudents": "Total Students",
+    "programsSold": "Programs Sold",
+    "totalPrograms": "My Programs",
+    "monthlySales": "Monthly Sales",
+    "tierDistribution": "Tier Distribution",
+    "monthlyStudents": "New Students per Month",
+    "programPerformance": "Program Performance",
+    "recentStudents": "Recent Students",
+    "program": "Program",
+    "type": "Type",
+    "students": "Students",
+    "sales": "Sales",
+    "newStudents": "New Students",
+    "noSalesYet": "No sales data yet. Your sales will appear here.",
+    "noStudentsYet": "No students yet. They will appear after purchasing your programs.",
+    "noProgramsYet": "No programs yet. Create your first program to get started.",
+    "retry": "Try Again"
   },
 
   "clients": {
@@ -883,7 +902,14 @@
     "streakChallengesDesc": "Keep your streak going",
     "exclusiveRewards": "Exclusive Rewards",
     "exclusiveRewardsDesc": "Unique badges and bonuses",
-    "challengeTypes": "Challenge Types"
+    "challengeTypes": "Challenge Types",
+    "noChallenges": "No Challenges Available",
+    "checkBackLater": "Check back later for new challenges!",
+    "active": "Active",
+    "completed": "Completed",
+    "progress": "Progress",
+    "reward": "Reward:",
+    "done": "Done"
   },
 
   "leaderboards": {
@@ -1010,7 +1036,24 @@
     "filterTrainers": "Trainers",
     "filterNutritionists": "Nutritionists",
     "loadMore": "Load more",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "filter": {
+      "title": "Filters",
+      "reset": "Reset",
+      "apply": "Apply Filters",
+      "country": "Country",
+      "allCountries": "All countries",
+      "city": "City",
+      "allCities": "All cities",
+      "gender": "Gender",
+      "anyGender": "Any",
+      "male": "Male",
+      "female": "Female",
+      "specialization": "Specialization",
+      "specializationPlaceholder": "e.g. Yoga, Boxing...",
+      "minRating": "Minimum Rating",
+      "any": "Any"
+    }
   },
 
   "friends": {
@@ -1218,7 +1261,22 @@
     "reviewPlaceholder": "Share your experience with this program... (optional)",
     "submitReview": "Submit Review",
     "reviewSuccess": "Your review has been submitted successfully!",
-    "noReviews": "No reviews yet. Be the first to review!"
+    "noReviews": "No reviews yet. Be the first to review!",
+    "filter": {
+      "title": "Filter Programs",
+      "reset": "Reset",
+      "apply": "Apply Filters",
+      "minRating": "Minimum Rating",
+      "any": "Any",
+      "priceRange": "Price Range",
+      "minPrice": "Min",
+      "maxPrice": "Max",
+      "programTier": "Program Package",
+      "allTiers": "All",
+      "basic": "Basic",
+      "standard": "Standard",
+      "pro": "Pro"
+    }
   },
 
   "userRightSidebar": {
@@ -1252,38 +1310,6 @@
     "xpReward": "XP"
   },
 
-  "challenges": {
-    "title": "Challenges",
-    "noChallenges": "No Challenges Available",
-    "checkBackLater": "Check back later for new challenges!",
-    "active": "Active",
-    "completed": "Completed",
-    "progress": "Progress",
-    "reward": "Reward:",
-    "done": "Done"
-  },
-
-  "dashboard": {
-    "title": "Dashboard",
-    "subtitle": "Overview of your students, programs, and sales performance",
-    "totalStudents": "Total Students",
-    "programsSold": "Programs Sold",
-    "totalPrograms": "My Programs",
-    "monthlySales": "Monthly Sales",
-    "tierDistribution": "Tier Distribution",
-    "monthlyStudents": "New Students per Month",
-    "programPerformance": "Program Performance",
-    "recentStudents": "Recent Students",
-    "program": "Program",
-    "type": "Type",
-    "students": "Students",
-    "sales": "Sales",
-    "newStudents": "New Students",
-    "noSalesYet": "No sales data yet. Your sales will appear here.",
-    "noStudentsYet": "No students yet. They will appear after purchasing your programs.",
-    "noProgramsYet": "No programs yet. Create your first program to get started.",
-    "retry": "Try Again"
-  },
   "profileSettings": {
     "title": "Profile Settings",
     "subtitle": "Manage your profile information",

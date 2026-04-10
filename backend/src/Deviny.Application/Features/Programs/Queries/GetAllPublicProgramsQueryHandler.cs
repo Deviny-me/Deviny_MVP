@@ -20,7 +20,8 @@ public class GetAllPublicProgramsQueryHandler : IRequestHandler<GetAllPublicProg
 
     public async Task<PagedResponse<PublicProgramDto>> Handle(GetAllPublicProgramsQuery request, CancellationToken cancellationToken)
     {
-        var (items, totalCount) = await _programRepository.GetAllPublicWithStatsPagedAsync(request.Page, request.PageSize);
+        var (items, totalCount) = await _programRepository.GetAllPublicWithStatsPagedAsync(
+            request.Page, request.PageSize, request.MinPrice, request.MaxPrice, request.MinRating, request.Tier, request.MinSales);
 
         var dtos = items.Select(s => new PublicProgramDto
         {

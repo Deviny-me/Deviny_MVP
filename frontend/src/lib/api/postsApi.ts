@@ -1,4 +1,4 @@
-import { API_URL, getAuthHeader, fetchWithAuth } from '@/lib/config'
+import { API_URL, fetchWithAuth } from '@/lib/config'
 import { 
   PostDto, 
   UserPostsResponse, 
@@ -28,14 +28,9 @@ export const postsApi = {
       formData.append('caption', request.caption)
     }
 
-    const response = await fetch(`${API_URL}/me/posts/media`, {
+    const response = await fetchWithAuth(`${API_URL}/me/posts/media`, {
       method: 'POST',
-      headers: {
-        ...getAuthHeader(),
-        // Don't set Content-Type - browser will set it with boundary for multipart
-      },
       body: formData,
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -62,13 +57,8 @@ export const postsApi = {
       params.set('tab', tab)
     }
 
-    const response = await fetch(`${API_URL}/me/posts?${params}`, {
+    const response = await fetchWithAuth(`${API_URL}/me/posts?${params}`, {
       method: 'GET',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       signal,
     })
 
@@ -162,13 +152,8 @@ export const postsApi = {
       pageSize: pageSize.toString()
     })
 
-    const response = await fetch(`${API_URL}/feed?${params}`, {
+    const response = await fetchWithAuth(`${API_URL}/feed?${params}`, {
       method: 'GET',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -191,13 +176,8 @@ export const postsApi = {
       params.set('tab', tab)
     }
 
-    const response = await fetch(`${API_URL}/users/${userId}/posts?${params}`, {
+    const response = await fetchWithAuth(`${API_URL}/users/${userId}/posts?${params}`, {
       method: 'GET',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       signal,
     })
 
@@ -212,13 +192,8 @@ export const postsApi = {
    * Get a single post by ID.
    */
   async getPostById(postId: string): Promise<PostDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}`, {
       method: 'GET',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -240,13 +215,8 @@ export const postsApi = {
    * @returns updated PostStatsDto with fresh counts + viewer flags
    */
   async likePost(postId: string): Promise<PostStatsDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}/likes`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/likes`, {
       method: 'POST',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -266,13 +236,8 @@ export const postsApi = {
    * @returns updated PostStatsDto with fresh counts + viewer flags
    */
   async unlikePost(postId: string): Promise<PostStatsDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}/likes`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/likes`, {
       method: 'DELETE',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -300,13 +265,8 @@ export const postsApi = {
       pageSize: pageSize.toString()
     })
 
-    const response = await fetch(`${API_URL}/posts/${postId}/comments?${params}`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/comments?${params}`, {
       method: 'GET',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -320,14 +280,12 @@ export const postsApi = {
    * Add a comment to a post.
    */
   async addComment(postId: string, request: CreateCommentRequest): Promise<PostCommentDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/comments`, {
       method: 'POST',
       headers: {
-        ...getAuthHeader(),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -342,13 +300,8 @@ export const postsApi = {
    * Delete a comment (soft delete).
    */
   async deleteComment(commentId: string): Promise<void> {
-    const response = await fetch(`${API_URL}/comments/${commentId}`, {
+    const response = await fetchWithAuth(`${API_URL}/comments/${commentId}`, {
       method: 'DELETE',
-      headers: {
-        ...getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -365,14 +318,12 @@ export const postsApi = {
    * Repost (share) another user's post.
    */
   async repost(postId: string, request?: CreateRepostRequest): Promise<PostDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}/repost`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/repost`, {
       method: 'POST',
       headers: {
-        ...getAuthHeader(),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request || {}),
-      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -391,12 +342,8 @@ export const postsApi = {
    * @returns updated PostStatsDto for the original post.
    */
   async removeRepost(postId: string): Promise<PostStatsDto> {
-    const response = await fetch(`${API_URL}/posts/${postId}/repost`, {
+    const response = await fetchWithAuth(`${API_URL}/posts/${postId}/repost`, {
       method: 'DELETE',
-      headers: {
-        ...getAuthHeader(),
-      },
-      credentials: 'include',
     })
 
     if (!response.ok) {

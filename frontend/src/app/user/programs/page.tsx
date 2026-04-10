@@ -12,6 +12,7 @@ import {
   Dumbbell,
   Apple,
   MessageSquare,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
@@ -20,6 +21,8 @@ import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
+import { ProgramsFilterModal } from '@/components/shared/ProgramsFilterModal'
+import type { ProgramsFilterParams } from '@/lib/api/programsApi'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'Training' | 'Diet' | 'Consultation'
@@ -136,6 +139,14 @@ export default function ProgramsPage() {
   const [hasMoreTraining, setHasMoreTraining] = useState(false)
   const [hasMoreMeal, setHasMoreMeal] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [filters, setFilters] = useState<ProgramsFilterParams>({})
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const activeFilterCount = [
+    filters.minPrice != null ? 'p' : '',
+    filters.maxPrice != null ? 'p' : '',
+    filters.minRating && filters.minRating > 0 ? 'r' : '',
+    filters.tier ? 't' : '',
+  ].filter(Boolean).length
   const PAGE_SIZE = 20
 
   const loadAllPrograms = useCallback(async () => {
@@ -143,8 +154,8 @@ export default function ProgramsPage() {
       setIsLoading(true)
       setError(null)
       const [trainingRes, mealRes] = await Promise.all([
-        programsApi.getAllPublic(1, PAGE_SIZE),
-        mealProgramsApi.getAllPublic(1, PAGE_SIZE),
+        programsApi.getAllPublic(1, PAGE_SIZE, filters),
+        mealProgramsApi.getAllPublic(1, PAGE_SIZE, filters),
       ])
       setTrainingPrograms(trainingRes.items)
       setMealPrograms(mealRes.items)
@@ -157,7 +168,7 @@ export default function ProgramsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [filters])
 
   useRealtimeScopeRefresh(['programs', 'purchases'], () => {
     loadAllPrograms()
@@ -191,8 +202,8 @@ export default function ProgramsPage() {
       const nextMealPage = hasMoreMeal ? mealPage + 1 : mealPage
 
       const [trainingRes, mealRes] = await Promise.all([
-        hasMoreTraining ? programsApi.getAllPublic(nextTrainingPage, PAGE_SIZE) : null,
-        hasMoreMeal ? mealProgramsApi.getAllPublic(nextMealPage, PAGE_SIZE) : null,
+        hasMoreTraining ? programsApi.getAllPublic(nextTrainingPage, PAGE_SIZE, filters) : null,
+        hasMoreMeal ? mealProgramsApi.getAllPublic(nextMealPage, PAGE_SIZE, filters) : null,
       ])
 
       if (trainingRes) {
@@ -276,15 +287,31 @@ export default function ProgramsPage() {
 
         {/* Search and Filters */}
         <div className="bg-surface-3 rounded-xl border border-border p-4 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-faint-foreground" />
-            <input
-              type="text"
-              placeholder={t('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/50"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-faint-foreground" />
+              <input
+                type="text"
+                placeholder={t('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder-gray-500 focus:outline-none focus:border-[#0c8de6]/50"
+              />
+            </div>
+            <button
+              onClick={() => setShowFilterModal(true)}
+              className="relative flex items-center justify-center w-12 h-[42px] bg-background border border-border rounded-lg hover:border-[#0c8de6]/50 transition-colors shrink-0"
+            >
+              <SlidersHorizontal className="w-5 h-5 text-muted-foreground" />
+              {activeFilterCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                  style={{ background: '#0c8de6' }}
+                >
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -507,6 +534,12 @@ export default function ProgramsPage() {
         )}
       </div>
 
+      <ProgramsFilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={setFilters}
+        currentFilters={filters}
+      />
     </>
   )
 }

@@ -167,9 +167,16 @@ export default function ChatInbox() {
   const creatingConvRef = useRef(false)
   const deepLinkHandledRef = useRef(false)
   const startCallHandledRef = useRef(false)
+  const activeCallPeerIdRef = useRef<string | null>(null)
+  const activeCallConversationIdRef = useRef<string | null>(null)
+  const callStatusRef = useRef<'idle' | 'calling' | 'ringing' | 'connecting' | 'connected'>('idle')
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([])
 
-  // Keep ref in sync
+  // Keep refs in sync with state
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
+  useEffect(() => { activeCallPeerIdRef.current = activeCallPeerId }, [activeCallPeerId])
+  useEffect(() => { activeCallConversationIdRef.current = activeCallConversationId }, [activeCallConversationId])
+  useEffect(() => { callStatusRef.current = callStatus }, [callStatus])
 
   // ─── load conversations ───
 
@@ -418,6 +425,7 @@ export default function ChatInbox() {
     connectedAtRef.current = null
     callStartLoggedRef.current = false
     isCallInitiatorRef.current = false
+    pendingIceCandidatesRef.current = []
 
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close()
@@ -504,19 +512,20 @@ export default function ChatInbox() {
     }
 
     pc.ontrack = (event) => {
-      event.streams[0]?.getTracks().forEach(track => {
-        const exists = remoteStream.getTracks().some(t => t.id === track.id)
-        if (!exists) {
-          remoteStream.addTrack(track)
-        }
-      })
-      // Ensure media elements have the stream assigned (covers late-render)
-      if (remoteVideoRef.current && !remoteVideoRef.current.srcObject) {
-        remoteVideoRef.current.srcObject = remoteStream
+      // Some browsers may fire ontrack without associating streams
+      if (event.streams[0]) {
+        event.streams[0].getTracks().forEach(track => {
+          const exists = remoteStream.getTracks().some(t => t.id === track.id)
+          if (!exists) {
+            remoteStream.addTrack(track)
+          }
+        })
+      } else {
+        remoteStream.addTrack(event.track)
       }
-      if (remoteAudioRef.current && !remoteAudioRef.current.srcObject) {
-        remoteAudioRef.current.srcObject = remoteStream
-      }
+      // Try to assign stream to media elements (may be null if UI not yet rendered)
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream
       setCallStatus('connected')
     }
 
@@ -696,6 +705,16 @@ export default function ChatInbox() {
       stream.getTracks().forEach(track => pc.addTrack(track, stream))
 
       await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer))
+      // Flush any ICE candidates that arrived before remote description was set
+      const pending = pendingIceCandidatesRef.current
+      pendingIceCandidatesRef.current = []
+      for (const candidate of pending) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate))
+        } catch (err) {
+          console.error('Failed to add queued ICE candidate', err)
+        }
+      }
       const answer = await pc.createAnswer()
       await pc.setLocalDescription(answer)
       await chatConnection.sendCallAnswer(incomingCall.conversationId, incomingCall.fromUserId, answer)
@@ -752,7 +771,7 @@ export default function ChatInbox() {
     const handleCallOffer = async (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: CallType; offer: RTCSessionDescriptionInit }) => {
       if (sameId(currentUserId, data.fromUserId)) return
 
-      if (callStatus !== 'idle') {
+      if (callStatusRef.current !== 'idle') {
         await chatConnection.endCall(data.conversationId, data.fromUserId, 'busy')
         return
       }
@@ -778,10 +797,22 @@ export default function ChatInbox() {
     }
 
     const handleCallAnswer = async (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => {
-      if (!peerConnectionRef.current || !sameId(data.fromUserId, activeCallPeerId)) return
-      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
+      if (!peerConnectionRef.current) return
+      // Use refs for latest values to avoid stale closure
+      if (activeCallPeerIdRef.current && !sameId(data.fromUserId, activeCallPeerIdRef.current)) return
+      if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
       try {
         await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(data.answer))
+        // Flush any ICE candidates that arrived before remote description was set
+        const pending = pendingIceCandidatesRef.current
+        pendingIceCandidatesRef.current = []
+        for (const candidate of pending) {
+          try {
+            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate))
+          } catch (err) {
+            console.error('Failed to add queued ICE candidate', err)
+          }
+        }
         setCallStatus('connected')
         if (outgoingCallTimeoutRef.current) {
           clearTimeout(outgoingCallTimeoutRef.current)
@@ -794,8 +825,13 @@ export default function ChatInbox() {
 
     const handleCallIce = async (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => {
       if (!peerConnectionRef.current) return
-      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
-      if (activeCallPeerId && !sameId(data.fromUserId, activeCallPeerId)) return
+      if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
+      if (activeCallPeerIdRef.current && !sameId(data.fromUserId, activeCallPeerIdRef.current)) return
+      // Queue ICE candidates if remote description is not yet set
+      if (!peerConnectionRef.current.remoteDescription) {
+        pendingIceCandidatesRef.current.push(data.candidate)
+        return
+      }
       try {
         await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(data.candidate))
       } catch (error) {
@@ -804,7 +840,7 @@ export default function ChatInbox() {
     }
 
     const handleCallEnded = (data: { conversationId: string; fromUserId: string; reason: string }) => {
-      if (activeCallConversationId && !sameId(data.conversationId, activeCallConversationId)) return
+      if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
       const reasonText = data.reason === 'rejected'
         ? 'Call declined.'
         : data.reason === 'busy'
@@ -828,7 +864,7 @@ export default function ChatInbox() {
       chatConnection.off('CallIceCandidate', handleCallIce)
       chatConnection.off('CallEnded', handleCallEnded)
     }
-  }, [activeCallConversationId, activeCallPeerId, callStatus, clearCallMedia, currentUserId, getLocalMedia])
+  }, [clearCallMedia, currentUserId, sendCallLogMessage])
 
   useEffect(() => {
     if (callStatus === 'connected' && activeCallConversationId && !callStartLoggedRef.current) {
@@ -866,6 +902,22 @@ export default function ChatInbox() {
       }
     }
   }, [activeCallConversationId, activeCallType, callStatus, sendCallLogMessage])
+
+  // Ensure media elements get streams assigned after the call UI renders.
+  // ontrack / createPeerConnection may fire before React renders the <audio>/<video> elements,
+  // so the refs are null at that point. This effect re-assigns once refs become available.
+  useEffect(() => {
+    if (callStatus === 'idle') return
+    if (localStreamRef.current && localVideoRef.current && !localVideoRef.current.srcObject) {
+      localVideoRef.current.srcObject = localStreamRef.current
+    }
+    if (remoteStreamRef.current && remoteVideoRef.current && !remoteVideoRef.current.srcObject) {
+      remoteVideoRef.current.srcObject = remoteStreamRef.current
+    }
+    if (remoteStreamRef.current && remoteAudioRef.current && !remoteAudioRef.current.srcObject) {
+      remoteAudioRef.current.srcObject = remoteStreamRef.current
+    }
+  }, [callStatus, activeCallType])
 
   useEffect(() => {
     return () => {

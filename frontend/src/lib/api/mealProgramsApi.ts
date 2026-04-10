@@ -1,6 +1,19 @@
 import { MealProgramDto, PublicMealProgramDto, CreateMealProgramRequest, UpdateMealProgramRequest } from '@/types/program';
 import { PagedResponse } from '@/types/pagination';
 import { API_URL, fetchWithAuth } from '@/lib/config';
+import type { ProgramsFilterParams } from '@/lib/api/programsApi';
+
+function buildProgramFilterQuery(filters?: ProgramsFilterParams): string {
+  if (!filters) return ''
+  const params = new URLSearchParams()
+  if (filters.minPrice != null) params.set('minPrice', filters.minPrice.toString())
+  if (filters.maxPrice != null) params.set('maxPrice', filters.maxPrice.toString())
+  if (filters.minRating != null && filters.minRating > 0) params.set('minRating', filters.minRating.toString())
+  if (filters.tier) params.set('tier', filters.tier)
+  if (filters.minSales != null && filters.minSales > 0) params.set('minSales', filters.minSales.toString())
+  const qs = params.toString()
+  return qs ? `&${qs}` : ''
+}
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -18,8 +31,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export const mealProgramsApi = {
   // Get all public meal programs (paginated)
-  getAllPublic: async (page = 1, pageSize = 20): Promise<PagedResponse<PublicMealProgramDto>> => {
-    const response = await fetchWithAuth(`${API_URL}/meal-programs?page=${page}&pageSize=${pageSize}`);
+  getAllPublic: async (page = 1, pageSize = 20, filters?: ProgramsFilterParams): Promise<PagedResponse<PublicMealProgramDto>> => {
+    const response = await fetchWithAuth(`${API_URL}/meal-programs?page=${page}&pageSize=${pageSize}${buildProgramFilterQuery(filters)}`);
     return handleResponse<PagedResponse<PublicMealProgramDto>>(response);
   },
 

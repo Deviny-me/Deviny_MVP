@@ -21,7 +21,8 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
 
     public async Task<PagedResponse<PublicMealProgramDto>> Handle(GetAllPublicMealProgramsQuery request, CancellationToken ct)
     {
-        var (programs, totalCount) = await _mealProgramRepository.GetAllPublicPagedAsync(request.Page, request.PageSize, ct);
+        var (programs, totalCount) = await _mealProgramRepository.GetAllPublicPagedAsync(
+            request.Page, request.PageSize, ct, request.MinPrice, request.MaxPrice, request.Tier);
 
         var dtos = programs.Select(p => new PublicMealProgramDto
         {
@@ -77,6 +78,16 @@ public class GetAllPublicMealProgramsQueryHandler : IRequestHandler<GetAllPublic
                 .FirstOrDefault()
         }).ToList();
 
-        return new PagedResponse<PublicMealProgramDto>(dtos, totalCount, request.Page, request.PageSize);
+        // Post-filter by rating and sales (computed in memory)
+        if (request.MinRating.HasValue && request.MinRating.Value > 0)
+            dtos = dtos.Where(d => d.AverageRating >= request.MinRating.Value).ToList();
+        if (request.MinSales.HasValue && request.MinSales.Value > 0)
+            dtos = dtos.Where(d => d.TotalPurchases >= request.MinSales.Value).ToList();
+
+        var filteredCount = (request.MinRating.HasValue && request.MinRating.Value > 0) || (request.MinSales.HasValue && request.MinSales.Value > 0)
+            ? dtos.Count
+            : totalCount;
+
+        return new PagedResponse<PublicMealProgramDto>(dtos, filteredCount, request.Page, request.PageSize);
     }
 }

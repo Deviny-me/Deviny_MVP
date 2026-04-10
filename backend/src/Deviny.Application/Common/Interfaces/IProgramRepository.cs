@@ -12,7 +12,8 @@ public interface IProgramRepository
     Task<List<TrainingProgram>> GetAllPublicAsync();
     Task<List<ProgramWithStatsDto>> GetByTrainerIdWithStatsAsync(Guid trainerId);
     Task<List<ProgramWithStatsDto>> GetAllPublicWithStatsAsync();
-    Task<(List<ProgramWithStatsDto> Items, int TotalCount)> GetAllPublicWithStatsPagedAsync(int page, int pageSize);
+    Task<(List<ProgramWithStatsDto> Items, int TotalCount)> GetAllPublicWithStatsPagedAsync(int page, int pageSize,
+        decimal? minPrice = null, decimal? maxPrice = null, double? minRating = null, string? tier = null, int? minSales = null);
     Task<ProgramWithStatsDto?> GetByIdPublicWithStatsAsync(Guid id);
     Task<ProgramWithStatsDto?> GetByCodeWithStatsAsync(string code);
     Task<ProgramWithStatsDto?> GetStatsForProgramAsync(Guid programId);
