@@ -7,7 +7,8 @@ public interface IMealProgramRepository
     Task<MealProgram?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<List<MealProgram>> GetByTrainerIdAsync(Guid trainerId, CancellationToken ct = default);
     Task<List<MealProgram>> GetAllPublicAsync(CancellationToken ct = default);
-    Task<(List<MealProgram> Items, int TotalCount)> GetAllPublicPagedAsync(int page, int pageSize, CancellationToken ct = default);
+    Task<(List<MealProgram> Items, int TotalCount)> GetAllPublicPagedAsync(int page, int pageSize, CancellationToken ct = default,
+        decimal? minPrice = null, decimal? maxPrice = null, string? tier = null);
     Task<MealProgram> CreateAsync(MealProgram program, CancellationToken ct = default);
     Task UpdateAsync(MealProgram program, CancellationToken ct = default);
     Task<bool> IsCodeUniqueAsync(string code, Guid? excludeId = null, CancellationToken ct = default);

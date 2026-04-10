@@ -1,7 +1,6 @@
 'use client'
 
 import { useUser } from '@/components/user/UserProvider'
-import { useLevel } from '@/components/level/LevelProvider'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useTheme } from '@/components/theme/ThemeProvider'
@@ -36,10 +35,8 @@ interface SettingsSection {
 
 export default function SettingsPage() {
   const t = useTranslations('userSettings')
-  const tc = useTranslations('common')
   const router = useRouter()
   const { user, logout } = useUser()
-  const { level } = useLevel()
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
   const isDarkMode = theme === 'dark'
@@ -130,28 +127,6 @@ export default function SettingsPage() {
         <div>
           <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('description')}</p>
-        </div>
-
-        {/* Profile Card */}
-        <div className="bg-surface-3 rounded-xl border border-border p-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0c8de6] to-[#0070c4] flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">
-                {user?.fullName?.charAt(0) || tc('user').charAt(0)}
-              </span>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground">{user?.fullName || tc('user')}</h3>
-              <p className="text-sm text-muted-foreground">{user?.email || 'user@example.com'}</p>
-              <p className="text-xs text-[#0c8de6] mt-1">Level {level?.currentLevel ?? user?.level ?? 1} • {level?.currentXp ?? user?.xp ?? 0} XP</p>
-            </div>
-            <button
-              onClick={() => router.push('/user/profile')}
-              className="px-4 py-2 border border-[#0c8de6] text-[#0c8de6] text-sm font-semibold rounded-lg hover:bg-[#0c8de6]/10 transition-colors"
-            >
-              {t('edit')}
-            </button>
-          </div>
         </div>
 
         {/* Settings Sections */}

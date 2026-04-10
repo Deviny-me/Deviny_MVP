@@ -431,7 +431,8 @@ export function ProfileSettingsContent({
             <input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              inputMode="numeric"
               className={`${inputClass} pl-10`}
               style={{ '--tw-ring-color': accent.primary } as React.CSSProperties}
               placeholder={t('phonePlaceholder')}
@@ -439,18 +440,6 @@ export function ProfileSettingsContent({
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('bio')}</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={3}
-            maxLength={1000}
-            className={`${inputClass} resize-none`}
-            style={{ '--tw-ring-color': accent.primary } as React.CSSProperties}
-            placeholder={t('bioPlaceholder')}
-          />
-        </div>
       </div>
 
       {/* Location */}
@@ -540,17 +529,6 @@ export function ProfileSettingsContent({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('aboutMe')}</label>
-            <textarea
-              value={about}
-              onChange={(e) => setAbout(e.target.value)}
-              rows={4}
-              className={`${inputClass} resize-none`}
-              style={{ '--tw-ring-color': accent.primary } as React.CSSProperties}
-              placeholder={t('aboutPlaceholder')}
-            />
-          </div>
         </div>
       )}
 

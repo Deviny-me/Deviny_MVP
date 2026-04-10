@@ -2,6 +2,26 @@ import { ProgramDto, CreateProgramRequest, UpdateProgramRequest, PublicProgramDt
 import { PagedResponse } from '@/types/pagination';
 import { API_URL, fetchWithAuth } from '@/lib/config';
 
+export interface ProgramsFilterParams {
+  minPrice?: number
+  maxPrice?: number
+  minRating?: number
+  tier?: string
+  minSales?: number
+}
+
+function buildProgramFilterQuery(filters?: ProgramsFilterParams): string {
+  if (!filters) return ''
+  const params = new URLSearchParams()
+  if (filters.minPrice != null) params.set('minPrice', filters.minPrice.toString())
+  if (filters.maxPrice != null) params.set('maxPrice', filters.maxPrice.toString())
+  if (filters.minRating != null && filters.minRating > 0) params.set('minRating', filters.minRating.toString())
+  if (filters.tier) params.set('tier', filters.tier)
+  if (filters.minSales != null && filters.minSales > 0) params.set('minSales', filters.minSales.toString())
+  const qs = params.toString()
+  return qs ? `&${qs}` : ''
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -18,8 +38,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export const programsApi = {
   // Get all public programs for browsing (paginated)
-  getAllPublic: async (page = 1, pageSize = 20): Promise<PagedResponse<PublicProgramDto>> => {
-    const response = await fetchWithAuth(`${API_URL}/programs?page=${page}&pageSize=${pageSize}`);
+  getAllPublic: async (page = 1, pageSize = 20, filters?: ProgramsFilterParams): Promise<PagedResponse<PublicProgramDto>> => {
+    const response = await fetchWithAuth(`${API_URL}/programs?page=${page}&pageSize=${pageSize}${buildProgramFilterQuery(filters)}`);
     return handleResponse<PagedResponse<PublicProgramDto>>(response);
   },
 

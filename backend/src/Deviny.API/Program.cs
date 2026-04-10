@@ -126,12 +126,15 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(corsOrigins.ToArray())
               .SetIsOriginAllowed(origin =>
-                  origin.StartsWith("http://localhost:") ||
-                  corsOrigins.Contains(origin))
+              {
+                  if (origin.StartsWith("http://localhost:")) return true;
+                  return corsOrigins.Any(o => string.Equals(o, origin, StringComparison.OrdinalIgnoreCase));
+              })
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
-              .WithExposedHeaders("Content-Disposition");
+              .WithExposedHeaders("Content-Disposition")
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 
@@ -148,6 +151,19 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+
+// Ensure CORS headers on all responses (including errors)
+app.Use(async (context, next) =>
+{
+    // For preflight OPTIONS requests that might bypass CORS middleware
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
 
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
@@ -201,6 +217,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseWebSockets();
 app.MapControllers();
 app.MapHub<ChatHub>("/hubs/chat").RequireCors("AllowFrontend");
 app.MapHub<ChatHub>("/api/hubs/chat").RequireCors("AllowFrontend");

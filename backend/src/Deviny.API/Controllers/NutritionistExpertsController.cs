@@ -42,7 +42,13 @@ public class NutritionistExpertsController : BaseApiController
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<PagedResponse<PublicTrainerDto>>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? country = null,
+        [FromQuery] string? city = null,
+        [FromQuery] string? gender = null,
+        [FromQuery] string? specialization = null,
+        [FromQuery] double? minRating = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
@@ -50,14 +56,29 @@ public class NutritionistExpertsController : BaseApiController
 
         var query = _context.TrainerProfiles
             .AsNoTracking()
+            .Include(tp => tp.User)
+            .Include(tp => tp.Specializations)
+                .ThenInclude(ts => ts.Specialization)
             .Where(tp => tp.User != null && tp.User.Role == UserRole.Nutritionist);
+
+        if (!string.IsNullOrWhiteSpace(country))
+            query = query.Where(tp => tp.User != null && tp.User.Country != null &&
+                EF.Functions.ILike(tp.User.Country, country));
+
+        if (!string.IsNullOrWhiteSpace(city))
+            query = query.Where(tp => tp.User != null && tp.User.City != null &&
+                EF.Functions.ILike(tp.User.City, city));
+
+        if (!string.IsNullOrWhiteSpace(gender) && Enum.TryParse<Domain.Enums.Gender>(gender, true, out var genderEnum))
+            query = query.Where(tp => tp.User != null && tp.User.Gender == genderEnum);
+
+        if (!string.IsNullOrWhiteSpace(specialization))
+            query = query.Where(tp => tp.Specializations.Any(s =>
+                s.Specialization != null && EF.Functions.ILike(s.Specialization.Name, $"%{specialization}%")));
 
         var totalCount = await query.CountAsync();
 
         var nutritionists = await query
-            .Include(tp => tp.User)
-            .Include(tp => tp.Specializations)
-                .ThenInclude(ts => ts.Specialization)
             .OrderByDescending(tp => tp.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

@@ -23,13 +23,19 @@ public class MealProgramsController : BaseApiController
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<PagedResponse<PublicMealProgramDto>>> GetAllPublic(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] double? minRating = null,
+        [FromQuery] string? tier = null,
+        [FromQuery] int? minSales = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
         if (pageSize > 100) pageSize = 100;
 
-        var query = new GetAllPublicMealProgramsQuery(page, pageSize);
+        var query = new GetAllPublicMealProgramsQuery(page, pageSize, minPrice, maxPrice, minRating, tier, minSales);
         var programs = await _mediator.Send(query);
         return Ok(programs);
     }

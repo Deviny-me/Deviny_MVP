@@ -43,9 +43,10 @@ export class ChatConnection {
 
     this.connection = new signalR.HubConnectionBuilder()
       .withUrl(`${MEDIA_BASE_URL}/hubs/chat`, {
-        accessTokenFactory: () => token,
-        skipNegotiation: true,
-        transport: signalR.HttpTransportType.WebSockets,
+        accessTokenFactory: () => {
+          // Always get the latest token
+          return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken') || ''
+        },
       })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (ctx) => {

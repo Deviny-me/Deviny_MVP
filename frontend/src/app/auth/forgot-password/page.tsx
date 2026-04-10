@@ -67,7 +67,12 @@ function ForgotPasswordContent() {
       await authService.forgotPassword(email)
       setStep('otp')
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('forgotPassword.sendFailed'))
+      const msg = err instanceof Error ? err.message : ''
+      if (msg === 'ACCOUNT_NOT_FOUND') {
+        setError(t('forgotPassword.accountNotFound'))
+      } else {
+        setError(msg || t('forgotPassword.sendFailed'))
+      }
     } finally {
       setIsLoading(false)
     }

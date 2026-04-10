@@ -41,11 +41,29 @@ public class MealProgramRepository : IMealProgramRepository
             .ToListAsync(ct);
     }
 
-    public async Task<(List<MealProgram> Items, int TotalCount)> GetAllPublicPagedAsync(int page, int pageSize, CancellationToken ct = default)
+    public async Task<(List<MealProgram> Items, int TotalCount)> GetAllPublicPagedAsync(int page, int pageSize, CancellationToken ct = default,
+        decimal? minPrice = null, decimal? maxPrice = null, string? tier = null)
     {
         var query = _context.MealPrograms
             .AsNoTracking()
             .Where(p => !p.IsDeleted && p.IsPublic);
+
+        // Price filters
+        if (minPrice.HasValue)
+            query = query.Where(p => p.Price >= minPrice.Value
+                || (p.StandardPrice != null && p.StandardPrice >= minPrice.Value)
+                || (p.ProPrice != null && p.ProPrice >= minPrice.Value));
+        if (maxPrice.HasValue)
+            query = query.Where(p => p.Price <= maxPrice.Value);
+
+        // Tier filter
+        if (!string.IsNullOrEmpty(tier))
+        {
+            if (tier.Equals("Standard", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(p => p.StandardPrice != null);
+            else if (tier.Equals("Pro", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(p => p.ProPrice != null);
+        }
 
         var totalCount = await query.CountAsync(ct);
 

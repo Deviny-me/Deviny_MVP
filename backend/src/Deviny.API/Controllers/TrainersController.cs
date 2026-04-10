@@ -39,13 +39,19 @@ public class TrainersController : BaseApiController
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<PagedResponse<PublicTrainerDto>>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? country = null,
+        [FromQuery] string? city = null,
+        [FromQuery] string? gender = null,
+        [FromQuery] string? specialization = null,
+        [FromQuery] double? minRating = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 1;
         if (pageSize > 100) pageSize = 100;
 
-        var query = new GetAllTrainersQuery(page, pageSize);
+        var query = new GetAllTrainersQuery(page, pageSize, country, city, gender, specialization, minRating);
         var trainers = await _mediator.Send(query);
         return Ok(trainers);
     }

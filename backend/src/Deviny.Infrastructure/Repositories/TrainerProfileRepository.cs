@@ -1,5 +1,6 @@
 using Deviny.Application.Common.Interfaces;
 using Deviny.Domain.Entities;
+using Deviny.Domain.Enums;
 using Deviny.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,6 +51,44 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             .Include(tp => tp.User)
             .Include(tp => tp.Specializations)
                 .ThenInclude(ts => ts.Specialization)
+            .OrderByDescending(tp => tp.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
+
+    public async Task<(List<TrainerProfile> Items, int TotalCount)> GetAllFilteredPagedAsync(
+        int page, int pageSize,
+        string? country = null, string? city = null,
+        string? gender = null, string? specialization = null)
+    {
+        var query = _context.TrainerProfiles
+            .AsNoTracking()
+            .Include(tp => tp.User)
+            .Include(tp => tp.Specializations)
+                .ThenInclude(ts => ts.Specialization)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(country))
+            query = query.Where(tp => tp.User != null && tp.User.Country != null &&
+                EF.Functions.ILike(tp.User.Country, country));
+
+        if (!string.IsNullOrWhiteSpace(city))
+            query = query.Where(tp => tp.User != null && tp.User.City != null &&
+                EF.Functions.ILike(tp.User.City, city));
+
+        if (!string.IsNullOrWhiteSpace(gender) && Enum.TryParse<Gender>(gender, true, out var genderEnum))
+            query = query.Where(tp => tp.User != null && tp.User.Gender == genderEnum);
+
+        if (!string.IsNullOrWhiteSpace(specialization))
+            query = query.Where(tp => tp.Specializations.Any(s =>
+                s.Specialization != null && EF.Functions.ILike(s.Specialization.Name, $"%{specialization}%")));
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
             .OrderByDescending(tp => tp.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

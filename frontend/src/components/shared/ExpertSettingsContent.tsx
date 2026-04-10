@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import {
   User,
   Bell,
@@ -12,7 +12,6 @@ import {
   Moon,
   Sun,
   Loader2,
-  ImagePlus,
   LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -23,7 +22,6 @@ import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { useTheme } from '@/components/theme/ThemeProvider'
 import { useLanguage, getLanguageLabel, Language } from '@/components/language/LanguageProvider'
 import { DeleteAccountModal } from '@/components/shared/DeleteAccountModal'
-import { API_BASE_URL } from '@/lib/config'
 
 interface SettingsItem {
   icon: LucideIcon
@@ -52,7 +50,6 @@ export function ExpertSettingsContent({ basePath, fetchProfile, uploadBanner, de
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
   const isDarkMode = theme === 'dark'
-  const bannerInputRef = useRef<HTMLInputElement>(null)
 
   const cycleLanguage = () => {
     const langs: Language[] = ['ru', 'en', 'az']
@@ -62,11 +59,9 @@ export function ExpertSettingsContent({ basePath, fetchProfile, uploadBanner, de
   }
 
   const t = useTranslations('settings')
-  const tc = useTranslations('common')
   const [profile, setProfile] = useState<TrainerProfileResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [bannerUploading, setBannerUploading] = useState(false)
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
     achievements: true,
@@ -96,24 +91,6 @@ export function ExpertSettingsContent({ basePath, fetchProfile, uploadBanner, de
 
   const handleDeleteSuccess = () => {
     window.location.href = '/auth/login'
-  }
-
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    try {
-      setBannerUploading(true)
-      const result = await uploadBanner(file)
-      setProfile(prev => prev ? {
-        ...prev,
-        trainer: { ...prev.trainer, bannerUrl: result.bannerUrl }
-      } : prev)
-    } catch (err) {
-      console.error('Failed to upload banner:', err)
-    } finally {
-      setBannerUploading(false)
-      if (bannerInputRef.current) bannerInputRef.current.value = ''
-    }
   }
 
   const settingsSections: SettingsSection[] = [
@@ -180,9 +157,6 @@ export function ExpertSettingsContent({ basePath, fetchProfile, uploadBanner, de
     )
   }
 
-  const bannerUrl = profile?.trainer?.bannerUrl
-  const fullBannerUrl = bannerUrl ? (bannerUrl.startsWith('http') ? bannerUrl : `${API_BASE_URL}${bannerUrl}`) : null
-
   return (
     <>
       <div className="space-y-6 pb-6">
@@ -190,67 +164,6 @@ export function ExpertSettingsContent({ basePath, fetchProfile, uploadBanner, de
         <div>
           <h1 className="page-title">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('description')}</p>
-        </div>
-
-        {/* Profile Card with Banner */}
-        <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-          {/* Banner */}
-          <div className="relative h-28 bg-gradient-to-r" style={{
-            background: fullBannerUrl
-              ? `url(${fullBannerUrl}) center/cover no-repeat`
-              : `linear-gradient(135deg, ${accent.primary}, ${accent.secondary})`
-          }}>
-            <input
-              ref={bannerInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              className="hidden"
-              onChange={handleBannerUpload}
-            />
-            <button
-              onClick={() => bannerInputRef.current?.click()}
-              disabled={bannerUploading}
-              className="absolute bottom-2 right-2 flex items-center gap-1.5 px-3 py-1.5 bg-black/50 hover:bg-black/70 text-white text-xs rounded-lg backdrop-blur-sm transition-colors"
-            >
-              {bannerUploading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <ImagePlus className="w-3.5 h-3.5" />
-              )}
-              {t('changeBanner')}
-            </button>
-          </div>
-
-          {/* Profile Info */}
-          <div className="p-4">
-            <div className="flex items-center gap-4">
-              <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${accent.primary}, ${accent.secondary})` }}
-              >
-                <span className="text-white text-2xl font-bold">
-                  {profile?.trainer?.initials || authUser?.firstName?.charAt(0) || '?'}
-                </span>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">{profile?.trainer?.fullName || authUser?.firstName}</h3>
-                <p className="text-sm text-muted-foreground">{authUser?.email || ''}</p>
-                {profile?.trainer?.primaryTitle && (
-                  <p className="text-xs mt-1" style={{ color: accent.primary }}>{profile.trainer.primaryTitle}</p>
-                )}
-              </div>
-              <button
-                onClick={() => router.push(`${basePath}/profile`)}
-                className="px-4 py-2 border text-sm font-semibold rounded-lg transition-colors"
-                style={{
-                  borderColor: accent.primary,
-                  color: accent.primary,
-                }}
-              >
-                {t('edit')}
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Settings Sections */}

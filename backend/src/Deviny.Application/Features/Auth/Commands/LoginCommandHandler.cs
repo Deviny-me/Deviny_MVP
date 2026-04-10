@@ -37,7 +37,22 @@ public class LoginCommandHandler
 
         _logger.LogInformation("User found: {Email}, stored role: {Role}", user.Email, user.Role);
 
-        var passwordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
+        if (string.IsNullOrEmpty(user.PasswordHash))
+        {
+            _logger.LogWarning("User {Email} has no password hash set", request.Email);
+            throw new UnauthorizedAccessException("Invalid email or password");
+        }
+
+        bool passwordValid;
+        try
+        {
+            passwordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Password verification threw an exception for user: {Email}", request.Email);
+            throw new UnauthorizedAccessException("Invalid email or password");
+        }
         _logger.LogInformation("Password verification result: {Result}", passwordValid);
         
         if (!passwordValid)
