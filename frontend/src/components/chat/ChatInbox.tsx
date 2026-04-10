@@ -512,6 +512,7 @@ export default function ChatInbox() {
     }
 
     pc.ontrack = (event) => {
+      console.log('[WebRTC] ontrack fired:', event.track.kind, 'readyState:', event.track.readyState, 'muted:', event.track.muted)
       // Some browsers may fire ontrack without associating streams
       if (event.streams[0]) {
         event.streams[0].getTracks().forEach(track => {
@@ -523,13 +524,25 @@ export default function ChatInbox() {
       } else {
         remoteStream.addTrack(event.track)
       }
-      // Try to assign stream to media elements (may be null if UI not yet rendered)
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream
-      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream
+      console.log('[WebRTC] Remote stream tracks:', remoteStream.getTracks().map(t => `${t.kind}:${t.readyState}:muted=${t.muted}`))
+      // Assign stream to media elements and explicitly play (required for Chrome autoplay policy)
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream
+        remoteVideoRef.current.play().catch(e => console.warn('[WebRTC] Remote video play blocked:', e))
+      }
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream
+        remoteAudioRef.current.play().catch(e => console.warn('[WebRTC] Remote audio play blocked:', e))
+      }
       setCallStatus('connected')
     }
 
+    pc.oniceconnectionstatechange = () => {
+      console.log('[WebRTC] ICE connection state:', pc.iceConnectionState)
+    }
+
     pc.onconnectionstatechange = () => {
+      console.log('[WebRTC] Connection state:', pc.connectionState)
       if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
         clearCallMedia()
       }
@@ -909,6 +922,7 @@ export default function ChatInbox() {
     remoteAudioRef.current = el
     if (el && remoteStreamRef.current) {
       el.srcObject = remoteStreamRef.current
+      el.play().catch(e => console.warn('[WebRTC] Audio autoplay blocked on mount:', e))
     }
   }, [])
 
@@ -916,6 +930,7 @@ export default function ChatInbox() {
     remoteVideoRef.current = el
     if (el && remoteStreamRef.current) {
       el.srcObject = remoteStreamRef.current
+      el.play().catch(e => console.warn('[WebRTC] Remote video autoplay blocked on mount:', e))
     }
   }, [])
 
@@ -923,6 +938,7 @@ export default function ChatInbox() {
     localVideoRef.current = el
     if (el && localStreamRef.current) {
       el.srcObject = localStreamRef.current
+      el.play().catch(e => console.warn('[WebRTC] Local video autoplay blocked on mount:', e))
     }
   }, [])
 
