@@ -903,18 +903,39 @@ export default function ChatInbox() {
     }
   }, [activeCallConversationId, activeCallType, callStatus, sendCallLogMessage])
 
-  // Ensure media elements get streams assigned after the call UI renders.
-  // ontrack / createPeerConnection may fire before React renders the <audio>/<video> elements,
-  // so the refs are null at that point. This effect re-assigns once refs become available.
+  // Callback refs: attach streams the instant the DOM element mounts.
+  // This solves the race where ontrack fires before React renders the elements.
+  const remoteAudioCallbackRef = useCallback((el: HTMLAudioElement | null) => {
+    remoteAudioRef.current = el
+    if (el && remoteStreamRef.current) {
+      el.srcObject = remoteStreamRef.current
+    }
+  }, [])
+
+  const remoteVideoCallbackRef = useCallback((el: HTMLVideoElement | null) => {
+    remoteVideoRef.current = el
+    if (el && remoteStreamRef.current) {
+      el.srcObject = remoteStreamRef.current
+    }
+  }, [])
+
+  const localVideoCallbackRef = useCallback((el: HTMLVideoElement | null) => {
+    localVideoRef.current = el
+    if (el && localStreamRef.current) {
+      el.srcObject = localStreamRef.current
+    }
+  }, [])
+
+  // Also re-assign when callStatus changes, as a safety net
   useEffect(() => {
     if (callStatus === 'idle') return
-    if (localStreamRef.current && localVideoRef.current && !localVideoRef.current.srcObject) {
+    if (localStreamRef.current && localVideoRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current
     }
-    if (remoteStreamRef.current && remoteVideoRef.current && !remoteVideoRef.current.srcObject) {
+    if (remoteStreamRef.current && remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStreamRef.current
     }
-    if (remoteStreamRef.current && remoteAudioRef.current && !remoteAudioRef.current.srcObject) {
+    if (remoteStreamRef.current && remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = remoteStreamRef.current
     }
   }, [callStatus, activeCallType])
@@ -1397,11 +1418,11 @@ export default function ChatInbox() {
                   </div>
                 </div>
 
-                <audio ref={remoteAudioRef} autoPlay />
+                <audio ref={remoteAudioCallbackRef} autoPlay />
                 {activeCallType === 'video' && (
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <video ref={localVideoRef} autoPlay muted playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
-                    <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
+                    <video ref={localVideoCallbackRef} autoPlay muted playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
+                    <video ref={remoteVideoCallbackRef} autoPlay playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
                   </div>
                 )}
               </div>
