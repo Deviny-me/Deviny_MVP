@@ -462,40 +462,26 @@ export default function ChatInbox() {
     }
   }, [])
 
-  const createPeerConnection = useCallback((conversationId: string, targetUserId: string) => {
+  const createPeerConnection = useCallback(async (conversationId: string, targetUserId: string) => {
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close()
     }
 
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        {
-          urls: 'stun:deviny.metered.live:80',
-        },
-        {
-          urls: 'turn:deviny.metered.live:80',
-          username: 'd8737c92a2465bc58996d30e',
-          credential: 'xUMUEBHKIWMG3RUR',
-        },
-        {
-          urls: 'turn:deviny.metered.live:80?transport=tcp',
-          username: 'd8737c92a2465bc58996d30e',
-          credential: 'xUMUEBHKIWMG3RUR',
-        },
-        {
-          urls: 'turn:deviny.metered.live:443',
-          username: 'd8737c92a2465bc58996d30e',
-          credential: 'xUMUEBHKIWMG3RUR',
-        },
-        {
-          urls: 'turns:deviny.metered.live:443?transport=tcp',
-          username: 'd8737c92a2465bc58996d30e',
-          credential: 'xUMUEBHKIWMG3RUR',
-        },
-      ],
-    })
+    // Fetch TURN credentials dynamically from metered.ca API
+    let iceServers: RTCIceServer[] = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ]
+    try {
+      const res = await fetch('https://deviny.metered.live/api/v1/turn/credentials?apiKey=5694937899d6b5a3161dd5741438e044f1c4')
+      const turnServers = await res.json()
+      console.log('[WebRTC] Fetched TURN servers:', turnServers.length)
+      iceServers = [...iceServers, ...turnServers]
+    } catch (e) {
+      console.error('[WebRTC] Failed to fetch TURN credentials, using STUN only:', e)
+    }
+
+    const pc = new RTCPeerConnection({ iceServers })
 
     const remoteStream = new MediaStream()
     remoteStreamRef.current = remoteStream
@@ -675,7 +661,7 @@ export default function ChatInbox() {
         setActiveCallConversationId(selectedConvId)
 
         const stream = await getLocalMedia(type)
-        const pc = createPeerConnection(selectedConvId, selectedConv.peerUser.id)
+        const pc = await createPeerConnection(selectedConvId, selectedConv.peerUser.id)
         stream.getTracks().forEach(track => pc.addTrack(track, stream))
 
         const offer = await pc.createOffer()
@@ -723,7 +709,7 @@ export default function ChatInbox() {
       setActiveCallConversationId(incomingCall.conversationId)
 
       const stream = await getLocalMedia(incomingCall.callType)
-      const pc = createPeerConnection(incomingCall.conversationId, incomingCall.fromUserId)
+      const pc = await createPeerConnection(incomingCall.conversationId, incomingCall.fromUserId)
       stream.getTracks().forEach(track => pc.addTrack(track, stream))
 
       await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer))
