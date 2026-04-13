@@ -10,10 +10,59 @@ import azMessages from '../../../messages/az.json'
 
 export type Language = 'ru' | 'en' | 'az'
 
+const LANGUAGE_STORAGE_KEY = 'deviny.language'
+const LANGUAGE_SYNC_PENDING_KEY = 'deviny.language.pending-sync'
+
 const messagesMap: Record<Language, typeof ruMessages> = {
   ru: ruMessages,
   en: enMessages,
   az: azMessages,
+}
+
+function isLanguage(value: unknown): value is Language {
+  return value === 'ru' || value === 'en' || value === 'az'
+}
+
+function readStoredLanguage(key: string): Language | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const value = localStorage.getItem(key)
+    return isLanguage(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
+function writeStoredLanguage(key: string, language: Language | null) {
+  if (typeof window === 'undefined') return
+
+  try {
+    if (language) {
+      localStorage.setItem(key, language)
+    } else {
+      localStorage.removeItem(key)
+    }
+  } catch {
+    // Ignore storage failures and keep in-memory language state.
+  }
+}
+
+function getAccessToken() {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+}
+
+async function persistLanguagePreference(token: string, language: Language) {
+  await fetch(buildUrl('/me/settings/language'), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    credentials: 'include',
+    body: JSON.stringify({ language })
+  })
 }
 
 export function getLanguageLabel(lang: Language): string {
@@ -46,15 +95,18 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageProviderProps) {
-  const [language, setLanguageState] = useState<Language>(initialLanguage)
+  const [language, setLanguageState] = useState<Language>(() => readStoredLanguage(LANGUAGE_STORAGE_KEY) ?? initialLanguage)
   const [isLoading, setIsLoading] = useState(false)
 
   // Sync with API on mount
   useEffect(() => {
     const syncLanguage = async () => {
       try {
-        const token = localStorage.getItem('accessToken')
+        const token = getAccessToken()
         if (!token) return
+
+        const storedLanguage = readStoredLanguage(LANGUAGE_STORAGE_KEY)
+        const pendingLanguage = readStoredLanguage(LANGUAGE_SYNC_PENDING_KEY)
 
         const response = await fetch(buildUrl('/me/settings'), {
           headers: {
@@ -65,10 +117,33 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
 
         if (response.ok) {
           const data = await response.json()
-          const apiLanguage = (data.language || 'ru') as Language
-          if (['ru', 'en', 'az'].includes(apiLanguage) && apiLanguage !== language) {
+          const apiLanguage = isLanguage(data.language) ? data.language : initialLanguage
+          const preferredLanguage = pendingLanguage ?? storedLanguage
+
+          if (preferredLanguage) {
+            setLanguageState(preferredLanguage)
+            writeStoredLanguage(LANGUAGE_STORAGE_KEY, preferredLanguage)
+
+            if (preferredLanguage !== apiLanguage) {
+              try {
+                await persistLanguagePreference(token, preferredLanguage)
+              } catch (error) {
+                console.error('Failed to sync stored language:', error)
+                writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, preferredLanguage)
+                return
+              }
+            }
+
+            writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, null)
+            return
+          }
+
+          if (apiLanguage !== language) {
             setLanguageState(apiLanguage)
           }
+
+          writeStoredLanguage(LANGUAGE_STORAGE_KEY, apiLanguage)
+          writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, null)
         }
       } catch (error) {
         console.error('Failed to sync language:', error)
@@ -81,22 +156,20 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
   const setLanguage = useCallback(async (newLanguage: Language) => {
     setIsLoading(true)
     setLanguageState(newLanguage)
+    writeStoredLanguage(LANGUAGE_STORAGE_KEY, newLanguage)
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) return
+      const token = getAccessToken()
+      if (!token) {
+        writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, newLanguage)
+        return
+      }
 
-      await fetch(buildUrl('/me/settings/language'), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include',
-        body: JSON.stringify({ language: newLanguage })
-      })
+      await persistLanguagePreference(token, newLanguage)
+      writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, null)
     } catch (error) {
       console.error('Failed to save language:', error)
+      writeStoredLanguage(LANGUAGE_SYNC_PENDING_KEY, newLanguage)
     } finally {
       setIsLoading(false)
     }

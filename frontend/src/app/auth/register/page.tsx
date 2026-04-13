@@ -9,7 +9,8 @@ import { getRole } from '@/features/auth/utils/storage'
 import { RoleType } from '@/features/auth/types/role.types'
 import { useRegister, GenderType, RegisterFormData } from '@/features/auth/hooks/useRegister'
 import { Eye, EyeOff, Upload, X, FileText, Image as ImageIcon, User, Dumbbell, Apple, ArrowLeft } from 'lucide-react'
-import { COUNTRIES_DATA, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName } from '@/lib/data/countries'
+import { CountrySelect, CountrySelectOption } from '@/features/auth/components/CountrySelect'
+import { COUNTRIES_DATA, detectPreferredCountryCode, formatPhoneNumber, getCitiesForCountry, getCountries, getCountryName } from '@/lib/data/countries'
 import { Spinner } from '@/components/ui/Spinner'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { cn } from '@/lib/utils/cn'
@@ -25,8 +26,8 @@ const roleConfig = {
 const inputBase = 'w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-white/[0.04] text-gray-900 dark:text-white placeholder:text-gray-400 transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:border-transparent'
 const inputOk = 'border-gray-200 dark:border-white/[0.1] focus:ring-primary-500'
 const inputErr = 'border-red-400 focus:ring-red-500'
-const selectBase = 'w-full px-4 py-3.5 rounded-xl border bg-white/80 dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
-const selectPhoneCode = 'w-28 flex-shrink-0 px-3 py-3.5 rounded-xl border bg-white/80 dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
+const selectBase = 'w-full h-[54px] px-4 py-0 rounded-xl border bg-white/80 dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-all hover:border-gray-400 dark:hover:border-white/20 focus:bg-white dark:focus:bg-[#222222] focus:outline-none focus:ring-2 focus:border-transparent appearance-none'
+const selectPhoneCode = 'w-32 sm:w-36 flex-shrink-0'
 
 function RegisterPageContent() {
   const searchParams = useSearchParams()
@@ -53,7 +54,7 @@ function RegisterPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   const [phone, setPhone] = useState('')
-  const [phoneCountryCode, setPhoneCountryCode] = useState<string>('RU')
+  const [phoneCountryCode, setPhoneCountryCode] = useState<string>('')
   const [gender, setGender] = useState<GenderType | undefined>()
   const [countryCode, setCountryCode] = useState<string>('')
   const [city, setCity] = useState('')
@@ -63,6 +64,20 @@ function RegisterPageContent() {
   const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
   const selectedCountryName = countryCode ? getCountryName(countryCode, 'en') : ''
   const countries = getCountries(language)
+  const phoneCountryOptions: CountrySelectOption[] = countries.map((country) => ({
+    value: country.code,
+    label: COUNTRIES_DATA[country.code].phoneCode,
+    meta: country.name,
+    countryCode: country.code,
+    keywords: [country.code, country.name, COUNTRIES_DATA[country.code].phoneCode],
+  }))
+  const countryOptions: CountrySelectOption[] = countries.map((country) => ({
+    value: country.code,
+    label: country.name,
+    meta: COUNTRIES_DATA[country.code].phoneCode,
+    countryCode: country.code,
+    keywords: [country.code, country.name, COUNTRIES_DATA[country.code].phoneCode],
+  }))
 
   const phoneCountryData = COUNTRIES_DATA[phoneCountryCode]
   const phoneFormat = phoneCountryData?.phoneFormat || 'XXX XXX XXX'
@@ -74,6 +89,16 @@ function RegisterPageContent() {
   ]
 
   const { loading, errors, register, clearErrors } = useRegister()
+
+  const handlePhoneCountrySelect = (value: string) => {
+    setPhoneCountryCode(value)
+    setPhone('')
+
+    if (countryCode !== value) {
+      setCountryCode(value)
+      setCity('')
+    }
+  }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -97,6 +122,14 @@ function RegisterPageContent() {
       }
     }
   }, [searchParams, router])
+
+  useEffect(() => {
+    const detectedCountryCode = detectPreferredCountryCode(language)
+    if (!detectedCountryCode) return
+
+    setPhoneCountryCode((current) => current || detectedCountryCode)
+    setCountryCode((current) => current || detectedCountryCode)
+  }, [language])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -399,17 +432,20 @@ function RegisterPageContent() {
           {/* Phone */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('phone')}{isProfessional ? ' *' : ''}</label>
-            <div className="flex gap-2 min-w-0">
-              <select
+            <div className="flex flex-col gap-2 min-w-0 sm:flex-row">
+              <CountrySelect
                 value={phoneCountryCode}
-                onChange={(e) => { setPhoneCountryCode(e.target.value); setPhone('') }}
+                onChange={handlePhoneCountrySelect}
+                options={phoneCountryOptions}
+                placeholder={tr('phoneCode')}
+                searchPlaceholder={tr('searchCountryCode')}
+                emptyText={tr('noPhoneCodeFound')}
                 className={cn(selectPhoneCode, errors.phone ? inputErr : inputOk)}
+                panelClassName="w-[24rem] max-w-[calc(100vw-2rem)]"
+                compact
+                renderValue={(option) => option ? option.label : ''}
                 disabled={loading}
-              >
-                {countries.map((c) => (
-                  <option key={c.code} value={c.code}>{COUNTRIES_DATA[c.code].phoneCode}</option>
-                ))}
-              </select>
+              />
               <input
                 type="tel"
                 value={phone}
@@ -430,20 +466,21 @@ function RegisterPageContent() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('country')}{isProfessional ? ' *' : ''}</label>
-              <select
+              <CountrySelect
                 value={countryCode}
-                onChange={(e) => { setCountryCode(e.target.value); setCity('') }}
-                className={cn(selectBase, errors.country ? inputErr : inputOk)}
+                onChange={(value) => { setCountryCode(value); setCity('') }}
+                options={countryOptions}
+                placeholder={tr('selectCountry')}
+                searchPlaceholder={tr('searchCountry')}
+                emptyText={tr('noCountryFound')}
+                className={cn(errors.country ? inputErr : inputOk)}
+                showSelectedMeta={false}
+                renderValue={(option) => option ? option.label : ''}
                 disabled={loading}
-              >
-                <option value="">{tr('selectCountry')}</option>
-                {countries.map((c) => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
-                ))}
-              </select>
+              />
               {errors.country && <p className="mt-1 text-sm text-red-600">{errors.country}</p>}
             </div>
             <div>

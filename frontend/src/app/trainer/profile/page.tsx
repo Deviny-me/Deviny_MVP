@@ -290,6 +290,7 @@ export default function ProfilePage() {
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const postsObserverRef = useRef<HTMLDivElement>(null)
   const postsAbortRef = useRef<AbortController | null>(null)
+  const isRefreshingPosts = isLoadingPosts && postsPage === 1 && postIds.length > 0
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'posts' | 'certificates' | 'specializations' | 'achievements' | 'reviews'>('posts')
   
@@ -351,7 +352,6 @@ export default function ProfilePage() {
 
   const handlePostTabChange = useCallback((tab: ProfilePostTab) => {
     setPostTab(tab)
-    setPostIds([])
     setPostsPage(1)
     setPostsHasMore(true)
     setIsLoadingPosts(true)
@@ -765,48 +765,56 @@ export default function ProfilePage() {
 
             <ProfilePostTabs activeTab={postTab} onTabChange={handlePostTabChange} disabled={isLoadingPosts} />
 
-            {postIds.length === 0 && !isLoadingPosts ? (
-              <div className="py-12 text-center">
-                <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <p className="text-muted-foreground">{t('noPosts')}</p>
-                <p className="text-sm text-faint-foreground mt-1">{t('createFirstPost')}</p>
-              </div>
-            ) : viewMode === 'grid' ? (
-              <div>
-                <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
-                  {postIds.map((id) => (
-                    <TrainerGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
-                  ))}
+            <div className="relative">
+              {postIds.length === 0 && !isLoadingPosts ? (
+                <div className="py-12 text-center">
+                  <BookOpen className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-muted-foreground">{t('noPosts')}</p>
+                  <p className="text-sm text-faint-foreground mt-1">{t('createFirstPost')}</p>
                 </div>
-                {(isLoadingPosts || postsHasMore) && (
-                  <div ref={postsObserverRef} className="py-8 flex justify-center">
-                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
+              ) : viewMode === 'grid' ? (
+                <div>
+                  <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
+                    {postIds.map((id) => (
+                      <TrainerGridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
+                    ))}
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="p-3 space-y-3">
-                {postIds.map((id) => (
-                  <PostCard
-                    key={id}
-                    postId={id}
-                    isOwnProfile
-                    showDeleteInHeader
-                    onDelete={handleDeletePost}
-                    deletingPostId={deletingPostId}
-                    onRepostSuccess={() => loadPosts(1)}
-                    playingVideoId={playingVideoId}
-                    onVideoToggle={setPlayingVideoId}
-                    onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
-                  />
-                ))}
-                {(isLoadingPosts || postsHasMore) && (
-                  <div ref={postsObserverRef} className="py-8 flex justify-center">
-                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
-                  </div>
-                )}
-              </div>
-            )}
+                  {!isRefreshingPosts && (isLoadingPosts || postsHasMore) && (
+                    <div ref={postsObserverRef} className="py-8 flex justify-center">
+                      {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 space-y-3">
+                  {postIds.map((id) => (
+                    <PostCard
+                      key={id}
+                      postId={id}
+                      isOwnProfile
+                      showDeleteInHeader
+                      onDelete={handleDeletePost}
+                      deletingPostId={deletingPostId}
+                      onRepostSuccess={() => loadPosts(1)}
+                      playingVideoId={playingVideoId}
+                      onVideoToggle={setPlayingVideoId}
+                      onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
+                    />
+                  ))}
+                  {!isRefreshingPosts && (isLoadingPosts || postsHasMore) && (
+                    <div ref={postsObserverRef} className="py-8 flex justify-center">
+                      {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#f07915] animate-spin" />}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isRefreshingPosts && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-3/72 backdrop-blur-[1px]">
+                  <Loader2 className="w-7 h-7 text-[#f07915] animate-spin" />
+                </div>
+              )}
+            </div>
           </div>
         )}
 

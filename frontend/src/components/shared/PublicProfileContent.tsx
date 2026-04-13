@@ -345,6 +345,7 @@ export function PublicProfileContent({
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const isRefreshingPosts = isLoading && page === 1 && postIds.length > 0
 
   // ─── Fetch user profile from API ───
   const [profileData, setProfileData] = useState<{
@@ -693,7 +694,6 @@ export function PublicProfileContent({
 
   const handleTabChange = useCallback((tab: ProfilePostTab) => {
     setActiveTab(tab)
-    setPostIds([])
     setPage(1)
     setHasMore(true)
     setIsLoading(true)
@@ -1074,44 +1074,52 @@ export function PublicProfileContent({
           {/* Post type tabs */}
           <ProfilePostTabs activeTab={activeTab} onTabChange={handleTabChange} disabled={isLoading} />
 
-          {postIds.length === 0 && !isLoading ? (
-            <div className="py-12 text-center">
-              <div className="w-20 h-20 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-10 h-10 text-muted-foreground" />
+          <div className="relative">
+            {postIds.length === 0 && !isLoading ? (
+              <div className="py-12 text-center">
+                <div className="w-20 h-20 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
+                  <Camera className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{tPosts('noPublications')}</h3>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">{tPosts('noPublications')}</h3>
-            </div>
-          ) : viewMode === 'grid' ? (
-            <div>
-              <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
+            ) : viewMode === 'grid' ? (
+              <div>
+                <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
+                  {postIds.map((id) => (
+                    <GridCell key={id} postId={id} onSelect={setSelectedPostId} />
+                  ))}
+                </div>
+                {!isRefreshingPosts && (isLoading || hasMore) && (
+                  <div ref={observerRef} className="py-8 flex justify-center">
+                    {isLoading && <Loader2 className="w-6 h-6 animate-spin" style={{ color: accentColor }} />}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-3 space-y-3">
                 {postIds.map((id) => (
-                  <GridCell key={id} postId={id} onSelect={setSelectedPostId} />
+                  <PostCard
+                    key={id}
+                    postId={id}
+                    playingVideoId={playingVideoId}
+                    onVideoToggle={setPlayingVideoId}
+                    onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
+                  />
                 ))}
+                {!isRefreshingPosts && (isLoading || hasMore) && (
+                  <div ref={observerRef} className="py-8 flex justify-center">
+                    {isLoading && <Loader2 className="w-6 h-6 animate-spin" style={{ color: accentColor }} />}
+                  </div>
+                )}
               </div>
-              {(isLoading || hasMore) && (
-                <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoading && <Loader2 className="w-6 h-6 animate-spin" style={{ color: accentColor }} />}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-3 space-y-3">
-              {postIds.map((id) => (
-                <PostCard
-                  key={id}
-                  postId={id}
-                  playingVideoId={playingVideoId}
-                  onVideoToggle={setPlayingVideoId}
-                  onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
-                />
-              ))}
-              {(isLoading || hasMore) && (
-                <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoading && <Loader2 className="w-6 h-6 animate-spin" style={{ color: accentColor }} />}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+
+            {isRefreshingPosts && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-3/72 backdrop-blur-[1px]">
+                <Loader2 className="w-7 h-7 animate-spin" style={{ color: accentColor }} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
