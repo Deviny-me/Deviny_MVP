@@ -354,6 +354,12 @@ export const COUNTRIES_DATA: Record<string, CountryData> = {
   'MN': { name: 'Монголия', phoneCode: '+976', phoneFormat: 'XX XX XXXX', maxDigits: 8 },
 }
 
+export function getCountryFlag(code: string): string {
+  return code
+    .toUpperCase()
+    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)))
+}
+
 // English country names
 const COUNTRY_NAMES_EN: Record<string, string> = {
   'RU': 'Russia', 'US': 'United States', 'GB': 'United Kingdom', 'DE': 'Germany',
@@ -519,8 +525,7 @@ export function getCitiesForCountry(countryCode: string, lang: string = 'ru'): C
     if (lang === 'az') {
       label = CITY_TRANSLATIONS_AZ[city.name] || city.name
     } else if (lang === 'ru') {
-      // Use manual translation if available, otherwise transliterate to Cyrillic
-      label = CITY_TRANSLATIONS[city.name] || transliterateToCyrillic(city.name)
+      label = CITY_TRANSLATIONS[city.name] || city.name
     } else {
       label = city.name
     }
@@ -534,7 +539,7 @@ export function getCitiesForCountry(countryCode: string, lang: string = 'ru'): C
 // Translate a single city name for a given language (useful when submitting forms)
 export function translateCityName(englishName: string, lang: string = 'ru'): string {
   if (lang === 'az') return CITY_TRANSLATIONS_AZ[englishName] || englishName
-  if (lang === 'ru') return CITY_TRANSLATIONS[englishName] || transliterateToCyrillic(englishName)
+  if (lang === 'ru') return CITY_TRANSLATIONS[englishName] || englishName
   return englishName
 }
 
@@ -546,6 +551,120 @@ export function getCountries(lang: string = 'ru') {
       name: getCountryName(code, lang),
     }))
     .sort((a, b) => a.name.localeCompare(b.name, lang))
+}
+
+const TIMEZONE_TO_COUNTRY: Record<string, string> = {
+  'Asia/Baku': 'AZ',
+  'Asia/Tbilisi': 'GE',
+  'Asia/Yerevan': 'AM',
+  'Asia/Almaty': 'KZ',
+  'Asia/Aqtau': 'KZ',
+  'Asia/Aqtobe': 'KZ',
+  'Asia/Atyrau': 'KZ',
+  'Asia/Oral': 'KZ',
+  'Asia/Bishkek': 'KG',
+  'Asia/Tashkent': 'UZ',
+  'Asia/Dushanbe': 'TJ',
+  'Asia/Ashgabat': 'TM',
+  'Europe/Moscow': 'RU',
+  'Europe/Samara': 'RU',
+  'Europe/Volgograd': 'RU',
+  'Europe/Kaliningrad': 'RU',
+  'Asia/Yekaterinburg': 'RU',
+  'Asia/Novosibirsk': 'RU',
+  'Asia/Omsk': 'RU',
+  'Asia/Krasnoyarsk': 'RU',
+  'Asia/Irkutsk': 'RU',
+  'Asia/Yakutsk': 'RU',
+  'Asia/Vladivostok': 'RU',
+  'Europe/Kyiv': 'UA',
+  'Europe/Kiev': 'UA',
+  'Europe/Minsk': 'BY',
+  'Europe/Warsaw': 'PL',
+  'Europe/London': 'GB',
+  'Europe/Berlin': 'DE',
+  'Europe/Paris': 'FR',
+  'Europe/Rome': 'IT',
+  'Europe/Madrid': 'ES',
+  'Europe/Lisbon': 'PT',
+  'Europe/Athens': 'GR',
+  'Europe/Amsterdam': 'NL',
+  'Europe/Brussels': 'BE',
+  'Europe/Vienna': 'AT',
+  'Europe/Prague': 'CZ',
+  'Europe/Bucharest': 'RO',
+  'Europe/Budapest': 'HU',
+  'Europe/Zurich': 'CH',
+  'Europe/Stockholm': 'SE',
+  'Europe/Oslo': 'NO',
+  'Europe/Copenhagen': 'DK',
+  'Europe/Helsinki': 'FI',
+  'Europe/Dublin': 'IE',
+  'Europe/Istanbul': 'TR',
+  'America/New_York': 'US',
+  'America/Chicago': 'US',
+  'America/Denver': 'US',
+  'America/Los_Angeles': 'US',
+  'America/Toronto': 'CA',
+  'America/Vancouver': 'CA',
+  'America/Mexico_City': 'MX',
+  'Asia/Dubai': 'AE',
+  'Asia/Seoul': 'KR',
+  'Asia/Tokyo': 'JP',
+  'Asia/Shanghai': 'CN',
+  'Asia/Hong_Kong': 'CN',
+  'Asia/Kolkata': 'IN',
+  'Australia/Sydney': 'AU',
+  'Australia/Melbourne': 'AU',
+  'Pacific/Auckland': 'NZ',
+}
+
+function resolveCountryCodeCandidate(candidate?: string | null): string | null {
+  if (!candidate) return null
+  const normalized = candidate.toUpperCase()
+  return normalized in COUNTRIES_DATA ? normalized : null
+}
+
+function getCountryCodeFromLocale(locale?: string | null): string | null {
+  if (!locale) return null
+
+  const normalizedLocale = locale.replace('_', '-')
+  const parts = normalizedLocale.split('-')
+
+  // Ignore the primary language subtag and only treat explicit region subtags as countries.
+  // This prevents plain locales like "ru" from being misread as Russia.
+  const regionParts = parts.slice(1)
+
+  for (let index = regionParts.length - 1; index >= 0; index -= 1) {
+    const part = regionParts[index]
+    if (/^[A-Za-z]{2}$/.test(part)) {
+      const resolved = resolveCountryCodeCandidate(part)
+      if (resolved) return resolved
+    }
+  }
+
+  return null
+}
+
+export function detectPreferredCountryCode(localeHint?: string): string | null {
+  if (typeof window === 'undefined') return null
+
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const fromTimeZone = TIMEZONE_TO_COUNTRY[timeZone]
+  if (fromTimeZone) return fromTimeZone
+
+  const browserLocales = [
+    ...(navigator.languages || []),
+    navigator.language,
+  ].filter(Boolean) as string[]
+
+  for (const locale of browserLocales) {
+    const fromLocale = getCountryCodeFromLocale(locale)
+    if (fromLocale) return fromLocale
+  }
+
+  const hintedLocale = getCountryCodeFromLocale(localeHint)
+  return hintedLocale || null
 }
 
 // Resolve country code from a stored country name in any supported language.

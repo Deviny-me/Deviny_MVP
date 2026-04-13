@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   Send,
   Search,
@@ -115,6 +115,8 @@ function formatCallDuration(totalSeconds: number): string {
 export default function ChatInbox() {
   const QUICK_EMOJIS = ['😀', '😂', '😍', '😎', '😭', '😡', '👍', '👏', '🙏', '🔥', '❤️', '🎉']
   const accent = useAccentColors()
+  const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const userIdFromUrl = searchParams.get('userId')
   const userNameFromUrl = searchParams.get('userName')
@@ -398,6 +400,21 @@ export default function ChatInbox() {
   }, [selectedConvId])
 
   useEffect(() => {
+    if (!selectedConvId) return
+
+    const previousBodyOverflow = document.body.style.overflow
+    const previousDocumentOverflow = document.documentElement.style.overflow
+
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overflow = previousDocumentOverflow
+    }
+  }, [selectedConvId])
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!emojiPickerRef.current) return
       if (!emojiPickerRef.current.contains(event.target as Node)) {
@@ -645,6 +662,14 @@ export default function ChatInbox() {
     setInputText(prev => prev + emoji)
     inputRef.current?.focus()
   }
+
+  const handleBackToMessages = useCallback(() => {
+    setSelectedConvId(null)
+    setReplyTo(null)
+    setPendingFile(null)
+    setShowEmojiPicker(false)
+    router.replace(pathname)
+  }, [pathname, router])
 
   const handleCallClick = (type: 'audio' | 'video') => {
     if (!selectedConv || !selectedConvId) return
@@ -987,7 +1012,7 @@ export default function ChatInbox() {
   return (
     <div className="relative h-[calc(100vh-130px)] overflow-hidden md:rounded-xl md:border md:border-border-subtle md:bg-surface-2">
       {incomingCall && (
-        <div className="absolute top-4 right-4 z-30 p-3 rounded-lg border border-border-subtle bg-background shadow-xl w-72">
+        <div className="fixed right-4 top-4 z-[220] w-72 rounded-lg border border-border-subtle bg-background p-3 shadow-xl">
           <p className="text-sm text-foreground font-semibold">Incoming {incomingCall.callType} call</p>
           <p className="text-xs text-muted-foreground mt-1">{incomingCall.fromUserName}</p>
           <div className="flex items-center gap-2 mt-3">
@@ -1100,30 +1125,52 @@ export default function ChatInbox() {
           </div>
         </div>
 
-        {/* ── Right: Chat Thread ── */}
-        {selectedConvId ? (
-          <div className="flex min-h-0 flex-1 flex-col bg-background md:bg-transparent">
-            {/* Header */}
+        {!selectedConvId && (
+          <div className="flex-1 hidden md:flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-background flex items-center justify-center">
+                <Send className="w-8 h-8 text-faint-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Select a conversation
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Choose a chat to start messaging
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selectedConvId && (
+        <div className="fixed inset-0 z-[180] overflow-hidden bg-background">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_30%),linear-gradient(to_bottom,rgba(255,255,255,0.02),transparent_35%)]" />
+          <div className="relative flex h-full min-h-0 flex-col">
             <div
-              className="border-b bg-surface-2 px-3 py-2.5 md:border-border-subtle md:bg-transparent md:p-4"
+              className="border-b border-border-subtle bg-background/95 px-4 py-3 backdrop-blur-xl sm:px-5"
               style={{ borderBottomColor: 'var(--separator-color)' }}
             >
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
                   <button
-                    className="rounded-lg p-1.5 md:hidden"
-                    onClick={() => setSelectedConvId(null)}
+                    type="button"
+                    className="inline-flex items-center gap-2 rounded-xl border border-border-subtle bg-surface-2/85 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover-overlay hover:text-foreground"
+                    onClick={handleBackToMessages}
                   >
-                    <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Back to messages</span>
                   </button>
-                  <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={40} role={selectedConv?.peerUser.role} />
-                  <p className="font-semibold text-foreground truncate">{peerName}</p>
+                  <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={44} role={selectedConv?.peerUser.role} />
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-semibold text-foreground">{peerName}</p>
+                    <p className="truncate text-xs text-muted-foreground">Direct conversation</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => handleCallClick('audio')}
-                    className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
+                    className={`rounded-xl p-2.5 text-muted-foreground ${accent.hoverText} transition-colors`}
                     title="Start audio call"
                   >
                     <Phone className="w-5 h-5" />
@@ -1131,7 +1178,7 @@ export default function ChatInbox() {
                   <button
                     type="button"
                     onClick={() => handleCallClick('video')}
-                    className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
+                    className={`rounded-xl p-2.5 text-muted-foreground ${accent.hoverText} transition-colors`}
                     title="Start video call"
                   >
                     <Video className="w-5 h-5" />
@@ -1139,147 +1186,142 @@ export default function ChatInbox() {
                 </div>
               </div>
               {callNotice && (
-                <p className={`text-xs mt-2 ${accent.text}`}>{callNotice}</p>
+                <p className={`mt-2 pl-[3.6rem] text-xs ${accent.text} sm:pl-[9.25rem]`}>{callNotice}</p>
               )}
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto bg-background px-3 py-3 space-y-3 md:bg-transparent md:p-4">
+            <div className="flex-1 overflow-y-auto px-3 py-4 sm:px-5 sm:py-5">
               {loadingMsgs ? (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex h-full items-center justify-center">
                   <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <MessageCircle className="w-12 h-12 text-gray-600 mb-3" />
+                <div className="flex h-full flex-col items-center justify-center text-center">
+                  <MessageCircle className="mb-3 h-12 w-12 text-gray-600" />
                   <p className="text-sm text-muted-foreground">No messages yet</p>
-                  <p className="text-xs text-faint-foreground mt-1">
+                  <p className="mt-1 text-xs text-faint-foreground">
                     Send a message to start the conversation
                   </p>
                 </div>
               ) : (
-                messages.map(msg => {
-                  const isMe =
-                    currentUserId !== null &&
-                    (msg.senderId.toLowerCase() === currentUserId.toLowerCase() ||
-                      msg.id.startsWith('temp-'))
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className="flex max-w-[88%] items-end gap-2 sm:max-w-[75%]">
-                        {!isMe && (
-                          <Avatar
-                            url={avatarUrl(msg.senderAvatarUrl)}
-                            name={msg.senderName}
-                            size={32}
-                            role={msg.senderRole}
-                          />
-                        )}
-                        <div>
-                          {/* Reply preview */}
-                          {msg.replyTo && (
-                            <div
-                              className={`text-xs px-3 py-1 mb-0.5 rounded-t-xl border-l-2 ${
-                                isMe
-                                  ? `${accent.border} ${accent.bgMuted20} text-foreground/80`
-                                  : `${accent.border} bg-border-subtle text-muted-foreground`
-                              }`}
-                            >
-                              <span className="font-semibold">
-                                {msg.replyTo.senderName}
-                              </span>
-                              <p className="truncate">{msg.replyTo.text}</p>
-                            </div>
+                <div className="space-y-3">
+                  {messages.map(msg => {
+                    const isMe =
+                      currentUserId !== null &&
+                      (msg.senderId.toLowerCase() === currentUserId.toLowerCase() ||
+                        msg.id.startsWith('temp-'))
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className="flex max-w-[92%] items-end gap-2 sm:max-w-[72%]">
+                          {!isMe && (
+                            <Avatar
+                              url={avatarUrl(msg.senderAvatarUrl)}
+                              name={msg.senderName}
+                              size={32}
+                              role={msg.senderRole}
+                            />
                           )}
-                          {/* Bubble */}
-                          <div
-                            className={`group relative rounded-2xl px-4 py-2.5 ${
-                              isMe
-                                ? `${accent.bg} text-foreground rounded-br-sm`
-                                : 'border border-border-subtle bg-surface-2 text-foreground shadow-sm rounded-bl-sm'
-                            }`}
-                          >
-                            {/* Attachment */}
-                            {msg.attachmentUrl && (
-                              msg.attachmentContentType?.startsWith('image/') ? (
-                                <a
-                                  href={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="block mb-1"
-                                >
-                                  <img
-                                    src={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
-                                    alt={msg.attachmentFileName || 'Image'}
-                                    className="max-h-[200px] max-w-[220px] rounded-lg object-cover sm:max-w-[260px]"
-                                  />
-                                </a>
-                              ) : (
-                                <a
-                                  href={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  download={msg.attachmentFileName}
-                                  className={`flex items-center gap-2 mb-1 px-3 py-2 rounded-lg ${
-                                    isMe ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 hover:bg-white/10'
-                                  } transition-colors`}
-                                >
-                                  <FileText className="w-5 h-5 flex-shrink-0" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-medium truncate">{msg.attachmentFileName}</p>
-                                    {msg.attachmentSize && (
-                                      <p className={`text-xs ${isMe ? 'text-foreground/60' : 'text-faint-foreground'}`}>
-                                        {formatFileSize(msg.attachmentSize)}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <Download className="w-4 h-4 flex-shrink-0 opacity-60" />
-                                </a>
-                              )
+                          <div className="flex items-end gap-2">
+                            {isMe && (
+                              <div className="mb-1 shrink-0 whitespace-nowrap text-[11px] text-foreground/60">
+                                {formatTime(msg.createdAt)}
+                                {msg.readAt && <span className="ml-1">✓✓</span>}
+                              </div>
                             )}
-                            {msg.text && (
-                              <p className="text-sm whitespace-pre-wrap break-words">
-                                {msg.text}
-                              </p>
-                            )}
-                            <p
-                              className={`text-xs mt-1 ${
-                                isMe ? 'text-foreground/70' : 'text-faint-foreground'
-                              }`}
-                            >
-                              {formatTime(msg.createdAt)}
-                              {msg.readAt && isMe && (
-                                <span className="ml-2">✓✓</span>
+                            <div>
+                              {msg.replyTo && (
+                                <div
+                                  className={`mb-0.5 rounded-t-xl border-l-2 px-3 py-1 text-xs ${
+                                    isMe
+                                      ? `${accent.border} ${accent.bgMuted20} text-foreground/80`
+                                      : `${accent.border} bg-border-subtle text-muted-foreground`
+                                  }`}
+                                >
+                                  <span className="font-semibold">{msg.replyTo.senderName}</span>
+                                  <p className="truncate">{msg.replyTo.text}</p>
+                                </div>
                               )}
-                            </p>
-                            {/* Reply button (shows on hover) */}
-                            {!msg.id.startsWith('temp-') && (
-                              <button
-                                onClick={() => {
-                                  setReplyTo(msg)
-                                  inputRef.current?.focus()
-                                }}
-                                className="absolute -top-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background border border-border-subtle rounded-full p-1"
+                              <div
+                                className={`group relative rounded-2xl px-4 py-2.5 ${
+                                  isMe
+                                    ? `${accent.bg} rounded-br-sm text-foreground`
+                                    : 'rounded-bl-sm border border-border-subtle bg-surface-2 text-foreground shadow-sm'
+                                }`}
                               >
-                                <Reply className="w-3 h-3 text-muted-foreground" />
-                              </button>
+                                {msg.attachmentUrl && (
+                                  msg.attachmentContentType?.startsWith('image/') ? (
+                                    <a
+                                      href={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="mb-1 block"
+                                    >
+                                      <img
+                                        src={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
+                                        alt={msg.attachmentFileName || 'Image'}
+                                        className="max-h-[240px] max-w-[240px] rounded-lg object-cover sm:max-w-[320px]"
+                                      />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={`${MEDIA_BASE_URL}${msg.attachmentUrl}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      download={msg.attachmentFileName}
+                                      className={`mb-1 flex items-center gap-2 rounded-lg px-3 py-2 transition-colors ${
+                                        isMe ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 hover:bg-white/10'
+                                      }`}
+                                    >
+                                      <FileText className="w-5 h-5 flex-shrink-0" />
+                                      <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">{msg.attachmentFileName}</p>
+                                        {msg.attachmentSize && (
+                                          <p className={`text-xs ${isMe ? 'text-foreground/60' : 'text-faint-foreground'}`}>
+                                            {formatFileSize(msg.attachmentSize)}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <Download className="w-4 h-4 flex-shrink-0 opacity-60" />
+                                    </a>
+                                  )
+                                )}
+                                {msg.text && (
+                                  <p className="text-sm whitespace-pre-wrap break-words">{msg.text}</p>
+                                )}
+                                {!msg.id.startsWith('temp-') && (
+                                  <button
+                                    onClick={() => {
+                                      setReplyTo(msg)
+                                      inputRef.current?.focus()
+                                    }}
+                                    className="absolute -top-2 right-0 rounded-full border border-border-subtle bg-background p-1 opacity-0 transition-opacity group-hover:opacity-100"
+                                  >
+                                    <Reply className="w-3 h-3 text-muted-foreground" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            {!isMe && (
+                              <div className="mb-1 shrink-0 whitespace-nowrap text-[11px] text-faint-foreground">
+                                {formatTime(msg.createdAt)}
+                              </div>
                             )}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })
+                    )
+                  })}
+                </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Pending file preview */}
             {pendingFile && (
               <div
-                className="flex items-center gap-2 border-t bg-surface-2 px-3 pt-2 md:border-border-subtle md:bg-transparent md:px-4"
+                className="flex items-center gap-2 border-t border-border-subtle bg-background/95 px-4 pt-3 backdrop-blur-xl sm:px-5"
                 style={{ borderTopColor: 'var(--separator-color)' }}
               >
                 {pendingFile.contentType.startsWith('image/') ? (
@@ -1287,7 +1329,7 @@ export default function ChatInbox() {
                 ) : (
                   <FileText className={`w-4 h-4 ${accent.text}`} />
                 )}
-                <div className="flex-1 text-xs text-muted-foreground truncate">
+                <div className="flex-1 truncate text-xs text-muted-foreground">
                   <span className="font-semibold text-foreground">{pendingFile.fileName}</span>
                   <span className="ml-2 text-faint-foreground">({formatFileSize(pendingFile.size)})</span>
                 </div>
@@ -1297,17 +1339,14 @@ export default function ChatInbox() {
               </div>
             )}
 
-            {/* Reply preview bar */}
             {replyTo && (
               <div
-                className="flex items-center gap-2 border-t bg-surface-2 px-3 pt-2 md:border-border-subtle md:bg-transparent md:px-4"
+                className="flex items-center gap-2 border-t border-border-subtle bg-background/95 px-4 pt-3 backdrop-blur-xl sm:px-5"
                 style={{ borderTopColor: 'var(--separator-color)' }}
               >
                 <Reply className={`w-4 h-4 ${accent.text}`} />
-                <div className="flex-1 text-xs text-muted-foreground truncate">
-                  <span className="font-semibold text-foreground">
-                    {replyTo.senderName}
-                  </span>{' '}
+                <div className="flex-1 truncate text-xs text-muted-foreground">
+                  <span className="font-semibold text-foreground">{replyTo.senderName}</span>{' '}
                   {replyTo.text}
                 </div>
                 <button onClick={() => setReplyTo(null)}>
@@ -1316,13 +1355,11 @@ export default function ChatInbox() {
               </div>
             )}
 
-            {/* Input */}
             <div
-              className="border-t bg-surface-2 md:border-border-subtle md:bg-surface-3 md:p-4"
+              className="border-t border-border-subtle bg-background/95 px-3 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:px-5"
               style={{ borderTopColor: 'var(--separator-color)' }}
             >
               <div className="relative flex items-end gap-2" ref={emojiPickerRef}>
-                {/* Hidden file input */}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1330,7 +1367,6 @@ export default function ChatInbox() {
                   onChange={handleFileSelect}
                   accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.mp4,.mov,.mp3,.wav"
                 />
-                {/* Paperclip button */}
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || sending}
@@ -1360,7 +1396,7 @@ export default function ChatInbox() {
                           key={emoji}
                           type="button"
                           onClick={() => handlePickEmoji(emoji)}
-                          className="p-1.5 rounded hover:bg-white/10 transition-colors text-lg"
+                          className="rounded p-1.5 text-lg transition-colors hover:bg-white/10"
                         >
                           {emoji}
                         </button>
@@ -1371,17 +1407,17 @@ export default function ChatInbox() {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder={pendingFile ? "Add a caption..." : "Type a message..."}
+                  placeholder={pendingFile ? 'Add a caption...' : 'Type a message...'}
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={sending}
-                  className={`min-w-0 flex-1 bg-background border border-border-subtle/70 rounded-full px-4 py-2.5 text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
+                  className={`min-w-0 flex-1 rounded-full border border-border-subtle/70 bg-background px-4 py-3 text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
                 />
                 <button
                   onClick={handleSend}
                   disabled={sending || (!inputText.trim() && !pendingFile)}
-                  className={`rounded-full p-2.5 bg-gradient-to-r ${accent.gradient} hover:opacity-90 transition-opacity disabled:opacity-50`}
+                  className={`rounded-full bg-gradient-to-r p-3 ${accent.gradient} transition-opacity hover:opacity-90 disabled:opacity-50`}
                 >
                   {sending ? (
                     <Loader2 className="w-5 h-5 text-foreground animate-spin" />
@@ -1393,17 +1429,17 @@ export default function ChatInbox() {
             </div>
 
             {callStatus !== 'idle' && activeCallPeerName && (
-              <div className="border-t border-border-subtle bg-background p-3">
+              <div className="border-t border-border-subtle bg-background p-3 sm:px-5">
                 <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{activeCallType === 'video' ? 'Video call' : 'Audio call'} with {activeCallPeerName}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{callStatus}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}</p>
+                    <p className="text-xs capitalize text-muted-foreground">{callStatus}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={toggleMic}
-                      className="p-2 rounded-lg border border-border-subtle text-muted-foreground hover:bg-white/10 transition-colors"
+                      className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
                       title={isMicMuted ? 'Unmute microphone' : 'Mute microphone'}
                     >
                       {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -1412,7 +1448,7 @@ export default function ChatInbox() {
                       <button
                         type="button"
                         onClick={toggleCamera}
-                        className="p-2 rounded-lg border border-border-subtle text-muted-foreground hover:bg-white/10 transition-colors"
+                        className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
                         title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
                       >
                         {isCameraEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
@@ -1421,7 +1457,7 @@ export default function ChatInbox() {
                     <button
                       type="button"
                       onClick={handleEndCall}
-                      className="p-2 rounded-lg bg-red-600 hover:bg-red-700 transition-colors text-foreground"
+                      className="rounded-lg bg-red-600 p-2 text-foreground transition-colors hover:bg-red-700"
                       title="End call"
                     >
                       <PhoneOff className="w-4 h-4" />
@@ -1432,29 +1468,15 @@ export default function ChatInbox() {
                 <audio ref={remoteAudioCallbackRef} autoPlay />
                 {activeCallType === 'video' && (
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <video ref={localVideoCallbackRef} autoPlay muted playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
-                    <video ref={remoteVideoCallbackRef} autoPlay playsInline className="w-full h-32 rounded-lg bg-black object-cover" />
+                    <video ref={localVideoCallbackRef} autoPlay muted playsInline className="h-32 w-full rounded-lg bg-black object-cover" />
+                    <video ref={remoteVideoCallbackRef} autoPlay playsInline className="h-32 w-full rounded-lg bg-black object-cover" />
                   </div>
                 )}
               </div>
             )}
           </div>
-        ) : (
-          <div className="flex-1 hidden md:flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-background flex items-center justify-center">
-                <Send className="w-8 h-8 text-faint-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Select a conversation
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Choose a chat to start messaging
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

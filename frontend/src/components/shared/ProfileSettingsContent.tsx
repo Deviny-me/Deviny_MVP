@@ -8,7 +8,8 @@ import { useUser } from '@/components/user/UserProvider'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { updateUserProfile, changePassword, uploadAvatar, deleteAvatar, uploadBanner, deleteBanner } from '@/lib/api/userApi'
 import { getMediaUrl } from '@/lib/config'
-import { getCountries, getCitiesForCountry, getCountryName, translateCityName, resolveCountryCodeByName } from '@/lib/data/countries'
+import { getCountries, getCitiesForCountry, getCountryName, translateCityName, resolveCountryCodeByName, COUNTRIES_DATA } from '@/lib/data/countries'
+import { CountrySelect, type CountrySelectOption } from '@/features/auth/components/CountrySelect'
 import {
   ArrowLeft,
   Camera,
@@ -101,6 +102,13 @@ export function ProfileSettingsContent({
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const countries = getCountries(language)
+  const countryOptions: CountrySelectOption[] = countries.map((country) => ({
+    value: country.code,
+    label: country.name,
+    meta: COUNTRIES_DATA[country.code].phoneCode,
+    countryCode: country.code,
+    keywords: [country.code, country.name, COUNTRIES_DATA[country.code].phoneCode],
+  }))
   const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
   const isExpert = role === 'trainer' || role === 'nutritionist'
 
@@ -452,17 +460,17 @@ export function ProfileSettingsContent({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('country')}</label>
-            <select
+            <CountrySelect
               value={countryCode}
-              onChange={(e) => { setCountryCode(e.target.value); setCity('') }}
-              className={selectClass}
-              style={{ '--tw-ring-color': accent.primary } as React.CSSProperties}
-            >
-              <option value="">{tr('selectCountry')}</option>
-              {countries.map((c) => (
-                <option key={c.code} value={c.code}>{c.name}</option>
-              ))}
-            </select>
+              onChange={(value) => { setCountryCode(value); setCity('') }}
+              options={countryOptions}
+              placeholder={tr('selectCountry')}
+              searchPlaceholder={tr('searchCountry')}
+              emptyText={tr('noCountryFound')}
+              className="w-full h-[50px] rounded-xl border-border bg-background text-foreground hover:border-border focus:ring-primary-500/80 dark:bg-background"
+              showSelectedMeta={false}
+              renderValue={(option) => option ? option.label : ''}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">{t('city')}</label>

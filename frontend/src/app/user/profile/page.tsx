@@ -5,7 +5,6 @@ import { useLevel } from '@/components/level/LevelProvider'
 import { 
   Camera,
   MapPin,
-  Calendar,
   Zap,
   Grid,
   List,
@@ -278,6 +277,7 @@ export default function UserProfilePage() {
   const [toastData, setToastData] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const observerRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const isRefreshingPosts = isLoadingPosts && page === 1 && postIds.length > 0
 
   // Calculate level progress from LevelProvider
   const currentLevel = level?.currentLevel ?? user?.level ?? 1
@@ -285,18 +285,8 @@ export default function UserProfilePage() {
   const requiredXp = level?.requiredXpForNextLevel ?? user?.xpToNextLevel ?? 1000
   const levelProgress = Math.min(100, Math.max(0, requiredXp > 0 ? (currentXp / requiredXp) * 100 : 0))
 
-  const joinedDate = user?.createdAt ? new Date(user.createdAt) : null
-
   const localizedCountry = localizeCountryName(user?.country, language)
   const localizedCity = localizeCityName(user?.city, user?.country, language)
-
-  const genderLabel = user?.gender === 'Male' || user?.gender === 'male'
-    ? tp('male')
-    : user?.gender === 'Female' || user?.gender === 'female'
-      ? tp('female')
-      : user?.gender === 'Other' || user?.gender === 'other'
-        ? tp('other')
-        : null
 
   const loadPosts = useCallback(async (pageNum: number, append: boolean = false) => {
     // Abort previous request
@@ -326,7 +316,6 @@ export default function UserProfilePage() {
 
   const handleTabChange = useCallback((tab: ProfilePostTab) => {
     setActiveTab(tab)
-    setPostIds([])
     setPage(1)
     setHasMore(true)
     setIsLoadingPosts(true)
@@ -422,17 +411,10 @@ export default function UserProfilePage() {
                       <MapPin className="w-3 h-3" />
                       {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
                     </span>
-                    {genderLabel && (
-                      <span className="inline-flex items-center gap-1">
-                        {genderLabel}
-                      </span>
-                    )}
-                    {joinedDate && (
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {joinedDate.toLocaleDateString()}
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-1 text-center">
+                      <Zap className="w-3 h-3 text-[#0c8de6]" />
+                      {currentXp.toLocaleString()} / {requiredXp.toLocaleString()} XP
+                    </span>
                   </div>
                 </div>
 
@@ -478,30 +460,9 @@ export default function UserProfilePage() {
               </Link>
             </div>
 
-            {/* XP Progress */}
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Zap className="w-3.5 h-3.5 text-[#0c8de6]" />
-                <span>{currentXp.toLocaleString()} / {requiredXp.toLocaleString()} XP</span>
-              </div>
-              <div className="flex-1 h-1.5 rounded-full bg-border/50 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#0c8de6] to-[#0070c4] rounded-full transition-all"
-                  style={{ width: `${levelProgress}%` }}
-                />
-              </div>
-            </div>
-
             {/* About Me */}
             <div className="mt-4 bg-surface-1/45 p-3 dark:bg-white/[0.02] sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
-              <h3 className="mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{tp('aboutMe')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{user?.bio || tp('addDescription')}</p>
-              <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>
-                  {[localizedCity, localizedCountry].filter(Boolean).join(', ') || tp('notSpecified')}
-                </span>
-              </div>
             </div>
 
             {/* Profile Settings Button */}
@@ -542,48 +503,56 @@ export default function UserProfilePage() {
           {/* Post type tabs */}
           <ProfilePostTabs activeTab={activeTab} onTabChange={handleTabChange} disabled={isLoadingPosts} />
 
-          {postIds.length === 0 && !isLoadingPosts ? (
-            <div className="py-12 text-center">
-              <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <p className="text-muted-foreground">{tPosts('noPublications')}</p>
-              <p className="text-sm text-faint-foreground mt-1">{tp('uploadPhotoOrVideo')}</p>
-            </div>
-          ) : viewMode === 'grid' ? (
-            <div>
-              <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
-                {postIds.map((id) => (
-                  <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
-                ))}
+          <div className="relative">
+            {postIds.length === 0 && !isLoadingPosts ? (
+              <div className="py-12 text-center">
+                <Camera className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-muted-foreground">{tPosts('noPublications')}</p>
+                <p className="text-sm text-faint-foreground mt-1">{tp('uploadPhotoOrVideo')}</p>
               </div>
-              {(isLoadingPosts || hasMore) && (
-                <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
+            ) : viewMode === 'grid' ? (
+              <div>
+                <div className="grid grid-cols-2 gap-2 p-2 sm:grid-cols-3">
+                  {postIds.map((id) => (
+                    <GridCell key={id} postId={id} onSelect={setSelectedPostId} onDelete={handleDeletePost} deletingPostId={deletingPostId} />
+                  ))}
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-3 space-y-3">
-              {postIds.map((id) => (
-                <PostCard
-                  key={id}
-                  postId={id}
-                  isOwnProfile
-                  showDeleteInHeader
-                  onDelete={handleDeletePost}
-                  deletingPostId={deletingPostId}
-                  onRepostSuccess={() => loadPosts(1)}
-                  playingVideoId={playingVideoId}
-                  onVideoToggle={setPlayingVideoId}
-                  onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
-                />
-              ))}
-              {(isLoadingPosts || hasMore) && (
-                <div ref={observerRef} className="py-8 flex justify-center">
-                  {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
-                </div>
-              )}
-            </div>
-          )}
+                {!isRefreshingPosts && (isLoadingPosts || hasMore) && (
+                  <div ref={observerRef} className="py-8 flex justify-center">
+                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="p-3 space-y-3">
+                {postIds.map((id) => (
+                  <PostCard
+                    key={id}
+                    postId={id}
+                    isOwnProfile
+                    showDeleteInHeader
+                    onDelete={handleDeletePost}
+                    deletingPostId={deletingPostId}
+                    onRepostSuccess={() => loadPosts(1)}
+                    playingVideoId={playingVideoId}
+                    onVideoToggle={setPlayingVideoId}
+                    onPhotoClick={(url: string, caption?: string) => setViewingPhoto({ url, caption })}
+                  />
+                ))}
+                {!isRefreshingPosts && (isLoadingPosts || hasMore) && (
+                  <div ref={observerRef} className="py-8 flex justify-center">
+                    {isLoadingPosts && <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {isRefreshingPosts && (
+              <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-surface-3/72 backdrop-blur-[1px]">
+                <Loader2 className="w-7 h-7 text-[#0c8de6] animate-spin" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

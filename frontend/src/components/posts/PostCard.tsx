@@ -15,6 +15,8 @@ interface PostCardProps {
   postId: string
   /** Layout variant: 'feed' expands to 2-column for comments; 'modal' stacks comments below */
   variant?: 'feed' | 'modal'
+  /** Home feed portrait media layout */
+  mediaPreset?: 'default' | 'home-portrait'
   /** @deprecated Use useAuth() internally. Kept for backward compat. */
   currentUserId?: string | null
   /** Show delete button in header */
@@ -43,6 +45,7 @@ interface PostCardProps {
 export function PostCard({
   postId,
   variant = 'feed',
+  mediaPreset = 'default',
   currentUserId,
   showDeleteInHeader = false,
   isOwnProfile = false,
@@ -129,16 +132,22 @@ export function PostCard({
   }
 
   const isModal = variant === 'modal'
+  const isHomePortrait = mediaPreset === 'home-portrait'
+  const portraitCardStyle = isHomePortrait && !commentsOpen
+    ? { width: 'min(100%, calc(min(72vh, 54rem) * 3 / 4))' }
+    : undefined
 
   return (
-    <div className={`bg-surface-2 rounded-xl border border-border-subtle overflow-hidden transition-all duration-300 hover:border-border ${
+    <div style={portraitCardStyle} className={`bg-surface-2 rounded-xl border border-border-subtle overflow-hidden transition-all duration-300 hover:border-border ${
       isModal
         ? commentsOpen && !originalDeleted
           ? 'md:w-[920px] max-w-full'
           : 'md:w-[540px] max-w-full'
         : commentsOpen && !originalDeleted
           ? 'md:w-[calc(100%+420px)] md:-mr-[420px] relative z-10'
-          : ''
+          : isHomePortrait
+            ? 'mx-auto'
+            : ''
     }`}>
       <div className={commentsOpen && !originalDeleted
         ? isModal
@@ -232,7 +241,7 @@ export function PostCard({
               {/* Post Media Preview */}
               {displayMedia && displayMedia[0] && (
                 <div
-                  className="relative aspect-video bg-black cursor-pointer"
+                  className={`relative bg-black cursor-pointer ${isHomePortrait ? 'aspect-[3/4] max-h-[72vh]' : 'aspect-video'}`}
                   onClick={(e) => {
                     e.stopPropagation()
                     if (displayMedia[0].mediaType === MediaType.Video) {

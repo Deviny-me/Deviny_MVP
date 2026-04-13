@@ -1,11 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { 
   Image as ImageIcon,
   Video,
-  Award,
   Flame,
   Loader2,
   Upload,
@@ -24,7 +22,6 @@ import { useAuth } from '@/features/auth/AuthContext'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
 export function TrainerHomeFeed() {
-  const router = useRouter()
   const t = useTranslations('feed')
   const tp = useTranslations('posts')
   const tc = useTranslations('common')
@@ -152,13 +149,39 @@ export function TrainerHomeFeed() {
     }
   }
 
-  return (
-    <div className="space-y-5 pb-8">
-      <div>
-        <h1 className="page-title">{t('title')}</h1>
-        <p className="page-subtitle">{t('noPostsDescription')}</p>
-      </div>
+  const controlButtons = (
+    <>
+      <button
+        onClick={() => photoInputRef.current?.click()}
+        disabled={isUploading}
+        className="group flex min-h-[48px] min-w-[150px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-2.5 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#f07915]/35 hover:bg-[#f07915]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <span className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f07915]/12 transition-colors group-hover:bg-[#f07915]/18">
+            <ImageIcon className="h-4.5 w-4.5 text-[#f07915] transition-transform group-hover:scale-110" strokeWidth={1.9} />
+          </span>
+          <span className="text-[13px] font-semibold text-foreground">{t('photo')}</span>
+        </span>
+        <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#f07915]" />
+      </button>
+      <button
+        onClick={() => videoInputRef.current?.click()}
+        disabled={isUploading}
+        className="group flex min-h-[48px] min-w-[150px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-2.5 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#f07915]/35 hover:bg-[#f07915]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <span className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f07915]/12 transition-colors group-hover:bg-[#f07915]/18">
+            <Video className="h-4.5 w-4.5 text-[#f07915] transition-transform group-hover:scale-110" strokeWidth={1.9} />
+          </span>
+          <span className="text-[13px] font-semibold text-foreground">{t('video')}</span>
+        </span>
+        <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#f07915]" />
+      </button>
+    </>
+  )
 
+  return (
+    <div className="pb-8 lg:flex lg:items-start lg:gap-5">
       {/* Hidden file inputs */}
       <input
         ref={photoInputRef}
@@ -177,89 +200,52 @@ export function TrainerHomeFeed() {
         disabled={isUploading}
       />
 
-      {/* Create Post Card */}
-      <section className="bg-surface-2 rounded-2xl border border-border-subtle p-4 sm:p-5">
-        {/* Upload Progress */}
+      <aside className="mb-4 lg:sticky lg:top-4 lg:order-2 lg:mb-0 lg:w-[176px] lg:flex-shrink-0">
         {isUploading && uploadProgress && (
-          <div className="mb-3 flex items-center gap-2.5 px-3 py-2.5 bg-[#f07915]/[0.06] border border-[#f07915]/10 rounded-lg">
-            <Loader2 className="w-4 h-4 text-[#f07915] animate-spin" />
+          <div className="mb-3 flex items-center gap-2.5 rounded-lg border border-[#f07915]/10 bg-[#f07915]/[0.06] px-3 py-2.5">
+            <Loader2 className="h-4 w-4 animate-spin text-[#f07915]" />
             <span className="text-sm text-muted-foreground">{uploadProgress}</span>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <button 
-            onClick={() => photoInputRef.current?.click()}
-            disabled={isUploading}
-            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#f07915]/35 hover:bg-[#f07915]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f07915]/12 transition-colors group-hover:bg-[#f07915]/18">
-                <ImageIcon className="h-4.5 w-4.5 text-[#f07915] transition-transform group-hover:scale-110" strokeWidth={1.9} />
-              </span>
-              <span className="text-[13px] font-semibold text-foreground">{t('photo')}</span>
-            </span>
-            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#f07915]" />
-          </button>
-          <button 
-            onClick={() => videoInputRef.current?.click()}
-            disabled={isUploading}
-            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#f07915]/35 hover:bg-[#f07915]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f07915]/12 transition-colors group-hover:bg-[#f07915]/18">
-                <Video className="h-4.5 w-4.5 text-[#f07915] transition-transform group-hover:scale-110" strokeWidth={1.9} />
-              </span>
-              <span className="text-[13px] font-semibold text-foreground">{t('video')}</span>
-            </span>
-            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#f07915]" />
-          </button>
-          <button 
-            onClick={() => router.push('/trainer/achievements')}
-            disabled={isUploading}
-            className="group flex min-h-[52px] items-center justify-between gap-3 rounded-xl border border-dashed border-[rgba(148,163,184,0.22)] bg-background px-3.5 py-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.03)] transition-all hover:border-[#f07915]/35 hover:bg-[#f07915]/[0.05] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#f07915]/12 transition-colors group-hover:bg-[#f07915]/18">
-                <Award className="h-4.5 w-4.5 text-[#f07915] transition-transform group-hover:scale-110" strokeWidth={1.9} />
-              </span>
-              <span className="text-[13px] font-semibold text-foreground">{t('achievement')}</span>
-            </span>
-            <Upload className="h-4 w-4 text-faint-foreground transition-transform group-hover:-translate-y-0.5 group-hover:text-[#f07915]" />
-          </button>
+        <div className="flex flex-wrap gap-2 lg:flex-col">
+          {controlButtons}
         </div>
-      </section>
+      </aside>
 
-      {/* Feed Posts or Empty State */}
-      {feedLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-7 h-7 text-[#f07915] animate-spin" />
-        </div>
-      ) : feedPostIds.length > 0 ? (
-        <div className="space-y-4">
-          {feedPostIds.map((id) => (
-            <PostCard
-              key={id}
-              postId={id}
-              currentUserId={user?.id}
-              showDeleteInHeader
-              onDelete={handleDeletePost}
-              deletingPostId={deletingPostId}
-              onRepostSuccess={() => loadFeed()}
-              playingVideoId={playingVideoId}
-              onVideoToggle={setPlayingVideoId}
-              onPhotoClick={(url, caption) => setViewingPhoto({ url, caption })}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-surface-2 rounded-2xl border border-border-subtle p-8 sm:p-16 text-center">
-          <div className="w-14 h-14 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
-            <Flame className="w-7 h-7 text-gray-600" />
+      <div className="lg:order-1 lg:min-w-0 lg:flex-1">
+        {feedLoading ? (
+          <div className="flex min-h-[72vh] items-center justify-center">
+            <Loader2 className="w-7 h-7 text-[#f07915] animate-spin" />
           </div>
-          <h3 className="text-base font-semibold text-foreground mb-1.5">{t('noPosts')}</h3>
-          <p className="text-sm text-faint-foreground max-w-xs mx-auto">{t('noPostsDescription')}</p>
-        </div>
-      )}
+        ) : feedPostIds.length > 0 ? (
+          <div className="space-y-5">
+            {feedPostIds.map((id) => (
+              <div key={id} className="flex justify-center">
+                <PostCard
+                  postId={id}
+                  mediaPreset="home-portrait"
+                  currentUserId={user?.id}
+                  showDeleteInHeader
+                  onDelete={handleDeletePost}
+                  deletingPostId={deletingPostId}
+                  onRepostSuccess={() => loadFeed()}
+                  playingVideoId={playingVideoId}
+                  onVideoToggle={setPlayingVideoId}
+                  onPhotoClick={(url, caption) => setViewingPhoto({ url, caption })}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-surface-2 rounded-2xl border border-border-subtle p-8 sm:p-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-border-subtle flex items-center justify-center mx-auto mb-4">
+              <Flame className="w-7 h-7 text-gray-600" />
+            </div>
+            <h3 className="text-base font-semibold text-foreground mb-1.5">{t('noPosts')}</h3>
+            <p className="text-sm text-faint-foreground max-w-xs mx-auto">{t('noPostsDescription')}</p>
+          </div>
+        )}
+      </div>
 
       {/* Photo Lightbox */}
       {viewingPhoto && (
