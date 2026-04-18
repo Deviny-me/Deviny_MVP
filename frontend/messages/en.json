@@ -635,6 +635,13 @@
     "editEvent": "Edit event",
     "newEvent": "New event",
     "today": "Today",
+    "allDay": "All day",
+    "moreEvents": "+{count} more",
+    "views": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
     "noEvents": "No events for this day",
     "totalEvents": "Total events",
     "upcoming": "Upcoming",

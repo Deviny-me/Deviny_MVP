@@ -100,13 +100,27 @@ public class AuthController : ControllerBase
 
             await _otpRepository.CreateAsync(otp);
 
-            // Send email
-            await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            // Send email. In development, allow local flow to continue if SMTP is unavailable.
+            try
+            {
+                await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            }
+            catch (Exception ex) when (_env.IsDevelopment())
+            {
+                _logger.LogWarning(ex, "SMTP send failed in development for {Email}. Returning OTP for local testing.", request.Email);
+                return Ok(new
+                {
+                    message = "OTP_SENT_DEVELOPMENT",
+                    expiresInMinutes = _emailSettings.OtpExpirationMinutes,
+                    debugOtp = otpCode
+                });
+            }
 
             return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to send registration OTP to {Email}", request.Email);
             return StatusCode(500, new { message = "FAILED_TO_SEND_OTP", error = ex.Message });
         }
     }
@@ -197,15 +211,28 @@ public class AuthController : ControllerBase
 
             await _otpRepository.CreateAsync(otp);
 
-            // Send password reset email
-            await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            // Send password reset email. In development, allow local flow to continue if SMTP is unavailable.
+            try
+            {
+                await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            }
+            catch (Exception ex) when (_env.IsDevelopment())
+            {
+                _logger.LogWarning(ex, "SMTP send failed in development for password reset on {Email}. Returning OTP for local testing.", request.Email);
+                return Ok(new
+                {
+                    message = "OTP_SENT_DEVELOPMENT",
+                    expiresInMinutes = _emailSettings.OtpExpirationMinutes,
+                    debugOtp = otpCode
+                });
+            }
 
             return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Forgot password error: {ex}");
-            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP" });
+            _logger.LogError(ex, "Failed to send password reset OTP to {Email}", request.Email);
+            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP", error = ex.Message });
         }
     }
 

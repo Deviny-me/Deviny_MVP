@@ -175,30 +175,39 @@ app.UseSwaggerUI();
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var canConnect = false;
 
     try
     {
         logger.LogInformation("🔄 Applying migrations...");
         await context.Database.MigrateAsync();
         logger.LogInformation("✅ Migrations applied.");
+        canConnect = true;
     }
     catch (Exception ex)
     {
-        logger.LogWarning(ex, "⚠️ Migration attempt finished with error (DB may already be up to date).");
+        logger.LogWarning(ex, "⚠️ Migration failed. Database may be unavailable or credentials may be invalid.");
     }
 
     // Seed database with initial data
-    try
+    if (canConnect)
     {
-        logger.LogInformation("🌱 Starting database seed...");
-        var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-        await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAsync(context, passwordHasher);
-        await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAchievementsAsync(context);
-        logger.LogInformation("✅ Database seed completed.");
+        try
+        {
+            logger.LogInformation("🌱 Starting database seed...");
+            var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAsync(context, passwordHasher);
+            await Deviny.Infrastructure.Persistence.DatabaseSeeder.SeedAchievementsAsync(context);
+            logger.LogInformation("✅ Database seed completed.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "❌ Error during database seeding");
+        }
     }
-    catch (Exception ex)
+    else
     {
-        logger.LogError(ex, "❌ Error during database seeding");
+        logger.LogWarning("⏭️ Skipping database seed because database connection is unavailable.");
     }
 }
 
@@ -208,10 +217,14 @@ app.UseSwaggerUI();
 app.UseStaticFiles(); // Для wwwroot
 
 // Раздавать uploads папку
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+    Directory.CreateDirectory(uploadsPath);
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
+        uploadsPath),
     RequestPath = "/uploads"
 });
 

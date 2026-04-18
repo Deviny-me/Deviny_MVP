@@ -635,6 +635,13 @@
     "editEvent": "Tədbiri redaktə et",
     "newEvent": "Yeni tədbir",
     "today": "Bu gün",
+    "allDay": "Bütün gün",
+    "moreEvents": "+ daha {count}",
+    "views": {
+      "day": "Gün",
+      "week": "Həftə",
+      "month": "Ay"
+    },
     "noEvents": "Bu gün üçün tədbir yoxdur",
     "totalEvents": "Cəmi tədbir",
     "upcoming": "Gözlənilən",

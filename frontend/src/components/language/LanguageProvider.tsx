@@ -95,8 +95,16 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageProviderProps) {
-  const [language, setLanguageState] = useState<Language>(() => readStoredLanguage(LANGUAGE_STORAGE_KEY) ?? initialLanguage)
+  const [language, setLanguageState] = useState<Language>(initialLanguage)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Apply stored preference after hydration to avoid SSR/client text mismatches.
+  useEffect(() => {
+    const storedLanguage = readStoredLanguage(LANGUAGE_STORAGE_KEY)
+    if (storedLanguage && storedLanguage !== language) {
+      setLanguageState(storedLanguage)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync with API on mount
   useEffect(() => {
