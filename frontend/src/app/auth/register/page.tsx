@@ -17,6 +17,8 @@ import { cn } from '@/lib/utils/cn'
 import { OtpVerification } from '@/features/auth/components/OtpVerification'
 import { authService } from '@/features/auth/services/authService'
 
+const SKIP_EMAIL_VERIFICATION_IN_DEV = process.env.NODE_ENV === 'development'
+
 const roleConfig = {
   user:         { icon: User,     iconBg: 'bg-gradient-to-br from-user-100 to-user-200 dark:from-user-500/20 dark:to-user-600/20', iconColor: 'text-user-600 dark:text-user-400', gradientLine: 'from-user-400 via-user-500 to-user-600' },
   trainer:      { icon: Dumbbell, iconBg: 'bg-gradient-to-br from-trainer-100 to-trainer-200 dark:from-trainer-500/20 dark:to-trainer-600/20', iconColor: 'text-trainer-600 dark:text-trainer-400', gradientLine: 'from-trainer-400 via-trainer-500 to-trainer-600' },
@@ -33,6 +35,7 @@ function RegisterPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const injuryFileInputRef = useRef<HTMLInputElement>(null)
   const t = useTranslations('auth')
   const tr = useTranslations('auth.register')
   const tv = useTranslations('auth.validation')
@@ -58,8 +61,11 @@ function RegisterPageContent() {
   const [gender, setGender] = useState<GenderType | undefined>()
   const [countryCode, setCountryCode] = useState<string>('')
   const [city, setCity] = useState('')
+  const [hasInjuries, setHasInjuries] = useState(false)
   const [verificationDocument, setVerificationDocument] = useState<File | null>(null)
+  const [injuryDocument, setInjuryDocument] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [injuryDragActive, setInjuryDragActive] = useState(false)
 
   const availableCities = countryCode ? getCitiesForCountry(countryCode, language) : []
   const selectedCountryName = countryCode ? getCountryName(countryCode, 'en') : ''
@@ -153,10 +159,17 @@ function RegisterPageContent() {
       gender,
       country: selectedCountryName || undefined,
       city: city || undefined,
+      hasInjuries,
+      injuryDocument: hasInjuries ? injuryDocument || undefined : undefined,
     }
 
     if (role === 'trainer' || role === 'nutritionist') {
       formData.verificationDocument = verificationDocument || undefined
+    }
+
+    if (SKIP_EMAIL_VERIFICATION_IN_DEV) {
+      await register(formData, role)
+      return
     }
     
     // Send OTP to email before registration
@@ -194,6 +207,8 @@ function RegisterPageContent() {
       gender,
       country: selectedCountryName || undefined,
       city: city || undefined,
+      hasInjuries,
+      injuryDocument: hasInjuries ? injuryDocument || undefined : undefined,
     }
 
     if (role === 'trainer' || role === 'nutritionist') {
@@ -244,6 +259,43 @@ function RegisterPageContent() {
   const removeFile = () => {
     setVerificationDocument(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleInjuryDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setInjuryDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setInjuryDragActive(false)
+    }
+  }
+
+  const handleInjuryDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setInjuryDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleInjuryFileSelect(e.dataTransfer.files[0])
+    }
+  }
+
+  const handleInjuryFileSelect = (file: File) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+    if (!allowedTypes.includes(file.type)) return
+    if (file.size > 10 * 1024 * 1024) return
+    setInjuryDocument(file)
+  }
+
+  const handleInjuryFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleInjuryFileSelect(e.target.files[0])
+    }
+  }
+
+  const removeInjuryFile = () => {
+    setInjuryDocument(null)
+    if (injuryFileInputRef.current) injuryFileInputRef.current.value = ''
   }
 
   const getFileIcon = (file: File) => {
@@ -411,6 +463,101 @@ function RegisterPageContent() {
               {isProfessional ? tr('professionalInfo') : tr('additionalInfo')}
             </p>
           </div>
+
+          <div className="rounded-xl border border-gray-200/60 dark:border-white/[0.08] p-4 bg-gray-50/40 dark:bg-white/[0.02]">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{tr('hasInjuriesQuestion')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{tr('injuryUploadHint')}</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hasInjuries}
+                onClick={() => {
+                  setHasInjuries((prev) => {
+                    const next = !prev
+                    if (!next) {
+                      removeInjuryFile()
+                    }
+                    return next
+                  })
+                }}
+                className={cn(
+                  'relative inline-flex h-7 w-12 items-center rounded-full transition-colors',
+                  hasInjuries ? 'bg-primary-500' : 'bg-gray-300 dark:bg-white/20'
+                )}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-5 w-5 transform rounded-full bg-white transition-transform',
+                    hasInjuries ? 'translate-x-6' : 'translate-x-1'
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+
+          {hasInjuries && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{tr('injuryUploadLabel')}</label>
+
+              {!injuryDocument ? (
+                <div
+                  className={cn(
+                    'relative border-2 border-dashed rounded-xl p-6 text-center transition-all',
+                    injuryDragActive
+                      ? 'border-primary-500 bg-primary-50/80 dark:bg-primary-500/10'
+                      : errors.injuryDocument
+                        ? 'border-red-400 bg-red-50/50'
+                        : 'border-gray-300/60 hover:border-primary-400/50 bg-gray-50/30 dark:border-white/[0.08] dark:hover:border-white/[0.15] dark:bg-white/[0.02]'
+                  )}
+                  onDragEnter={handleInjuryDrag}
+                  onDragLeave={handleInjuryDrag}
+                  onDragOver={handleInjuryDrag}
+                  onDrop={handleInjuryDrop}
+                >
+                  <input
+                    ref={injuryFileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleInjuryFileInputChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={loading}
+                  />
+                  <div className="w-14 h-14 rounded-2xl bg-primary-100/50 dark:bg-white/10 flex items-center justify-center mx-auto mb-3">
+                    <Upload className="w-6 h-6 text-primary-500/60 dark:text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold text-primary-600">{tr('selectFile')}</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{tr('allowedFormats')}</p>
+                </div>
+              ) : (
+                <div className="border border-amber-200/30 dark:border-white/10 rounded-xl p-4 bg-amber-50/30 dark:bg-white/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {getFileIcon(injuryDocument)}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{injuryDocument.name}</p>
+                        <p className="text-xs text-gray-500">{formatFileSize(injuryDocument.size)}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeInjuryFile}
+                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+                      disabled={loading}
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {errors.injuryDocument && <p className="mt-1 text-sm text-red-600">{errors.injuryDocument}</p>}
+            </div>
+          )}
 
           {/* Gender */}
           <div>

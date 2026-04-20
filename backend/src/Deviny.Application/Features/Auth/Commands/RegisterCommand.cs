@@ -17,7 +17,9 @@ public record RegisterCommand(
     Gender? Gender = null,
     string? Country = null,
     string? City = null,
-    IFormFile? VerificationDocument = null
+    IFormFile? VerificationDocument = null,
+    bool HasInjuries = false,
+    IFormFile? InjuryDocument = null
 ) : IRequest<LoginResponse>;
 
 public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
@@ -60,5 +62,11 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.Phone)
             .MaximumLength(20).WithMessage("Phone number must not exceed 20 characters")
             .When(x => !string.IsNullOrEmpty(x.Phone));
+
+        When(x => x.HasInjuries, () =>
+        {
+            RuleFor(x => x.InjuryDocument)
+                .NotNull().WithMessage("Please upload your medical certificate to proceed");
+        });
     }
 }

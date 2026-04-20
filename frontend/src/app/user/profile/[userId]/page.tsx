@@ -13,7 +13,7 @@ function OtherUserProfilePageInner() {
 
   return (
     <PublicProfileContent
-      userId={userId}
+      profileIdentifier={userId}
       currentUserId={currentUser?.id}
       basePath="/user"
       ownProfilePath="/user/profile"

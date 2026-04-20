@@ -40,6 +40,7 @@ public class GetMyFollowersQueryHandler : IRequestHandler<GetMyFollowersQuery, P
             Email = f.Follower.Email,
             FullName = f.Follower.FullName,
             Avatar = f.Follower.AvatarUrl,
+            Role = f.Follower.Role.ToString(),
             FriendsSince = f.FollowedAt
         }).ToList();
 

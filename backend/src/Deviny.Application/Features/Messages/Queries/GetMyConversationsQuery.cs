@@ -46,7 +46,9 @@ public class GetMyConversationsQueryHandler : IRequestHandler<GetMyConversations
                     Id = peerMember.User.Id,
                     FullName = peerMember.User.FullName,
                     AvatarUrl = peerMember.User.AvatarUrl,
-                    Role = peerMember.User.Role.ToString()
+                    Role = peerMember.User.Role.ToString(),
+                    IsOnline = peerMember.User.IsOnline,
+                    LastSeenAtUtc = peerMember.User.LastSeenAtUtc
                 },
                 LastMessageText = lastMessage?.Text,
                 LastMessageAt = lastMessage?.CreatedAt,

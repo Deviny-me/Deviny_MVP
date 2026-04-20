@@ -99,4 +99,26 @@ public class ProgramPurchaseRepository : IProgramPurchaseRepository
                     ? pp.TrainingProgramId == programId
                     : pp.MealProgramId == programId));
     }
+
+    public async Task<List<Guid>> GetBuyerIdsByTrainerAsync(Guid trainerId)
+    {
+        var validStatuses = new[] { ProgramPurchaseStatus.Active, ProgramPurchaseStatus.Completed };
+
+        var buyerIds = await (
+            from purchase in _context.ProgramPurchases.AsNoTracking()
+            where validStatuses.Contains(purchase.Status)
+            join trainingProgram in _context.TrainingPrograms.AsNoTracking()
+                on purchase.TrainingProgramId equals trainingProgram.Id into trainingJoin
+            from trainingProgram in trainingJoin.DefaultIfEmpty()
+            join mealProgram in _context.MealPrograms.AsNoTracking()
+                on purchase.MealProgramId equals mealProgram.Id into mealJoin
+            from mealProgram in mealJoin.DefaultIfEmpty()
+            where (trainingProgram != null && trainingProgram.TrainerId == trainerId)
+                || (mealProgram != null && mealProgram.TrainerId == trainerId)
+            select purchase.UserId)
+            .Distinct()
+            .ToListAsync();
+
+        return buyerIds;
+    }
 }

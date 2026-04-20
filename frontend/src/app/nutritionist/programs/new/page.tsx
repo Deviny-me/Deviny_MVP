@@ -8,6 +8,7 @@ import {
   Upload,
   Loader2,
   Video,
+  Plus,
   DollarSign,
   Apple,
   MessageSquare,
@@ -24,6 +25,25 @@ const toast = {
   success: (msg: string) => console.log('Success:', msg),
   error: (msg: string) => console.error('Error:', msg),
 }
+
+type VideoBlock = {
+  id: string
+  title: string
+  description: string
+  file: File | null
+}
+
+const DEFAULT_VIDEO_BLOCKS = 5
+
+const createVideoBlock = (): VideoBlock => ({
+  id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  title: '',
+  description: '',
+  file: null,
+})
+
+const createDefaultVideoBlocks = (): VideoBlock[] =>
+  Array.from({ length: DEFAULT_VIDEO_BLOCKS }, () => createVideoBlock())
 
 export default function NutritionistProgramFormPage() {
   const router = useRouter()
@@ -48,7 +68,7 @@ export default function NutritionistProgramFormPage() {
   const [maxProSpots, setMaxProSpots] = useState('')
   const [coverImage, setCoverImage] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
-  const [videos, setVideos] = useState<File[]>([])
+  const [videoBlocks, setVideoBlocks] = useState<VideoBlock[]>(createDefaultVideoBlocks())
   const [isPublic, setIsPublic] = useState(true)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -92,17 +112,33 @@ export default function NutritionistProgramFormPage() {
     }
   }
 
-  const handleVideosChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setVideos((prev) => [...prev, ...files])
+  const handleVideoFileChange = (index: number, file: File | null) => {
+    setVideoBlocks((prev) =>
+      prev.map((block, i) => (i === index ? { ...block, file } : block))
+    )
   }
 
-  const removeVideo = (index: number) => {
-    setVideos((prev) => prev.filter((_, i) => i !== index))
+  const handleVideoTextChange = (index: number, field: 'title' | 'description', value: string) => {
+    setVideoBlocks((prev) =>
+      prev.map((block, i) => (i === index ? { ...block, [field]: value } : block))
+    )
+  }
+
+  const addVideoBlock = () => {
+    setVideoBlocks((prev) => [...prev, createVideoBlock()])
+  }
+
+  const removeVideoBlock = (index: number) => {
+    setVideoBlocks((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const selectedVideoBlocks = videoBlocks.filter((block) => block.file !== null)
+    const videos = selectedVideoBlocks
+      .map((block) => block.file)
+      .filter((file): file is File => file !== null)
 
     if (!title || !description) {
       toast.error(t('toasts.fillRequired'))
@@ -218,7 +254,9 @@ export default function NutritionistProgramFormPage() {
                       onClick={() => setFormCategory(cat)}
                       className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all border ${
                         formCategory === cat
-                          ? `bg-${color}-500/20 text-${color}-400 border-${color}-500/50`
+                          ? color === 'green'
+                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                            : 'bg-violet-500/20 text-violet-400 border-violet-500/50'
                           : 'bg-background text-muted-foreground border-border hover:border-border'
                       }`}
                     >
@@ -454,40 +492,65 @@ export default function NutritionistProgramFormPage() {
             {formCategory !== 'Consultation' && (
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-2">
-                  {t('trainingVideos')}
+                  {t('mealRecipeVideos')}
                 </label>
-                <label
-                  className={`flex items-center justify-center w-full py-3 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}
-                >
-                  <Video className="w-5 h-5 text-muted-foreground mr-2" />
-                  <span className="text-sm text-muted-foreground">{t('addVideo')}</span>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    multiple
-                    onChange={handleVideosChange}
-                    className="hidden"
-                  />
-                </label>
-                {videos.length > 0 && (
-                  <div className="mt-2 space-y-2">
-                    {videos.map((video, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-background rounded-lg"
-                      >
-                        <span className="text-sm text-muted-foreground truncate">{video.name}</span>
+                <div className="space-y-3">
+                  {videoBlocks.map((block, index) => (
+                    <div key={block.id} className="p-3 bg-background rounded-lg border border-border space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-muted-foreground">{t('recipeBlock', { number: index + 1 })}</p>
                         <button
                           type="button"
-                          onClick={() => removeVideo(index)}
+                          onClick={() => removeVideoBlock(index)}
                           className="text-red-400 hover:text-red-300"
+                          title={t('removeVideo')}
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                    ))}
-                  </div>
-                )}
+
+                      <input
+                        type="text"
+                        value={block.title}
+                        onChange={(e) => handleVideoTextChange(index, 'title', e.target.value)}
+                        className={`w-full px-3 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.focusBorder}`}
+                        placeholder={t('recipeTitlePlaceholder')}
+                      />
+
+                      <textarea
+                        value={block.description}
+                        onChange={(e) => handleVideoTextChange(index, 'description', e.target.value)}
+                        rows={2}
+                        className={`w-full px-3 py-2 bg-[#111] border border-border rounded-lg text-foreground text-sm focus:outline-none ${accent.focusBorder} resize-none`}
+                        placeholder={t('recipeDescriptionPlaceholder')}
+                      />
+
+                      <label
+                        className={`flex items-center justify-center w-full py-2.5 border-2 border-dashed border-white/20 rounded-lg cursor-pointer ${accent.hoverBorder} transition-colors`}
+                      >
+                        <Video className="w-5 h-5 text-muted-foreground mr-2" />
+                        <span className="text-sm text-muted-foreground">
+                          {block.file ? block.file.name : t('addRecipeVideo')}
+                        </span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => handleVideoFileChange(index, e.target.files?.[0] ?? null)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={addVideoBlock}
+                    className={`w-full py-2.5 border border-white/20 rounded-lg text-sm text-muted-foreground hover:text-foreground ${accent.hoverBorder} transition-colors flex items-center justify-center gap-2`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('addRecipeBlock')}
+                  </button>
+                </div>
               </div>
             )}
 

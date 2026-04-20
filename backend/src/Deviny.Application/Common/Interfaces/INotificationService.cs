@@ -5,7 +5,7 @@ namespace Deviny.Application.Common.Interfaces;
 
 public interface INotificationService
 {
-    Task<Notification> CreateAsync(
+    Task<Notification?> CreateAsync(
         Guid userId,
         NotificationType type,
         string title,

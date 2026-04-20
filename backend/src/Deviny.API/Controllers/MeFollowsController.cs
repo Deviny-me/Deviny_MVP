@@ -14,11 +14,16 @@ public class MeFollowsController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly IRealtimeNotifier _realtimeNotifier;
+    private readonly IUserFollowRepository _userFollowRepository;
 
-    public MeFollowsController(IMediator mediator, IRealtimeNotifier realtimeNotifier)
+    public MeFollowsController(
+        IMediator mediator,
+        IRealtimeNotifier realtimeNotifier,
+        IUserFollowRepository userFollowRepository)
     {
         _mediator = mediator;
         _realtimeNotifier = realtimeNotifier;
+        _userFollowRepository = userFollowRepository;
     }
 
     [HttpPost("{trainerId}")]
@@ -32,6 +37,8 @@ public class MeFollowsController : BaseApiController
                 "Cannot follow yourself.",
                 StatusCodes.Status400BadRequest));
         }
+
+        var wasMutual = await _userFollowRepository.AreMutualFollowsAsync(userId, trainerId);
 
         var command = new FollowTrainerCommand
         {
@@ -49,6 +56,18 @@ public class MeFollowsController : BaseApiController
             trainerId,
             new { followerId = userId, trainerId });
 
+        var isMutual = await _userFollowRepository.AreMutualFollowsAsync(userId, trainerId);
+        if (!wasMutual && isMutual)
+        {
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                new[] { userId, trainerId },
+                "friends",
+                "created",
+                "mutual-follow",
+                trainerId,
+                new { user1Id = userId, user2Id = trainerId, friendsSince = await _userFollowRepository.GetMutualFollowSinceAsync(userId, trainerId) });
+        }
+
         return NoContent();
     }
 
@@ -56,6 +75,7 @@ public class MeFollowsController : BaseApiController
     public async Task<IActionResult> UnfollowTrainer(Guid trainerId)
     {
         var userId = GetCurrentUserId();
+        var wasMutual = await _userFollowRepository.AreMutualFollowsAsync(userId, trainerId);
         var command = new UnfollowTrainerCommand
         {
             FollowerId = userId,
@@ -71,6 +91,18 @@ public class MeFollowsController : BaseApiController
             "follow",
             trainerId,
             new { followerId = userId, trainerId });
+
+        var isMutual = await _userFollowRepository.AreMutualFollowsAsync(userId, trainerId);
+        if (wasMutual && !isMutual)
+        {
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                new[] { userId, trainerId },
+                "friends",
+                "deleted",
+                "mutual-follow",
+                trainerId,
+                new { user1Id = userId, user2Id = trainerId });
+        }
 
         return NoContent();
     }

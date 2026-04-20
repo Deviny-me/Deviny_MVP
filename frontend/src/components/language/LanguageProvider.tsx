@@ -161,6 +161,29 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
     syncLanguage()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep browser-level language metadata aligned with in-app language selection.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    document.documentElement.lang = language
+
+    const localizedTitle = messagesMap[language]?.metadata?.title
+    if (localizedTitle) {
+      document.title = localizedTitle
+    }
+
+    const localizedDescription = messagesMap[language]?.metadata?.description
+    if (localizedDescription) {
+      let descriptionTag = document.querySelector('meta[name="description"]') as HTMLMetaElement | null
+      if (!descriptionTag) {
+        descriptionTag = document.createElement('meta')
+        descriptionTag.name = 'description'
+        document.head.appendChild(descriptionTag)
+      }
+      descriptionTag.content = localizedDescription
+    }
+  }, [language])
+
   const setLanguage = useCallback(async (newLanguage: Language) => {
     setIsLoading(true)
     setLanguageState(newLanguage)

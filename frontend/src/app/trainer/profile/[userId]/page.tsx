@@ -13,7 +13,7 @@ function OtherUserProfilePageTrainerInner() {
 
   return (
     <PublicProfileContent
-      userId={userId}
+      profileIdentifier={userId}
       currentUserId={authUser?.id}
       basePath="/trainer"
       ownProfilePath="/trainer/profile"

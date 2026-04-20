@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { NavSection } from './types'
 import { startNavigation } from '@/components/ui/RouteProgressBar'
+import { useAchievementsOptional } from '@/contexts/AchievementsContext'
 
 interface SharedLeftSidebarProps {
   sections: NavSection[]
@@ -25,6 +26,7 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
   const router = useRouter()
   const pathname = usePathname()
   const t = useTranslations('nav')
+  const achievements = useAchievementsOptional()
 
   const isActivePath = (path: string) =>
     pathname === path || (path.split('/').length > 2 && pathname?.startsWith(`${path}/`))
@@ -48,6 +50,10 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
               {section.links.map((link, linkIndex) => {
                 const isActive = isActivePath(link.path)
                 const LinkIcon = link.icon
+                const dynamicBadge =
+                  link.label === 'achievements' && achievements
+                    ? achievements.unlockedCount
+                    : link.badge
                 return (
                   <button
                     key={`${link.path}-${linkIndex}`}
@@ -71,9 +77,9 @@ export function SharedLeftSidebar({ sections, className, accentColor = 'orange' 
                     }`}>
                       {t(link.label as any)}
                     </span>
-                    {link.badge !== undefined && link.badge > 0 && (
+                    {dynamicBadge !== undefined && dynamicBadge > 0 && (
                       <span className={`ml-auto px-1 py-0.5 text-[9px] sm:text-[10px] font-bold ${colors.badge} text-foreground rounded-full min-w-[16px] sm:min-w-[20px] text-center`}>
-                        {link.badge}
+                        {dynamicBadge}
                       </span>
                     )}
                   </button>

@@ -7,9 +7,11 @@ import { useLanguage } from '@/components/language/LanguageProvider'
 import { useUser } from '@/components/user/UserProvider'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { updateUserProfile, changePassword, uploadAvatar, deleteAvatar, uploadBanner, deleteBanner } from '@/lib/api/userApi'
+import { notificationsApi } from '@/lib/api/notificationsApi'
 import { getMediaUrl } from '@/lib/config'
 import { getCountries, getCitiesForCountry, getCountryName, translateCityName, resolveCountryCodeByName, COUNTRIES_DATA } from '@/lib/data/countries'
 import { CountrySelect, type CountrySelectOption } from '@/features/auth/components/CountrySelect'
+import { NotificationSettings } from '@/types/notification'
 import {
   ArrowLeft,
   Camera,
@@ -25,6 +27,7 @@ import {
   Lock,
   Save,
   ChevronDown,
+  Bell,
 } from 'lucide-react'
 
 interface ProfileSettingsContentProps {
@@ -100,6 +103,9 @@ export function ProfileSettingsContent({
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null)
+  const [loadingNotificationSettings, setLoadingNotificationSettings] = useState(true)
+  const [savingNotificationSettings, setSavingNotificationSettings] = useState(false)
 
   const countries = getCountries(language)
   const countryOptions: CountrySelectOption[] = countries.map((country) => ({
@@ -146,6 +152,22 @@ export function ProfileSettingsContent({
     setExperienceYears(professionalData.experienceYears?.toString() || '')
     setAbout(professionalData.about || '')
   }, [professionalData])
+
+  useEffect(() => {
+    const loadNotificationSettings = async () => {
+      try {
+        setLoadingNotificationSettings(true)
+        const settings = await notificationsApi.getSettings()
+        setNotificationSettings(settings)
+      } catch (error) {
+        console.error('Failed to load notification settings:', error)
+      } finally {
+        setLoadingNotificationSettings(false)
+      }
+    }
+
+    loadNotificationSettings()
+  }, [])
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type })
@@ -275,6 +297,26 @@ export function ProfileSettingsContent({
       showToast(t('bannerDeleted'), 'success')
     } catch {
       showToast(t('bannerDeleteError'), 'error')
+    }
+  }
+
+  const updateNotificationSettings = async (patch: Partial<NotificationSettings>) => {
+    if (!notificationSettings) return
+
+    const previous = notificationSettings
+    const optimistic = { ...notificationSettings, ...patch }
+    setNotificationSettings(optimistic)
+
+    try {
+      setSavingNotificationSettings(true)
+      const saved = await notificationsApi.updateSettings(patch)
+      setNotificationSettings(saved)
+    } catch (error) {
+      console.error('Failed to update notification settings:', error)
+      setNotificationSettings(previous)
+      showToast(t('notificationSettingsSaveError'), 'error')
+    } finally {
+      setSavingNotificationSettings(false)
     }
   }
 
@@ -539,6 +581,93 @@ export function ProfileSettingsContent({
 
         </div>
       )}
+
+      {/* Notification Preferences */}
+      <div className="bg-surface-3 rounded-xl border border-border p-4 sm:p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <Bell className="w-4 h-4" />
+          {t('notificationSettingsTitle')}
+        </h3>
+
+        {loadingNotificationSettings || !notificationSettings ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            {t('notificationSettingsLoading')}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <label className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('notificationsGlobal')}</p>
+                <p className="text-xs text-muted-foreground">{t('notificationsGlobalDesc')}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationSettings.notificationsEnabled}
+                onChange={(e) => updateNotificationSettings({ notificationsEnabled: e.target.checked })}
+                disabled={savingNotificationSettings}
+                className="h-5 w-5 rounded border-border"
+              />
+            </label>
+
+            <label className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('notificationsWorkoutReminders')}</p>
+                <p className="text-xs text-muted-foreground">{t('notificationsWorkoutRemindersDesc')}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationSettings.workoutRemindersEnabled}
+                onChange={(e) => updateNotificationSettings({ workoutRemindersEnabled: e.target.checked })}
+                disabled={savingNotificationSettings || !notificationSettings.notificationsEnabled}
+                className="h-5 w-5 rounded border-border"
+              />
+            </label>
+
+            <label className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('notificationsAchievementFeed')}</p>
+                <p className="text-xs text-muted-foreground">{t('notificationsAchievementFeedDesc')}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationSettings.achievementFeedEnabled}
+                onChange={(e) => updateNotificationSettings({ achievementFeedEnabled: e.target.checked })}
+                disabled={savingNotificationSettings || !notificationSettings.notificationsEnabled}
+                className="h-5 w-5 rounded border-border"
+              />
+            </label>
+
+            <label className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('notificationsContentUpdates')}</p>
+                <p className="text-xs text-muted-foreground">{t('notificationsContentUpdatesDesc')}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationSettings.contentUpdatesEnabled}
+                onChange={(e) => updateNotificationSettings({ contentUpdatesEnabled: e.target.checked })}
+                disabled={savingNotificationSettings || !notificationSettings.notificationsEnabled}
+                className="h-5 w-5 rounded border-border"
+              />
+            </label>
+
+            <label className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">{t('notificationsMessaging')}</p>
+                <p className="text-xs text-muted-foreground">{t('notificationsMessagingDesc')}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={notificationSettings.messagingEnabled}
+                onChange={(e) => updateNotificationSettings({ messagingEnabled: e.target.checked })}
+                disabled={savingNotificationSettings || !notificationSettings.notificationsEnabled}
+                className="h-5 w-5 rounded border-border"
+              />
+            </label>
+          </div>
+        )}
+      </div>
 
       {/* Save Profile Button */}
       <button

@@ -67,6 +67,11 @@ public class GetRelationshipStatusQueryHandler : IRequestHandler<GetRelationship
             {
                 dto.FriendsSince = acceptedRequest.RespondedAt ?? acceptedRequest.CreatedAt;
             }
+            else
+            {
+                dto.FriendsSince = await _userFollowRepository.GetMutualFollowSinceAsync(
+                    request.CurrentUserId, request.TargetUserId);
+            }
         }
 
         // Check pending request

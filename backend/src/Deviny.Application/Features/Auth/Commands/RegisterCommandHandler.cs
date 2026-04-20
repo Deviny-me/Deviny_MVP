@@ -4,6 +4,7 @@ using Deviny.Domain.Entities;
 using Deviny.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace Deviny.Application.Features.Auth.Commands;
 
@@ -51,19 +52,24 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
         // Hash password
         var passwordHash = _passwordHasher.HashPassword(request.Password);
 
+        var userId = Guid.NewGuid();
+        var userSlug = GenerateUserSlugWithId(request.FirstName, request.LastName, userId);
+
         // Create new user
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = userId,
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
             PasswordHash = passwordHash,
             Role = request.Role,
             Phone = request.Phone,
+            Slug = userSlug,
             Gender = request.Gender,
             Country = request.Country,
             City = request.City,
+            HasInjuries = request.HasInjuries,
             IsActive = true,
             IsEmailConfirmed = false,
             CreatedAt = DateTime.UtcNow,
@@ -73,22 +79,26 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
 
         await _userRepository.CreateAsync(user);
 
+        if (request.HasInjuries && request.InjuryDocument != null)
+        {
+            var injuryDoc = await _verificationDocumentService.SaveVerificationDocumentAsync(
+                user.Id,
+                request.InjuryDocument,
+                cancellationToken);
+
+            user.InjuryDocUrl = injuryDoc.FilePath;
+            await _userRepository.UpdateAsync(user);
+
+            _logger.LogInformation("Injury document uploaded for user: {UserId}", user.Id);
+        }
+
         _logger.LogInformation("User registered successfully: {Email}, Id: {UserId}", 
             user.Email, user.Id);
 
         // Handle trainer and nutritionist specific setup: create profile and add verification document as certificate
         if (request.Role == UserRole.Trainer || request.Role == UserRole.Nutritionist)
         {
-            // Generate unique slug for trainer profile
-            var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
-            var slug = baseSlug;
-            var suffix = 1;
-            
-            while (!await _trainerProfileRepository.IsSlugUniqueAsync(slug))
-            {
-                slug = _slugGenerator.GenerateSlug(user.FullName, suffix);
-                suffix++;
-            }
+            var slug = GenerateUserSlugWithId(user.FirstName, user.LastName, user.Id);
 
             // Create trainer profile
             var trainerProfile = new TrainerProfile
@@ -131,7 +141,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
 
             await _trainerProfileRepository.CreateAsync(trainerProfile);
             
-            // Update user with slug
+            // Keep user slug aligned with expert public slug.
             user.Slug = slug;
             await _userRepository.UpdateAsync(user);
 
@@ -173,5 +183,28 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, LoginResp
                 City = user.City
             }
         };
+    }
+
+    private string GenerateUserSlugWithId(string firstName, string lastName, Guid userId)
+    {
+        var fullName = $"{firstName} {lastName}".Trim();
+        var baseSlug = _slugGenerator.GenerateSlug(fullName);
+        var idPart = userId.ToString("N");
+
+        const int maxSlugLength = 100;
+        var maxBaseLength = maxSlugLength - idPart.Length - 1; // minus dash before id
+
+        if (baseSlug.Length > maxBaseLength)
+        {
+            baseSlug = baseSlug.Substring(0, maxBaseLength).Trim('-');
+        }
+
+        if (string.IsNullOrWhiteSpace(baseSlug))
+        {
+            baseSlug = "user";
+        }
+
+        var slug = $"{baseSlug}-{idPart}";
+        return Regex.Replace(slug, "-+", "-").Trim('-');
     }
 }

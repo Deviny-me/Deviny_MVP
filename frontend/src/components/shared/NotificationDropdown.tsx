@@ -100,7 +100,7 @@ export function NotificationDropdown() {
 
   // Real-time notification listener
   useEffect(() => {
-    const handleNewNotification = (data: { id: string; type: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
+    const handleNewNotification = (data: { id: string; type: string; category?: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
       console.log('[Notifications] Real-time notification received:', data)
 
       // Play notification sound
@@ -115,6 +115,7 @@ export function NotificationDropdown() {
         setNotifications(prev => [{
           id: data.id,
           type: data.type,
+          category: data.category ?? 'System',
           title: data.title,
           message: data.message,
           relatedEntityType: data.relatedEntityType,

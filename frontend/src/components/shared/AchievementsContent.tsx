@@ -1,30 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { Trophy, Lock, Award, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { getMyAchievements } from '@/lib/api/achievementApi'
-import type { AchievementDto, MyAchievementsResponse } from '@/types/achievement'
+import type { AchievementDto } from '@/types/achievement'
 import { getIcon, getRarityBorder, getRarityGlow, getRarityLabelColor } from '@/components/shared/achievementUtils'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
+import { useAchievements } from '@/contexts/AchievementsContext'
 
 export default function AchievementsContent() {
-  const [data, setData] = useState<MyAchievementsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, loading, error, unlocked, locked, unlockedCount, totalCount } = useAchievements()
   const t = useTranslations('achievements')
   const accent = useAccentColors()
   const accentGradient = accent.gradient
   const accentText = accent.text
   const spinnerColor = accent.loader
   const accentCtaGradient = accent.ctaGradient
-
-  useEffect(() => {
-    getMyAchievements()
-      .then(setData)
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
 
   if (loading) {
     return (
@@ -47,9 +37,6 @@ export default function AchievementsContent() {
 
   if (!data) return null
 
-  const unlocked = data.all.filter(a => a.isUnlocked)
-  const locked = data.all.filter(a => !a.isUnlocked)
-
   return (
     <div className="space-y-6 pb-6">
       <div>
@@ -64,7 +51,7 @@ export default function AchievementsContent() {
           </div>
           <div className="text-right">
             <div className={`text-4xl font-bold bg-gradient-to-r ${accentGradient} bg-clip-text text-transparent`}>
-              {data.unlockedCount}/{data.totalCount}
+              {unlockedCount}/{totalCount}
             </div>
             <p className="text-sm text-muted-foreground">{t('unlocked')}</p>
           </div>

@@ -46,6 +46,17 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Bio)
             .HasMaxLength(1000);
+
+        builder.Property(u => u.HasInjuries)
+            .HasDefaultValue(false);
+
+        builder.Property(u => u.InjuryDocUrl)
+            .HasMaxLength(500);
+
+        builder.Property(u => u.IsOnline)
+            .HasDefaultValue(false);
+
+        builder.Property(u => u.LastSeenAtUtc);
         
         // Ignore computed property
         builder.Ignore(u => u.FullName);

@@ -14,4 +14,14 @@ public class UserSettings : BaseEntity
     /// Language preference (nullable for future use)
     /// </summary>
     public string? Language { get; set; }
+
+    /// <summary>
+    /// Master switch for all notifications.
+    /// </summary>
+    public bool NotificationsEnabled { get; set; } = true;
+
+    public bool WorkoutRemindersEnabled { get; set; } = true;
+    public bool AchievementFeedEnabled { get; set; } = true;
+    public bool ContentUpdatesEnabled { get; set; } = true;
+    public bool MessagingEnabled { get; set; } = true;
 }

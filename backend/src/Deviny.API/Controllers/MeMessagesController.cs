@@ -9,6 +9,7 @@ using Deviny.API.Hubs;
 using Deviny.API.DTOs.Requests;
 using Deviny.API.DTOs.Responses;
 using Deviny.API.DTOs.Shared;
+using Deviny.API.Services;
 
 namespace Deviny.API.Controllers;
 
@@ -22,11 +23,13 @@ public class MeMessagesController : BaseApiController
 {
     private readonly IMediator _mediator;
     private readonly IHubContext<ChatHub> _hubContext;
+    private readonly IPresenceService _presenceService;
 
-    public MeMessagesController(IMediator mediator, IHubContext<ChatHub> hubContext)
+    public MeMessagesController(IMediator mediator, IHubContext<ChatHub> hubContext, IPresenceService presenceService)
     {
         _mediator = mediator;
         _hubContext = hubContext;
+        _presenceService = presenceService;
     }
 
     /// <summary>Get all my conversations (ordered by latest message, paginated).</summary>
@@ -143,6 +146,18 @@ public class MeMessagesController : BaseApiController
         var userId = GetCurrentUserId();
         var count = await _mediator.Send(new GetUnreadMessagesCountQuery(userId));
         return Ok(new { unreadCount = count });
+    }
+
+    [HttpGet("presence/{userId}")]
+    public async Task<ActionResult<object>> GetUserPresence(Guid userId)
+    {
+        var state = await _presenceService.GetUserPresenceAsync(userId);
+        return Ok(new
+        {
+            userId = state.UserId,
+            isOnline = state.IsOnline,
+            lastSeenAtUtc = state.LastSeenAtUtc
+        });
     }
 
 #if DEBUG

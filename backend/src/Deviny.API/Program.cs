@@ -67,6 +67,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IAchievementNotifier, SignalRAchievementNotifier>();
 builder.Services.AddScoped<ILevelNotifier, SignalRLevelNotifier>();
 builder.Services.AddScoped<IRealtimeNotifier, SignalRRealtimeNotifier>();
+builder.Services.AddSingleton<IPresenceService, PresenceService>();
+builder.Services.AddHostedService<PresenceMonitorService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("JWT Key is not configured. Please set Jwt:Key in appsettings.json or environment variables.");
