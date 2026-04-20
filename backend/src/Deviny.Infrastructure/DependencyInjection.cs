@@ -67,7 +67,11 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ITrainerRatingService, TrainerRatingService>();
         services.AddScoped<IUserRatingService, UserRatingService>();
-        services.AddScoped<IEmailService, EmailService>();
+        services.AddHttpClient<IEmailService, EmailService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.brevo.com/");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
         
         return services;
     }
