@@ -68,14 +68,21 @@ public class TrainerProfileController : BaseApiController
             {
                 // Create a new profile with auto-generated slug
                 var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
-                var slug = baseSlug;
-                var suffix = 1;
-                
-                while (!await _trainerProfileRepository.IsSlugUniqueAsync(slug))
+                var idPart = user.Id.ToString("N");
+                const int maxSlugLength = 100;
+                var maxBaseLength = maxSlugLength - idPart.Length - 1;
+
+                if (baseSlug.Length > maxBaseLength)
                 {
-                    slug = _slugGenerator.GenerateSlug(user.FullName, suffix);
-                    suffix++;
+                    baseSlug = baseSlug.Substring(0, maxBaseLength).Trim('-');
                 }
+
+                if (string.IsNullOrWhiteSpace(baseSlug))
+                {
+                    baseSlug = "user";
+                }
+
+                var slug = $"{baseSlug}-{idPart}";
 
                 profile = new TrainerProfile
                 {

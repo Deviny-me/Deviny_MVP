@@ -7,6 +7,7 @@ using Deviny.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace Deviny.API.Controllers;
 
@@ -18,6 +19,7 @@ public class UserController : BaseApiController
     private readonly IUserFollowRepository _userFollowRepository;
     private readonly IUserAchievementRepository _userAchievementRepository;
     private readonly IUserPostRepository _userPostRepository;
+    private readonly ISlugGenerator _slugGenerator;
     private readonly ApplicationDbContext _context;
     private readonly IRealtimeNotifier _realtimeNotifier;
 
@@ -27,6 +29,7 @@ public class UserController : BaseApiController
         IUserFollowRepository userFollowRepository,
         IUserAchievementRepository userAchievementRepository,
         IUserPostRepository userPostRepository,
+        ISlugGenerator slugGenerator,
         ApplicationDbContext context,
         IRealtimeNotifier realtimeNotifier)
     {
@@ -35,6 +38,7 @@ public class UserController : BaseApiController
         _userFollowRepository = userFollowRepository;
         _userAchievementRepository = userAchievementRepository;
         _userPostRepository = userPostRepository;
+        _slugGenerator = slugGenerator;
         _context = context;
         _realtimeNotifier = realtimeNotifier;
     }
@@ -51,6 +55,11 @@ public class UserController : BaseApiController
                 return NotFound(new { message = "User not found" });
             }
 
+            if (await EnsureUserSlugAsync(user))
+            {
+                await _userRepository.UpdateAsync(user);
+            }
+
             // Fetch social stats — use count-only queries instead of loading entities
             var followingCount = await _userFollowRepository.GetFollowingCountAsync(userId);
             var followersCount = await _userFollowRepository.GetFollowerCountAsync(userId);
@@ -60,6 +69,7 @@ public class UserController : BaseApiController
             return Ok(new
             {
                 id = user.Id,
+                slug = user.Slug,
                 firstName = user.FirstName,
                 lastName = user.LastName,
                 fullName = user.FullName,
@@ -97,6 +107,11 @@ public class UserController : BaseApiController
             if (user == null)
             {
                 return NotFound(new { message = "Пользователь не найден" });
+            }
+
+            if (await EnsureUserSlugAsync(user))
+            {
+                await _userRepository.UpdateAsync(user);
             }
 
             // Update user data
@@ -144,6 +159,7 @@ public class UserController : BaseApiController
                 user = new
                 {
                     id = user.Id,
+                    slug = user.Slug,
                     firstName = user.FirstName,
                     lastName = user.LastName,
                     fullName = user.FullName,
@@ -416,18 +432,28 @@ public class UserController : BaseApiController
         }
     }
 
-    /// <summary>Get a public profile for any user by their ID.</summary>
-    [HttpGet("/api/users/{userId:guid}/profile")]
+    /// <summary>Get a public profile by nickname (slug) or legacy UUID.</summary>
+    [HttpGet("/api/users/{identifier}/profile")]
     [AllowAnonymous]
-    public async Task<ActionResult> GetPublicProfile(Guid userId)
+    public async Task<ActionResult> GetPublicProfile(string identifier)
     {
         try
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = Guid.TryParse(identifier, out var userIdFromRoute)
+                ? await _userRepository.GetByIdAsync(userIdFromRoute)
+                : await _userRepository.GetBySlugAsync(identifier);
+
             if (user == null)
             {
                 return NotFound(new { message = "User not found" });
             }
+
+            if (await EnsureUserSlugAsync(user))
+            {
+                await _userRepository.UpdateAsync(user);
+            }
+
+            var userId = user.Id;
 
             var followingCount = await _userFollowRepository.GetFollowingCountAsync(userId);
             var followerCount = await _userFollowRepository.GetFollowerCountAsync(userId);
@@ -480,6 +506,7 @@ public class UserController : BaseApiController
             return Ok(new
             {
                 id = user.Id,
+                slug = user.Slug,
                 firstName = user.FirstName,
                 lastName = user.LastName,
                 fullName = user.FullName,
@@ -501,6 +528,42 @@ public class UserController : BaseApiController
         {
             return StatusCode(500, new { message = "Error getting user profile" });
         }
+    }
+
+    private async Task<bool> EnsureUserSlugAsync(Deviny.Domain.Entities.User user)
+    {
+        if (!string.IsNullOrWhiteSpace(user.Slug))
+        {
+            return false;
+        }
+
+        var fullName = $"{user.FirstName} {user.LastName}".Trim();
+        var baseSlug = _slugGenerator.GenerateSlug(fullName);
+        var idPart = user.Id.ToString("N");
+
+        const int maxSlugLength = 100;
+        var maxBaseLength = maxSlugLength - idPart.Length - 1;
+
+        if (baseSlug.Length > maxBaseLength)
+        {
+            baseSlug = baseSlug.Substring(0, maxBaseLength).Trim('-');
+        }
+
+        if (string.IsNullOrWhiteSpace(baseSlug))
+        {
+            baseSlug = "user";
+        }
+
+        var slug = Regex.Replace($"{baseSlug}-{idPart}", "-+", "-").Trim('-');
+
+        // Extremely unlikely because id suffix is unique, but keep a guard for old/manual data anomalies.
+        if (!await _userRepository.IsSlugUniqueAsync(slug, user.Id))
+        {
+            slug = $"{baseSlug}-{idPart}-u";
+        }
+
+        user.Slug = slug;
+        return true;
     }
 }
 

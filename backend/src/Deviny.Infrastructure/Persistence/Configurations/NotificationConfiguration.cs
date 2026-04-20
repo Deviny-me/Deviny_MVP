@@ -23,6 +23,10 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .HasConversion<string>()
             .HasMaxLength(50);
 
+        builder.Property(n => n.Category)
+            .HasConversion<string>()
+            .HasMaxLength(50);
+
         builder.Property(n => n.RelatedEntityType)
             .HasMaxLength(100);
 

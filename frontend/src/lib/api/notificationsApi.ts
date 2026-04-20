@@ -1,5 +1,5 @@
 import { API_URL, fetchWithAuth } from '@/lib/config';
-import { NotificationsResponse } from '@/types/notification';
+import { NotificationSettings, NotificationsResponse } from '@/types/notification';
 
 export const notificationsApi = {
   async getNotifications(cursor?: string, limit: number = 50): Promise<NotificationsResponse> {
@@ -37,6 +37,25 @@ export const notificationsApi = {
     });
     if (!response.ok) {
       throw new Error('Failed to mark all notifications as read');
+    }
+    return response.json();
+  },
+
+  async getSettings(): Promise<NotificationSettings> {
+    const response = await fetchWithAuth(`${API_URL}/me/settings/notifications`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch notification settings');
+    }
+    return response.json();
+  },
+
+  async updateSettings(payload: Partial<NotificationSettings>): Promise<NotificationSettings> {
+    const response = await fetchWithAuth(`${API_URL}/me/settings/notifications`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update notification settings');
     }
     return response.json();
   },

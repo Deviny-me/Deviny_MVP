@@ -1,6 +1,7 @@
 using Deviny.Application.Features.Messages;
 using Deviny.Application.Features.Messages.Commands;
 using Deviny.Application.Features.Messages.Queries;
+using Deviny.API.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -18,11 +19,13 @@ namespace Deviny.API.Hubs;
 public class ChatHub : Hub
 {
     private readonly IMediator _mediator;
+    private readonly IPresenceService _presenceService;
     private readonly ILogger<ChatHub> _logger;
 
-    public ChatHub(IMediator mediator, ILogger<ChatHub> logger)
+    public ChatHub(IMediator mediator, IPresenceService presenceService, ILogger<ChatHub> logger)
     {
         _mediator = mediator;
+        _presenceService = presenceService;
         _logger = logger;
     }
 
@@ -38,6 +41,15 @@ public class ChatHub : Hub
             await Groups.AddToGroupAsync(Context.ConnectionId, $"user:{normalizedUserId}");
             _logger.LogInformation("✅ User {UserId} connected ({ConnId}) and added to group 'user:{NormalizedId}'", 
                 userId, Context.ConnectionId, normalizedUserId);
+
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var change = await _presenceService.OnConnectedAsync(userGuid, Context.ConnectionId);
+                if (change.Changed)
+                {
+                    await BroadcastPresenceUpdatedAsync(change.State);
+                }
+            }
         }
         else
         {
@@ -54,6 +66,15 @@ public class ChatHub : Hub
             var normalizedUserId = userId.ToLowerInvariant();
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"user:{normalizedUserId}");
             _logger.LogInformation("User {UserId} disconnected", userId);
+
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var change = await _presenceService.OnDisconnectedAsync(userGuid, Context.ConnectionId);
+                if (change.Changed)
+                {
+                    await BroadcastPresenceUpdatedAsync(change.State);
+                }
+            }
         }
         await base.OnDisconnectedAsync(exception);
     }
@@ -70,6 +91,44 @@ public class ChatHub : Hub
     public async Task LeaveConversation(string conversationId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"conv:{conversationId}");
+    }
+
+    public async Task SubscribePresence(string userId)
+    {
+        if (!Guid.TryParse(userId, out var targetUserId))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid user id");
+            return;
+        }
+
+        var normalized = targetUserId.ToString().ToLowerInvariant();
+        await Groups.AddToGroupAsync(Context.ConnectionId, $"presence:{normalized}");
+
+        var state = await _presenceService.GetUserPresenceAsync(targetUserId);
+        await Clients.Caller.SendAsync("PresenceUpdated", new
+        {
+            userId = state.UserId,
+            isOnline = state.IsOnline,
+            lastSeenAtUtc = state.LastSeenAtUtc
+        });
+    }
+
+    public async Task UnsubscribePresence(string userId)
+    {
+        if (!Guid.TryParse(userId, out var targetUserId)) return;
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"presence:{targetUserId.ToString().ToLowerInvariant()}");
+    }
+
+    public async Task Heartbeat()
+    {
+        var userId = GetUserId();
+        if (userId == null || !Guid.TryParse(userId, out var userGuid)) return;
+
+        var change = await _presenceService.HeartbeatAsync(userGuid, Context.ConnectionId);
+        if (change.Changed)
+        {
+            await BroadcastPresenceUpdatedAsync(change.State);
+        }
     }
 
     /// <summary>
@@ -467,5 +526,15 @@ public class ChatHub : Hub
         {
             _logger.LogError(ex, "Failed to update unread count for user {UserId}", userId);
         }
+    }
+
+    private Task BroadcastPresenceUpdatedAsync(Deviny.API.Services.Models.PresenceStateDto state)
+    {
+        return Clients.Group($"presence:{state.UserId.ToString().ToLowerInvariant()}").SendAsync("PresenceUpdated", new
+        {
+            userId = state.UserId,
+            isOnline = state.IsOnline,
+            lastSeenAtUtc = state.LastSeenAtUtc
+        });
     }
 }

@@ -12,6 +12,8 @@ public class User : BaseEntity
     public string? AvatarUrl { get; set; }
     public string? BannerUrl { get; set; }
     public string? Slug { get; set; }
+    public bool IsOnline { get; set; }
+    public DateTime? LastSeenAtUtc { get; set; }
     public bool PushNotificationsEnabled { get; set; } = false;
     public required UserRole Role { get; set; }
     public required bool IsEmailConfirmed { get; set; }
@@ -22,6 +24,8 @@ public class User : BaseEntity
     public string? Country { get; set; }
     public string? City { get; set; }
     public string? Bio { get; set; }
+    public bool HasInjuries { get; set; }
+    public string? InjuryDocUrl { get; set; }
     
     // Computed property for backward compatibility
     public string FullName => $"{FirstName} {LastName}".Trim();

@@ -19,7 +19,7 @@ public class MeSettingsController : BaseApiController
     private const string ThemeCookieName = "deviny_theme";
     private const string LanguageCookieName = "deviny_language";
     private static readonly string[] ValidThemes = ["light", "dark"];
-    private static readonly string[] ValidLanguages = ["ru", "en"];
+    private static readonly string[] ValidLanguages = ["ru", "en", "az"];
 
     public MeSettingsController(ApplicationDbContext context, IMediator mediator)
     {
@@ -114,6 +114,62 @@ public class MeSettingsController : BaseApiController
         return Ok(new UpdateLanguageResponse(language));
     }
 
+    [HttpGet("settings/notifications")]
+    public async Task<ActionResult<NotificationSettingsResponse>> GetNotificationSettings()
+    {
+        var userId = GetCurrentUserId();
+        var settings = await GetOrCreateUserSettings(userId);
+
+        return Ok(new NotificationSettingsResponse(
+            settings.NotificationsEnabled,
+            settings.WorkoutRemindersEnabled,
+            settings.AchievementFeedEnabled,
+            settings.ContentUpdatesEnabled,
+            settings.MessagingEnabled));
+    }
+
+    [HttpPut("settings/notifications")]
+    public async Task<ActionResult<NotificationSettingsResponse>> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsRequest request)
+    {
+        var userId = GetCurrentUserId();
+        var settings = await GetOrCreateUserSettings(userId);
+
+        if (request.NotificationsEnabled.HasValue)
+        {
+            settings.NotificationsEnabled = request.NotificationsEnabled.Value;
+        }
+
+        if (request.WorkoutRemindersEnabled.HasValue)
+        {
+            settings.WorkoutRemindersEnabled = request.WorkoutRemindersEnabled.Value;
+        }
+
+        if (request.AchievementFeedEnabled.HasValue)
+        {
+            settings.AchievementFeedEnabled = request.AchievementFeedEnabled.Value;
+        }
+
+        if (request.ContentUpdatesEnabled.HasValue)
+        {
+            settings.ContentUpdatesEnabled = request.ContentUpdatesEnabled.Value;
+        }
+
+        if (request.MessagingEnabled.HasValue)
+        {
+            settings.MessagingEnabled = request.MessagingEnabled.Value;
+        }
+
+        settings.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+
+        return Ok(new NotificationSettingsResponse(
+            settings.NotificationsEnabled,
+            settings.WorkoutRemindersEnabled,
+            settings.AchievementFeedEnabled,
+            settings.ContentUpdatesEnabled,
+            settings.MessagingEnabled));
+    }
+
     private async Task<UserSettings> GetOrCreateUserSettings(Guid userId)
     {
         var settings = await _context.UserSettings
@@ -127,6 +183,11 @@ public class MeSettingsController : BaseApiController
                 UserId = userId,
                 Theme = "light",
                 Language = null,
+                NotificationsEnabled = true,
+                WorkoutRemindersEnabled = true,
+                AchievementFeedEnabled = true,
+                ContentUpdatesEnabled = true,
+                MessagingEnabled = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

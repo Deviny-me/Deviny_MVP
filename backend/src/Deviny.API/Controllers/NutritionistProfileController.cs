@@ -66,14 +66,21 @@ public class NutritionistProfileController : BaseApiController
             if (profile == null)
             {
                 var baseSlug = _slugGenerator.GenerateSlug(user.FullName);
-                var slug = baseSlug;
-                var suffix = 1;
+                var idPart = user.Id.ToString("N");
+                const int maxSlugLength = 100;
+                var maxBaseLength = maxSlugLength - idPart.Length - 1;
 
-                while (!await _trainerProfileRepository.IsSlugUniqueAsync(slug))
+                if (baseSlug.Length > maxBaseLength)
                 {
-                    slug = _slugGenerator.GenerateSlug(user.FullName, suffix);
-                    suffix++;
+                    baseSlug = baseSlug.Substring(0, maxBaseLength).Trim('-');
                 }
+
+                if (string.IsNullOrWhiteSpace(baseSlug))
+                {
+                    baseSlug = "user";
+                }
+
+                var slug = $"{baseSlug}-{idPart}";
 
                 profile = new TrainerProfile
                 {

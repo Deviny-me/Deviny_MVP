@@ -32,6 +32,7 @@ import { useUpsertPosts, usePost, usePostDispatch } from '@/contexts/PostStoreCo
 import { useTranslations } from 'next-intl'
 import { useLanguage } from '@/components/language/LanguageProvider'
 import { localizeCityName, localizeCountryName } from '@/lib/data/countries'
+import { useAchievementsOptional } from '@/contexts/AchievementsContext'
 
 // ─── Grid cell with optimistic likes ───
 function GridCell({
@@ -256,6 +257,7 @@ function PostDetailModal({ postId, onClose, onDelete, deletingPostId }: { postId
 export default function UserProfilePage() {
   const { user } = useUser()
   const { level } = useLevel()
+  const achievements = useAchievementsOptional()
   const { language } = useLanguage()
   const upsertPosts = useUpsertPosts()
   const dispatch = usePostDispatch()
@@ -287,6 +289,7 @@ export default function UserProfilePage() {
 
   const localizedCountry = localizeCountryName(user?.country, language)
   const localizedCity = localizeCityName(user?.city, user?.country, language)
+  const achievementsCount = achievements?.unlockedCount ?? (user?.achievementsCount || 0)
 
   const loadPosts = useCallback(async (pageNum: number, append: boolean = false) => {
     // Abort previous request
@@ -433,7 +436,7 @@ export default function UserProfilePage() {
                     <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
                   </Link>
                   <Link href="/user/achievements" className="group rounded-xl border border-border-subtle bg-surface-1 px-2 py-2 text-center">
-                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                    <p className="text-sm font-bold text-foreground transition-colors group-hover:text-[#0c8de6] md:text-base">{achievementsCount.toLocaleString()}</p>
                     <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
                   </Link>
                 </div>
@@ -455,7 +458,7 @@ export default function UserProfilePage() {
                 <p className="text-[10px] text-muted-foreground">{tp('following')}</p>
               </Link>
               <Link href="/user/achievements" className="rounded-lg px-1.5 py-2 text-center">
-                <p className="text-sm font-bold text-foreground">{(user?.achievementsCount || 0).toLocaleString()}</p>
+                <p className="text-sm font-bold text-foreground">{achievementsCount.toLocaleString()}</p>
                 <p className="text-[10px] text-muted-foreground">{tp('achievements')}</p>
               </Link>
             </div>

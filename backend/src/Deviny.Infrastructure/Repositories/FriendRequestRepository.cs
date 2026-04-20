@@ -47,11 +47,26 @@ public class FriendRequestRepository : IFriendRequestRepository
 
     public async Task<bool> AreFriendsAsync(Guid userId1, Guid userId2)
     {
-        return await _context.FriendRequests
+        var acceptedFriendRequest = await _context.FriendRequests
             .AnyAsync(fr =>
                 fr.Status == FriendRequestStatus.Accepted &&
                 ((fr.SenderId == userId1 && fr.ReceiverId == userId2) ||
                  (fr.SenderId == userId2 && fr.ReceiverId == userId1)));
+
+        if (acceptedFriendRequest)
+        {
+            return true;
+        }
+
+        var user1FollowsUser2 = await _context.UserFollows
+            .AnyAsync(uf => uf.FollowerId == userId1 && uf.TrainerId == userId2);
+        if (!user1FollowsUser2)
+        {
+            return false;
+        }
+
+        return await _context.UserFollows
+            .AnyAsync(uf => uf.FollowerId == userId2 && uf.TrainerId == userId1);
     }
 
     public async Task<List<FriendRequest>> GetIncomingRequestsAsync(Guid userId)
@@ -78,7 +93,7 @@ public class FriendRequestRepository : IFriendRequestRepository
 
     public async Task<List<(User Friend, DateTime FriendsSince)>> GetFriendsAsync(Guid userId)
     {
-        var friendRequests = await _context.FriendRequests
+        var acceptedFriendRequests = await _context.FriendRequests
             .AsNoTracking()
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
@@ -87,42 +102,86 @@ public class FriendRequestRepository : IFriendRequestRepository
                 (fr.SenderId == userId || fr.ReceiverId == userId))
             .ToListAsync();
 
-        var friends = friendRequests
+        var acceptedFriends = acceptedFriendRequests
             .Select(fr => (
                 Friend: fr.SenderId == userId ? fr.Receiver : fr.Sender,
                 FriendsSince: fr.RespondedAt ?? fr.CreatedAt
             ))
             .ToList();
 
-        return friends;
+        var mutualFollows = await (
+            from outgoing in _context.UserFollows.AsNoTracking()
+            join incoming in _context.UserFollows.AsNoTracking()
+                on new { A = outgoing.TrainerId, B = outgoing.FollowerId }
+                equals new { A = incoming.FollowerId, B = incoming.TrainerId }
+            join u in _context.Users.AsNoTracking() on outgoing.TrainerId equals u.Id
+            where outgoing.FollowerId == userId
+            select new
+            {
+                Friend = u,
+                FriendsSince = outgoing.CreatedAt >= incoming.CreatedAt ? outgoing.CreatedAt : incoming.CreatedAt
+            })
+            .ToListAsync();
+
+        var combined = acceptedFriends
+            .Concat(mutualFollows.Select(x => (x.Friend, x.FriendsSince)))
+            .GroupBy(x => x.Friend.Id)
+            .Select(g => g.OrderByDescending(x => x.FriendsSince).First())
+            .OrderByDescending(x => x.FriendsSince)
+            .ToList();
+
+        return combined;
     }
 
     public async Task<(List<(User Friend, DateTime FriendsSince)> Items, int TotalCount)> GetFriendsPagedAsync(Guid userId, int page, int pageSize)
     {
-        var query = _context.FriendRequests
+        var acceptedFriendsQuery = _context.FriendRequests
             .AsNoTracking()
             .Where(fr =>
                 fr.Status == FriendRequestStatus.Accepted &&
                 (fr.SenderId == userId || fr.ReceiverId == userId));
 
-        var totalCount = await query.CountAsync();
-
-        var friendRequests = await query
+        var acceptedFriendRequests = await acceptedFriendsQuery
             .Include(fr => fr.Sender)
             .Include(fr => fr.Receiver)
             .OrderByDescending(fr => fr.RespondedAt ?? fr.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
             .ToListAsync();
 
-        var friends = friendRequests
+        var acceptedFriends = acceptedFriendRequests
             .Select(fr => (
                 Friend: fr.SenderId == userId ? fr.Receiver : fr.Sender,
                 FriendsSince: fr.RespondedAt ?? fr.CreatedAt
             ))
             .ToList();
 
-        return (friends, totalCount);
+        var mutualFollows = await (
+            from outgoing in _context.UserFollows.AsNoTracking()
+            join incoming in _context.UserFollows.AsNoTracking()
+                on new { A = outgoing.TrainerId, B = outgoing.FollowerId }
+                equals new { A = incoming.FollowerId, B = incoming.TrainerId }
+            join u in _context.Users.AsNoTracking() on outgoing.TrainerId equals u.Id
+            where outgoing.FollowerId == userId
+            select new
+            {
+                Friend = u,
+                FriendsSince = outgoing.CreatedAt >= incoming.CreatedAt ? outgoing.CreatedAt : incoming.CreatedAt
+            })
+            .ToListAsync();
+
+        var combined = acceptedFriends
+            .Concat(mutualFollows.Select(x => (x.Friend, x.FriendsSince)))
+            .GroupBy(x => x.Friend.Id)
+            .Select(g => g.OrderByDescending(x => x.FriendsSince).First())
+            .OrderByDescending(x => x.FriendsSince)
+            .ToList();
+
+        var totalCount = combined.Count;
+        var paged = combined
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return (paged, totalCount);
     }
 
     public async Task AddAsync(FriendRequest friendRequest)
@@ -145,15 +204,30 @@ public class FriendRequestRepository : IFriendRequestRepository
 
     public async Task DeleteFriendshipAsync(Guid userId1, Guid userId2)
     {
-        var friendRequest = await _context.FriendRequests
+        var acceptedFriendRequest = await _context.FriendRequests
             .FirstOrDefaultAsync(fr =>
                 fr.Status == FriendRequestStatus.Accepted &&
                 ((fr.SenderId == userId1 && fr.ReceiverId == userId2) ||
                  (fr.SenderId == userId2 && fr.ReceiverId == userId1)));
 
-        if (friendRequest != null)
+        if (acceptedFriendRequest != null)
         {
-            _context.FriendRequests.Remove(friendRequest);
+            _context.FriendRequests.Remove(acceptedFriendRequest);
+        }
+
+        var mutualFollows = await _context.UserFollows
+            .Where(uf =>
+                (uf.FollowerId == userId1 && uf.TrainerId == userId2) ||
+                (uf.FollowerId == userId2 && uf.TrainerId == userId1))
+            .ToListAsync();
+
+        if (mutualFollows.Count > 0)
+        {
+            _context.UserFollows.RemoveRange(mutualFollows);
+        }
+
+        if (acceptedFriendRequest != null || mutualFollows.Count > 0)
+        {
             await _context.SaveChangesAsync();
         }
     }

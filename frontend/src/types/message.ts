@@ -5,6 +5,14 @@ export interface PeerUserDto {
   fullName: string
   avatarUrl: string | null
   role?: string | null
+  isOnline?: boolean
+  lastSeenAtUtc?: string | null
+}
+
+export interface UserPresenceDto {
+  userId: string
+  isOnline: boolean
+  lastSeenAtUtc: string | null
 }
 
 export interface ReplyDto {

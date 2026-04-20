@@ -63,5 +63,56 @@ public class StudentsController : BaseApiController
             return StatusCode(500, new { message = "Error fetching students" });
         }
     }
+
+    [HttpGet("{studentId:guid}/medical-info")]
+    public async Task<ActionResult<StudentMedicalInfoDto>> GetStudentMedicalInfo(Guid studentId)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null || user.Role != UserRole.Trainer)
+            {
+                return Forbid();
+            }
+
+            var isTrainerStudent = await _context.ProgramPurchases
+                .AsNoTracking()
+                .AnyAsync(pp =>
+                    pp.UserId == studentId &&
+                    (pp.Status == ProgramPurchaseStatus.Active || pp.Status == ProgramPurchaseStatus.Completed) &&
+                    (
+                        (pp.TrainingProgram != null && pp.TrainingProgram.TrainerId == userId && !pp.TrainingProgram.IsDeleted) ||
+                        (pp.MealProgram != null && pp.MealProgram.TrainerId == userId && !pp.MealProgram.IsDeleted)
+                    ));
+
+            if (!isTrainerStudent)
+            {
+                return Forbid();
+            }
+
+            var student = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.Id == studentId && u.IsActive)
+                .Select(u => new StudentMedicalInfoDto
+                {
+                    HasInjuries = u.HasInjuries,
+                    InjuryDocUrl = u.InjuryDocUrl
+                })
+                .FirstOrDefaultAsync();
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(student);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Error fetching student medical info" });
+        }
+    }
 }
 

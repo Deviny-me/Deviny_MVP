@@ -10,25 +10,21 @@ import {
   Play,
   Repeat2,
   X,
-  UserPlus,
-  UserCheck,
-  UserMinus,
   Mail,
   Ban,
-  Clock,
-  Check,
   Award,
   Briefcase,
   Star,
   Globe,
   Phone,
   Calendar,
+  FileText,
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { postsApi } from '@/lib/api/postsApi'
 import { friendsApi, followsApi, blocksApi } from '@/lib/api/friendsApi'
-import { chatConnection } from '@/lib/signalr/chatConnection'
+import { studentsApi } from '@/lib/api/studentsApi'
 import { MediaType } from '@/types/post'
 import type { ProfilePostTab } from '@/types/post'
 import type { RelationshipStatus } from '@/types/friend'
@@ -302,8 +298,8 @@ function PostDetailModal({
 
 // ─── Main public profile component ───
 interface PublicProfileContentProps {
-  /** The ID of the user whose profile is being viewed */
-  userId: string
+  /** Route identifier: nickname slug (preferred) or legacy UUID */
+  profileIdentifier: string
   /** The ID of the currently logged-in user */
   currentUserId: string | undefined
   /** Base path for the current viewer's section (e.g. '/user', '/trainer', '/nutritionist') */
@@ -313,7 +309,7 @@ interface PublicProfileContentProps {
 }
 
 export function PublicProfileContent({
-  userId,
+  profileIdentifier,
   currentUserId,
   basePath,
   ownProfilePath,
@@ -348,7 +344,10 @@ export function PublicProfileContent({
   const isRefreshingPosts = isLoading && page === 1 && postIds.length > 0
 
   // ─── Fetch user profile from API ───
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>(null)
   const [profileData, setProfileData] = useState<{
+    id: string
+    slug: string | null
     fullName: string
     firstName: string
     avatarUrl: string | null
@@ -366,6 +365,7 @@ export function PublicProfileContent({
   const [profileLoading, setProfileLoading] = useState(true)
   const [profileReloadVersion, setProfileReloadVersion] = useState(0)
   const [selectedCertificate, setSelectedCertificate] = useState<{ fileUrl: string; title: string } | null>(null)
+  const [studentMedicalInfo, setStudentMedicalInfo] = useState<{ hasInjuries: boolean; injuryDocUrl?: string | null } | null>(null)
 
   useEffect(() => {
     // Defensive reset: route transitions after full-screen overlays can leave body scroll locked.
@@ -374,15 +374,19 @@ export function PublicProfileContent({
   }, [])
 
   useEffect(() => {
-    if (!userId) return
+    if (!profileIdentifier) return
     let cancelled = false
     ;(async () => {
       try {
         setProfileLoading(true)
-        const response = await fetchWithAuth(`${API_URL}/users/${userId}/profile`)
+        const encodedIdentifier = encodeURIComponent(profileIdentifier)
+        const response = await fetchWithAuth(`${API_URL}/users/${encodedIdentifier}/profile`)
         if (response.ok && !cancelled) {
           const data = await response.json()
+          setResolvedUserId(data.id)
           setProfileData({
+            id: data.id,
+            slug: data.slug || null,
             fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || tc('user'),
             firstName: data.firstName || '',
             avatarUrl: data.avatarUrl || null,
@@ -405,7 +409,7 @@ export function PublicProfileContent({
       }
     })()
     return () => { cancelled = true }
-  }, [userId, tc, profileReloadVersion])
+  }, [profileIdentifier, tc, profileReloadVersion])
 
   const authorName = profileData?.fullName || tc('user')
   const authorInitials = (profileData?.firstName?.charAt(0) || authorName?.charAt(0) || 'U').toUpperCase()
@@ -417,10 +421,50 @@ export function PublicProfileContent({
 
   // Redirect to own profile if viewing self
   useEffect(() => {
-    if (currentUserId && userId.toLowerCase() === currentUserId.toLowerCase()) {
+    if (currentUserId && resolvedUserId && resolvedUserId.toLowerCase() === currentUserId.toLowerCase()) {
       router.replace(ownProfilePath)
     }
-  }, [currentUserId, userId, router, ownProfilePath])
+  }, [currentUserId, resolvedUserId, router, ownProfilePath])
+
+  // Redirect legacy UUID / stale identifier routes to canonical slug route when available.
+  useEffect(() => {
+    if (!profileData?.slug) return
+
+    const requested = profileIdentifier.toLowerCase()
+    const canonical = profileData.slug.toLowerCase()
+    if (requested === canonical) return
+
+    const query = searchParams.toString()
+    const suffix = query ? `?${query}` : ''
+    router.replace(`${basePath}/profile/${profileData.slug}${suffix}`)
+  }, [profileData?.slug, profileIdentifier, searchParams, router, basePath])
+
+  const targetUserId = resolvedUserId
+
+  useEffect(() => {
+    if (basePath !== '/trainer' || !targetUserId || !currentUserId || targetUserId.toLowerCase() === currentUserId.toLowerCase()) {
+      setStudentMedicalInfo(null)
+      return
+    }
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const data = await studentsApi.getStudentMedicalInfo(targetUserId)
+        if (!cancelled) {
+          setStudentMedicalInfo(data)
+        }
+      } catch {
+        if (!cancelled) {
+          setStudentMedicalInfo(null)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [basePath, targetUserId, currentUserId])
 
   // ─── Relationship status ───
   const [relationship, setRelationship] = useState<RelationshipStatus | null>(null)
@@ -430,12 +474,12 @@ export function PublicProfileContent({
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
   useEffect(() => {
-    if (!userId || !currentUserId || userId.toLowerCase() === currentUserId.toLowerCase()) return
+    if (!targetUserId || !currentUserId || targetUserId.toLowerCase() === currentUserId.toLowerCase()) return
     let cancelled = false
     ;(async () => {
       try {
         setRelationshipLoading(true)
-        const status = await friendsApi.getRelationshipStatus(userId)
+        const status = await friendsApi.getRelationshipStatus(targetUserId)
         if (!cancelled) setRelationship(status)
       } catch (err) {
         console.error('Failed to load relationship status:', err)
@@ -444,174 +488,16 @@ export function PublicProfileContent({
       }
     })()
     return () => { cancelled = true }
-  }, [userId, currentUserId, relationshipReloadVersion])
-
-  // ─── Real-time relationship updates via SignalR ───
-  useEffect(() => {
-    if (!userId || !currentUserId) return
-
-    const handleFriendRequestAccepted = (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => {
-      if (data.acceptorId === userId) {
-        setRelationship(prev => prev ? {
-          ...prev,
-          isFriend: true,
-          friendsSince: new Date().toISOString(),
-          hasPendingRequest: false,
-          pendingRequestId: undefined,
-          isRequestSender: false,
-        } : prev)
-        setToast({ message: `${data.acceptorName} ${tUp('requestAccepted')}`, type: 'success' })
-      }
-    }
-
-    const handleFriendRemoved = (data: { removedByUserId: string; removedByName: string }) => {
-      if (data.removedByUserId === userId) {
-        setRelationship(prev => prev ? {
-          ...prev,
-          isFriend: false,
-          friendsSince: undefined,
-        } : prev)
-      }
-    }
-
-    const handleFriendRequestReceived = (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => {
-      if (data.senderId === userId) {
-        setRelationship(prev => prev ? {
-          ...prev,
-          hasPendingRequest: true,
-          pendingRequestId: data.requestId,
-          isRequestSender: false,
-        } : prev)
-      }
-    }
-
-    const handleFriendRequestDeclined = (data: { requestId: number; declinerId: string; declinerName: string }) => {
-      if (data.declinerId === userId) {
-        setRelationship(prev => prev ? {
-          ...prev,
-          hasPendingRequest: false,
-          pendingRequestId: undefined,
-          isRequestSender: false,
-        } : prev)
-        setToast({ message: `${data.declinerName} ${tUp('requestDeclined')}`, type: 'info' })
-      }
-    }
-
-    chatConnection.onFriendRequestAccepted(handleFriendRequestAccepted)
-    chatConnection.onFriendRequestDeclined(handleFriendRequestDeclined)
-    chatConnection.onFriendRemoved(handleFriendRemoved)
-    chatConnection.onFriendRequestReceived(handleFriendRequestReceived)
-
-    return () => {
-      chatConnection.off('FriendRequestAccepted', handleFriendRequestAccepted)
-      chatConnection.off('FriendRequestDeclined', handleFriendRequestDeclined)
-      chatConnection.off('FriendRemoved', handleFriendRemoved)
-      chatConnection.off('FriendRequestReceived', handleFriendRequestReceived)
-    }
-  }, [userId, currentUserId, tUp])
+  }, [targetUserId, currentUserId, relationshipReloadVersion])
 
   // ─── Social actions ───
-  const handleSendFriendRequest = useCallback(async () => {
-    if (actionLoading) return
-    setActionLoading(true)
-    try {
-      const request = await friendsApi.sendFriendRequest(userId)
-      setRelationship(prev => prev ? {
-        ...prev,
-        hasPendingRequest: true,
-        pendingRequestId: request.id,
-        isRequestSender: true,
-      } : prev)
-      setToast({ message: tUp('friendRequestSent'), type: 'success' })
-    } catch (err) {
-      setToast({ message: tUp('friendRequestError'), type: 'error' })
-    } finally {
-      setActionLoading(false)
-    }
-  }, [userId, actionLoading, tUp])
-
-  const handleCancelFriendRequest = useCallback(async () => {
-    if (actionLoading || !relationship?.pendingRequestId) return
-    setActionLoading(true)
-    try {
-      await friendsApi.cancelFriendRequest(relationship.pendingRequestId)
-      setRelationship(prev => prev ? {
-        ...prev,
-        hasPendingRequest: false,
-        pendingRequestId: undefined,
-        isRequestSender: false,
-      } : prev)
-      setToast({ message: tUp('requestCancelled'), type: 'info' })
-    } catch (err) {
-      setToast({ message: tUp('errorCancellingRequest'), type: 'error' })
-    } finally {
-      setActionLoading(false)
-    }
-  }, [actionLoading, relationship?.pendingRequestId, tUp])
-
-  const handleAcceptFriendRequest = useCallback(async () => {
-    if (actionLoading || !relationship?.pendingRequestId) return
-    setActionLoading(true)
-    try {
-      await friendsApi.acceptFriendRequest(relationship.pendingRequestId)
-      setRelationship(prev => prev ? {
-        ...prev,
-        isFriend: true,
-        friendsSince: new Date().toISOString(),
-        hasPendingRequest: false,
-        pendingRequestId: undefined,
-        isRequestSender: false,
-      } : prev)
-      setToast({ message: tUp('requestAccepted'), type: 'success' })
-    } catch (err) {
-      setToast({ message: tUp('errorAccepting'), type: 'error' })
-    } finally {
-      setActionLoading(false)
-    }
-  }, [actionLoading, relationship?.pendingRequestId, tUp])
-
-  const handleDeclineFriendRequest = useCallback(async () => {
-    if (actionLoading || !relationship?.pendingRequestId) return
-    setActionLoading(true)
-    try {
-      await friendsApi.declineFriendRequest(relationship.pendingRequestId)
-      setRelationship(prev => prev ? {
-        ...prev,
-        hasPendingRequest: false,
-        pendingRequestId: undefined,
-        isRequestSender: false,
-      } : prev)
-      setToast({ message: tUp('requestDeclined'), type: 'info' })
-    } catch (err) {
-      setToast({ message: tUp('errorDeclining'), type: 'error' })
-    } finally {
-      setActionLoading(false)
-    }
-  }, [actionLoading, relationship?.pendingRequestId, tUp])
-
-  const handleRemoveFriend = useCallback(async () => {
-    if (actionLoading) return
-    setActionLoading(true)
-    try {
-      await friendsApi.removeFriend(userId)
-      setRelationship(prev => prev ? {
-        ...prev,
-        isFriend: false,
-        friendsSince: undefined,
-      } : prev)
-      setToast({ message: tUp('friendRemoved'), type: 'info' })
-    } catch (err) {
-      setToast({ message: tUp('errorRemovingFriend'), type: 'error' })
-    } finally {
-      setActionLoading(false)
-    }
-  }, [userId, actionLoading, tUp])
 
   const handleFollow = useCallback(async () => {
+    if (!targetUserId) return
     if (actionLoading) return
     setActionLoading(true)
     try {
-      await followsApi.followTrainer(userId)
+      await followsApi.followTrainer(targetUserId)
       setRelationship(prev => prev ? { ...prev, isFollowing: true } : prev)
       setToast({ message: tUp('nowFollowing'), type: 'success' })
     } catch (err) {
@@ -619,13 +505,14 @@ export function PublicProfileContent({
     } finally {
       setActionLoading(false)
     }
-  }, [userId, actionLoading, tUp])
+  }, [targetUserId, actionLoading, tUp])
 
   const handleUnfollow = useCallback(async () => {
+    if (!targetUserId) return
     if (actionLoading) return
     setActionLoading(true)
     try {
-      await followsApi.unfollowTrainer(userId)
+      await followsApi.unfollowTrainer(targetUserId)
       setRelationship(prev => prev ? { ...prev, isFollowing: false } : prev)
       setToast({ message: tUp('unfollowed'), type: 'info' })
     } catch (err) {
@@ -633,13 +520,14 @@ export function PublicProfileContent({
     } finally {
       setActionLoading(false)
     }
-  }, [userId, actionLoading, tUp])
+  }, [targetUserId, actionLoading, tUp])
 
   const handleBlock = useCallback(async () => {
+    if (!targetUserId) return
     if (actionLoading) return
     setActionLoading(true)
     try {
-      await blocksApi.blockUser(userId)
+      await blocksApi.blockUser(targetUserId)
       setRelationship(prev => prev ? { ...prev, isBlocked: true } : prev)
       setToast({ message: tUp('userBlocked'), type: 'info' })
     } catch (err) {
@@ -647,13 +535,14 @@ export function PublicProfileContent({
     } finally {
       setActionLoading(false)
     }
-  }, [userId, actionLoading, tUp])
+  }, [targetUserId, actionLoading, tUp])
 
   const handleUnblock = useCallback(async () => {
+    if (!targetUserId) return
     if (actionLoading) return
     setActionLoading(true)
     try {
-      await blocksApi.unblockUser(userId)
+      await blocksApi.unblockUser(targetUserId)
       setRelationship(prev => prev ? { ...prev, isBlocked: false } : prev)
       setToast({ message: tUp('userUnblocked'), type: 'success' })
     } catch (err) {
@@ -661,7 +550,7 @@ export function PublicProfileContent({
     } finally {
       setActionLoading(false)
     }
-  }, [userId, actionLoading, tUp])
+  }, [targetUserId, actionLoading, tUp])
 
   // ─── Posts loading ───
   const loadPosts = useCallback(
@@ -672,7 +561,8 @@ export function PublicProfileContent({
 
       try {
         setIsLoading(true)
-        const response = await postsApi.getUserPosts(userId, pageNum, 12, activeTab, controller.signal)
+        if (!targetUserId) return
+        const response = await postsApi.getUserPosts(targetUserId, pageNum, 12, activeTab, controller.signal)
         if (controller.signal.aborted) return
         const ids = upsertPosts(response.posts)
         if (append) {
@@ -689,7 +579,7 @@ export function PublicProfileContent({
         if (!controller.signal.aborted) setIsLoading(false)
       }
     },
-    [userId, upsertPosts, activeTab]
+    [targetUserId, upsertPosts, activeTab]
   )
 
   const handleTabChange = useCallback((tab: ProfilePostTab) => {
@@ -707,11 +597,11 @@ export function PublicProfileContent({
   }, [])
 
   useEffect(() => {
-    if (userId) loadPosts(1)
-  }, [userId, loadPosts])
+    if (targetUserId) loadPosts(1)
+  }, [targetUserId, loadPosts])
 
   useRealtimeScopeRefresh(['posts', 'friends', 'follows', 'profile'], () => {
-    if (userId) {
+    if (targetUserId) {
       loadPosts(1)
       setProfileReloadVersion(v => v + 1)
       setRelationshipReloadVersion(v => v + 1)
@@ -857,61 +747,14 @@ export function PublicProfileContent({
             {/* Social Action Buttons */}
             {!relationshipLoading && relationship && !relationship.isBlockedByThem && (
               <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-                {/* Friend button */}
-                {relationship.isFriend ? (
-                  <button
-                    onClick={handleRemoveFriend}
-                    disabled={actionLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-green-400 hover:bg-red-500/20 hover:text-red-400 transition-all group disabled:opacity-50"
-                  >
-                    <UserCheck className="w-4 h-4 group-hover:hidden" />
-                    <UserMinus className="w-4 h-4 hidden group-hover:block" />
-                    <span className="group-hover:hidden">{tUp('friends')}</span>
-                    <span className="hidden group-hover:inline">{tUp('removeFriend')}</span>
-                  </button>
-                ) : relationship.hasPendingRequest ? (
-                  relationship.isRequestSender ? (
-                    <button
-                      onClick={handleCancelFriendRequest}
-                      disabled={actionLoading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-yellow-400 hover:bg-red-500/20 hover:text-red-400 transition-all disabled:opacity-50"
-                    >
-                      <Clock className="w-4 h-4" />
-                      <span>{tUp('requestPending')}</span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={handleAcceptFriendRequest}
-                        disabled={actionLoading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all disabled:opacity-50"
-                      >
-                        <Check className="w-4 h-4" />
-                        <span>{tUp('accept')}</span>
-                      </button>
-                      <button
-                        onClick={handleDeclineFriendRequest}
-                        disabled={actionLoading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50"
-                      >
-                        <X className="w-4 h-4" />
-                        <span>{tUp('decline')}</span>
-                      </button>
-                    </div>
-                  )
-                ) : (
-                  <button
-                    onClick={handleSendFriendRequest}
-                    disabled={actionLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all disabled:opacity-50"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>{tUp('addFriend')}</span>
-                  </button>
+                {relationship.isFriend && (
+                  <span className="px-3 py-1.5 rounded-lg text-sm font-medium bg-green-500/15 text-green-400">
+                    {tUp('friends')}
+                  </span>
                 )}
 
-                {/* Follow button (for trainers/nutritionists) */}
-                {profileData?.role && ['Trainer', 'Nutritionist'].includes(profileData.role) && (
+                {/* Follow button */}
+                {(
                   relationship.isFollowing ? (
                     <button
                       onClick={handleUnfollow}
@@ -933,7 +776,11 @@ export function PublicProfileContent({
 
                 {/* Message button */}
                 <button
-                  onClick={() => router.push(`${basePath}/messages?userId=${userId}`)}
+                  onClick={() => {
+                    if (!targetUserId) return
+                    router.push(`${basePath}/messages?userId=${targetUserId}`)
+                  }}
+                  disabled={!targetUserId}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-muted-foreground hover:bg-white/20 transition-all"
                 >
                   <Mail className="w-4 h-4" />
@@ -1032,6 +879,32 @@ export function PublicProfileContent({
             ) : (
               <p className="text-sm text-faint-foreground italic">{tExp('noCertificates')}</p>
             )}
+          </div>
+        )}
+
+        {/* Trainer-only: client medical info */}
+        {basePath === '/trainer' && studentMedicalInfo && (
+          <div className="bg-surface-1/45 p-3 sm:rounded-xl sm:border sm:border-border-subtle sm:bg-surface-1 sm:p-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">{tp('medicalInfo')}</h2>
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{tp('hasExistingInjuries')}:</span>{' '}
+                {studentMedicalInfo.hasInjuries ? tp('yes') : tp('no')}
+              </div>
+              {studentMedicalInfo.hasInjuries && studentMedicalInfo.injuryDocUrl ? (
+                <a
+                  href={getMediaUrl(studentMedicalInfo.injuryDocUrl) || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-1.5 text-sm font-medium ${profileAccent.text} hover:underline`}
+                >
+                  <FileText className="w-4 h-4" />
+                  {tp('viewMedicalCertificate')}
+                </a>
+              ) : studentMedicalInfo.hasInjuries ? (
+                <p className="text-sm text-faint-foreground italic">{tp('noMedicalCertificate')}</p>
+              ) : null}
+            </div>
           </div>
         )}
 

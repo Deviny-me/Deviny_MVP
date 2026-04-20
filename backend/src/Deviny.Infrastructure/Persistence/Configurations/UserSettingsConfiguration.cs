@@ -19,6 +19,21 @@ public class UserSettingsConfiguration : IEntityTypeConfiguration<UserSettings>
             
         builder.Property(e => e.Language)
             .HasMaxLength(10);
+
+        builder.Property(e => e.NotificationsEnabled)
+            .HasDefaultValue(true);
+
+        builder.Property(e => e.WorkoutRemindersEnabled)
+            .HasDefaultValue(true);
+
+        builder.Property(e => e.AchievementFeedEnabled)
+            .HasDefaultValue(true);
+
+        builder.Property(e => e.ContentUpdatesEnabled)
+            .HasDefaultValue(true);
+
+        builder.Property(e => e.MessagingEnabled)
+            .HasDefaultValue(true);
             
         builder.HasOne(e => e.User)
             .WithOne(u => u.Settings)

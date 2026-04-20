@@ -16,5 +16,7 @@ public class RegisterRequest
     public string? Gender { get; set; }
     public string? Country { get; set; }
     public string? City { get; set; }
+    public bool HasInjuries { get; set; }
     public IFormFile? VerificationDocument { get; set; }
+    public IFormFile? InjuryDocument { get; set; }
 }

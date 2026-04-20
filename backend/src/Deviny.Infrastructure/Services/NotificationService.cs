@@ -8,20 +8,23 @@ namespace Deviny.Infrastructure.Services;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationPreferenceService _notificationPreferenceService;
     private readonly IRealtimeNotifier _realtimeNotifier;
     private readonly ILogger<NotificationService> _logger;
 
     public NotificationService(
         INotificationRepository notificationRepository,
+        INotificationPreferenceService notificationPreferenceService,
         IRealtimeNotifier realtimeNotifier,
         ILogger<NotificationService> logger)
     {
         _notificationRepository = notificationRepository;
+        _notificationPreferenceService = notificationPreferenceService;
         _realtimeNotifier = realtimeNotifier;
         _logger = logger;
     }
 
-    public async Task<Notification> CreateAsync(
+    public async Task<Notification?> CreateAsync(
         Guid userId,
         NotificationType type,
         string title,
@@ -30,6 +33,12 @@ public class NotificationService : INotificationService
         Guid? relatedEntityId = null,
         CancellationToken ct = default)
     {
+        var canReceive = await _notificationPreferenceService.CanReceiveAsync(userId, type, ct);
+        if (!canReceive)
+        {
+            return null;
+        }
+
         var now = DateTime.UtcNow;
 
         var notification = new Notification
@@ -37,6 +46,7 @@ public class NotificationService : INotificationService
             Id = Guid.NewGuid(),
             UserId = userId,
             Type = type,
+            Category = type.GetCategory(),
             Title = title,
             Message = message,
             RelatedEntityType = relatedEntityType,
@@ -55,6 +65,7 @@ public class NotificationService : INotificationService
             {
                 id = saved.Id,
                 type = saved.Type.ToString(),
+                category = saved.Category.ToString(),
                 title = saved.Title,
                 message = saved.Message,
                 relatedEntityType = saved.RelatedEntityType,
@@ -85,13 +96,30 @@ public class NotificationService : INotificationService
     {
         if (userIds.Count == 0) return;
 
+        var distinctUserIds = userIds.Distinct().ToList();
+        var eligibilityChecks = distinctUserIds.Select(async userId => new
+        {
+            UserId = userId,
+            CanReceive = await _notificationPreferenceService.CanReceiveAsync(userId, type, ct)
+        });
+        var eligibleUserIds = (await Task.WhenAll(eligibilityChecks))
+            .Where(x => x.CanReceive)
+            .Select(x => x.UserId)
+            .ToList();
+
+        if (eligibleUserIds.Count == 0)
+        {
+            return;
+        }
+
         var now = DateTime.UtcNow;
 
-        var notifications = userIds.Select(userId => new Notification
+        var notifications = eligibleUserIds.Select(userId => new Notification
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             Type = type,
+            Category = type.GetCategory(),
             Title = title,
             Message = message,
             RelatedEntityType = relatedEntityType,
@@ -125,6 +153,7 @@ public class NotificationService : INotificationService
                 {
                     id = notification.Id,
                     type = notification.Type.ToString(),
+                    category = notification.Category.ToString(),
                     title = notification.Title,
                     message = notification.Message,
                     relatedEntityType = notification.RelatedEntityType,

@@ -39,15 +39,18 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
     private readonly IConversationRepository _conversationRepository;
     private readonly IMessageRepository _messageRepository;
     private readonly IAchievementService _achievementService;
+    private readonly INotificationService _notificationService;
 
     public SendMessageCommandHandler(
         IConversationRepository conversationRepository,
         IMessageRepository messageRepository,
-        IAchievementService achievementService)
+        IAchievementService achievementService,
+        INotificationService notificationService)
     {
         _conversationRepository = conversationRepository;
         _messageRepository = messageRepository;
         _achievementService = achievementService;
+        _notificationService = notificationService;
     }
 
     public async Task<MessageDto> Handle(SendMessageCommand request, CancellationToken cancellationToken)
@@ -80,6 +83,38 @@ public class SendMessageCommandHandler : IRequestHandler<SendMessageCommand, Mes
         {
             conversation.UpdatedAt = DateTime.UtcNow;
             await _conversationRepository.UpdateAsync(conversation, cancellationToken);
+
+            var receiverIds = conversation.Members
+                .Select(m => m.UserId)
+                .Where(id => id != request.SenderId)
+                .Distinct()
+                .ToList();
+
+            if (receiverIds.Count > 0)
+            {
+                var previewText = string.IsNullOrWhiteSpace(request.Text)
+                    ? "Sent you an attachment"
+                    : request.Text.Trim();
+
+                if (previewText.Length > 120)
+                {
+                    previewText = previewText[..120] + "...";
+                }
+
+                var senderName = conversation.Members
+                    .FirstOrDefault(m => m.UserId == request.SenderId)
+                    ?.User?.FullName
+                    ?? "New message";
+
+                await _notificationService.CreateForManyAsync(
+                    receiverIds,
+                    NotificationType.MessageReceived,
+                    "New message",
+                    $"{senderName}: {previewText}",
+                    "Conversation",
+                    conversation.Id,
+                    cancellationToken);
+            }
         }
 
         // Try to award achievement for first message sent

@@ -11,4 +11,5 @@ public interface IProgramPurchaseRepository
     Task<bool> ExistsAsync(Guid userId, Guid programId, ProgramType programType, ProgramTier tier);
     Task<int> CountByProgramAndTierAsync(Guid programId, ProgramType programType, ProgramTier tier);
     Task<bool> HasPurchasedAsync(Guid userId, Guid programId, ProgramType programType);
+    Task<List<Guid>> GetBuyerIdsByTrainerAsync(Guid trainerId);
 }

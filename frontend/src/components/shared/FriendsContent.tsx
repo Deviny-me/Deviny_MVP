@@ -6,21 +6,14 @@ import {
   Search,
   Users,
   MessageCircle,
-  Check,
-  UserPlus,
   Loader2,
   UserMinus,
   UserCheck,
-  Mail,
-  Clock,
-  Trash2,
-  X,
 } from 'lucide-react'
 import { friendsApi, followsApi } from '@/lib/api/friendsApi'
-import { FriendDto, FriendRequestDto, FriendRequestStatus } from '@/types/friend'
+import { FriendDto } from '@/types/friend'
 import { useTranslations } from 'next-intl'
 import { useAccentColors, getRoleRingClass } from '@/lib/theme/useAccentColors'
-import { chatConnection } from '@/lib/signalr/chatConnection'
 import { Toast } from '@/components/ui/Toast'
 import { getMediaUrl } from '@/lib/config'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
@@ -35,20 +28,17 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
   const searchParams = useSearchParams()
   const t = useTranslations('friends')
   const tc = useTranslations('common')
-  const initialTab = (['all', 'requests', 'sent', 'following', 'followers'] as const).includes(searchParams.get('tab') as any)
-    ? (searchParams.get('tab') as 'all' | 'requests' | 'sent' | 'following' | 'followers')
+  const initialTab = (['all', 'following', 'followers'] as const).includes(searchParams.get('tab') as any)
+    ? (searchParams.get('tab') as 'all' | 'following' | 'followers')
     : 'all'
-  const [activeTab, setActiveTab] = useState<'all' | 'requests' | 'sent' | 'following' | 'followers'>(initialTab)
+  const [activeTab, setActiveTab] = useState<'all' | 'following' | 'followers'>(initialTab)
   const [friends, setFriends] = useState<FriendDto[]>([])
-  const [incomingRequests, setIncomingRequests] = useState<FriendRequestDto[]>([])
-  const [outgoingRequests, setOutgoingRequests] = useState<FriendRequestDto[]>([])
   const [following, setFollowing] = useState<FriendDto[]>([])
   const [followers, setFollowers] = useState<FriendDto[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
-  const [incomingCount, setIncomingCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [followersCount, setFollowersCount] = useState(0)
 
@@ -56,40 +46,8 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
     loadData()
   }, [activeTab])
 
-  // Real-time friend request notifications via SignalR
-  useEffect(() => {
-    const handleFriendRequestReceived = (data: { requestId: number; senderId: string; senderName: string; senderAvatar: string | null }) => {
-      setToast({ message: `${data.senderName} ${t('sentYouRequest')}`, type: 'success' })
-      setIncomingCount(prev => prev + 1)
-      if (activeTab === 'requests') loadData()
-    }
-
-    const handleFriendRequestAccepted = (data: { requestId: number; acceptorId: string; acceptorName: string; acceptorAvatar: string | null }) => {
-      setToast({ message: `${data.acceptorName} ${t('acceptedYourRequest')}`, type: 'success' })
-      loadData()
-    }
-
-    const handleFriendRemoved = (data: { removedByUserId: string; removedByName: string }) => {
-      setFriends(prev => prev.filter(f => f.id !== data.removedByUserId))
-      if (activeTab === 'all') loadData()
-    }
-
-    chatConnection.onFriendRequestReceived(handleFriendRequestReceived)
-    chatConnection.onFriendRequestAccepted(handleFriendRequestAccepted)
-    chatConnection.onFriendRemoved(handleFriendRemoved)
-
-    return () => {
-      chatConnection.off('FriendRequestReceived', handleFriendRequestReceived)
-      chatConnection.off('FriendRequestAccepted', handleFriendRequestAccepted)
-      chatConnection.off('FriendRemoved', handleFriendRemoved)
-    }
-  }, [activeTab, t])
-
   // Load badge counts on mount
   useEffect(() => {
-    friendsApi.getIncomingRequests().then(data =>
-      setIncomingCount(data.filter(r => r.status === FriendRequestStatus.Pending).length)
-    ).catch(() => {})
     followsApi.getMyFollowing(1, 1).then(data => setFollowingCount(data.totalCount)).catch(() => {})
     followsApi.getMyFollowers(1, 1).then(data => setFollowersCount(data.totalCount)).catch(() => {})
   }, [])
@@ -98,24 +56,14 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
     try {
       setLoading(true)
       if (activeTab === 'all') {
-        const [friendsData, incomingData, outgoingData, followingData] = await Promise.all([
+        const [friendsData, followingData, followersData] = await Promise.all([
           friendsApi.getMyFriends(1, 100),
-          friendsApi.getIncomingRequests(),
-          friendsApi.getOutgoingRequests(),
           followsApi.getMyFollowing(1, 1),
+          followsApi.getMyFollowers(1, 1),
         ])
         setFriends(friendsData.items)
-        setIncomingRequests(incomingData.filter(r => r.status === FriendRequestStatus.Pending))
-        setOutgoingRequests(outgoingData.filter(r => r.status === FriendRequestStatus.Pending))
-        setIncomingCount(incomingData.filter(r => r.status === FriendRequestStatus.Pending).length)
         setFollowingCount(followingData.totalCount)
-      } else if (activeTab === 'requests') {
-        const data = await friendsApi.getIncomingRequests()
-        setIncomingRequests(data.filter(r => r.status === FriendRequestStatus.Pending))
-        setIncomingCount(data.filter(r => r.status === FriendRequestStatus.Pending).length)
-      } else if (activeTab === 'sent') {
-        const data = await friendsApi.getOutgoingRequests()
-        setOutgoingRequests(data.filter(r => r.status === FriendRequestStatus.Pending))
+        setFollowersCount(followersData.totalCount)
       } else if (activeTab === 'following') {
         const data = await followsApi.getMyFollowing(1, 100)
         setFollowing(data.items)
@@ -135,46 +83,6 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
   useRealtimeScopeRefresh(['friends', 'follows'], () => {
     loadData()
   })
-
-  const handleAcceptRequest = async (requestId: number) => {
-    setActionLoading(`accept-${requestId}`)
-    try {
-      await friendsApi.acceptFriendRequest(requestId)
-      setIncomingCount(prev => Math.max(0, prev - 1))
-      setToast({ message: t('requestAccepted'), type: 'success' })
-      await loadData()
-    } catch (error) {
-      console.error('Error accepting request:', error)
-      setToast({ message: t('errorAccepting'), type: 'error' })
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  const handleDeclineRequest = async (requestId: number) => {
-    setActionLoading(`decline-${requestId}`)
-    try {
-      await friendsApi.declineFriendRequest(requestId)
-      setIncomingCount(prev => Math.max(0, prev - 1))
-      await loadData()
-    } catch (error) {
-      console.error('Error declining request:', error)
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
-  const handleCancelRequest = async (requestId: number) => {
-    setActionLoading(`cancel-${requestId}`)
-    try {
-      await friendsApi.cancelFriendRequest(requestId)
-      await loadData()
-    } catch (error) {
-      console.error('Error canceling request:', error)
-    } finally {
-      setActionLoading(null)
-    }
-  }
 
   const handleRemoveFriend = async (friendId: string) => {
     setActionLoading(`remove-${friendId}`)
@@ -209,8 +117,6 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
      friend.email.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const pendingRequestsCount = incomingRequests.length + outgoingRequests.length
-
   if (loading && friends.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -225,7 +131,7 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
         <div>
           <h1 className="page-title">{t('title')}</h1>
           <p className="page-subtitle">
-            {friends.length} {t('friendsCount')} • {pendingRequestsCount} {t('pendingRequests')}
+            {friends.length} {t('friendsCount')}
           </p>
         </div>
 
@@ -249,8 +155,6 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
             <div className="flex min-w-max items-center gap-2 px-1">
               {[
                 { id: 'all' as const, label: t('allFriends'), count: friends.length },
-                { id: 'requests' as const, label: t('requests'), count: incomingCount },
-                { id: 'sent' as const, label: t('tabs.sent'), count: outgoingRequests.length },
                 { id: 'followers' as const, label: t('tabs.followers'), count: followersCount },
                 { id: 'following' as const, label: t('tabs.following'), count: followingCount },
               ].map((tab) => (
@@ -333,135 +237,6 @@ export function FriendsContent({ basePath }: FriendsContentProps) {
                   </div>
                 </div>
               ))
-            )}
-          </div>
-        )}
-
-        {/* Incoming Requests */}
-        {activeTab === 'requests' && (
-          <div className="space-y-4">
-            {incomingRequests.length === 0 ? (
-              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
-                <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-foreground font-semibold mb-2">{t('noPendingRequests')}</h3>
-                <p className="text-muted-foreground text-sm">{t('requestsWillAppear')}</p>
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-foreground font-semibold mb-3">{t('incomingRequests')} ({incomingRequests.length})</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {incomingRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        {request.senderAvatar ? (
-                          <img
-                            src={getMediaUrl(request.senderAvatar) || request.senderAvatar}
-                            alt={request.senderFullName || request.senderEmail}
-                            className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.senderRole)}`}
-                          />
-                        ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
-                            {request.senderFullName?.[0] || request.senderEmail[0].toUpperCase()}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-foreground font-semibold">{request.senderFullName || tc('user')}</h3>
-                          <p className="text-sm text-muted-foreground truncate">{request.senderEmail}</p>
-                          <p className="text-xs text-faint-foreground mt-1">
-                            {new Date(request.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <button
-                            onClick={() => handleAcceptRequest(request.id)}
-                            disabled={actionLoading === `accept-${request.id}`}
-                            className={`px-3 py-2 bg-gradient-to-r ${accent.gradient} text-white rounded-lg transition-all flex items-center gap-2 disabled:opacity-50`}
-                          >
-                            {actionLoading === `accept-${request.id}` ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Check className="w-4 h-4" />
-                            )}
-                            <span className="text-sm font-medium">{t('accept')}</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeclineRequest(request.id)}
-                            disabled={actionLoading === `decline-${request.id}`}
-                            className="px-3 py-2 bg-border-subtle hover:bg-white/10 border border-border-subtle text-foreground rounded-lg transition-all disabled:opacity-50"
-                          >
-                            {actionLoading === `decline-${request.id}` ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <span className="text-sm font-medium">{t('decline')}</span>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Sent Requests */}
-        {activeTab === 'sent' && (
-          <div className="space-y-4">
-            {outgoingRequests.length === 0 ? (
-              <div className="bg-surface-2 rounded-xl border border-border-subtle p-8 text-center">
-                <UserPlus className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-foreground font-semibold mb-2">{t('noPendingSent')}</h3>
-                <p className="text-muted-foreground text-sm">{t('requestsWillAppear')}</p>
-              </div>
-            ) : (
-              <div>
-                <h3 className="text-foreground font-semibold mb-3">{t('sentRequests')} ({outgoingRequests.length})</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {outgoingRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="bg-surface-2 rounded-xl border border-border-subtle p-5 hover:border-border transition-all"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        {request.receiverAvatar ? (
-                          <img
-                            src={getMediaUrl(request.receiverAvatar) || request.receiverAvatar}
-                            alt={request.receiverFullName || request.receiverEmail}
-                            className={`w-14 h-14 rounded-full object-cover ${getRoleRingClass(request.receiverRole)}`}
-                          />
-                        ) : (
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${accent.gradient} flex items-center justify-center text-white font-bold`}>
-                            {request.receiverFullName?.[0] || request.receiverEmail[0].toUpperCase()}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-foreground font-semibold">{request.receiverFullName || tc('user')}</h3>
-                          <p className="text-sm text-muted-foreground truncate">{request.receiverEmail}</p>
-                          <div className="flex items-center gap-1 text-xs text-yellow-500 mt-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{t('pending')}</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleCancelRequest(request.id)}
-                          disabled={actionLoading === `cancel-${request.id}`}
-                          className="w-full sm:w-auto px-3 py-2 bg-border-subtle hover:bg-red-500/10 border border-border-subtle text-muted-foreground hover:text-red-400 rounded-lg transition-all disabled:opacity-50"
-                        >
-                          {actionLoading === `cancel-${request.id}` ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <span className="text-sm font-medium">{tc('cancel')}</span>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             )}
           </div>
         )}

@@ -42,7 +42,9 @@ export interface RegisterRequestDto {
   gender?: 'Male' | 'Female' | 'Other'
   country?: string
   city?: string
+  hasInjuries?: boolean
   verificationDocument?: File
+  injuryDocument?: File
 }
 
 export interface SendOtpResponseDto {
@@ -229,8 +231,12 @@ export const authService = {
     if (data.city) {
       formData.append('city', data.city)
     }
+    formData.append('hasInjuries', data.hasInjuries ? 'true' : 'false')
     if (data.verificationDocument) {
       formData.append('verificationDocument', data.verificationDocument)
+    }
+    if (data.injuryDocument) {
+      formData.append('injuryDocument', data.injuryDocument)
     }
 
     const response = await fetch(`${API_URL}/auth/register`, {

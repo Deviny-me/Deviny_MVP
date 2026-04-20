@@ -64,6 +64,7 @@ public static class DependencyInjection
         services.AddScoped<IVerificationDocumentService, VerificationDocumentService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddSingleton<ISlugGenerator, SlugGenerator>();
+        services.AddScoped<INotificationPreferenceService, NotificationPreferenceService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<ITrainerRatingService, TrainerRatingService>();
         services.AddScoped<IUserRatingService, UserRatingService>();

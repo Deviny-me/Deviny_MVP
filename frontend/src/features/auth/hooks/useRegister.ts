@@ -21,7 +21,9 @@ export interface RegisterFormData {
   gender?: GenderType
   country?: string
   city?: string
+  hasInjuries: boolean
   verificationDocument?: File
+  injuryDocument?: File
 }
 
 interface ValidationErrors {
@@ -36,6 +38,7 @@ interface ValidationErrors {
   country?: string
   city?: string
   verificationDocument?: string
+  injuryDocument?: string
   general?: string
 }
 
@@ -129,6 +132,21 @@ export const useRegister = () => {
       }
     }
 
+    if (data.hasInjuries) {
+      if (!data.injuryDocument) {
+        newErrors.injuryDocument = t('injuryDocumentRequired')
+      } else {
+        if (data.injuryDocument.size > 10 * 1024 * 1024) {
+          newErrors.injuryDocument = t('documentSize')
+        }
+
+        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+        if (!allowedTypes.includes(data.injuryDocument.type)) {
+          newErrors.injuryDocument = t('documentFormat')
+        }
+      }
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -155,7 +173,9 @@ export const useRegister = () => {
         gender: data.gender,
         country: data.country,
         city: data.city,
+        hasInjuries: data.hasInjuries,
         verificationDocument: data.verificationDocument,
+        injuryDocument: data.injuryDocument,
       })
 
       // Store auth data (registration defaults to session-only)

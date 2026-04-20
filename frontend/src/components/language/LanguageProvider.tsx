@@ -95,8 +95,16 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageProviderProps) {
-  const [language, setLanguageState] = useState<Language>(() => readStoredLanguage(LANGUAGE_STORAGE_KEY) ?? initialLanguage)
+  const [language, setLanguageState] = useState<Language>(initialLanguage)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Apply stored preference after hydration to avoid SSR/client text mismatches.
+  useEffect(() => {
+    const storedLanguage = readStoredLanguage(LANGUAGE_STORAGE_KEY)
+    if (storedLanguage && storedLanguage !== language) {
+      setLanguageState(storedLanguage)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync with API on mount
   useEffect(() => {
@@ -152,6 +160,29 @@ export function LanguageProvider({ children, initialLanguage = 'ru' }: LanguageP
 
     syncLanguage()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep browser-level language metadata aligned with in-app language selection.
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    document.documentElement.lang = language
+
+    const localizedTitle = messagesMap[language]?.metadata?.title
+    if (localizedTitle) {
+      document.title = localizedTitle
+    }
+
+    const localizedDescription = messagesMap[language]?.metadata?.description
+    if (localizedDescription) {
+      let descriptionTag = document.querySelector('meta[name="description"]') as HTMLMetaElement | null
+      if (!descriptionTag) {
+        descriptionTag = document.createElement('meta')
+        descriptionTag.name = 'description'
+        document.head.appendChild(descriptionTag)
+      }
+      descriptionTag.content = localizedDescription
+    }
+  }, [language])
 
   const setLanguage = useCallback(async (newLanguage: Language) => {
     setIsLoading(true)

@@ -25,6 +25,20 @@ public class UserRepository : IUserRepository
         return await _context.Users.FindAsync(id);
     }
 
+    public async Task<User?> GetBySlugAsync(string slug)
+    {
+        var normalized = slug.Trim().ToLowerInvariant();
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Slug != null && u.Slug.ToLower() == normalized);
+    }
+
+    public async Task<bool> IsSlugUniqueAsync(string slug, Guid? excludeUserId = null)
+    {
+        var normalized = slug.Trim().ToLowerInvariant();
+        return !await _context.Users
+            .AnyAsync(u => u.Slug != null && u.Slug.ToLower() == normalized && (!excludeUserId.HasValue || u.Id != excludeUserId.Value));
+    }
+
     public async Task<User> CreateAsync(User user)
     {
         _context.Users.Add(user);
