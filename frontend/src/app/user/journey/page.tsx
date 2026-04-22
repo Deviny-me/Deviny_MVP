@@ -85,7 +85,7 @@ export default function MyJourneyPage() {
                 onClick={() => setFilter('training')}
                 className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   filter === 'training'
-                    ? 'bg-blue-600 text-foreground'
+                    ? 'bg-orange-500 text-foreground'
                     : 'bg-surface-3 text-muted-foreground hover:text-foreground border border-border'
                 }`}
               >
@@ -160,7 +160,7 @@ export default function MyJourneyPage() {
                   {/* Type badge */}
                   <div className="absolute top-2 left-2">
                     <span className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
-                      program.programType === 'training' ? 'bg-blue-600' : 'bg-green-600'
+                      program.programType === 'training' ? 'bg-orange-500' : 'bg-green-600'
                     }`}>
                       {program.programType === 'training' ? t('training') : t('nutrition')}
                     </span>

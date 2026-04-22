@@ -329,16 +329,16 @@ export default function ProgramsPage() {
                   {tc('all')}
                 </button>
                 {([
-                  { cat: 'Training' as FilterType, icon: Dumbbell, label: t('training'), count: allPrograms.filter(p => p.category === 'Training').length },
-                  { cat: 'Diet' as FilterType, icon: Apple, label: t('nutrition'), count: allPrograms.filter(p => p.category === 'Diet').length },
-                  { cat: 'Consultation' as FilterType, icon: MessageSquare, label: t('consultation'), count: allPrograms.filter(p => p.category === 'Consultation').length },
-                ]).map(({ cat, icon: Icon, label, count }) => (
+                  { cat: 'Training' as FilterType, icon: Dumbbell, label: t('training'), count: allPrograms.filter(p => p.category === 'Training').length, activeColor: 'bg-[#f07915]' },
+                  { cat: 'Diet' as FilterType, icon: Apple, label: t('nutrition'), count: allPrograms.filter(p => p.category === 'Diet').length, activeColor: 'bg-[#28bf68]' },
+                  { cat: 'Consultation' as FilterType, icon: MessageSquare, label: t('consultation'), count: allPrograms.filter(p => p.category === 'Consultation').length, activeColor: 'bg-[#0c8de6]' },
+                ]).map(({ cat, icon: Icon, label, count, activeColor }) => (
                   <button
                     key={cat}
                     onClick={() => setFilterType(cat)}
                     className={`flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       filterType === cat 
-                        ? 'bg-[#0c8de6] text-foreground' 
+                        ? `${activeColor} text-foreground` 
                         : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >

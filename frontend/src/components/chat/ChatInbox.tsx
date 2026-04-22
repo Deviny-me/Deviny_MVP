@@ -128,6 +128,7 @@ export default function ChatInbox() {
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null)
   const [messages, setMessages] = useState<MessageDto[]>([])
   const [inputText, setInputText] = useState('')
+  const draftsRef = useRef<Record<string, string>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [replyTo, setReplyTo] = useState<MessageDto | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -367,6 +368,8 @@ export default function ChatInbox() {
     setMessages([])
     setReplyTo(null)
     setPendingFile(null)
+    // Restore draft for this conversation (or clear if none)
+    setInputText(draftsRef.current[selectedConvId] ?? '')
 
     loadMessages(selectedConvId)
     chatConnection.joinConversation(selectedConvId).catch(() => {})
@@ -632,6 +635,7 @@ export default function ChatInbox() {
 
     setMessages(prev => [...prev, optimistic])
     setInputText('')
+    if (selectedConvId) delete draftsRef.current[selectedConvId]
     setReplyTo(null)
     setPendingFile(null)
     setSending(true)
@@ -1409,7 +1413,10 @@ export default function ChatInbox() {
                   type="text"
                   placeholder={pendingFile ? 'Add a caption...' : 'Type a message...'}
                   value={inputText}
-                  onChange={e => setInputText(e.target.value)}
+                  onChange={e => {
+                    setInputText(e.target.value)
+                    if (selectedConvId) draftsRef.current[selectedConvId] = e.target.value
+                  }}
                   onKeyDown={handleKeyDown}
                   disabled={sending}
                   className={`min-w-0 flex-1 rounded-full border border-border-subtle/70 bg-background px-4 py-3 text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
