@@ -48,16 +48,10 @@ public class CreateRepostCommandHandler : IRequestHandler<CreateRepostCommand, R
             return Result.Failure<PostDto>(new Error("Post.NotFound", "The original post was not found"));
         }
 
-        // Can't repost a repost - find the root original post
-        var targetOriginalId = originalPost.OriginalPostId ?? originalPost.Id;
-        if (originalPost.OriginalPostId.HasValue)
+        // Do not allow reposting an existing repost.
+        if (originalPost.OriginalPostId.HasValue || originalPost.Type == PostType.Repost)
         {
-            var rootPost = await _postRepository.GetByIdAsync(targetOriginalId, cancellationToken);
-            if (rootPost == null)
-            {
-                return Result.Failure<PostDto>(new Error("Post.NotFound", "The original post was not found"));
-            }
-            originalPost = rootPost;
+            return Result.Failure<PostDto>(new Error("Repost.CannotRepostRepost", "You cannot repost a repost"));
         }
 
         // Check if user already reposted this post

@@ -331,6 +331,9 @@ export const postsApi = {
         throw new Error('You have already reposted this post')
       }
       const error = await response.json().catch(() => ({ detail: 'Failed to repost' }))
+      if (error?.title === 'Repost.CannotRepostRepost') {
+        throw new Error('Нельзя репостить репост')
+      }
       throw new Error(error.detail || 'Failed to repost')
     }
 

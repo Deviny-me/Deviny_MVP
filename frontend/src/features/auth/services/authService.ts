@@ -57,12 +57,20 @@ export interface VerifyOtpResponseDto {
   verified: boolean
 }
 
+function getAppLanguage(): 'ru' | 'en' | 'az' {
+  if (typeof window === 'undefined') return 'ru'
+  const stored = localStorage.getItem('deviny.language')
+  if (stored === 'en' || stored === 'az' || stored === 'ru') return stored
+  return 'ru'
+}
+
 export const authService = {
   async sendOtp(email: string): Promise<SendOtpResponseDto> {
     const response = await fetch(`${API_URL}/auth/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': getAppLanguage(),
       },
       credentials: 'include',
       body: JSON.stringify({ email }),
@@ -111,6 +119,7 @@ export const authService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': getAppLanguage(),
       },
       credentials: 'include',
       body: JSON.stringify({ email }),
