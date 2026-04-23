@@ -11,7 +11,7 @@ public interface IEmailService
     /// <param name="email">Recipient email address</param>
     /// <param name="otpCode">The 6-digit OTP code</param>
     /// <param name="expirationMinutes">How long the OTP is valid</param>
-    Task SendOtpEmailAsync(string email, string otpCode, int expirationMinutes);
+    Task SendOtpEmailAsync(string email, string otpCode, int expirationMinutes, string? language = null);
     
     /// <summary>
     /// Sends an OTP email for password reset.
@@ -19,7 +19,7 @@ public interface IEmailService
     /// <param name="email">Recipient email address</param>
     /// <param name="otpCode">The 6-digit OTP code</param>
     /// <param name="expirationMinutes">How long the OTP is valid</param>
-    Task SendPasswordResetOtpEmailAsync(string email, string otpCode, int expirationMinutes);
+    Task SendPasswordResetOtpEmailAsync(string email, string otpCode, int expirationMinutes, string? language = null);
     
     /// <summary>
     /// Sends a welcome email after successful registration.
