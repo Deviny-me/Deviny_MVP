@@ -11,6 +11,10 @@ import {
   Dumbbell,
   Apple,
   MessageSquare,
+  ShieldCheck,
+  CheckCircle2,
+  Clock3,
+  ArrowRight,
 } from 'lucide-react'
 import { programsApi } from '@/lib/api/programsApi'
 import { mealProgramsApi } from '@/lib/api/mealProgramsApi'
@@ -21,6 +25,7 @@ import { getMediaUrl } from '@/lib/config'
 import { useTranslations } from 'next-intl'
 import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
+import { cn } from '@/lib/utils/cn'
 
 type UnifiedPublicProgram = {
   id: string
@@ -45,6 +50,54 @@ type UnifiedPublicProgram = {
   averageRating?: number
   totalReviews?: number
   totalPurchases?: number
+}
+
+type TierOption = {
+  key: 'Basic' | 'Standard' | 'Pro'
+  title: string
+  description: string
+  price: number
+  remaining?: number
+  maxSpots?: number
+  featured?: boolean
+}
+
+const detailCopy = {
+  instantAccess: 'Мгновенный доступ',
+  chooseAccess: 'Выберите доступ',
+  verifiedExpertTitle: 'Проверенный эксперт',
+  verifiedExpertCopy: 'Программа привязана к профилю специалиста.',
+  clearAccessTitle: 'Понятные пакеты',
+  clearAccessCopy: 'Выберите уровень поддержки под вашу цель.',
+  selfPacedTitle: 'В своем темпе',
+  selfPacedCopy: 'После покупки программа появится в вашем пути.',
+  availableNow: 'Доступно сейчас',
+  select: 'Выбрать',
+  securePurchase: 'Безопасная покупка',
+  securePurchaseCopy: 'После оплаты программа появится в разделе «Мой путь» и будет доступна в любое время.',
+  browseMore: 'Смотреть другие программы',
+  programNotFound: 'Программа не найдена',
+  loadFailed: 'Не удалось загрузить программу',
+  purchaseFailed: 'Не удалось купить программу',
+}
+
+function withTimeout<T>(promise: Promise<T>, message: string, ms = 12000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error(message))
+    }, ms)
+
+    promise.then(
+      (value) => {
+        window.clearTimeout(timeoutId)
+        resolve(value)
+      },
+      (error) => {
+        window.clearTimeout(timeoutId)
+        reject(error)
+      }
+    )
+  })
 }
 
 function fromTraining(p: PublicProgramDto): UnifiedPublicProgram {
@@ -101,6 +154,39 @@ function fromMeal(p: PublicMealProgramDto): UnifiedPublicProgram {
   }
 }
 
+function getCategoryMeta(category: ProgramCategory, t: ReturnType<typeof useTranslations>) {
+  if (category === 'Diet') {
+    return {
+      label: t('nutrition'),
+      Icon: Apple,
+      accent: 'text-nutritionist-500',
+      badge: 'bg-nutritionist-500',
+      tint: 'from-nutritionist-500/20 via-transparent to-user-500/10',
+      ring: 'border-nutritionist-500/30',
+    }
+  }
+
+  if (category === 'Consultation') {
+    return {
+      label: t('consultation'),
+      Icon: MessageSquare,
+      accent: 'text-user-500',
+      badge: 'bg-user-600',
+      tint: 'from-user-500/20 via-transparent to-primary-500/10',
+      ring: 'border-user-500/30',
+    }
+  }
+
+  return {
+    label: t('training'),
+    Icon: Dumbbell,
+    accent: 'text-trainer-500',
+    badge: 'bg-trainer-500',
+    tint: 'from-trainer-500/20 via-transparent to-user-500/10',
+    ring: 'border-trainer-500/30',
+  }
+}
+
 export default function ProgramDetailPage({
   params,
 }: {
@@ -115,7 +201,7 @@ export default function ProgramDetailPage({
   const [program, setProgram] = useState<UnifiedPublicProgram | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [purchasing, setPurchasing] = useState(false)
+  const [purchasingTier, setPurchasingTier] = useState<string | null>(null)
   const [purchaseError, setPurchaseError] = useState<string | null>(null)
   const [reviews, setReviews] = useState<ReviewDto[]>([])
   const [reviewsLoading, setReviewsLoading] = useState(false)
@@ -126,36 +212,33 @@ export default function ProgramDetailPage({
       setError(null)
       const category = searchParams.get('category')
 
-      // Try training program first (has a direct by-id endpoint)
       if (category !== 'Diet') {
-        const trainingProg = await programsApi.getProgramById(id)
+        const trainingProg = await withTimeout(programsApi.getProgramById(id), detailCopy.loadFailed)
         if (trainingProg) {
           setProgram(fromTraining(trainingProg))
           return
         }
       }
 
-      // Fallback: search in meal programs
-      const mealRes = await mealProgramsApi.getAllPublic(1, 100)
+      const mealRes = await withTimeout(mealProgramsApi.getAllPublic(1, 100), detailCopy.loadFailed)
       const found = mealRes.items.find((p) => p.id === id)
       if (found) {
         setProgram(fromMeal(found))
         return
       }
 
-      // If category wasn't Diet, also try training (in case getProgramById returned null for other reasons)
       if (category === 'Diet') {
-        const trainingProg = await programsApi.getProgramById(id)
+        const trainingProg = await withTimeout(programsApi.getProgramById(id), detailCopy.loadFailed)
         if (trainingProg) {
           setProgram(fromTraining(trainingProg))
           return
         }
       }
 
-      setError('Program not found')
+      setError(detailCopy.programNotFound)
     } catch (err) {
       console.error('Failed to fetch program:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load program')
+      setError(err instanceof Error ? err.message : detailCopy.loadFailed)
     } finally {
       setIsLoading(false)
     }
@@ -195,7 +278,7 @@ export default function ProgramDetailPage({
 
   const handlePurchase = async (tier: string) => {
     if (!program) return
-    setPurchasing(true)
+    setPurchasingTier(tier)
     setPurchaseError(null)
     try {
       await purchasesApi.purchase({
@@ -205,10 +288,10 @@ export default function ProgramDetailPage({
       })
       router.push('/user/journey')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Purchase failed'
+      const message = err instanceof Error ? err.message : detailCopy.purchaseFailed
       setPurchaseError(message)
     } finally {
-      setPurchasing(false)
+      setPurchasingTier(null)
     }
   }
 
@@ -220,7 +303,7 @@ export default function ProgramDetailPage({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-[#0c8de6] animate-spin" />
+        <Loader2 className="h-8 w-8 animate-spin text-user-500" />
       </div>
     )
   }
@@ -230,19 +313,19 @@ export default function ProgramDetailPage({
       <div className="space-y-4 pb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground hover:bg-hover-overlay hover:text-foreground"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm font-medium">{tc('back')}</span>
+          <ArrowLeft className="h-4 w-4" />
+          {tc('back')}
         </button>
-        <div className="text-center py-12 bg-surface-3 rounded-xl border border-border">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-            <span className="text-2xl">⚠️</span>
+        <div className="rounded-xl border border-border bg-surface-3 px-6 py-12 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 text-red-400">
+            <ShieldCheck className="h-7 w-7" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">{error || 'Program not found'}</h3>
+          <h3 className="mb-2 text-lg font-semibold text-foreground">{error || detailCopy.programNotFound}</h3>
           <button
             onClick={() => router.push('/user/programs')}
-            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="mt-4 rounded-lg bg-user-600 px-6 py-2 text-sm font-semibold text-white hover:bg-user-700"
           >
             {tc('back')}
           </button>
@@ -251,311 +334,337 @@ export default function ProgramDetailPage({
     )
   }
 
+  const categoryMeta = getCategoryMeta(program.category, t)
+  const CategoryIcon = categoryMeta.Icon
+  const accentColors = getAccentColorsByRole(program.trainerRole)
+  const availablePrices = [program.price, program.standardPrice, program.proPrice].filter(
+    (price): price is number => price != null && price >= 0
+  )
+  const paidPrices = availablePrices.filter(price => price > 0)
+  const minPrice = paidPrices.length > 0 ? Math.min(...paidPrices) : 0
+  const hasMultiplePrices = paidPrices.length > 1
+  const averageRating = program.averageRating ?? 0
+  const totalReviews = program.totalReviews ?? 0
+  const totalPurchases = program.totalPurchases ?? 0
+
+  const tierOptions: TierOption[] = [
+    program.price >= 0
+      ? {
+          key: 'Basic',
+          title: t('basicTier'),
+          description: t('basicTierDesc'),
+          price: program.price,
+        }
+      : null,
+    program.standardPrice != null && program.standardPrice > 0
+      ? {
+          key: 'Standard',
+          title: t('standardTier'),
+          description: t('standardTierDesc'),
+          price: program.standardPrice,
+          remaining: program.standardSpotsRemaining,
+          maxSpots: program.maxStandardSpots,
+          featured: true,
+        }
+      : null,
+    program.proPrice != null && program.proPrice > 0
+      ? {
+          key: 'Pro',
+          title: t('proTier'),
+          description: t('proTierDesc'),
+          price: program.proPrice,
+          remaining: program.proSpotsRemaining,
+          maxSpots: program.maxProSpots,
+        }
+      : null,
+  ].filter((tier): tier is TierOption => Boolean(tier))
+
   return (
-    <div className="space-y-4 pb-6">
-      {/* Back button */}
+    <div className="space-y-5 pb-8">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground hover:bg-hover-overlay hover:text-foreground"
       >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{tc('back')}</span>
+        <ArrowLeft className="h-4 w-4" />
+        {tc('back')}
       </button>
 
-      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-        {/* Cover Image */}
-        <div className="relative">
+      <section className="overflow-hidden rounded-2xl border border-border bg-surface-3 shadow-sm">
+        <div className="relative min-h-[360px]">
           {program.coverImageUrl ? (
             <img
               src={getMediaUrl(program.coverImageUrl) || ''}
               alt={program.title}
-              className="w-full h-56 sm:h-72 object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <div className="w-full h-56 sm:h-72 bg-background flex items-center justify-center">
-              {program.category === 'Training' ? (
-                <Dumbbell className="w-16 h-16 text-gray-600" />
-              ) : program.category === 'Diet' ? (
-                <Apple className="w-16 h-16 text-gray-600" />
-              ) : (
-                <MessageSquare className="w-16 h-16 text-gray-600" />
-              )}
+            <div className="absolute inset-0 flex items-center justify-center bg-surface-4">
+              <CategoryIcon className={cn('h-20 w-20', categoryMeta.accent)} />
             </div>
           )}
-          <div className="absolute top-3 left-3 flex gap-2">
-            <span
-              className={`px-2 py-1 text-xs font-bold rounded text-foreground ${
-                program.category === 'Training'
-                  ? 'bg-blue-600'
-                  : program.category === 'Diet'
-                  ? 'bg-green-600'
-                  : 'bg-violet-600'
-              }`}
-            >
-              {program.category === 'Training'
-                ? t('training')
-                : program.category === 'Diet'
-                ? t('nutrition')
-                : t('consultation')}
-            </span>
-          </div>
-        </div>
+          <div className={cn('absolute inset-0 bg-gradient-to-br', categoryMeta.tint)} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
 
-        {/* Content */}
-        <div className="p-5 space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <h1 className="page-title">{program.title}</h1>
-            <div className="flex flex-col items-end flex-shrink-0">
-              {(() => {
-                const availablePrices: number[] = []
-                if (program.price > 0) availablePrices.push(program.price)
-                if (program.standardPrice != null && program.standardPrice > 0)
-                  availablePrices.push(program.standardPrice)
-                if (program.proPrice != null && program.proPrice > 0)
-                  availablePrices.push(program.proPrice)
-
-                if (availablePrices.length === 0) {
-                  return <span className="text-2xl font-bold text-[#0c8de6]">$0.00</span>
-                }
-
-                const minPrice = Math.min(...availablePrices)
-                const hasMultiple = availablePrices.length > 1
-                return (
-                  <span className="text-2xl font-bold text-[#0c8de6]">
-                    {hasMultiple && (
-                      <span className="text-sm font-normal text-muted-foreground mr-1">{tc('from')}</span>
-                    )}
-                    {`$${minPrice.toFixed(2)}`}
-                  </span>
-                )
-              })()}
-            </div>
-          </div>
-
-          {/* Trainer */}
-          <div
-            className="flex items-center gap-3 p-3 bg-background rounded-lg cursor-pointer hover:bg-surface-2 transition-colors"
-            onClick={() => router.push(`/user/profile/${program.trainerId}`)}
-          >
-            {program.trainerAvatarUrl ? (
-              <img
-                src={getMediaUrl(program.trainerAvatarUrl) || ''}
-                alt={program.trainerName}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{
-                  background: `linear-gradient(to bottom right, ${getAccentColorsByRole(program.trainerRole).primary}, ${getAccentColorsByRole(program.trainerRole).secondary})`,
-                }}
-              >
-                <span className="text-foreground font-bold">{program.trainerName.charAt(0)}</span>
+          <div className="relative flex min-h-[360px] flex-col justify-end gap-6 p-5 sm:p-7 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className={cn('inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white', categoryMeta.badge)}>
+                  <CategoryIcon className="h-3.5 w-3.5" />
+                  {categoryMeta.label}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  {detailCopy.instantAccess}
+                </span>
               </div>
-            )}
-            <div>
-              <p className="text-foreground font-medium">{program.trainerName}</p>
-              <p className="text-xs text-muted-foreground">
-                {program.trainerRole?.toLowerCase() === 'nutritionist' ||
-                program.trainerRole === '2'
-                  ? t('viewNutritionistProfile')
-                  : t('viewTrainerProfile')}
+
+              <h1 className="max-w-3xl text-3xl font-bold leading-tight text-white sm:text-4xl">
+                {program.title}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
+                {program.description}
               </p>
             </div>
-          </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              <span className="text-foreground font-medium">
-                {(program.averageRating ?? 0) > 0
-                  ? (program.averageRating ?? 0).toFixed(1)
-                  : '-'}
-              </span>
-              <span className="text-faint-foreground">({program.totalReviews ?? 0})</span>
+            <div className="grid grid-cols-3 gap-2 rounded-xl border border-white/15 bg-black/35 p-2 text-white backdrop-blur sm:min-w-[360px]">
+              <div className="rounded-lg bg-white/10 px-3 py-3">
+                <p className="text-[11px] uppercase text-white/60">{t('reviews')}</p>
+                <p className="mt-1 flex items-center gap-1 text-lg font-bold">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  {averageRating > 0 ? averageRating.toFixed(1) : '-'}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/10 px-3 py-3">
+                <p className="text-[11px] uppercase text-white/60">{tc('purchases')}</p>
+                <p className="mt-1 flex items-center gap-1 text-lg font-bold">
+                  <Users className="h-4 w-4" />
+                  {totalPurchases}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/10 px-3 py-3">
+                <p className="text-[11px] uppercase text-white/60">{tc('from')}</p>
+                <p className="mt-1 text-lg font-bold">{formatPrice(minPrice)}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="w-5 h-5" />
-              <span>
-                {program.totalPurchases ?? 0} {tc('purchases')}
-              </span>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <main className="space-y-5">
+          <section className="rounded-xl border border-border bg-surface-3 p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border-subtle bg-background p-3 hover:border-user-500/30"
+                onClick={() => router.push(`/user/profile/${program.trainerId}`)}
+              >
+                {program.trainerAvatarUrl ? (
+                  <img
+                    src={getMediaUrl(program.trainerAvatarUrl) || ''}
+                    alt={program.trainerName}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full"
+                    style={{
+                      background: `linear-gradient(to bottom right, ${accentColors.primary}, ${accentColors.secondary})`,
+                    }}
+                  >
+                    <span className="font-bold text-white">{program.trainerName.charAt(0)}</span>
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-foreground">{program.trainerName}</p>
+                  <p className="text-xs text-muted-foreground group-hover:text-user-500">
+                    {program.trainerRole?.toLowerCase() === 'nutritionist' || program.trainerRole === '2'
+                      ? t('viewNutritionistProfile')
+                      : t('viewTrainerProfile')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 sm:min-w-[240px]">
+                <div className="rounded-xl border border-border-subtle bg-background p-3">
+                  <p className="text-xs text-muted-foreground">{t('programCode')}</p>
+                  <p className="mt-1 truncate font-mono text-sm font-semibold text-foreground">{program.code}</p>
+                </div>
+                <div className="rounded-xl border border-border-subtle bg-background p-3">
+                  <p className="text-xs text-muted-foreground">{t('reviews')}</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{totalReviews}</p>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Description */}
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">{t('aboutProgram')}</h3>
-            <p className="text-foreground leading-relaxed">{program.description}</p>
-          </div>
+          <section className="rounded-xl border border-border bg-surface-3 p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-foreground">{t('aboutProgram')}</h2>
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">{program.description}</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {[
+                { icon: ShieldCheck, title: detailCopy.verifiedExpertTitle, copy: detailCopy.verifiedExpertCopy },
+                { icon: CheckCircle2, title: detailCopy.clearAccessTitle, copy: detailCopy.clearAccessCopy },
+                { icon: Clock3, title: detailCopy.selfPacedTitle, copy: detailCopy.selfPacedCopy },
+              ].map((item) => {
+                const Icon = item.icon
+                return (
+                  <div key={item.title} className="rounded-xl border border-border-subtle bg-background p-4">
+                    <Icon className={cn('h-5 w-5', categoryMeta.accent)} />
+                    <p className="mt-3 text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.copy}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
 
-          {/* Purchase Buttons */}
-          <div className="space-y-3">
+          <section className="rounded-xl border border-border bg-surface-3 p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+                <Star className="h-5 w-5 text-amber-400" />
+                {t('reviews')} ({reviews.length})
+              </h2>
+              {averageRating > 0 && (
+                <span className="rounded-full bg-amber-400/10 px-3 py-1 text-sm font-semibold text-amber-500">
+                  {averageRating.toFixed(1)} / 5
+                </span>
+              )}
+            </div>
+
+            {reviewsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-user-500" />
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-background py-8 text-center">
+                <p className="text-sm text-faint-foreground">{t('noReviews')}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reviews.map((review) => (
+                  <article key={review.id} className="rounded-xl border border-border-subtle bg-background p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        {review.userAvatarUrl ? (
+                          <img
+                            src={getMediaUrl(review.userAvatarUrl) || ''}
+                            alt={review.userName}
+                            className="h-9 w-9 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-4">
+                            <span className="text-xs font-bold text-foreground">{review.userName.charAt(0)}</span>
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-foreground">{review.userName}</p>
+                          <p className="text-xs text-faint-foreground">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={cn('h-3.5 w-3.5', star <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-faint-foreground')}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.comment && (
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground">{review.comment}</p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
+
+        <aside className="lg:sticky lg:top-5 lg:self-start">
+          <section className={cn('rounded-xl border bg-surface-3 p-5 shadow-sm', categoryMeta.ring)}>
+            <div className="mb-4">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">{detailCopy.chooseAccess}</p>
+              <p className="mt-1 text-3xl font-bold text-foreground">
+                {hasMultiplePrices && <span className="mr-1 text-sm font-medium text-muted-foreground">{tc('from')}</span>}
+                {formatPrice(minPrice)}
+              </p>
+            </div>
+
             {purchaseError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center">
+              <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
                 {purchaseError}
               </div>
             )}
 
-            {/* Basic Tier */}
-            {program.price > 0 && (
-              <div>
-                <button
-                  disabled={purchasing}
-                  className="w-full py-3 bg-gradient-to-r from-[#0c8de6] to-[#0070c4] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
-                  onClick={() => handlePurchase('Basic')}
-                >
-                  {purchasing ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <ShoppingCart className="w-5 h-5" />
-                  )}
-                  {`${t('basicTier')} \u2014 ${formatPrice(program.price)}`}
-                </button>
-                <p className="text-xs text-faint-foreground mt-1 text-center">{t('basicTierDesc')}</p>
-              </div>
-            )}
-
-            {/* Standard Tier */}
-            {program.standardPrice != null &&
-              program.standardPrice > 0 &&
-              (() => {
-                const soldOut =
-                  program.maxStandardSpots != null &&
-                  program.maxStandardSpots > 0 &&
-                  (program.standardSpotsRemaining ?? 0) <= 0
-                return (
-                  <div>
-                    <button
-                      disabled={soldOut || purchasing}
-                      className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
-                        soldOut
-                          ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
-                          : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white hover:opacity-90 disabled:opacity-50'
-                      }`}
-                      onClick={() => !soldOut && handlePurchase('Standard')}
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                      {soldOut
-                        ? t('soldOut')
-                        : `${t('standardTier')} — ${formatPrice(program.standardPrice!)}`}
-                      {!soldOut &&
-                        program.maxStandardSpots != null &&
-                        program.maxStandardSpots > 0 && (
-                          <span className="text-xs opacity-75">
-                            ({program.standardSpotsRemaining} {t('spotsLeft')})
-                          </span>
-                        )}
-                    </button>
-                    <p className="text-xs text-faint-foreground mt-1 text-center">
-                      {t('standardTierDesc')}
-                    </p>
-                  </div>
-                )
-              })()}
-
-            {/* Pro Tier */}
-            {program.proPrice != null &&
-              program.proPrice > 0 &&
-              (() => {
-                const soldOut =
-                  program.maxProSpots != null &&
-                  program.maxProSpots > 0 &&
-                  (program.proSpotsRemaining ?? 0) <= 0
-                return (
-                  <div>
-                    <button
-                      disabled={soldOut || purchasing}
-                      className={`w-full py-3 font-semibold rounded-lg flex items-center justify-center gap-2 transition-opacity ${
-                        soldOut
-                          ? 'bg-gray-700 text-muted-foreground cursor-not-allowed'
-                          : 'bg-gradient-to-r from-purple-600 to-purple-800 text-white hover:opacity-90 disabled:opacity-50'
-                      }`}
-                      onClick={() => !soldOut && handlePurchase('Pro')}
-                    >
-                      <ShoppingCart className="w-5 h-5" />
-                      {soldOut
-                        ? t('soldOut')
-                        : `${t('proTier')} — ${formatPrice(program.proPrice!)}`}
-                      {!soldOut &&
-                        program.maxProSpots != null &&
-                        program.maxProSpots > 0 && (
-                          <span className="text-xs opacity-75">
-                            ({program.proSpotsRemaining} {t('spotsLeft')})
-                          </span>
-                        )}
-                    </button>
-                    <p className="text-xs text-faint-foreground mt-1 text-center">{t('proTierDesc')}</p>
-                  </div>
-                )
-              })()}
-          </div>
-
-          <p className="text-center text-xs text-faint-foreground">
-            {t('programCode')}{' '}
-            <span className="text-muted-foreground font-mono">{program.code}</span>
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-surface-3 rounded-xl border border-border overflow-hidden">
-        <div className="p-5 space-y-4">
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Star className="w-5 h-5 text-amber-400" />
-            {t('reviews')} ({reviews.length})
-          </h2>
-
-          {reviewsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 text-[#0c8de6] animate-spin" />
-            </div>
-          ) : reviews.length === 0 ? (
-            <div className="text-center py-6">
-              <p className="text-faint-foreground text-sm">{t('noReviews')}</p>
-            </div>
-          ) : (
             <div className="space-y-3">
-              {reviews.map((review) => (
-                <div key={review.id} className="p-4 bg-background rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {review.userAvatarUrl ? (
-                        <img
-                          src={getMediaUrl(review.userAvatarUrl) || ''}
-                          alt={review.userName}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                          <span className="text-foreground text-xs font-bold">
-                            {review.userName.charAt(0)}
-                          </span>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-foreground text-sm font-medium">{review.userName}</p>
-                        <p className="text-xs text-faint-foreground">{new Date(review.createdAt).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-3.5 h-3.5 ${
-                            star <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  {review.comment && <p className="text-muted-foreground text-sm leading-relaxed">{review.comment}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+              {tierOptions.map((tier) => {
+                const soldOut =
+                  tier.maxSpots != null &&
+                  tier.maxSpots > 0 &&
+                  (tier.remaining ?? 0) <= 0
+                const isPurchasing = purchasingTier === tier.key
 
+                return (
+                  <button
+                    key={tier.key}
+                    disabled={soldOut || Boolean(purchasingTier)}
+                    onClick={() => !soldOut && handlePurchase(tier.key)}
+                    className={cn(
+                      'w-full rounded-xl border p-4 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60',
+                      tier.featured
+                        ? 'border-user-500/40 bg-user-500/10 hover:border-user-500'
+                        : 'border-border-subtle bg-background hover:border-user-500/40'
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-foreground">{tier.title}</p>
+                        <p className="mt-1 text-xs leading-5 text-muted-foreground">{tier.description}</p>
+                      </div>
+                      <span className="shrink-0 text-base font-bold text-foreground">
+                        {formatPrice(tier.price)}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between text-xs">
+                      <span className={soldOut ? 'text-red-400' : 'text-muted-foreground'}>
+                        {soldOut
+                          ? t('soldOut')
+                          : tier.maxSpots != null && tier.maxSpots > 0
+                          ? `${tier.remaining} ${t('spotsLeft')}`
+                          : detailCopy.availableNow}
+                      </span>
+                      <span className="inline-flex items-center gap-1 font-semibold text-user-500">
+                        {isPurchasing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                        {detailCopy.select}
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-border-subtle bg-background p-3">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <ShieldCheck className="h-4 w-4 text-user-500" />
+                {detailCopy.securePurchase}
+              </div>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {detailCopy.securePurchaseCopy}
+              </p>
+            </div>
+          </section>
+
+          <button
+            onClick={() => router.push('/user/programs')}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface-3 px-4 py-3 text-sm font-semibold text-foreground hover:bg-hover-overlay"
+          >
+            {detailCopy.browseMore}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </aside>
+      </div>
     </div>
   )
 }
