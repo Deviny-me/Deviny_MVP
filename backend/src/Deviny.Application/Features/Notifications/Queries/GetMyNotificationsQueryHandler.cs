@@ -29,6 +29,7 @@ public class GetMyNotificationsQueryHandler : IRequestHandler<GetMyNotifications
         {
             Id = n.Id,
             Type = n.Type.ToString(),
+            Category = n.Category.ToString(),
             Title = n.Title,
             Message = n.Message,
             RelatedEntityType = n.RelatedEntityType,

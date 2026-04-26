@@ -1,6 +1,7 @@
 using Deviny.API.DTOs.Requests;
 using Deviny.API.DTOs.Responses;
 using Deviny.API.DTOs.Shared;
+using Deviny.API.Services;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Common.Settings;
 using Deviny.Application.Features.Auth.Commands;
@@ -9,6 +10,7 @@ using Deviny.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
 namespace Deviny.API.Controllers;
 
@@ -26,6 +28,7 @@ public class AuthController : ControllerBase
     private readonly EmailSettings _emailSettings;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<AuthController> _logger;
+    private readonly IPresenceService _presenceService;
 
     public AuthController(
         LoginCommandHandler loginHandler,
@@ -37,7 +40,8 @@ public class AuthController : ControllerBase
         IPasswordHasher passwordHasher,
         IOptions<EmailSettings> emailSettings,
         IWebHostEnvironment env,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger,
+        IPresenceService presenceService)
     {
         _loginHandler = loginHandler;
         _userRepository = userRepository;
@@ -49,6 +53,7 @@ public class AuthController : ControllerBase
         _emailSettings = emailSettings.Value;
         _env = env;
         _logger = logger;
+        _presenceService = presenceService;
     }
 
     private CookieOptions CreateRefreshCookieOptions()
@@ -61,6 +66,17 @@ public class AuthController : ControllerBase
             SameSite = isProduction ? SameSiteMode.None : SameSiteMode.Lax,
             Path = "/"
         };
+    }
+
+    private string GetRequestLanguage()
+    {
+        var header = Request.Headers.AcceptLanguage.ToString();
+        if (string.IsNullOrWhiteSpace(header)) return "ru";
+
+        var primary = header.Split(',')[0].Trim().ToLowerInvariant();
+        if (primary.StartsWith("en")) return "en";
+        if (primary.StartsWith("az")) return "az";
+        return "ru";
     }
 
     /// <summary>
@@ -100,13 +116,27 @@ public class AuthController : ControllerBase
 
             await _otpRepository.CreateAsync(otp);
 
-            // Send email
-            await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            // Send email. In development, allow local flow to continue if SMTP is unavailable.
+            try
+            {
+                await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes, GetRequestLanguage());
+            }
+            catch (Exception ex) when (_env.IsDevelopment())
+            {
+                _logger.LogWarning(ex, "SMTP send failed in development for {Email}. Returning OTP for local testing.", request.Email);
+                return Ok(new
+                {
+                    message = "OTP_SENT_DEVELOPMENT",
+                    expiresInMinutes = _emailSettings.OtpExpirationMinutes,
+                    debugOtp = otpCode
+                });
+            }
 
             return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to send registration OTP to {Email}", request.Email);
             return StatusCode(500, new { message = "FAILED_TO_SEND_OTP", error = ex.Message });
         }
     }
@@ -197,15 +227,28 @@ public class AuthController : ControllerBase
 
             await _otpRepository.CreateAsync(otp);
 
-            // Send password reset email
-            await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+            // Send password reset email. In development, allow local flow to continue if SMTP is unavailable.
+            try
+            {
+                await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes, GetRequestLanguage());
+            }
+            catch (Exception ex) when (_env.IsDevelopment())
+            {
+                _logger.LogWarning(ex, "SMTP send failed in development for password reset on {Email}. Returning OTP for local testing.", request.Email);
+                return Ok(new
+                {
+                    message = "OTP_SENT_DEVELOPMENT",
+                    expiresInMinutes = _emailSettings.OtpExpirationMinutes,
+                    debugOtp = otpCode
+                });
+            }
 
             return Ok(new { message = "OTP_SENT", expiresInMinutes = _emailSettings.OtpExpirationMinutes });
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Forgot password error: {ex}");
-            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP" });
+            _logger.LogError(ex, "Failed to send password reset OTP to {Email}", request.Email);
+            return StatusCode(500, new { message = "FAILED_TO_SEND_OTP", error = ex.Message });
         }
     }
 
@@ -342,11 +385,14 @@ public class AuthController : ControllerBase
     {
         try
         {
-            // Verify that email has been verified via OTP
-            var isEmailVerified = await _otpRepository.IsEmailVerifiedAsync(request.Email);
-            if (!isEmailVerified)
+            // In local development, allow registering without completing OTP verification.
+            if (!_env.IsDevelopment())
             {
-                return BadRequest(new { message = "EMAIL_NOT_VERIFIED" });
+                var isEmailVerified = await _otpRepository.IsEmailVerifiedAsync(request.Email);
+                if (!isEmailVerified)
+                {
+                    return BadRequest(new { message = "EMAIL_NOT_VERIFIED" });
+                }
             }
 
             // Validate file for trainers and nutritionists
@@ -372,6 +418,26 @@ public class AuthController : ControllerBase
                 }
             }
 
+            if (request.HasInjuries)
+            {
+                if (request.InjuryDocument == null)
+                {
+                    return BadRequest(new { message = "Please upload your medical certificate to proceed" });
+                }
+
+                if (request.InjuryDocument.Length > 10 * 1024 * 1024)
+                {
+                    return BadRequest(new { message = "File size must be less than 10 MB" });
+                }
+
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                var extension = Path.GetExtension(request.InjuryDocument.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return BadRequest(new { message = "Only PDF, JPG, and PNG files are allowed" });
+                }
+            }
+
             // Parse Gender if provided
             Domain.Enums.Gender? gender = null;
             if (!string.IsNullOrEmpty(request.Gender) && 
@@ -390,7 +456,9 @@ public class AuthController : ControllerBase
                 gender,
                 request.Country,
                 request.City,
-                request.VerificationDocument
+                request.VerificationDocument,
+                request.HasInjuries,
+                request.InjuryDocument
             );
 
             var response = await _mediator.Send(command);
@@ -514,6 +582,13 @@ public class AuthController : ControllerBase
         if (!string.IsNullOrEmpty(refreshToken))
         {
             await _userRepository.RevokeRefreshTokenAsync(refreshToken);
+        }
+
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? User.FindFirstValue("sub");
+        if (Guid.TryParse(userIdClaim, out var userId))
+        {
+            await _presenceService.MarkOfflineAsync(userId);
         }
         
         Response.Cookies.Delete("refreshToken");

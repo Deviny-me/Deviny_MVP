@@ -5,9 +5,10 @@ import { useRouter, usePathname } from 'next/navigation';
 import { MessageCircle, X, Send, Loader2, Smile, Phone, Video } from 'lucide-react';
 import { messagesApi } from '@/lib/api/messagesApi';
 import { chatConnection } from '@/lib/signalr/chatConnection';
-import { MessageDto } from '@/types/message';
+import { MessageDto, UserPresenceDto } from '@/types/message';
 import { MEDIA_BASE_URL } from '@/lib/config';
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface ChatModalProps {
   otherUserId: string;
@@ -17,9 +18,35 @@ interface ChatModalProps {
   onClose: () => void;
 }
 
+function formatLastSeen(
+  lastSeenAtUtc: string | null | undefined,
+  t: (key: string, values?: any) => any,
+  locale: string
+): string {
+  if (!lastSeenAtUtc) return t('lastSeenRecently')
+  const seenAt = new Date(lastSeenAtUtc)
+  if (Number.isNaN(seenAt.getTime())) return t('lastSeenRecently')
+
+  const diffMs = Date.now() - seenAt.getTime()
+  const minutes = Math.floor(diffMs / 60_000)
+  if (minutes < 1) return t('lastSeenJustNow')
+  if (minutes < 60) return t('lastSeenMinutesAgo', { count: minutes })
+
+  const sameDay = seenAt.toDateString() === new Date().toDateString()
+  const time = seenAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+  if (sameDay) {
+    return t('lastSeenAt', { time })
+  }
+
+  const date = seenAt.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+  return t('lastSeenDateTime', { date, time })
+}
+
 export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarUrl, otherUserRole, onClose }: ChatModalProps) {
   const QUICK_EMOJIS = ['😀', '😂', '😍', '😎', '😭', '😡', '👍', '👏', '🙏', '🔥', '❤️', '🎉']
   const accent = useAccentColors()
+  const t = useTranslations('chat')
+  const locale = useLocale()
   const peerAccent = otherUserRole ? getAccentColorsByRole(otherUserRole) : accent
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<MessageDto[]>([]);
@@ -29,6 +56,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
   const [error, setError] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [callNotice, setCallNotice] = useState<string | null>(null)
+  const [presence, setPresence] = useState<UserPresenceDto | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -76,7 +104,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         // Mark messages as read
         await messagesApi.markMessagesAsRead(convId);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load conversation');
+        setError(err instanceof Error ? err.message : t('failedToLoadConversation'));
       } finally {
         setIsLoading(false);
         loadingRef.current = false;
@@ -84,7 +112,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
     };
 
     loadConversation();
-  }, [otherUserId]);
+  }, [otherUserId, t]);
 
   // ─── SignalR: real-time message receiving ───
   useEffect(() => {
@@ -122,6 +150,68 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
       chatConnection.offReconnected(handleReconnected)
     }
   }, [currentUserId])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const applyPresence = (data: UserPresenceDto) => {
+      if (data.userId.toLowerCase() !== otherUserId.toLowerCase()) return
+      setPresence(data)
+    }
+
+    const init = async () => {
+      try {
+        const snapshot = await messagesApi.getUserPresence(otherUserId)
+        if (!cancelled) setPresence(snapshot)
+      } catch {
+        // ignore initial snapshot failures
+      }
+
+      try {
+        await chatConnection.start()
+        if (cancelled) return
+        chatConnection.onPresenceUpdated(applyPresence)
+        await chatConnection.subscribePresence(otherUserId)
+      } catch {
+        // keep modal usable without realtime
+      }
+    }
+
+    init()
+
+    return () => {
+      cancelled = true
+      chatConnection.off('PresenceUpdated', applyPresence)
+      chatConnection.unsubscribePresence(otherUserId).catch(() => {})
+    }
+  }, [otherUserId])
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null
+    let stopped = false
+
+    const startHeartbeat = async () => {
+      try {
+        await chatConnection.start()
+      } catch {
+        return
+      }
+
+      if (stopped) return
+
+      chatConnection.heartbeat().catch(() => {})
+      timer = setInterval(() => {
+        chatConnection.heartbeat().catch(() => {})
+      }, 25_000)
+    }
+
+    startHeartbeat()
+
+    return () => {
+      stopped = true
+      if (timer) clearInterval(timer)
+    }
+  }, [])
 
   // Join/leave conversation group for real-time messages
   useEffect(() => {
@@ -192,7 +282,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
         return [...prev, message]
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      setError(err instanceof Error ? err.message : t('failedToSendMessage'));
       setNewMessage(text);
     } finally {
       setIsSending(false);
@@ -230,6 +320,16 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
             )}
             <div>
               <h3 className="text-lg font-semibold text-foreground">{otherUserName}</h3>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {presence?.isOnline ? (
+                  <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    {t('online')}
+                  </span>
+                ) : (
+                  <span>{formatLastSeen(presence?.lastSeenAtUtc, t, locale)}</span>
+                )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -237,7 +337,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               type="button"
               onClick={() => handleCallClick('audio')}
               className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
-              title="Start audio call"
+              title={t('startAudioCall')}
             >
               <Phone className="w-5 h-5" />
             </button>
@@ -245,7 +345,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               type="button"
               onClick={() => handleCallClick('video')}
               className={`p-2 rounded-lg text-muted-foreground ${accent.hoverText} transition-colors`}
-              title="Start video call"
+              title={t('startVideoCall')}
             >
               <Video className="w-5 h-5" />
             </button>
@@ -276,8 +376,8 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
           ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <MessageCircle className="w-12 h-12 text-gray-600 mb-3" />
-              <p className="text-sm text-muted-foreground">No messages yet</p>
-              <p className="text-xs text-faint-foreground mt-1">Send a message to start the conversation</p>
+              <p className="text-sm text-muted-foreground">{t('noMessagesYet')}</p>
+              <p className="text-xs text-faint-foreground mt-1">{t('sendMessageToStart')}</p>
             </div>
           ) : (
             messages.map((message) => {
@@ -306,7 +406,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
-                      {isMe && message.readAt && ' · Read'}
+                      {isMe && message.readAt && ` · ${t('read')}`}
                     </p>
                   </div>
                 </div>
@@ -324,7 +424,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               onClick={() => setShowEmojiPicker(prev => !prev)}
               disabled={isSending}
               className={`p-2 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
-              title="Add emoji"
+              title={t('addEmoji')}
             >
               <Smile className="w-5 h-5" />
             </button>
@@ -348,7 +448,7 @@ export default function ChatModal({ otherUserId, otherUserName, otherUserAvatarU
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t('typeMessagePlaceholder')}
               className={`flex-1 bg-background text-foreground rounded-lg px-4 py-2 text-sm focus:outline-none ${accent.focusBorder}`}
               disabled={isSending}
             />

@@ -2,7 +2,6 @@ using FluentValidation;
 using Deviny.Application.Common.Interfaces;
 using Deviny.Application.Features.Notifications.Events;
 using Deviny.Domain.Entities;
-using Deviny.Domain.Enums;
 using MediatR;
 
 namespace Deviny.Application.Features.Friends.Commands;
@@ -45,12 +44,9 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
 
     public async Task<Unit> Handle(FollowTrainerCommand request, CancellationToken cancellationToken)
     {
-        // Check if trainer exists and is a trainer or nutritionist
-        var trainer = await _userRepository.GetByIdAsync(request.TrainerId)
-            ?? throw new Exception("Trainer not found");
-
-        if (trainer.Role != UserRole.Trainer && trainer.Role != UserRole.Nutritionist)
-            throw new Exception("User is not a trainer or nutritionist");
+        // Check if target user exists.
+        var targetUser = await _userRepository.GetByIdAsync(request.TrainerId)
+            ?? throw new Exception("Target user not found");
 
         // Check for blocks
         var isBlocked = await _userBlockRepository.IsBlockedAsync(request.FollowerId, request.TrainerId);
@@ -81,7 +77,7 @@ public class FollowTrainerCommandHandler : IRequestHandler<FollowTrainerCommand,
             FollowerId = follower.Id,
             FollowerName = follower.FullName,
             FollowerAvatar = follower.AvatarUrl,
-            TrainerId = trainer.Id
+            TrainerId = targetUser.Id
         }, cancellationToken);
 
         return Unit.Value;

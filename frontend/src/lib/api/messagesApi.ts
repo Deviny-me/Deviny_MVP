@@ -1,5 +1,5 @@
 import { API_URL, fetchWithAuth } from '../config'
-import { ConversationListItemDto, MessageDto, SendMessageDto, ChatFileUploadResult } from '@/types/message'
+import { ConversationListItemDto, MessageDto, SendMessageDto, ChatFileUploadResult, UserPresenceDto } from '@/types/message'
 import { PagedResponse } from '@/types/pagination'
 
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -51,6 +51,10 @@ export const messagesApi = {
   /** Get total unread messages count (server-authoritative). */
   getUnreadCount: (): Promise<{ unreadCount: number }> =>
     apiRequest<{ unreadCount: number }>('/me/chats/unread-count'),
+
+  /** Get realtime presence snapshot for a user. */
+  getUserPresence: (userId: string): Promise<UserPresenceDto> =>
+    apiRequest<UserPresenceDto>(`/me/chats/presence/${userId}`),
 
   /** Upload a file for a chat message. */
   uploadChatFile: async (file: File): Promise<ChatFileUploadResult> => {

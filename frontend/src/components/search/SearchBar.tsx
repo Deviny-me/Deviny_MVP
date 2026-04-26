@@ -280,7 +280,7 @@ function DesktopSearchBar({ placeholder, autoFocus = false }: { placeholder: str
               (item) => {
                 setQuery('')
                 setIsOpen(false)
-                router.push(`${basePath}/profile/${item.id}`)
+                router.push(`${basePath}/profile/${item.slug || item.id}`)
               },
               (item) => {
                 setQuery('')

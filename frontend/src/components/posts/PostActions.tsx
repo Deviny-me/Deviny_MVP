@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Repeat2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { postsApi } from '@/lib/api/postsApi'
 import { usePost, usePostDispatch } from '@/contexts/PostStoreContext'
+import { PostType } from '@/types/post'
 
 interface PostActionsProps {
   postId: string
@@ -40,6 +41,8 @@ export function PostActions({
   const commentCount = post?.commentCount ?? 0
   const isReposted = post?.isRepostedByMe ?? false
   const repostCount = post?.repostCount ?? 0
+  const isRepostPost = post?.type === PostType.Repost || post?.isRepost || !!post?.originalPostId
+  const canToggleRepost = isReposted || !isRepostPost
 
   const handleLikeClick = useCallback(async () => {
     if (isLikeLoading || !post) return
@@ -93,7 +96,7 @@ export function PostActions({
   }, [postId, post, isLiked, likeCount, isLikeLoading, dispatch])
 
   const handleRepostClick = useCallback(async () => {
-    if (isRepostLoading || !post) return
+    if (isRepostLoading || !post || !canToggleRepost) return
 
     const wasReposted = isReposted
     const prevCount = repostCount
@@ -156,7 +159,7 @@ export function PostActions({
     } finally {
       if (isMountedRef.current) setIsRepostLoading(false)
     }
-  }, [postId, post, isReposted, repostCount, isRepostLoading, dispatch, onRepostSuccess])
+  }, [postId, post, isReposted, repostCount, isRepostLoading, dispatch, onRepostSuccess, canToggleRepost])
 
   const formatCount = (count: number): string => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
@@ -204,12 +207,14 @@ export function PostActions({
       {/* Repost Button */}
       <button
         onClick={handleRepostClick}
+        disabled={isRepostLoading || !canToggleRepost}
         className={cn(
           'flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all group cursor-pointer',
           isReposted ? 'text-green-500 bg-green-500/[0.06]' : 'text-faint-foreground hover:text-green-500 hover:bg-green-500/[0.04]',
-          isRepostLoading && 'opacity-70 pointer-events-none'
+          (isRepostLoading || !canToggleRepost) && 'opacity-70 pointer-events-none'
         )}
         aria-label={isReposted ? 'Remove repost' : 'Repost'}
+        title={!canToggleRepost ? 'Нельзя репостить репост' : undefined}
       >
         <Repeat2
           className={cn(

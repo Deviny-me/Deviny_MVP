@@ -26,6 +26,7 @@ import { messagesApi } from '@/lib/api/messagesApi'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { MEDIA_BASE_URL } from '@/lib/config'
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
+import { useLocale, useTranslations } from 'next-intl'
 import type {
   ConversationListItemDto,
   MessageDto,
@@ -74,6 +75,32 @@ function formatTime(dateStr: string): string {
   })
 }
 
+function formatLastSeen(
+  lastSeenAtUtc: string | null | undefined,
+  t: (key: string, values?: any) => any,
+  locale: string
+): string {
+  if (!lastSeenAtUtc) return t('lastSeenRecently')
+
+  const seenAt = new Date(lastSeenAtUtc)
+  if (Number.isNaN(seenAt.getTime())) return t('lastSeenRecently')
+
+  const now = Date.now()
+  const diffMs = now - seenAt.getTime()
+  const minutes = Math.floor(diffMs / 60_000)
+  if (minutes < 1) return t('lastSeenJustNow')
+  if (minutes < 60) return t('lastSeenMinutesAgo', { count: minutes })
+
+  const sameDay = seenAt.toDateString() === new Date(now).toDateString()
+  const time = seenAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
+  if (sameDay) {
+    return t('lastSeenAt', { time })
+  }
+
+  const date = seenAt.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
+  return t('lastSeenDateTime', { date, time })
+}
+
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
@@ -115,6 +142,8 @@ function formatCallDuration(totalSeconds: number): string {
 export default function ChatInbox() {
   const QUICK_EMOJIS = ['😀', '😂', '😍', '😎', '😭', '😡', '👍', '👏', '🙏', '🔥', '❤️', '🎉']
   const accent = useAccentColors()
+  const t = useTranslations('chat')
+  const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -142,6 +171,7 @@ export default function ChatInbox() {
   const [isMicMuted, setIsMicMuted] = useState(false)
   const [isCameraEnabled, setIsCameraEnabled] = useState(true)
   const [callDurationSeconds, setCallDurationSeconds] = useState(0)
+  const [presenceByUserId, setPresenceByUserId] = useState<Record<string, { isOnline: boolean; lastSeenAtUtc: string | null }>>({})
 
   const [loadingConvs, setLoadingConvs] = useState(true)
   const [loadingMsgs, setLoadingMsgs] = useState(false)
@@ -174,12 +204,19 @@ export default function ChatInbox() {
   const activeCallConversationIdRef = useRef<string | null>(null)
   const callStatusRef = useRef<'idle' | 'calling' | 'ringing' | 'connecting' | 'connected'>('idle')
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([])
+  const subscribedPresenceIdsRef = useRef<Set<string>>(new Set())
 
   // Keep refs in sync with state
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
   useEffect(() => { activeCallPeerIdRef.current = activeCallPeerId }, [activeCallPeerId])
   useEffect(() => { activeCallConversationIdRef.current = activeCallConversationId }, [activeCallConversationId])
   useEffect(() => { callStatusRef.current = callStatus }, [callStatus])
+
+  const callTypeText = useCallback(
+    (type: CallType | null | undefined) =>
+      type === 'video' ? t('videoCallLower') : t('audioCallLower'),
+    [t]
+  )
 
   // ─── load conversations ───
 
@@ -188,6 +225,17 @@ export default function ChatInbox() {
       setLoadingConvs(true)
       const data = await messagesApi.getMyConversations(1, 100)
       setConversations(data.items)
+      setPresenceByUserId(prev => {
+        const next = { ...prev }
+        for (const conv of data.items) {
+          const key = conv.peerUser.id.toLowerCase()
+          next[key] = {
+            isOnline: !!conv.peerUser.isOnline,
+            lastSeenAtUtc: conv.peerUser.lastSeenAtUtc ?? null,
+          }
+        }
+        return next
+      })
     } catch (err) {
       console.error('Failed to load conversations', err)
     } finally {
@@ -297,6 +345,30 @@ export default function ChatInbox() {
       console.error('[Chat] error:', err)
     }
 
+    const handlePresenceUpdated = (data: { userId: string; isOnline: boolean; lastSeenAtUtc: string | null }) => {
+      const key = data.userId.toLowerCase()
+      setPresenceByUserId(prev => ({
+        ...prev,
+        [key]: {
+          isOnline: data.isOnline,
+          lastSeenAtUtc: data.lastSeenAtUtc,
+        },
+      }))
+
+      setConversations(prev => prev.map(conv =>
+        conv.peerUser.id.toLowerCase() === key
+          ? {
+              ...conv,
+              peerUser: {
+                ...conv.peerUser,
+                isOnline: data.isOnline,
+                lastSeenAtUtc: data.lastSeenAtUtc,
+              },
+            }
+          : conv
+      ))
+    }
+
     // Re-join conversation group + reload data after SignalR reconnects
     const handleReconnected = () => {
       console.log('[Chat] SignalR reconnected, re-joining groups and reloading data')
@@ -313,6 +385,7 @@ export default function ChatInbox() {
     chatConnection.onMessagesRead(handleMessagesRead)
     chatConnection.onNewConversation(handleNewConversation)
     chatConnection.onError(handleError)
+    chatConnection.onPresenceUpdated(handlePresenceUpdated)
     chatConnection.onReconnected(handleReconnected)
 
     chatConnection.start().catch(console.error)
@@ -323,9 +396,84 @@ export default function ChatInbox() {
       chatConnection.off('MessagesRead', handleMessagesRead)
       chatConnection.off('NewConversation', handleNewConversation)
       chatConnection.off('Error', handleError)
+      chatConnection.off('PresenceUpdated', handlePresenceUpdated)
       chatConnection.offReconnected(handleReconnected)
     }
   }, [loadConversations, loadMessages])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const syncPresenceSubscriptions = async () => {
+      try {
+        await chatConnection.start()
+      } catch {
+        return
+      }
+
+      if (cancelled) return
+
+      const desiredIds = new Set(
+        conversations.map(c => c.peerUser.id.toLowerCase())
+      )
+
+      for (const id of desiredIds) {
+        if (!subscribedPresenceIdsRef.current.has(id)) {
+          chatConnection.subscribePresence(id).catch(() => {})
+          subscribedPresenceIdsRef.current.add(id)
+        }
+      }
+
+      for (const id of Array.from(subscribedPresenceIdsRef.current)) {
+        if (!desiredIds.has(id)) {
+          chatConnection.unsubscribePresence(id).catch(() => {})
+          subscribedPresenceIdsRef.current.delete(id)
+        }
+      }
+    }
+
+    syncPresenceSubscriptions()
+
+    return () => {
+      cancelled = true
+    }
+  }, [conversations])
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null
+    let stopped = false
+
+    const startHeartbeat = async () => {
+      try {
+        await chatConnection.start()
+      } catch {
+        return
+      }
+
+      if (stopped) return
+
+      chatConnection.heartbeat().catch(() => {})
+      timer = setInterval(() => {
+        chatConnection.heartbeat().catch(() => {})
+      }, 25_000)
+    }
+
+    startHeartbeat()
+
+    return () => {
+      stopped = true
+      if (timer) clearInterval(timer)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      for (const id of Array.from(subscribedPresenceIdsRef.current)) {
+        chatConnection.unsubscribePresence(id).catch(() => {})
+      }
+      subscribedPresenceIdsRef.current.clear()
+    }
+  }, [])
 
   // ─── handle userId from URL (deep link into a DM) ───
   // Runs ONLY once per deep-link to prevent overriding manual contact selection
@@ -600,7 +748,7 @@ export default function ChatInbox() {
       inputRef.current?.focus()
     } catch (err) {
       console.error('File upload failed', err)
-      alert('Failed to upload file')
+      alert(t('fileUploadFailed'))
     } finally {
       setUploading(false)
     }
@@ -706,15 +854,15 @@ export default function ChatInbox() {
           } catch {
             // ignore timeout signaling failure and still cleanup locally
           }
-          await sendCallLogMessage(selectedConvId, `📵 Missed ${type} call (no answer).`)
-          setCallNotice('No answer. Missed call.')
+          await sendCallLogMessage(selectedConvId, t('callLogMissedNoAnswer', { callType: callTypeText(type) }))
+          setCallNotice(t('noAnswerMissedCall'))
           setTimeout(() => setCallNotice(null), 2500)
           clearCallMedia()
         }, CALL_RING_TIMEOUT_MS)
       } catch (error) {
         console.error('Failed to start call', error)
         clearCallMedia()
-        setCallNotice('Could not start the call. Please check microphone/camera permissions.')
+        setCallNotice(t('couldNotStartCall'))
         setTimeout(() => setCallNotice(null), 3500)
       }
     })()
@@ -763,7 +911,7 @@ export default function ChatInbox() {
         await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'failed')
       }
       clearCallMedia()
-      setCallNotice('Failed to accept call. Check device permissions and try again.')
+      setCallNotice(t('failedToAcceptCall'))
       setTimeout(() => setCallNotice(null), 3500)
     }
   }
@@ -774,7 +922,7 @@ export default function ChatInbox() {
       clearTimeout(incomingCallTimeoutRef.current)
       incomingCallTimeoutRef.current = null
     }
-    await sendCallLogMessage(incomingCall.conversationId, '📵 Incoming call declined.')
+    await sendCallLogMessage(incomingCall.conversationId, t('callLogIncomingDeclined'))
     await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'rejected')
     setIncomingCall(null)
     setCallStatus('idle')
@@ -782,7 +930,7 @@ export default function ChatInbox() {
 
   const handleEndCall = async () => {
     if (activeCallConversationId && activeCallPeerId) {
-      await sendCallLogMessage(activeCallConversationId, '📴 Call ended.')
+      await sendCallLogMessage(activeCallConversationId, t('callLogEnded'))
       await chatConnection.endCall(activeCallConversationId, activeCallPeerId, 'ended')
     }
     clearCallMedia()
@@ -815,7 +963,7 @@ export default function ChatInbox() {
 
       setIncomingCall(data)
       setCallStatus('ringing')
-      setCallNotice(`${data.fromUserName} is calling you...`)
+      setCallNotice(t('incomingCallFromUser', { name: data.fromUserName }))
       setTimeout(() => setCallNotice(null), 3000)
 
       if (incomingCallTimeoutRef.current) clearTimeout(incomingCallTimeoutRef.current)
@@ -825,8 +973,8 @@ export default function ChatInbox() {
         } catch {
           // ignore timeout signaling failure and still cleanup locally
         }
-        await sendCallLogMessage(data.conversationId, '📵 Missed incoming call.')
-        setCallNotice('Missed call.')
+        await sendCallLogMessage(data.conversationId, t('callLogMissedIncoming'))
+        setCallNotice(t('missedCall'))
         setTimeout(() => setCallNotice(null), 2500)
         setIncomingCall(null)
         setCallStatus('idle')
@@ -879,12 +1027,12 @@ export default function ChatInbox() {
     const handleCallEnded = (data: { conversationId: string; fromUserId: string; reason: string }) => {
       if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
       const reasonText = data.reason === 'rejected'
-        ? 'Call declined.'
+        ? t('callDeclined')
         : data.reason === 'busy'
-        ? 'User is busy on another call.'
+        ? t('userBusyOnAnotherCall')
         : data.reason === 'missed'
-        ? 'Missed call.'
-        : 'Call ended.'
+        ? t('missedCall')
+        : t('callEnded')
       setCallNotice(reasonText)
       setTimeout(() => setCallNotice(null), 2500)
       clearCallMedia()
@@ -901,15 +1049,15 @@ export default function ChatInbox() {
       chatConnection.off('CallIceCandidate', handleCallIce)
       chatConnection.off('CallEnded', handleCallEnded)
     }
-  }, [clearCallMedia, currentUserId, sendCallLogMessage])
+  }, [callTypeText, clearCallMedia, currentUserId, sendCallLogMessage, t])
 
   useEffect(() => {
     if (callStatus === 'connected' && activeCallConversationId && !callStartLoggedRef.current) {
       callStartLoggedRef.current = true
-      const callKind = activeCallType === 'video' ? 'video' : 'audio'
+      const callKind: CallType = activeCallType === 'video' ? 'video' : 'audio'
       const text = isCallInitiatorRef.current
-        ? `📞 Started a ${callKind} call.`
-        : `📞 Joined a ${callKind} call.`
+        ? t('callLogStarted', { callType: callTypeText(callKind) })
+        : t('callLogJoined', { callType: callTypeText(callKind) })
       sendCallLogMessage(activeCallConversationId, text)
     }
 
@@ -938,7 +1086,7 @@ export default function ChatInbox() {
         connectedCallTimerRef.current = null
       }
     }
-  }, [activeCallConversationId, activeCallType, callStatus, sendCallLogMessage])
+  }, [activeCallConversationId, activeCallType, callStatus, callTypeText, sendCallLogMessage, t])
 
   // Callback refs: attach streams the instant the DOM element mounts.
   // This solves the race where ontrack fires before React renders the elements.
@@ -1005,19 +1153,35 @@ export default function ChatInbox() {
   )
 
   const selectedConv = conversations.find(c => c.id === selectedConvId) ?? null
+  const selectedPresence = selectedConv
+    ? presenceByUserId[selectedConv.peerUser.id.toLowerCase()] ?? {
+        isOnline: !!selectedConv.peerUser.isOnline,
+        lastSeenAtUtc: selectedConv.peerUser.lastSeenAtUtc ?? null,
+      }
+    : null
 
   // For deep-link before conversation exists
   const peerName =
-    selectedConv?.peerUser.fullName ?? userNameFromUrl ?? 'Chat'
+    selectedConv?.peerUser.fullName ?? userNameFromUrl ?? t('chatFallbackName')
   const peerAvatar =
     selectedConv?.peerUser.avatarUrl ?? userAvatarFromUrl ?? null
+
+  const callStatusText = (status: 'idle' | 'calling' | 'ringing' | 'connecting' | 'connected') => {
+    if (status === 'calling') return t('callStatusCalling')
+    if (status === 'ringing') return t('callStatusRinging')
+    if (status === 'connecting') return t('callStatusConnecting')
+    if (status === 'connected') return t('callStatusConnected')
+    return status
+  }
 
   // ─── render ───
   return (
     <div className="relative h-[calc(100vh-130px)] overflow-hidden md:rounded-xl md:border md:border-border-subtle md:bg-surface-2">
       {incomingCall && (
         <div className="fixed right-4 top-4 z-[220] w-72 rounded-lg border border-border-subtle bg-background p-3 shadow-xl">
-          <p className="text-sm text-foreground font-semibold">Incoming {incomingCall.callType} call</p>
+          <p className="text-sm text-foreground font-semibold">
+            {t('incomingCallTitle', { callType: callTypeText(incomingCall.callType) })}
+          </p>
           <p className="text-xs text-muted-foreground mt-1">{incomingCall.fromUserName}</p>
           <div className="flex items-center gap-2 mt-3">
             <button
@@ -1025,14 +1189,14 @@ export default function ChatInbox() {
               onClick={handleDeclineIncomingCall}
               className="flex-1 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-colors"
             >
-              Decline
+              {t('decline')}
             </button>
             <button
               type="button"
               onClick={handleAcceptIncomingCall}
               className={`flex-1 px-3 py-1.5 rounded-lg bg-gradient-to-r ${accent.gradient} text-white hover:opacity-90 transition-opacity`}
             >
-              Accept
+              {t('accept')}
             </button>
           </div>
         </div>
@@ -1046,15 +1210,17 @@ export default function ChatInbox() {
         >
           {/* Header + search */}
           <div className="border-b border-border-subtle p-4">
-            <h1 className="page-title mb-1 text-xl sm:text-2xl md:text-lg">Messages</h1>
+            <h1 className="page-title mb-1 text-xl sm:text-2xl md:text-lg">{t('messagesTitle')}</h1>
             <p className="mb-3 text-sm text-muted-foreground">
-              {filteredConvs.length > 0 ? `${filteredConvs.length} conversations` : 'Your recent chats will appear here'}
+              {filteredConvs.length > 0
+                ? t('conversationsCount', { count: filteredConvs.length })
+                : t('recentChatsHint')}
             </p>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className={`w-full pl-10 pr-4 py-2 bg-background border border-border-subtle rounded-lg text-sm text-foreground placeholder-gray-500 focus:outline-none ${accent.focusBorder}`}
@@ -1072,7 +1238,7 @@ export default function ChatInbox() {
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <MessageCircle className="w-12 h-12 text-gray-600 mb-2" />
                 <p className="text-muted-foreground text-sm">
-                  {searchQuery ? 'No conversations found' : 'No messages yet'}
+                  {searchQuery ? t('noConversationsFound') : t('noMessagesYet')}
                 </p>
               </div>
             ) : (
@@ -1112,8 +1278,20 @@ export default function ChatInbox() {
                         </span>
                       </div>
                       <p className="truncate text-sm text-muted-foreground">
-                        {conv.lastMessageText ?? 'No messages yet'}
+                        {conv.lastMessageText ?? t('noMessagesYet')}
                       </p>
+                      <div className="mt-0.5 flex items-center gap-1.5">
+                        {(presenceByUserId[conv.peerUser.id.toLowerCase()]?.isOnline ?? conv.peerUser.isOnline) ? (
+                          <>
+                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                            <span className="text-[11px] text-emerald-400">{t('online')}</span>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-faint-foreground">
+                            {formatLastSeen((presenceByUserId[conv.peerUser.id.toLowerCase()]?.lastSeenAtUtc ?? conv.peerUser.lastSeenAtUtc) ?? null, t, locale)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     {conv.unreadCount > 0 && (
                       <div className={`flex h-5 w-5 items-center justify-center rounded-full ${accent.bg}`}>
@@ -1136,10 +1314,10 @@ export default function ChatInbox() {
                 <Send className="w-8 h-8 text-faint-foreground" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Select a conversation
+                {t('selectConversation')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Choose a chat to start messaging
+                {t('selectConversationHint')}
               </p>
             </div>
           </div>
@@ -1162,12 +1340,21 @@ export default function ChatInbox() {
                     onClick={handleBackToMessages}
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    <span className="hidden sm:inline">Back to messages</span>
+                    <span className="hidden sm:inline">{t('backToMessages')}</span>
                   </button>
                   <Avatar url={avatarUrl(peerAvatar)} name={peerName} size={44} role={selectedConv?.peerUser.role} />
                   <div className="min-w-0">
                     <p className="truncate text-base font-semibold text-foreground">{peerName}</p>
-                    <p className="truncate text-xs text-muted-foreground">Direct conversation</p>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {selectedPresence?.isOnline ? (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                          <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                          {t('online')}
+                        </span>
+                      ) : (
+                        <span>{formatLastSeen(selectedPresence?.lastSeenAtUtc, t, locale)}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
@@ -1175,7 +1362,7 @@ export default function ChatInbox() {
                     type="button"
                     onClick={() => handleCallClick('audio')}
                     className={`rounded-xl p-2.5 text-muted-foreground ${accent.hoverText} transition-colors`}
-                    title="Start audio call"
+                    title={t('startAudioCall')}
                   >
                     <Phone className="w-5 h-5" />
                   </button>
@@ -1183,7 +1370,7 @@ export default function ChatInbox() {
                     type="button"
                     onClick={() => handleCallClick('video')}
                     className={`rounded-xl p-2.5 text-muted-foreground ${accent.hoverText} transition-colors`}
-                    title="Start video call"
+                    title={t('startVideoCall')}
                   >
                     <Video className="w-5 h-5" />
                   </button>
@@ -1202,9 +1389,9 @@ export default function ChatInbox() {
               ) : messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center">
                   <MessageCircle className="mb-3 h-12 w-12 text-gray-600" />
-                  <p className="text-sm text-muted-foreground">No messages yet</p>
+                  <p className="text-sm text-muted-foreground">{t('noMessagesYet')}</p>
                   <p className="mt-1 text-xs text-faint-foreground">
-                    Send a message to start the conversation
+                    {t('sendMessageToStart')}
                   </p>
                 </div>
               ) : (
@@ -1232,7 +1419,7 @@ export default function ChatInbox() {
                             {isMe && (
                               <div className="mb-1 shrink-0 whitespace-nowrap text-[11px] text-foreground/60">
                                 {formatTime(msg.createdAt)}
-                                {msg.readAt && <span className="ml-1">✓✓</span>}
+                                {msg.readAt && <span className="ml-1">{`· ${t('read')}`}</span>}
                               </div>
                             )}
                             <div>
@@ -1375,7 +1562,7 @@ export default function ChatInbox() {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading || sending}
                   className={`rounded-full p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
-                  title="Attach file"
+                  title={t('attachFile')}
                 >
                   {uploading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -1388,7 +1575,7 @@ export default function ChatInbox() {
                   onClick={() => setShowEmojiPicker(prev => !prev)}
                   disabled={sending}
                   className={`rounded-full p-2.5 text-muted-foreground ${accent.hoverText} transition-colors disabled:opacity-50`}
-                  title="Add emoji"
+                  title={t('addEmoji')}
                 >
                   <Smile className="w-5 h-5" />
                 </button>
@@ -1411,7 +1598,7 @@ export default function ChatInbox() {
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder={pendingFile ? 'Add a caption...' : 'Type a message...'}
+                  placeholder={pendingFile ? t('addCaptionPlaceholder') : t('typeMessagePlaceholder')}
                   value={inputText}
                   onChange={e => {
                     setInputText(e.target.value)
@@ -1439,15 +1626,19 @@ export default function ChatInbox() {
               <div className="border-t border-border-subtle bg-background p-3 sm:px-5">
                 <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{activeCallType === 'video' ? 'Video call' : 'Audio call'} with {activeCallPeerName}</p>
-                    <p className="text-xs capitalize text-muted-foreground">{callStatus}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {t('callWithUser', { callType: callTypeText(activeCallType), name: activeCallPeerName })}
+                    </p>
+                    <p className="text-xs capitalize text-muted-foreground">
+                      {callStatusText(callStatus)}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={toggleMic}
                       className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
-                      title={isMicMuted ? 'Unmute microphone' : 'Mute microphone'}
+                      title={isMicMuted ? t('unmuteMicrophone') : t('muteMicrophone')}
                     >
                       {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                     </button>
@@ -1456,7 +1647,7 @@ export default function ChatInbox() {
                         type="button"
                         onClick={toggleCamera}
                         className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
-                        title={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+                        title={isCameraEnabled ? t('turnOffCamera') : t('turnOnCamera')}
                       >
                         {isCameraEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                       </button>
@@ -1465,7 +1656,7 @@ export default function ChatInbox() {
                       type="button"
                       onClick={handleEndCall}
                       className="rounded-lg bg-red-600 p-2 text-foreground transition-colors hover:bg-red-700"
-                      title="End call"
+                      title={t('endCall')}
                     >
                       <PhoneOff className="w-4 h-4" />
                     </button>

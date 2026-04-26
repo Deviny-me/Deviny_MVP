@@ -179,6 +179,7 @@ export class ChatConnection {
   onCallIceCandidate(cb: (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => void) { this._on('CallIceCandidate', cb) }
   onCallEnded(cb: (data: { conversationId: string; fromUserId: string; reason: string }) => void) { this._on('CallEnded', cb) }
   onEntityChanged(cb: (data: EntityChangedEvent) => void) { this._on('EntityChanged', cb) }
+  onPresenceUpdated(cb: (data: { userId: string; isOnline: boolean; lastSeenAtUtc: string | null }) => void) { this._on('PresenceUpdated', cb) }
 
   // ─── hub invocations ───
 
@@ -235,6 +236,21 @@ export class ChatConnection {
   async endCall(conversationId: string, targetUserId: string, reason: string = 'ended') {
     await this.ensureConnected()
     await this.connection!.invoke('EndCall', conversationId, targetUserId, reason)
+  }
+
+  async subscribePresence(userId: string) {
+    await this.ensureConnected()
+    await this.connection!.invoke('SubscribePresence', userId)
+  }
+
+  async unsubscribePresence(userId: string) {
+    await this.ensureConnected()
+    await this.connection!.invoke('UnsubscribePresence', userId)
+  }
+
+  async heartbeat() {
+    await this.ensureConnected()
+    await this.connection!.invoke('Heartbeat')
   }
 
   getState() {

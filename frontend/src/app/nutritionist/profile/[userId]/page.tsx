@@ -13,7 +13,7 @@ function OtherUserProfilePageNutritionistInner() {
 
   return (
     <PublicProfileContent
-      userId={userId}
+      profileIdentifier={userId}
       currentUserId={authUser?.id}
       basePath="/nutritionist"
       ownProfilePath="/nutritionist/profile"

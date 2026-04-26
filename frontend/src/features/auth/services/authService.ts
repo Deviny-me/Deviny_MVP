@@ -42,7 +42,9 @@ export interface RegisterRequestDto {
   gender?: 'Male' | 'Female' | 'Other'
   country?: string
   city?: string
+  hasInjuries?: boolean
   verificationDocument?: File
+  injuryDocument?: File
 }
 
 export interface SendOtpResponseDto {
@@ -55,12 +57,20 @@ export interface VerifyOtpResponseDto {
   verified: boolean
 }
 
+function getAppLanguage(): 'ru' | 'en' | 'az' {
+  if (typeof window === 'undefined') return 'ru'
+  const stored = localStorage.getItem('deviny.language')
+  if (stored === 'en' || stored === 'az' || stored === 'ru') return stored
+  return 'ru'
+}
+
 export const authService = {
   async sendOtp(email: string): Promise<SendOtpResponseDto> {
     const response = await fetch(`${API_URL}/auth/send-otp`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': getAppLanguage(),
       },
       credentials: 'include',
       body: JSON.stringify({ email }),
@@ -109,6 +119,7 @@ export const authService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Language': getAppLanguage(),
       },
       credentials: 'include',
       body: JSON.stringify({ email }),
@@ -229,8 +240,12 @@ export const authService = {
     if (data.city) {
       formData.append('city', data.city)
     }
+    formData.append('hasInjuries', data.hasInjuries ? 'true' : 'false')
     if (data.verificationDocument) {
       formData.append('verificationDocument', data.verificationDocument)
+    }
+    if (data.injuryDocument) {
+      formData.append('injuryDocument', data.injuryDocument)
     }
 
     const response = await fetch(`${API_URL}/auth/register`, {

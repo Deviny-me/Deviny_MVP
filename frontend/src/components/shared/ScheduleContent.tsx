@@ -14,11 +14,17 @@ import {
   MapPin,
   Edit,
   Trash2,
-  Eye,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
-import { ScheduleEvent, CreateScheduleEventRequest, ScheduleEventType, ScheduleStats, GetEventsQuery, StartCallResponse } from '@/types/schedule'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import {
+  ScheduleEvent,
+  CreateScheduleEventRequest,
+  ScheduleEventType,
+  ScheduleStats,
+  GetEventsQuery,
+  StartCallResponse,
+} from '@/types/schedule'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 
@@ -43,55 +49,260 @@ interface ScheduleContentProps {
   currentUserId?: string
 }
 
-// Simple toast helper
+type CalendarViewMode = 'day' | 'week' | 'month'
+
+interface PositionedEvent {
+  event: ScheduleEvent
+  top: number
+  height: number
+  column: number
+  columns: number
+}
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i)
+const HOUR_ROW_HEIGHT = 64
+
 const toast = {
   success: (msg: string) => console.log('Success:', msg),
   error: (msg: string) => console.error('Error:', msg),
 }
 
-function getWeekStart(date: Date): Date {
+function startOfDay(date: Date): Date {
   const d = new Date(date)
-  const day = d.getDay()
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-  d.setDate(diff)
   d.setHours(0, 0, 0, 0)
   return d
 }
 
-function getWeekDates(start: Date): Date[] {
-  const dates: Date[] = []
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start)
-    d.setDate(start.getDate() + i)
-    dates.push(d)
-  }
-  return dates
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
 }
 
-function formatDateForInput(date: Date): string {
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  )
+}
+
+function getWeekStart(date: Date): Date {
+  const d = startOfDay(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+  d.setDate(diff)
+  return d
+}
+
+function getWeekDates(start: Date): Date[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i))
+}
+
+function getMonthGridStart(date: Date): Date {
+  return getWeekStart(new Date(date.getFullYear(), date.getMonth(), 1))
+}
+
+function getMonthGridDates(date: Date): Date[] {
+  const start = getMonthGridStart(date)
+  return Array.from({ length: 42 }, (_, i) => addDays(start, i))
+}
+
+function getLocalDateKey(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
+function formatDateForInput(date: Date): string {
+  return getLocalDateKey(date)
+}
+
+function getViewRange(mode: CalendarViewMode, baseDate: Date): { from: Date; to: Date } {
+  if (mode === 'day') {
+    const from = startOfDay(baseDate)
+    return { from, to: addDays(from, 1) }
+  }
+
+  if (mode === 'week') {
+    const from = getWeekStart(baseDate)
+    return { from, to: addDays(from, 7) }
+  }
+
+  const from = getMonthGridStart(baseDate)
+  return { from, to: addDays(from, 42) }
+}
+
+function formatHour(hour: number, locale: string): string {
+  const d = new Date()
+  d.setHours(hour, 0, 0, 0)
+  return d.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
+function getEventTone(type: ScheduleEventType) {
+  if (type === 'Gym') {
+    return {
+      chip: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700 dark:text-emerald-200',
+      block: 'border-emerald-500/45 bg-emerald-500/14 text-emerald-900 dark:text-emerald-100',
+      dot: 'bg-emerald-500',
+    }
+  }
+
+  if (type === 'Consultation') {
+    return {
+      chip: 'border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-200',
+      block: 'border-amber-500/45 bg-amber-500/15 text-amber-900 dark:text-amber-100',
+      dot: 'bg-amber-500',
+    }
+  }
+
+  return {
+    chip: 'border-sky-500/40 bg-sky-500/15 text-sky-700 dark:text-sky-200',
+    block: 'border-sky-500/45 bg-sky-500/15 text-sky-900 dark:text-sky-100',
+    dot: 'bg-sky-500',
+  }
+}
+
+function layoutDayEvents(dayEvents: ScheduleEvent[]): PositionedEvent[] {
+  if (dayEvents.length === 0) return []
+
+  const sorted = [...dayEvents].sort(
+    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+  )
+
+  const active: Array<{ end: number; column: number; group: number }> = []
+  const temp: Array<{
+    event: ScheduleEvent
+    start: number
+    end: number
+    column: number
+    group: number
+  }> = []
+
+  let groupId = -1
+
+  for (const event of sorted) {
+    const startDate = new Date(event.startAt)
+    const start = startDate.getHours() * 60 + startDate.getMinutes()
+    const end = start + Math.max(event.durationMinutes, 15)
+
+    for (let i = active.length - 1; i >= 0; i -= 1) {
+      if (active[i].end <= start) {
+        active.splice(i, 1)
+      }
+    }
+
+    if (active.length === 0) {
+      groupId += 1
+    }
+
+    const used = new Set(active.map((a) => a.column))
+    let column = 0
+    while (used.has(column)) {
+      column += 1
+    }
+
+    active.push({ end, column, group: groupId })
+    temp.push({ event, start, end, column, group: groupId })
+  }
+
+  const groupMaxColumns = new Map<number, number>()
+  for (const item of temp) {
+    const current = groupMaxColumns.get(item.group) ?? 0
+    groupMaxColumns.set(item.group, Math.max(current, item.column + 1))
+  }
+
+  return temp.map((item) => {
+    const columns = groupMaxColumns.get(item.group) ?? 1
+    const top = (item.start / 60) * HOUR_ROW_HEIGHT
+    const height = Math.max((Math.max(item.end - item.start, 15) / 60) * HOUR_ROW_HEIGHT, 26)
+
+    return {
+      event: item.event,
+      top,
+      height,
+      column: item.column,
+      columns,
+    }
+  })
+}
+
+function findNextAvailableTimeForDay(dayEvents: ScheduleEvent[], durationMinutes: number): string {
+  const requestedDuration = Math.max(durationMinutes, 15)
+  const sorted = [...dayEvents].sort(
+    (a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime()
+  )
+
+  const isFree = (candidateStartMinutes: number) => {
+    const candidateEndMinutes = candidateStartMinutes + requestedDuration
+
+    return !sorted.some((event) => {
+      const start = new Date(event.startAt)
+      const eventStartMinutes = start.getHours() * 60 + start.getMinutes()
+      const eventEndMinutes = eventStartMinutes + Math.max(event.durationMinutes, 15)
+
+      return eventStartMinutes < candidateEndMinutes && eventEndMinutes > candidateStartMinutes
+    })
+  }
+
+  const startScan = 8 * 60
+  const endScan = 23 * 60 + 45
+  for (let candidate = startScan; candidate <= endScan; candidate += 15) {
+    if (isFree(candidate)) {
+      const h = String(Math.floor(candidate / 60)).padStart(2, '0')
+      const m = String(candidate % 60).padStart(2, '0')
+      return `${h}:${m}`
+    }
+  }
+
+  return '10:00'
+}
+
+function getStatusBadgeClass(status: ScheduleEvent['status']) {
+  if (status === 'Confirmed') return 'bg-emerald-500/20 text-emerald-300'
+  if (status === 'Completed') return 'bg-sky-500/20 text-sky-300'
+  return 'bg-amber-500/20 text-amber-300'
+}
+
 export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }: ScheduleContentProps) {
   const accent = useAccentColors()
   const t = useTranslations('schedule')
   const tc = useTranslations('common')
+  const locale = useLocale()
 
-  const weekDays = [t('days.mon'), t('days.tue'), t('days.wed'), t('days.thu'), t('days.fri'), t('days.sat'), t('days.sun')]
+  const weekDays = [
+    t('days.mon'),
+    t('days.tue'),
+    t('days.wed'),
+    t('days.thu'),
+    t('days.fri'),
+    t('days.sat'),
+    t('days.sun'),
+  ]
+
   const eventTypes: { value: ScheduleEventType; label: string }[] = [
     { value: 'Gym', label: t('eventTypes.gym') },
     { value: 'Online', label: t('eventTypes.online') },
     { value: 'Consultation', label: t('eventTypes.consultation') },
   ]
 
+  const viewOptions: { value: CalendarViewMode; label: string }[] = [
+    { value: 'day', label: t('views.day') },
+    { value: 'week', label: t('views.week') },
+    { value: 'month', label: t('views.month') },
+  ]
+
   const [events, setEvents] = useState<ScheduleEvent[]>([])
   const [stats, setStats] = useState<ScheduleStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [weekStart, setWeekStart] = useState(getWeekStart(new Date()))
+  const [calendarDate, setCalendarDate] = useState(startOfDay(new Date()))
+  const [selectedDate, setSelectedDate] = useState(startOfDay(new Date()))
+  const [viewMode, setViewMode] = useState<CalendarViewMode>('week')
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [saving, setSaving] = useState(false)
@@ -99,7 +310,6 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   const [students, setStudents] = useState<StudentOption[]>([])
   const [detailEvent, setDetailEvent] = useState<ScheduleEvent | null>(null)
 
-  // Form state
   const [title, setTitle] = useState('')
   const [eventType, setEventType] = useState<ScheduleEventType>('Online')
   const [startDate, setStartDate] = useState('')
@@ -112,7 +322,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   useEffect(() => {
     loadEvents()
     loadStats()
-  }, [weekStart])
+  }, [calendarDate, viewMode])
 
   useEffect(() => {
     if (fetchStudents) {
@@ -123,12 +333,10 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   const loadEvents = async () => {
     try {
       setLoading(true)
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekEnd.getDate() + 7)
-
+      const range = getViewRange(viewMode, calendarDate)
       const data = await api.getEvents({
-        from: weekStart.toISOString(),
-        to: weekEnd.toISOString(),
+        from: range.from.toISOString(),
+        to: range.to.toISOString(),
       })
       setEvents(data)
     } catch (error) {
@@ -141,6 +349,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
   const loadStats = async () => {
     try {
+      const weekStart = getWeekStart(calendarDate)
       const data = await api.getStats(weekStart.toISOString())
       setStats(data)
     } catch (error) {
@@ -168,7 +377,9 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   const openCreateModal = () => {
     resetForm()
     setStartDate(formatDateForInput(selectedDate))
-    setStartTime('10:00')
+    const dayKey = getLocalDateKey(selectedDate)
+    const dayEvents = visibleEvents.filter((event) => getLocalDateKey(new Date(event.startAt)) === dayKey)
+    setStartTime(findNextAvailableTimeForDay(dayEvents, 60))
     setShowCreateModal(true)
   }
 
@@ -203,12 +414,11 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
       setSaving(true)
 
       const startAt = new Date(`${startDate}T${startTime}:00`).toISOString()
-
       const request: CreateScheduleEventRequest = {
         title,
         type: eventType,
         startAt,
-        durationMinutes: parseInt(duration),
+        durationMinutes: parseInt(duration, 10),
         location: location || undefined,
         comment: comment || undefined,
         studentId: studentId || undefined,
@@ -224,18 +434,19 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
       closeModal()
 
-      const eventDate = new Date(`${startDate}T00:00:00`)
+      const eventDate = startOfDay(new Date(`${startDate}T00:00:00`))
       setSelectedDate(eventDate)
-      const newWeekStart = getWeekStart(eventDate)
-      if (newWeekStart.getTime() !== weekStart.getTime()) {
-        setWeekStart(newWeekStart)
-      } else {
-        loadEvents()
-        loadStats()
-      }
+      setCalendarDate(eventDate)
+      loadEvents()
+      loadStats()
     } catch (error) {
       console.error('Failed to save event:', error)
-      toast.error(editingEvent ? t('toasts.updateError') : t('toasts.createError'))
+      const errorMessage = error instanceof Error ? error.message : null
+      if (errorMessage && errorMessage.toLowerCase().includes('overlap')) {
+        toast.error(errorMessage)
+      } else {
+        toast.error(editingEvent ? t('toasts.updateError') : t('toasts.createError'))
+      }
     } finally {
       setSaving(false)
     }
@@ -268,39 +479,105 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
     }
   }
 
-  const goToPreviousWeek = () => {
-    const newStart = new Date(weekStart)
-    newStart.setDate(newStart.getDate() - 7)
-    setWeekStart(newStart)
-  }
+  const moveCalendar = (direction: -1 | 1) => {
+    let next = new Date(calendarDate)
 
-  const goToNextWeek = () => {
-    const newStart = new Date(weekStart)
-    newStart.setDate(newStart.getDate() + 7)
-    setWeekStart(newStart)
+    if (viewMode === 'day') {
+      next = addDays(calendarDate, direction)
+    } else if (viewMode === 'week') {
+      next = addDays(calendarDate, direction * 7)
+    } else {
+      next = new Date(calendarDate)
+      next.setMonth(next.getMonth() + direction)
+    }
+
+    const nextDay = startOfDay(next)
+    setCalendarDate(nextDay)
+    setSelectedDate(nextDay)
   }
 
   const goToToday = () => {
-    setWeekStart(getWeekStart(new Date()))
-    setSelectedDate(new Date())
+    const today = startOfDay(new Date())
+    setCalendarDate(today)
+    setSelectedDate(today)
   }
 
-  const weekDates = getWeekDates(weekStart)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const visibleEvents = useMemo(
+    () => events.filter((event) => !event.isCancelled),
+    [events]
+  )
 
-  // Filter events for selected date
-  const selectedDateStr = selectedDate.toDateString()
-  const todaysEvents = events
-    .filter((event) => {
-      const eventDate = new Date(event.startAt)
-      return eventDate.toDateString() === selectedDateStr && !event.isCancelled
+  const eventsByDate = useMemo(() => {
+    const map = new Map<string, ScheduleEvent[]>()
+
+    for (const event of visibleEvents) {
+      const key = getLocalDateKey(new Date(event.startAt))
+      const list = map.get(key) ?? []
+      list.push(event)
+      map.set(key, list)
+    }
+
+    for (const [key, list] of map) {
+      map.set(
+        key,
+        list.sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+      )
+    }
+
+    return map
+  }, [visibleEvents])
+
+  const selectedDayEvents = useMemo(() => {
+    const key = getLocalDateKey(selectedDate)
+    return eventsByDate.get(key) ?? []
+  }, [eventsByDate, selectedDate])
+
+  const weekDates = useMemo(() => getWeekDates(getWeekStart(calendarDate)), [calendarDate])
+  const monthDates = useMemo(() => getMonthGridDates(calendarDate), [calendarDate])
+
+  const gridDates = viewMode === 'day' ? [calendarDate] : weekDates
+  const today = startOfDay(new Date())
+
+  const periodLabel = useMemo(() => {
+    if (viewMode === 'day') {
+      return calendarDate.toLocaleDateString(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    }
+
+    if (viewMode === 'week') {
+      const start = getWeekStart(calendarDate)
+      const end = addDays(start, 6)
+      const sameMonth = start.getMonth() === end.getMonth()
+
+      if (sameMonth) {
+        return `${start.toLocaleDateString(locale, {
+          day: 'numeric',
+        })} - ${end.toLocaleDateString(locale, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })}`
+      }
+
+      return `${start.toLocaleDateString(locale, {
+        day: 'numeric',
+        month: 'short',
+      })} - ${end.toLocaleDateString(locale, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })}`
+    }
+
+    return calendarDate.toLocaleDateString(locale, {
+      month: 'long',
+      year: 'numeric',
     })
-    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
-
-  const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-  }
+  }, [calendarDate, locale, viewMode])
 
   const getListParticipantName = (event: ScheduleEvent) => {
     if (currentUserId && event.studentId === currentUserId) {
@@ -314,259 +591,500 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
     return event.studentName || event.trainerName || null
   }
 
+  const canManageEvent = (event: ScheduleEvent) => {
+    return !readOnly && (!currentUserId || event.trainerId === currentUserId)
+  }
+
   return (
     <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="page-title">{t('title')}</h1>
           <p className="text-muted-foreground">{t('description')}</p>
         </div>
+
         {!readOnly && (
           <button
             onClick={openCreateModal}
-            className={`w-full sm:w-auto px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2`}
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r px-4 py-2 font-semibold text-white sm:w-auto ${accent.gradient}`}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="h-5 w-5" />
             {t('addEvent')}
           </button>
         )}
       </div>
 
-      {/* Calendar Week View */}
-      <div className="bg-surface-2 rounded-xl border border-border-subtle p-3 sm:p-4">
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <button onClick={goToPreviousWeek} className="p-2 hover:bg-hover-overlay rounded-lg transition-colors">
-            <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-          </button>
-          <div className="flex min-w-0 flex-col items-center gap-2 sm:flex-row sm:gap-4">
-            <h3 className="font-semibold text-foreground text-center text-sm sm:text-base capitalize">
-              {weekStart.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
-            </h3>
-            <button onClick={goToToday} className="px-3 py-1 text-xs bg-border-subtle hover:bg-white/10 rounded-lg text-muted-foreground transition-colors">
-              {t('today')}
-            </button>
-          </div>
-          <button onClick={goToNextWeek} className="p-2 hover:bg-hover-overlay rounded-lg transition-colors">
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+      <section className="relative overflow-hidden rounded-2xl border border-border-subtle bg-surface-2">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-transparent" />
 
-        <div className="-mx-1 overflow-x-auto px-1 scrollbar-hide">
-          <div className="grid min-w-[560px] grid-cols-7 gap-2">
-          {weekDates.map((date, index) => {
-            const dateOnly = new Date(date)
-            dateOnly.setHours(0, 0, 0, 0)
-            const isToday = dateOnly.getTime() === today.getTime()
-            const isSelected = date.toDateString() === selectedDate.toDateString()
-            const dayEvents = events.filter((e) => {
-              const eventDate = new Date(e.startAt)
-              return eventDate.toDateString() === date.toDateString() && !e.isCancelled
-            })
-
-            return (
+        <div className="relative space-y-4 p-3 sm:p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
               <button
-                key={index}
-                onClick={() => setSelectedDate(date)}
-                className={`min-h-[88px] p-2 sm:p-3 rounded-xl text-center transition-all relative ${
-                  isSelected
-                    ? `bg-gradient-to-br ${accent.gradient} text-white`
-                    : isToday
-                    ? `${accent.bgMuted20} text-foreground border ${accent.borderMuted50}`
-                    : 'bg-background text-muted-foreground hover:bg-hover-overlay'
+                onClick={() => moveCalendar(-1)}
+                className="rounded-lg border border-border-subtle bg-background/50 p-2 hover:bg-hover-overlay"
+                aria-label="Previous"
+              >
+                <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => moveCalendar(1)}
+                className="rounded-lg border border-border-subtle bg-background/50 p-2 hover:bg-hover-overlay"
+                aria-label="Next"
+              >
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+
+              <button
+                onClick={goToToday}
+                className="rounded-lg border border-border-subtle bg-background/50 px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-hover-overlay"
+              >
+                {t('today')}
+              </button>
+
+              <h2 className="ml-1 text-base font-semibold capitalize text-foreground sm:text-lg">
+                {periodLabel}
+              </h2>
+            </div>
+
+            <div className="inline-flex w-full rounded-xl border border-border-subtle bg-background/40 p-1 sm:w-auto">
+              {viewOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setViewMode(option.value)}
+                  className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold sm:flex-none ${
+                    viewMode === option.value
+                      ? `bg-gradient-to-r text-white ${accent.gradient}`
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="font-semibold">{t('eventType')}:</span>
+            {eventTypes.map((type) => {
+              const tone = getEventTone(type.value)
+              return (
+                <span
+                  key={type.value}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 ${tone.chip}`}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
+                  {type.label}
+                </span>
+              )
+            })}
+          </div>
+
+          {loading ? (
+            <div className="flex h-[420px] items-center justify-center rounded-xl border border-border-subtle bg-background/20">
+              <Loader2 className={`h-8 w-8 animate-spin ${accent.text}`} />
+            </div>
+          ) : viewMode === 'month' ? (
+            <div className="-mx-3 overflow-x-auto px-3 pb-1">
+              <div className="min-w-[760px] overflow-hidden rounded-xl border border-border-subtle bg-background/30">
+                <div className="grid grid-cols-7 border-b border-border-subtle/80">
+                  {weekDays.map((day) => (
+                    <div
+                      key={day}
+                      className="border-r border-border-subtle/60 bg-surface-3 px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground last:border-r-0"
+                    >
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7">
+                  {monthDates.map((date) => {
+                    const key = getLocalDateKey(date)
+                    const dayEvents = eventsByDate.get(key) ?? []
+                    const inCurrentMonth = date.getMonth() === calendarDate.getMonth()
+                    const isSelected = isSameDay(date, selectedDate)
+                    const isTodayDate = isSameDay(date, today)
+
+                    return (
+                      <div
+                        key={key}
+                        onClick={() => {
+                          const nextDate = startOfDay(date)
+                          setSelectedDate(nextDate)
+                          setCalendarDate(nextDate)
+                        }}
+                        className={`min-h-[120px] cursor-pointer border-r border-t border-border-subtle/60 p-2 transition-colors ${
+                          inCurrentMonth ? 'bg-surface-2/80' : 'bg-background/40'
+                        } ${isSelected ? accent.bgMuted20 : 'hover:bg-hover-overlay'} ${
+                          (monthDates.indexOf(date) + 1) % 7 === 0 ? 'border-r-0' : ''
+                        }`}
+                      >
+                        <div className="mb-2 flex items-center justify-between">
+                          <span
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                              isTodayDate
+                                ? `bg-gradient-to-r text-white ${accent.gradient}`
+                                : isSelected
+                                ? `${accent.bgMuted20} ${accent.text}`
+                                : inCurrentMonth
+                                ? 'text-foreground'
+                                : 'text-faint-foreground'
+                            }`}
+                          >
+                            {date.getDate()}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1">
+                          {dayEvents.slice(0, 2).map((event) => {
+                            const tone = getEventTone(event.type)
+
+                            return (
+                              <button
+                                key={event.id}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setDetailEvent(event)
+                                }}
+                                className={`w-full rounded-md border px-1.5 py-1 text-left text-[11px] leading-tight ${tone.chip}`}
+                              >
+                                <div className="font-semibold">{formatTime(event.startAt, locale)}</div>
+                                <div className="truncate">{event.title}</div>
+                              </button>
+                            )
+                          })}
+
+                          {dayEvents.length > 2 && (
+                            <p className="text-[11px] text-muted-foreground">
+                              {t('moreEvents', { count: dayEvents.length - 2 })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="-mx-3 overflow-x-auto px-3 pb-1">
+              <div
+                className={`overflow-hidden rounded-xl border border-border-subtle bg-background/35 ${
+                  viewMode === 'week' ? 'min-w-[940px]' : 'min-w-[340px]'
                 }`}
               >
-                <p className="text-[11px] sm:text-xs font-medium mb-1">{weekDays[index]}</p>
-                <p className="text-base sm:text-lg font-bold">{date.getDate()}</p>
-                {dayEvents.length > 0 && (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-0.5">
-                    {dayEvents.slice(0, 3).map((_, i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : accent.bg}`} />
-                    ))}
-                  </div>
-                )}
-              </button>
-            )
-          })}
-          </div>
-        </div>
-      </div>
+                <div
+                  className="grid border-b border-border-subtle"
+                  style={{ gridTemplateColumns: `72px repeat(${gridDates.length}, minmax(0, 1fr))` }}
+                >
+                  <div className="bg-surface-3" />
+                  {gridDates.map((date) => {
+                    const isCurrent = isSameDay(date, today)
+                    const isSelected = isSameDay(date, selectedDate)
 
-      {/* Events for Selected Date */}
-      <div>
-        <h2 className="text-lg font-bold text-foreground mb-4">
-          {selectedDate.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    return (
+                      <button
+                        key={getLocalDateKey(date)}
+                        onClick={() => setSelectedDate(startOfDay(date))}
+                        className={`border-l border-border-subtle px-2 py-3 text-center transition-colors ${
+                          isSelected ? accent.bgMuted20 : 'bg-surface-3/70 hover:bg-hover-overlay'
+                        }`}
+                      >
+                        <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                          {date.toLocaleDateString(locale, { weekday: 'short' })}
+                        </div>
+                        <div
+                          className={`mx-auto mt-1 inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                            isCurrent
+                              ? `bg-gradient-to-r text-white ${accent.gradient}`
+                              : isSelected
+                              ? `${accent.text} ${accent.bgMuted20}`
+                              : 'text-foreground'
+                          }`}
+                        >
+                          {date.getDate()}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div
+                  className="grid border-b border-border-subtle bg-background/70"
+                  style={{ gridTemplateColumns: `72px repeat(${gridDates.length}, minmax(0, 1fr))` }}
+                >
+                  <div className="px-2 py-2 text-xs font-medium text-muted-foreground">{t('allDay')}</div>
+                  {gridDates.map((date) => (
+                    <div
+                      key={`all-day-${getLocalDateKey(date)}`}
+                      onClick={() => setSelectedDate(startOfDay(date))}
+                      className="min-h-10 border-l border-border-subtle px-2 py-2"
+                    />
+                  ))}
+                </div>
+
+                <div className="relative overflow-y-auto" style={{ maxHeight: '72vh' }}>
+                  <div
+                    className="grid"
+                    style={{
+                      gridTemplateColumns: `72px repeat(${gridDates.length}, minmax(0, 1fr))`,
+                    }}
+                  >
+                    <div
+                      className="relative bg-surface-3/70"
+                      style={{ height: HOURS.length * HOUR_ROW_HEIGHT }}
+                    >
+                      {HOURS.map((hour) => (
+                        <div
+                          key={hour}
+                          className="absolute left-0 right-0 border-t border-border-subtle/75 px-2 text-[11px] text-muted-foreground"
+                          style={{ top: hour * HOUR_ROW_HEIGHT }}
+                        >
+                          <span className="relative -top-3 inline-block bg-surface-3/90 pr-1">
+                            {formatHour(hour, locale)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {gridDates.map((date) => {
+                      const key = getLocalDateKey(date)
+                      const dayEvents = eventsByDate.get(key) ?? []
+                      const positioned = layoutDayEvents(dayEvents)
+
+                      return (
+                        <div
+                          key={`grid-${key}`}
+                          onClick={() => setSelectedDate(startOfDay(date))}
+                          className="relative border-l border-border-subtle bg-background/20"
+                          style={{ height: HOURS.length * HOUR_ROW_HEIGHT }}
+                        >
+                          {HOURS.map((hour) => (
+                            <div
+                              key={`${key}-${hour}`}
+                              className="absolute left-0 right-0 border-t border-border-subtle/75"
+                              style={{ top: hour * HOUR_ROW_HEIGHT }}
+                            />
+                          ))}
+
+                          {positioned.map((item) => {
+                            const tone = getEventTone(item.event.type)
+                            const leftPercent = (item.column / item.columns) * 100
+                            const widthPercent = 100 / item.columns
+
+                            return (
+                              <button
+                                key={item.event.id}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setDetailEvent(item.event)
+                                }}
+                                className={`absolute overflow-hidden rounded-md border px-2 py-1 text-left shadow-sm transition hover:brightness-110 ${tone.block}`}
+                                style={{
+                                  top: item.top + 2,
+                                  height: item.height - 4,
+                                  left: `calc(${leftPercent}% + 4px)`,
+                                  width: `calc(${widthPercent}% - 8px)`,
+                                }}
+                              >
+                                <p className="truncate text-[11px] font-semibold leading-tight">
+                                  {item.event.title}
+                                </p>
+                                <p className="truncate text-[10px] opacity-90">
+                                  {formatTime(item.event.startAt, locale)} - {item.event.durationMinutes} {tc('min')}
+                                </p>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-lg font-bold text-foreground">
+          {selectedDate.toLocaleDateString(locale, {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+          })}
         </h2>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className={`w-8 h-8 ${accent.text} animate-spin`} />
-          </div>
-        ) : todaysEvents.length === 0 ? (
-          <div className="text-center py-12 bg-surface-2 rounded-xl border border-border-subtle">
-            <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+        {selectedDayEvents.length === 0 ? (
+          <div className="rounded-xl border border-border-subtle bg-surface-2 py-10 text-center">
+            <Calendar className="mx-auto mb-3 h-10 w-10 text-faint-foreground" />
             <p className="text-muted-foreground">{t('noEvents')}</p>
-            {!readOnly && (
-              <button
-                onClick={openCreateModal}
-                className={`mt-4 px-4 py-2 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90`}
-              >
-                {t('addEvent')}
-              </button>
-            )}
           </div>
         ) : (
           <div className="space-y-3">
-            {todaysEvents.map((event, index) => (
-              <motion.div
-                key={event.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => setDetailEvent(event)}
-                className={`bg-surface-2 rounded-xl border border-border-subtle p-4 ${accent.hoverBorder} transition-all cursor-pointer`}
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <div
-                    className={`hidden sm:block w-1.5 h-16 rounded-full bg-gradient-to-b ${accent.gradient} ${
-                      event.type === 'Consultation' ? 'opacity-70' : ''
-                    }`}
-                  />
+            {selectedDayEvents.map((event, index) => {
+              const tone = getEventTone(event.type)
+              const participant = getListParticipantName(event)
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-foreground break-words">{event.title}</h3>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${accent.bgMuted20} ${accent.text}`}
-                      >
-                        {eventTypes.find((et) => et.value === event.type)?.label}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          event.status === 'Confirmed'
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-amber-500/20 text-amber-400'
-                        }`}
-                      >
-                        {event.status === 'Confirmed' ? t('confirmed') : t('pending')}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{formatTime(event.startAt)} • {event.durationMinutes} {tc('min')}</span>
+              return (
+                <motion.div
+                  key={event.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  onClick={() => setDetailEvent(event)}
+                  className="cursor-pointer rounded-xl border border-border-subtle bg-surface-2 p-4 transition hover:border-border"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                    <div className={`hidden h-14 w-1.5 rounded-full sm:block ${tone.dot}`} />
+
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h3 className="truncate font-semibold text-foreground">{event.title}</h3>
+                        <span className={`rounded border px-2 py-0.5 text-[10px] font-bold ${tone.chip}`}>
+                          {eventTypes.find((et) => et.value === event.type)?.label}
+                        </span>
+                        <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${getStatusBadgeClass(event.status)}`}>
+                          {event.status === 'Confirmed'
+                            ? t('confirmed')
+                            : event.status === 'Completed'
+                            ? t('completed')
+                            : t('pending')}
+                        </span>
                       </div>
-                      {event.location && (
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{event.location}</span>
-                        </div>
-                      )}
-                      {getListParticipantName(event) && (
-                        <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          <span>{getListParticipantName(event)}</span>
-                        </div>
-                      )}
-                    </div>
-                    {event.comment && <p className="text-xs text-faint-foreground mt-1">{event.comment}</p>}
-                  </div>
 
-                  {!readOnly && (!currentUserId || event.trainerId === currentUserId) && (
-                  <div className="flex items-center gap-2 self-stretch sm:self-auto" onClick={(e) => e.stopPropagation()}>
-                    {event.type === 'Online' && (
-                      <button
-                        onClick={() => handleStartCall(event.id)}
-                        className={`flex-1 sm:flex-none p-3 bg-gradient-to-r ${accent.gradient} rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center`}
+                      <div className="flex flex-col gap-1.5 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {formatTime(event.startAt, locale)} • {event.durationMinutes} {tc('min')}
+                          </span>
+                        </div>
+
+                        {event.location && (
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+
+                        {participant && (
+                          <div className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            <span>{participant}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {event.comment && <p className="mt-1 text-xs text-faint-foreground">{event.comment}</p>}
+                    </div>
+
+                    {canManageEvent(event) && (
+                      <div
+                        className="flex items-center gap-2 self-stretch sm:self-auto"
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Video className="w-5 h-5 text-foreground" />
-                      </button>
+                        {event.type === 'Online' && (
+                          <button
+                            onClick={() => handleStartCall(event.id)}
+                            className={`flex-1 rounded-lg bg-gradient-to-r p-2.5 sm:flex-none ${accent.gradient}`}
+                          >
+                            <Video className="h-5 w-5 text-white" />
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => openEditModal(event)}
+                          className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-hover-overlay sm:flex-none"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          disabled={deleting === event.id}
+                          className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-red-500/20 disabled:opacity-50 sm:flex-none"
+                        >
+                          {deleting === event.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     )}
-                    <button onClick={() => openEditModal(event)} className="flex-1 sm:flex-none p-2 bg-border-subtle hover:bg-white/10 rounded-lg transition-colors flex items-center justify-center">
-                      <Edit className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(event.id)}
-                      disabled={deleting === event.id}
-                      className="flex-1 sm:flex-none p-2 bg-border-subtle hover:bg-red-500/20 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center"
-                    >
-                      {deleting === event.id ? (
-                        <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-400" />
-                      )}
-                    </button>
                   </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              )
+            })}
           </div>
         )}
-      </div>
+      </section>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 text-center">
-          <Calendar className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
-          <p className="text-2xl font-bold text-foreground">{todaysEvents.length}</p>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-border-subtle bg-surface-2 p-4 text-center">
+          <Calendar className={`mx-auto mb-2 h-7 w-7 ${accent.text}`} />
+          <p className="text-2xl font-bold text-foreground">{selectedDayEvents.length}</p>
           <p className="text-xs text-muted-foreground">{t('totalEvents')}</p>
         </div>
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 text-center">
-          <Users className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
+
+        <div className="rounded-xl border border-border-subtle bg-surface-2 p-4 text-center">
+          <Users className={`mx-auto mb-2 h-7 w-7 ${accent.text}`} />
           <p className="text-2xl font-bold text-foreground">{stats?.upcomingEvents || 0}</p>
           <p className="text-xs text-muted-foreground">{t('upcoming')}</p>
         </div>
-        <div className="bg-surface-2 rounded-xl border border-border-subtle p-4 text-center">
-          <Clock className={`w-8 h-8 ${accent.text} mx-auto mb-2`} />
-          <p className="text-2xl font-bold text-foreground">{stats?.totalMinutes ? Math.round(stats.totalMinutes / 60) : 0}ч</p>
+
+        <div className="rounded-xl border border-border-subtle bg-surface-2 p-4 text-center">
+          <Clock className={`mx-auto mb-2 h-7 w-7 ${accent.text}`} />
+          <p className="text-2xl font-bold text-foreground">
+            {stats?.totalMinutes ? Math.round(stats.totalMinutes / 60) : 0}h
+          </p>
           <p className="text-xs text-muted-foreground">{t('trainingHours')}</p>
         </div>
-      </div>
+      </section>
 
-      {/* Create/Edit Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-surface-2 rounded-2xl border border-border-subtle w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-subtle bg-surface-2"
           >
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">
                   {editingEvent ? t('editEvent') : t('newEvent')}
                 </h2>
                 <button onClick={closeModal} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-6 h-6" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">{t('eventName')}</label>
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('eventName')}</label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                    className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                     placeholder={t('eventNamePlaceholder')}
                   />
                 </div>
 
-                {/* Event Type */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">{t('eventType')}</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('eventType')}</label>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {eventTypes.map((type) => (
                       <button
                         key={type.value}
                         type="button"
                         onClick={() => setEventType(type.value)}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        className={`rounded-lg px-4 py-2 font-medium ${
                           eventType === type.value
-                            ? `bg-gradient-to-r ${accent.gradient} text-white`
+                            ? `bg-gradient-to-r text-white ${accent.gradient}`
                             : 'bg-white/5 text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -576,52 +1094,51 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                   </div>
                 </div>
 
-                {/* Student Selection */}
                 {students.length > 0 && (
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('student')}</label>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('student')}</label>
                     <select
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                     >
                       <option value="">{t('selectStudent')}</option>
                       {students.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
                       ))}
                     </select>
                   </div>
                 )}
 
-                {/* Date & Time */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('date')}</label>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('date')}</label>
                     <input
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('time')}</label>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('time')}</label>
                     <input
                       type="time"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                     />
                   </div>
                 </div>
 
-                {/* Duration */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">{t('duration')}</label>
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('duration')}</label>
                   <select
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
-                    className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                    className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                   >
                     <option value="30">{t('duration30')}</option>
                     <option value="45">{t('duration45')}</option>
@@ -631,39 +1148,36 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                   </select>
                 </div>
 
-                {/* Location */}
                 {eventType === 'Gym' && (
                   <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">{t('location')}</label>
+                    <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('location')}</label>
                     <input
                       type="text"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder}`}
+                      className={`w-full rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                       placeholder={t('locationPlaceholder')}
                     />
                   </div>
                 )}
 
-                {/* Comment */}
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-2">{t('comment')}</label>
+                  <label className="mb-2 block text-sm font-medium text-muted-foreground">{t('comment')}</label>
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={2}
-                    className={`w-full px-4 py-2.5 bg-background border border-border-subtle rounded-lg text-foreground focus:outline-none ${accent.focusBorder} resize-none`}
+                    className={`w-full resize-none rounded-lg border border-border-subtle bg-background px-4 py-2.5 text-foreground ${accent.focusBorder} focus:outline-none`}
                     placeholder={t('commentPlaceholder')}
                   />
                 </div>
 
-                {/* Submit */}
                 <button
                   type="submit"
                   disabled={saving}
-                  className={`w-full py-3 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2`}
+                  className={`flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r py-3 font-semibold text-white disabled:opacity-50 ${accent.gradient}`}
                 >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
+                  {saving && <Loader2 className="h-5 w-5 animate-spin" />}
                   {editingEvent ? t('saveChanges') : t('createEvent')}
                 </button>
               </form>
@@ -672,49 +1186,50 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
         </div>
       )}
 
-      {/* Event Detail Modal */}
       {detailEvent && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-surface-2 rounded-2xl border border-border-subtle w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-subtle bg-surface-2"
           >
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6 flex items-center justify-between">
                 <h2 className="text-xl font-bold text-foreground">{t('eventDetails')}</h2>
                 <button onClick={() => setDetailEvent(null)} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-6 h-6" />
+                  <X className="h-6 w-6" />
                 </button>
               </div>
 
               <div className="space-y-4">
-                {/* Title & badges */}
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{detailEvent.title}</h3>
+                  <h3 className="mb-2 text-lg font-semibold text-foreground">{detailEvent.title}</h3>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-2.5 py-1 rounded text-xs font-bold ${accent.bgMuted20} ${accent.text}`}>
+                    <span
+                      className={`rounded px-2.5 py-1 text-xs font-bold ${
+                        getEventTone(detailEvent.type).chip
+                      }`}
+                    >
                       {eventTypes.find((et) => et.value === detailEvent.type)?.label}
                     </span>
                     <span
-                      className={`px-2.5 py-1 rounded text-xs font-bold ${
-                        detailEvent.status === 'Confirmed'
-                          ? 'bg-green-500/20 text-green-400'
-                          : detailEvent.status === 'Completed'
-                          ? 'bg-blue-500/20 text-blue-400'
-                          : 'bg-amber-500/20 text-amber-400'
-                      }`}
+                      className={`rounded px-2.5 py-1 text-xs font-bold ${getStatusBadgeClass(
+                        detailEvent.status
+                      )}`}
                     >
-                      {detailEvent.status === 'Confirmed' ? t('confirmed') : detailEvent.status === 'Completed' ? t('completed') : t('pending')}
+                      {detailEvent.status === 'Confirmed'
+                        ? t('confirmed')
+                        : detailEvent.status === 'Completed'
+                        ? t('completed')
+                        : t('pending')}
                     </span>
                   </div>
                 </div>
 
-                {/* Date & Time */}
                 <div className="flex items-center gap-3 text-muted-foreground">
-                  <Calendar className={`w-5 h-5 ${accent.text}`} />
+                  <Calendar className={`h-5 w-5 ${accent.text}`} />
                   <span>
-                    {new Date(detailEvent.startAt).toLocaleDateString('ru-RU', {
+                    {new Date(detailEvent.startAt).toLocaleDateString(locale, {
                       weekday: 'long',
                       day: 'numeric',
                       month: 'long',
@@ -724,47 +1239,47 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 </div>
 
                 <div className="flex items-center gap-3 text-muted-foreground">
-                  <Clock className={`w-5 h-5 ${accent.text}`} />
+                  <Clock className={`h-5 w-5 ${accent.text}`} />
                   <span>
-                    {formatTime(detailEvent.startAt)} • {detailEvent.durationMinutes} {tc('min')}
+                    {formatTime(detailEvent.startAt, locale)} • {detailEvent.durationMinutes} {tc('min')}
                   </span>
                 </div>
 
-                {/* Location */}
                 {detailEvent.location && (
                   <div className="flex items-center gap-3 text-muted-foreground">
-                    <MapPin className={`w-5 h-5 ${accent.text}`} />
+                    <MapPin className={`h-5 w-5 ${accent.text}`} />
                     <span>{detailEvent.location}</span>
                   </div>
                 )}
 
-                {/* Trainer */}
                 {detailEvent.trainerName && (
                   <div className="flex items-center gap-3 text-muted-foreground">
-                    <Users className={`w-5 h-5 ${accent.text}`} />
-                    <span>{t('trainerLabel')}: {detailEvent.trainerName}</span>
+                    <Users className={`h-5 w-5 ${accent.text}`} />
+                    <span>
+                      {t('trainerLabel')}: {detailEvent.trainerName}
+                    </span>
                   </div>
                 )}
 
-                {/* Student */}
                 {detailEvent.studentName && (
                   <div className="flex items-center gap-3 text-muted-foreground">
-                    <Users className={`w-5 h-5 ${accent.text}`} />
-                    <span>{t('student')}: {detailEvent.studentName}</span>
+                    <Users className={`h-5 w-5 ${accent.text}`} />
+                    <span>
+                      {t('student')}: {detailEvent.studentName}
+                    </span>
                   </div>
                 )}
 
-                {/* Comment */}
                 {detailEvent.comment && (
-                  <div className="bg-background rounded-lg p-4 border border-border-subtle">
-                    <p className="text-sm text-muted-foreground mb-1">{t('comment')}</p>
+                  <div className="rounded-lg border border-border-subtle bg-background p-4">
+                    <p className="mb-1 text-sm text-muted-foreground">{t('comment')}</p>
                     <p className="text-foreground">{detailEvent.comment}</p>
                   </div>
                 )}
 
-                {/* Created at */}
                 <p className="text-xs text-faint-foreground">
-                  {t('createdAt')}: {new Date(detailEvent.createdAt).toLocaleDateString('ru-RU', {
+                  {t('createdAt')}:{' '}
+                  {new Date(detailEvent.createdAt).toLocaleDateString(locale, {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
@@ -774,30 +1289,40 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 </p>
               </div>
 
-              {/* Actions */}
-              {!readOnly && (!currentUserId || detailEvent.trainerId === currentUserId) && (
-                <div className="flex flex-col sm:flex-row gap-3 mt-6 pt-4 border-t border-border-subtle">
+              {canManageEvent(detailEvent) && (
+                <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-4 sm:flex-row">
                   {detailEvent.type === 'Online' && (
                     <button
-                      onClick={() => { handleStartCall(detailEvent.id); setDetailEvent(null); }}
-                      className={`flex-1 py-2.5 bg-gradient-to-r ${accent.gradient} text-white font-semibold rounded-lg hover:opacity-90 flex items-center justify-center gap-2`}
+                      onClick={() => {
+                        handleStartCall(detailEvent.id)
+                        setDetailEvent(null)
+                      }}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r py-2.5 font-semibold text-white ${accent.gradient}`}
                     >
-                      <Video className="w-4 h-4" />
+                      <Video className="h-4 w-4" />
                       {t('startCall')}
                     </button>
                   )}
+
                   <button
-                    onClick={() => { openEditModal(detailEvent); setDetailEvent(null); }}
-                    className="flex-1 py-2.5 bg-border-subtle hover:bg-white/10 text-foreground font-semibold rounded-lg flex items-center justify-center gap-2"
+                    onClick={() => {
+                      openEditModal(detailEvent)
+                      setDetailEvent(null)
+                    }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-border-subtle py-2.5 font-semibold text-foreground hover:bg-hover-overlay"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="h-4 w-4" />
                     {t('editEvent')}
                   </button>
+
                   <button
-                    onClick={() => { handleDelete(detailEvent.id); setDetailEvent(null); }}
-                    className="sm:w-auto py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold rounded-lg flex items-center justify-center gap-2"
+                    onClick={() => {
+                      handleDelete(detailEvent.id)
+                      setDetailEvent(null)
+                    }}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-red-500/10 px-4 py-2.5 font-semibold text-red-400 hover:bg-red-500/20"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               )}
@@ -807,4 +1332,12 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
       )}
     </div>
   )
+}
+
+function formatTime(dateStr: string, locale: string) {
+  return new Date(dateStr).toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
 }

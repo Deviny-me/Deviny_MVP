@@ -20,6 +20,87 @@ public class UserFollowRepository : IUserFollowRepository
             .FirstOrDefaultAsync(uf => uf.FollowerId == followerId && uf.TrainerId == trainerId);
     }
 
+    public async Task<bool> AreMutualFollowsAsync(Guid userId1, Guid userId2)
+    {
+        return await _context.UserFollows.AnyAsync(uf => uf.FollowerId == userId1 && uf.TrainerId == userId2)
+            && await _context.UserFollows.AnyAsync(uf => uf.FollowerId == userId2 && uf.TrainerId == userId1);
+    }
+
+    public async Task<DateTime?> GetMutualFollowSinceAsync(Guid userId1, Guid userId2)
+    {
+        var followForward = await _context.UserFollows
+            .AsNoTracking()
+            .Where(uf => uf.FollowerId == userId1 && uf.TrainerId == userId2)
+            .Select(uf => (DateTime?)uf.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        var followReverse = await _context.UserFollows
+            .AsNoTracking()
+            .Where(uf => uf.FollowerId == userId2 && uf.TrainerId == userId1)
+            .Select(uf => (DateTime?)uf.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (followForward == null || followReverse == null)
+        {
+            return null;
+        }
+
+        return followForward > followReverse ? followForward : followReverse;
+    }
+
+    public async Task<(List<(User Friend, DateTime FriendsSince)> Items, int TotalCount)> GetMutualFriendsPagedAsync(Guid userId, int page, int pageSize)
+    {
+        var mutualQuery =
+            from outgoing in _context.UserFollows.AsNoTracking()
+            join incoming in _context.UserFollows.AsNoTracking()
+                on new { A = outgoing.TrainerId, B = outgoing.FollowerId }
+                equals new { A = incoming.FollowerId, B = incoming.TrainerId }
+            where outgoing.FollowerId == userId
+            select new
+            {
+                FriendId = outgoing.TrainerId,
+                FriendsSince = outgoing.CreatedAt >= incoming.CreatedAt ? outgoing.CreatedAt : incoming.CreatedAt
+            };
+
+        var totalCount = await mutualQuery.CountAsync();
+
+        var pairs = await mutualQuery
+            .OrderByDescending(x => x.FriendsSince)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var friendIds = pairs.Select(x => x.FriendId).ToList();
+        var users = await _context.Users
+            .AsNoTracking()
+            .Where(u => friendIds.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id);
+
+        var items = pairs
+            .Where(p => users.ContainsKey(p.FriendId))
+            .Select(p => (users[p.FriendId], p.FriendsSince))
+            .ToList();
+
+        return (items, totalCount);
+    }
+
+    public async Task DeleteMutualFollowPairAsync(Guid userId1, Guid userId2)
+    {
+        var pair = await _context.UserFollows
+            .Where(uf =>
+                (uf.FollowerId == userId1 && uf.TrainerId == userId2) ||
+                (uf.FollowerId == userId2 && uf.TrainerId == userId1))
+            .ToListAsync();
+
+        if (pair.Count == 0)
+        {
+            return;
+        }
+
+        _context.UserFollows.RemoveRange(pair);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<(User Trainer, DateTime FollowedAt)>> GetFollowingAsync(Guid userId)
     {
         return await _context.UserFollows
