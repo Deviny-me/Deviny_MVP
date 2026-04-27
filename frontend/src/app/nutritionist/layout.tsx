@@ -18,7 +18,7 @@ const HIDE_RIGHT_SIDEBAR = [
   '/nutritionist/profile', '/nutritionist/clients', '/nutritionist/settings',
   '/nutritionist/messages', '/nutritionist/leaderboards', '/nutritionist/live',
   '/nutritionist/discovery', '/nutritionist/challenges', '/nutritionist/achievements',
-  '/nutritionist/dashboard',
+  '/nutritionist/dashboard', '/nutritionist/notifications',
 ]
 // Routes where both sidebars should be hidden
 const HIDE_ALL_SIDEBARS: string[] = []

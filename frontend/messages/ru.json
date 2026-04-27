@@ -282,7 +282,8 @@
     "myJourney": "Мой путь",
     "liveWorkouts": "Live тренировки",
     "mealPrograms": "Программы питания",
-    "myProfile": "Мой профиль"
+    "myProfile": "Мой профиль",
+    "notifications": "Уведомления"
   },
 
   "settings": {
@@ -1374,8 +1375,33 @@
 
   "notifications": {
     "title": "Уведомления",
+    "pageSubtitle": "Живая история достижений, программ, сообщений и социальной активности.",
+    "viewAll": "Все",
     "markAllRead": "Прочитать все",
+    "markRead": "Прочитать",
+    "open": "Открыть",
+    "delete": "Удалить",
+    "clearAll": "Очистить все",
+    "confirmClear": "Подтвердить",
+    "refresh": "Обновить",
+    "total": "Загружено",
+    "unread": "Новые",
+    "read": "Прочитано",
+    "new": "Новое",
+    "allCaughtUp": "Все прочитано",
+    "unreadSummary": "{count} непрочитанных",
+    "filterAll": "Все",
+    "filterUnread": "Новые",
+    "filterRead": "Прочитанные",
     "noNotifications": "Нет уведомлений",
+    "noFilteredNotifications": "Здесь пусто",
+    "emptyDescription": "Новая активность появится здесь сразу после получения.",
+    "emptyFilterDescription": "Попробуйте другой фильтр или обновите страницу.",
+    "loadError": "Не удалось загрузить уведомления.",
+    "markReadError": "Не удалось отметить уведомление прочитанным.",
+    "markAllReadError": "Не удалось прочитать все уведомления.",
+    "deleteError": "Не удалось удалить уведомление.",
+    "clearError": "Не удалось очистить уведомления.",
     "loading": "Загрузка...",
     "loadMore": "Загрузить ещё",
     "justNow": "только что",

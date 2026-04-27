@@ -1,59 +1,34 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck, UserPlus, UserCheck, Users } from 'lucide-react'
+import { Bell, CheckCheck, ExternalLink } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useUnreadNotifications } from '@/contexts/UnreadNotificationsContext'
 import { notificationsApi } from '@/lib/api/notificationsApi'
-import { Notification } from '@/types/notification'
+import { Notification, NotificationRealtimePayload } from '@/types/notification'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { chatConnection } from '@/lib/signalr/chatConnection'
-
-function getNotificationIcon(type: string) {
-  switch (type) {
-    case 'AchievementUnlocked':
-      return <Trophy className="w-4 h-4 text-yellow-400" />
-    case 'TrainingProgramCreated':
-      return <Dumbbell className="w-4 h-4 text-blue-400" />
-    case 'MealProgramCreated':
-      return <UtensilsCrossed className="w-4 h-4 text-green-400" />
-    case 'FriendRequestReceived':
-      return <UserPlus className="w-4 h-4 text-purple-400" />
-    case 'FriendRequestAccepted':
-      return <UserCheck className="w-4 h-4 text-green-400" />
-    case 'NewFollower':
-      return <Users className="w-4 h-4 text-blue-400" />
-    default:
-      return <Bell className="w-4 h-4 text-muted-foreground" />
-  }
-}
-
-function timeAgo(dateStr: string, t: (key: string, values?: Record<string, string | number | Date>) => string): string {
-  const now = new Date()
-  const date = new Date(dateStr)
-  const diffMs = now.getTime() - date.getTime()
-  const diffSec = Math.floor(diffMs / 1000)
-  const diffMin = Math.floor(diffSec / 60)
-  const diffHour = Math.floor(diffMin / 60)
-  const diffDay = Math.floor(diffHour / 24)
-
-  if (diffSec < 60) return t('justNow')
-  if (diffMin < 60) return t('minutesAgo', { count: diffMin })
-  if (diffHour < 24) return t('hoursAgo', { count: diffHour })
-  if (diffDay < 7) return t('daysAgo', { count: diffDay })
-  return date.toLocaleDateString()
-}
+import { filterArchivedNotifications, isNotificationArchived } from '@/lib/notifications/localArchive'
+import { getNotificationIcon, timeAgo } from '@/lib/notifications/presentation'
 
 export function NotificationDropdown() {
   const accent = useAccentColors()
   const { unreadCount, refreshCount } = useUnreadNotifications()
   const t = useTranslations('notifications')
+  const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasLoaded, setHasLoaded] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const basePath = pathname?.startsWith('/trainer')
+    ? '/trainer'
+    : pathname?.startsWith('/nutritionist')
+    ? '/nutritionist'
+    : '/user'
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -73,9 +48,9 @@ export function NotificationDropdown() {
     try {
       const response = await notificationsApi.getNotifications(cursor, 20)
       if (cursor) {
-        setNotifications(prev => [...prev, ...response.items])
+        setNotifications(prev => filterArchivedNotifications([...prev, ...response.items]))
       } else {
-        setNotifications(response.items)
+        setNotifications(filterArchivedNotifications(response.items))
       }
       setNextCursor(response.nextCursor)
       setHasLoaded(true)
@@ -100,7 +75,7 @@ export function NotificationDropdown() {
 
   // Real-time notification listener
   useEffect(() => {
-    const handleNewNotification = (data: { id: string; type: string; category?: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
+    const handleNewNotification = (data: NotificationRealtimePayload) => {
       console.log('[Notifications] Real-time notification received:', data)
 
       // Play notification sound
@@ -110,20 +85,24 @@ export function NotificationDropdown() {
         audio.play().catch(() => {})
       } catch {}
 
+      const notification = {
+        id: data.id,
+        type: data.type,
+        category: data.category ?? null,
+        title: data.title,
+        message: data.message,
+        relatedEntityType: data.relatedEntityType,
+        relatedEntityId: data.relatedEntityId,
+        isRead: data.isRead,
+        createdAt: data.createdAt,
+        readAt: null
+      }
+
+      if (isNotificationArchived(notification)) return
+
       // Prepend to notifications list if already loaded
       if (hasLoaded) {
-        setNotifications(prev => [{
-          id: data.id,
-          type: data.type,
-          category: data.category ?? 'System',
-          title: data.title,
-          message: data.message,
-          relatedEntityType: data.relatedEntityType,
-          relatedEntityId: data.relatedEntityId,
-          isRead: data.isRead,
-          createdAt: data.createdAt,
-          readAt: null
-        }, ...prev])
+        setNotifications(prev => [notification, ...prev])
       }
     }
 
@@ -144,6 +123,11 @@ export function NotificationDropdown() {
     } catch (error) {
       console.error('[Notifications] Failed to mark as read:', error)
     }
+  }
+
+  const handleViewAll = () => {
+    setIsOpen(false)
+    router.push(`${basePath}/notifications`)
   }
 
   const handleMarkAllAsRead = async () => {
@@ -186,15 +170,24 @@ export function NotificationDropdown() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <h3 className="text-sm font-semibold text-foreground">{t('title')}</h3>
-            {unreadCount > 0 && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleMarkAllAsRead}
+                onClick={handleViewAll}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <CheckCheck className="w-3.5 h-3.5" />
-                {t('markAllRead')}
+                <ExternalLink className="w-3.5 h-3.5" />
+                {t('viewAll')}
               </button>
-            )}
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  {t('markAllRead')}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Notifications List */}

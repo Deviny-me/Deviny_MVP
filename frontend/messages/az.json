@@ -282,7 +282,8 @@
     "myJourney": "Yolum",
     "liveWorkouts": "Canlı məşqlər",
     "mealPrograms": "Qidalanma proqramları",
-    "myProfile": "Profilim"
+    "myProfile": "Profilim",
+    "notifications": "Bildirişlər"
   },
 
   "settings": {
@@ -1374,8 +1375,33 @@
 
   "notifications": {
     "title": "Bildirişlər",
+    "pageSubtitle": "Nailiyyətlər, proqramlar, mesajlar və sosial aktivlik üçün canlı tarixçə.",
+    "viewAll": "Hamısı",
     "markAllRead": "Hamısını oxunmuş et",
+    "markRead": "Oxunmuş et",
+    "open": "Aç",
+    "delete": "Sil",
+    "clearAll": "Hamısını təmizlə",
+    "confirmClear": "Təsdiqlə",
+    "refresh": "Yenilə",
+    "total": "Yüklənib",
+    "unread": "Oxunmamış",
+    "read": "Oxunmuş",
+    "new": "Yeni",
+    "allCaughtUp": "Hamısı oxunub",
+    "unreadSummary": "{count} oxunmamış",
+    "filterAll": "Hamısı",
+    "filterUnread": "Oxunmamış",
+    "filterRead": "Oxunmuş",
     "noNotifications": "Bildiriş yoxdur",
+    "noFilteredNotifications": "Burada bildiriş yoxdur",
+    "emptyDescription": "Yeni aktivlik gələn kimi burada görünəcək.",
+    "emptyFilterDescription": "Başqa filtr seçin və ya səhifəni yeniləyin.",
+    "loadError": "Bildirişləri yükləmək mümkün olmadı.",
+    "markReadError": "Bildirişi oxunmuş etmək mümkün olmadı.",
+    "markAllReadError": "Bildirişləri oxunmuş etmək mümkün olmadı.",
+    "deleteError": "Bildirişi silmək mümkün olmadı.",
+    "clearError": "Bildirişləri təmizləmək mümkün olmadı.",
     "loading": "Yüklənir...",
     "loadMore": "Daha çox yüklə",
     "justNow": "indicə",
