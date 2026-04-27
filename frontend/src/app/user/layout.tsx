@@ -17,7 +17,7 @@ import { Spinner } from '@/components/ui/Spinner'
 const HIDE_RIGHT_SIDEBAR = [
   '/user/challenges', '/user/settings', '/user/schedule',
   '/user/leaderboards', '/user/live', '/user/experts', '/user/discovery',
-  '/user/achievements', '/user/messages',
+  '/user/achievements', '/user/messages', '/user/notifications',
 ]
 // Routes where both sidebars should be hidden
 const HIDE_ALL_SIDEBARS: string[] = []

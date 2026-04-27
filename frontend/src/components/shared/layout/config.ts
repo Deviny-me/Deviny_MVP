@@ -15,6 +15,7 @@ import {
   User,
   Settings,
   Apple,
+  Bell,
 } from 'lucide-react'
 import { LayoutConfig } from './types'
 
@@ -57,6 +58,7 @@ export const trainerConfig: LayoutConfig = {
   ],
   topNavItems: [
     { icon: Users, label: 'friends', path: '/trainer/friends' },
+    { icon: Bell, label: 'notifications', path: '/trainer/notifications' },
     { icon: MessageCircle, label: 'messages', path: '/trainer/messages' },
     { icon: User, label: 'myProfile', path: '/trainer/profile' },
     { icon: Settings, label: 'settings', path: '/trainer/settings' },
@@ -107,6 +109,7 @@ export const userConfig: LayoutConfig = {
   ],
   topNavItems: [
     { icon: Users, label: 'friends', path: '/user/friends' },
+    { icon: Bell, label: 'notifications', path: '/user/notifications' },
     { icon: MessageCircle, label: 'messages', path: '/user/messages' },
     { icon: User, label: 'profile', path: '/user/profile' },
     { icon: Settings, label: 'settings', path: '/user/settings' },
@@ -158,6 +161,7 @@ export const nutritionistConfig: LayoutConfig = {
   ],
   topNavItems: [
     { icon: Users, label: 'friends', path: '/nutritionist/friends' },
+    { icon: Bell, label: 'notifications', path: '/nutritionist/notifications' },
     { icon: MessageCircle, label: 'messages', path: '/nutritionist/messages' },
     { icon: User, label: 'myProfile', path: '/nutritionist/profile' },
     { icon: Settings, label: 'settings', path: '/nutritionist/settings' },

@@ -1,7 +1,7 @@
 export interface Notification {
   id: string;
   type: string;
-  category: string;
+  category?: string | null;
   title: string;
   message: string;
   relatedEntityType: string | null;
@@ -24,3 +24,7 @@ export interface NotificationSettings {
   contentUpdatesEnabled: boolean;
   messagingEnabled: boolean;
 }
+
+export type NotificationRealtimePayload = Omit<Notification, 'readAt'> & {
+  readAt?: string | null;
+};
