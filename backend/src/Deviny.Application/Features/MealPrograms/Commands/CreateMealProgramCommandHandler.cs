@@ -40,7 +40,7 @@ public class CreateMealProgramCommandHandler : IRequestHandler<CreateMealProgram
         if (request.CoverImage == null)
             throw new ArgumentException("Необходимо загрузить обложку");
 
-        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".heic", ".heif", ".avif", ".jfif" };
         var coverExtension = Path.GetExtension(request.CoverImage.FileName).ToLowerInvariant();
 
         if (!imageExtensions.Contains(coverExtension))
@@ -60,7 +60,7 @@ public class CreateMealProgramCommandHandler : IRequestHandler<CreateMealProgram
         var videoUrls = new List<string>();
         if (request.Videos != null && request.Videos.Any())
         {
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
+            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm", ".m4v", ".mkv", ".mpeg", ".mpg", ".3gp", ".wmv" };
 
             foreach (var video in request.Videos)
             {
