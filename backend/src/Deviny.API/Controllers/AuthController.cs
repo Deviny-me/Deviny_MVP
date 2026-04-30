@@ -68,6 +68,17 @@ public class AuthController : ControllerBase
         };
     }
 
+    private string GetRequestLanguage()
+    {
+        var header = Request.Headers.AcceptLanguage.ToString();
+        if (string.IsNullOrWhiteSpace(header)) return "ru";
+
+        var primary = header.Split(',')[0].Trim().ToLowerInvariant();
+        if (primary.StartsWith("en")) return "en";
+        if (primary.StartsWith("az")) return "az";
+        return "ru";
+    }
+
     /// <summary>
     /// Sends an OTP code to the specified email address for verification.
     /// </summary>
@@ -108,7 +119,7 @@ public class AuthController : ControllerBase
             // Send email. In development, allow local flow to continue if SMTP is unavailable.
             try
             {
-                await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+                await _emailService.SendOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes, GetRequestLanguage());
             }
             catch (Exception ex) when (_env.IsDevelopment())
             {
@@ -219,7 +230,7 @@ public class AuthController : ControllerBase
             // Send password reset email. In development, allow local flow to continue if SMTP is unavailable.
             try
             {
-                await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes);
+                await _emailService.SendPasswordResetOtpEmailAsync(request.Email, otpCode, _emailSettings.OtpExpirationMinutes, GetRequestLanguage());
             }
             catch (Exception ex) when (_env.IsDevelopment())
             {

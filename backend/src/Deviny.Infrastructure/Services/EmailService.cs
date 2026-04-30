@@ -23,9 +23,46 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
-    public async Task SendOtpEmailAsync(string email, string otpCode, int expirationMinutes)
+    public async Task SendOtpEmailAsync(string email, string otpCode, int expirationMinutes, string? language = null)
     {
-        var subject = "Код подтверждения Deviny";
+        var lang = NormalizeLanguage(language);
+        var subject = lang switch
+        {
+            "en" => "Deviny verification code",
+            "az" => "Deviny tesdiq kodu",
+            _ => "Код подтверждения Deviny"
+        };
+        var title = lang switch
+        {
+            "en" => "Email verification",
+            "az" => "Email tesdiqi",
+            _ => "Подтверждение email"
+        };
+        var text = lang switch
+        {
+            "en" => "Use the code below to verify your email address. Do not share this code with anyone.",
+            "az" => "Email unvaninizi tesdiq etmek ucun asagidaki koddan istifade edin. Bu kodu hec kimle paylasmayin.",
+            _ => "Используйте код ниже для подтверждения вашего email адреса. Не сообщайте этот код никому."
+        };
+        var expiry = lang switch
+        {
+            "en" => $"Code is valid for {expirationMinutes} minutes",
+            "az" => $"Kod {expirationMinutes} deqiqe etibarlidir",
+            _ => $"Код действителен {expirationMinutes} минут"
+        };
+        var footer1 = lang switch
+        {
+            "en" => "If you did not request this code, please ignore this email.",
+            "az" => "Bu kodu siz teleb etmemisinizse, bu mektubu nezere almayin.",
+            _ => "Если вы не запрашивали этот код, просто проигнорируйте это письмо."
+        };
+        var footer2 = lang switch
+        {
+            "en" => $"© {DateTime.UtcNow.Year} Deviny. All rights reserved.",
+            "az" => $"© {DateTime.UtcNow.Year} Deviny. Butun huquqlar qorunur.",
+            _ => $"© {DateTime.UtcNow.Year} Deviny. Все права защищены."
+        };
+
         var body = $@"<!DOCTYPE html>
 <html>
 <head>
@@ -46,13 +83,13 @@ public class EmailService : IEmailService
 <body>
     <div class='container'>
         <div class='logo'><h1>Deviny</h1></div>
-        <h2 class='title'>Подтверждение email</h2>
-        <p class='text'>Используйте код ниже для подтверждения вашего email адреса. Не сообщайте этот код никому.</p>
+        <h2 class='title'>{title}</h2>
+        <p class='text'>{text}</p>
         <div class='otp-box'><p class='otp-code'>{otpCode}</p></div>
-        <p class='expiry'>Код действителен {expirationMinutes} минут</p>
+        <p class='expiry'>{expiry}</p>
         <div class='footer'>
-            <p>Если вы не запрашивали этот код, просто проигнорируйте это письмо.</p>
-            <p>© {DateTime.UtcNow.Year} Deviny. Все права защищены.</p>
+            <p>{footer1}</p>
+            <p>{footer2}</p>
         </div>
     </div>
 </body>
@@ -61,9 +98,46 @@ public class EmailService : IEmailService
         await SendEmailAsync(email, subject, body);
     }
 
-    public async Task SendPasswordResetOtpEmailAsync(string email, string otpCode, int expirationMinutes)
+    public async Task SendPasswordResetOtpEmailAsync(string email, string otpCode, int expirationMinutes, string? language = null)
     {
-        var subject = "Сброс пароля Deviny";
+        var lang = NormalizeLanguage(language);
+        var subject = lang switch
+        {
+            "en" => "Deviny password reset",
+            "az" => "Deviny sifre yenileme",
+            _ => "Сброс пароля Deviny"
+        };
+        var title = lang switch
+        {
+            "en" => "Password reset",
+            "az" => "Sifrenin yenilenmesi",
+            _ => "Сброс пароля"
+        };
+        var text = lang switch
+        {
+            "en" => "You requested a password reset for your account. Use the code below to confirm.",
+            "az" => "Hesabiniz ucun sifre yenileme soraginiz qeyde alindi. Tesdiq ucun asagidaki koddan istifade edin.",
+            _ => "Вы запросили сброс пароля для вашего аккаунта. Используйте код ниже для подтверждения."
+        };
+        var expiry = lang switch
+        {
+            "en" => $"Code is valid for {expirationMinutes} minutes",
+            "az" => $"Kod {expirationMinutes} deqiqe etibarlidir",
+            _ => $"Код действителен {expirationMinutes} минут"
+        };
+        var warning = lang switch
+        {
+            "en" => "If you did not request a password reset, ignore this email. Your password will remain unchanged.",
+            "az" => "Sifre yenileme soragusunu siz gondermemisinizse, bu mektubu nezere almayin. Sifreniz deyismeyecek.",
+            _ => "⚠️ Если вы не запрашивали сброс пароля, проигнорируйте это письмо. Ваш пароль останется без изменений."
+        };
+        var footer = lang switch
+        {
+            "en" => $"© {DateTime.UtcNow.Year} Deviny. All rights reserved.",
+            "az" => $"© {DateTime.UtcNow.Year} Deviny. Butun huquqlar qorunur.",
+            _ => $"© {DateTime.UtcNow.Year} Deviny. Все права защищены."
+        };
+
         var body = $@"<!DOCTYPE html>
 <html>
 <head>
@@ -85,12 +159,12 @@ public class EmailService : IEmailService
 <body>
     <div class='container'>
         <div class='logo'><h1>Deviny</h1></div>
-        <h2 class='title'>Сброс пароля</h2>
-        <p class='text'>Вы запросили сброс пароля для вашего аккаунта. Используйте код ниже для подтверждения.</p>
+        <h2 class='title'>{title}</h2>
+        <p class='text'>{text}</p>
         <div class='otp-box'><p class='otp-code'>{otpCode}</p></div>
-        <p class='expiry'>Код действителен {expirationMinutes} минут</p>
-        <div class='warning'>⚠️ Если вы не запрашивали сброс пароля, проигнорируйте это письмо. Ваш пароль останется без изменений.</div>
-        <div class='footer'><p>© {DateTime.UtcNow.Year} Deviny. Все права защищены.</p></div>
+        <p class='expiry'>{expiry}</p>
+        <div class='warning'>{warning}</div>
+        <div class='footer'><p>{footer}</p></div>
     </div>
 </body>
 </html>";
@@ -165,5 +239,15 @@ public class EmailService : IEmailService
             _logger.LogError(ex, "Network error sending email via Brevo to {Email}", to);
             throw;
         }
+    }
+
+    private static string NormalizeLanguage(string? language)
+    {
+        if (string.IsNullOrWhiteSpace(language)) return "ru";
+
+        var normalized = language.Trim().ToLowerInvariant();
+        if (normalized.StartsWith("en")) return "en";
+        if (normalized.StartsWith("az")) return "az";
+        return "ru";
     }
 }

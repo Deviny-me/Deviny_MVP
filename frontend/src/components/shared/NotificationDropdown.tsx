@@ -1,13 +1,16 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck, UserPlus, UserCheck, Users, Phone } from 'lucide-react'
+import { Bell, CheckCheck, ExternalLink } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useUnreadNotifications } from '@/contexts/UnreadNotificationsContext'
+import { useUnreadNotifications } from '@/contexts/UnreadNotificationsConteQxt'
 import { notificationsApi } from '@/lib/api/notificationsApi'
-import { Notification } from '@/types/notification'
+import { Notification, NotificationRealtimePayload } from '@/types/notification'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { chatConnection } from '@/lib/signalr/chatConnection'
+import { filterArchivedNotifications, isNotificationArchived } from '@/lib/notifications/localArchive'
+import { getNotificationIcon, timeAgo } from '@/lib/notifications/presentation'
 
 function getNotificationIcon(type: string) {
   switch (type) {
@@ -50,12 +53,19 @@ export function NotificationDropdown() {
   const accent = useAccentColors()
   const { unreadCount, refreshCount } = useUnreadNotifications()
   const t = useTranslations('notifications')
+  const router = useRouter()
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasLoaded, setHasLoaded] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const basePath = pathname?.startsWith('/trainer')
+    ? '/trainer'
+    : pathname?.startsWith('/nutritionist')
+    ? '/nutritionist'
+    : '/user'
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -75,9 +85,9 @@ export function NotificationDropdown() {
     try {
       const response = await notificationsApi.getNotifications(cursor, 20)
       if (cursor) {
-        setNotifications(prev => [...prev, ...response.items])
+        setNotifications(prev => filterArchivedNotifications([...prev, ...response.items]))
       } else {
-        setNotifications(response.items)
+        setNotifications(filterArchivedNotifications(response.items))
       }
       setNextCursor(response.nextCursor)
       setHasLoaded(true)
@@ -102,7 +112,7 @@ export function NotificationDropdown() {
 
   // Real-time notification listener
   useEffect(() => {
-    const handleNewNotification = (data: { id: string; type: string; category?: string; title: string; message: string; relatedEntityType: string | null; relatedEntityId: string | null; isRead: boolean; createdAt: string }) => {
+    const handleNewNotification = (data: NotificationRealtimePayload) => {
       console.log('[Notifications] Real-time notification received:', data)
 
       // Play notification sound
@@ -112,20 +122,24 @@ export function NotificationDropdown() {
         audio.play().catch(() => {})
       } catch {}
 
+      const notification = {
+        id: data.id,
+        type: data.type,
+        category: data.category ?? null,
+        title: data.title,
+        message: data.message,
+        relatedEntityType: data.relatedEntityType,
+        relatedEntityId: data.relatedEntityId,
+        isRead: data.isRead,
+        createdAt: data.createdAt,
+        readAt: null
+      }
+
+      if (isNotificationArchived(notification)) return
+
       // Prepend to notifications list if already loaded
       if (hasLoaded) {
-        setNotifications(prev => [{
-          id: data.id,
-          type: data.type,
-          category: data.category ?? 'System',
-          title: data.title,
-          message: data.message,
-          relatedEntityType: data.relatedEntityType,
-          relatedEntityId: data.relatedEntityId,
-          isRead: data.isRead,
-          createdAt: data.createdAt,
-          readAt: null
-        }, ...prev])
+        setNotifications(prev => [notification, ...prev])
       }
     }
 
@@ -146,6 +160,11 @@ export function NotificationDropdown() {
     } catch (error) {
       console.error('[Notifications] Failed to mark as read:', error)
     }
+  }
+
+  const handleViewAll = () => {
+    setIsOpen(false)
+    router.push(`${basePath}/notifications`)
   }
 
   const handleMarkAllAsRead = async () => {
@@ -188,15 +207,24 @@ export function NotificationDropdown() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
             <h3 className="text-sm font-semibold text-foreground">{t('title')}</h3>
-            {unreadCount > 0 && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleMarkAllAsRead}
+                onClick={handleViewAll}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <CheckCheck className="w-3.5 h-3.5" />
-                {t('markAllRead')}
+                <ExternalLink className="w-3.5 h-3.5" />
+                {t('viewAll')}
               </button>
-            )}
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  {t('markAllRead')}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Notifications List */}
