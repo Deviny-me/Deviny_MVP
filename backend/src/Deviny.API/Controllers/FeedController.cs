@@ -32,7 +32,9 @@ public class FeedController : BaseApiController
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        pageSize = Math.Min(pageSize, 100);
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100;
         var userId = TryGetCurrentUserId();
 
         var query = new GetFeedQuery

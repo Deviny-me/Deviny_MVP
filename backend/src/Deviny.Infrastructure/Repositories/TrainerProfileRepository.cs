@@ -41,9 +41,10 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             .ToListAsync();
     }
 
-    public async Task<(List<TrainerProfile> Items, int TotalCount)> GetAllWithDetailsPagedAsync(int page, int pageSize)
+    public async Task<(List<TrainerProfile> Items, int TotalCount)> GetAllWithDetailsPagedAsync(int page, int pageSize, double? minRating = null)
     {
         var query = _context.TrainerProfiles.AsNoTracking();
+        query = ApplyMinimumRatingFilter(query, minRating);
 
         var totalCount = await query.CountAsync();
 
@@ -52,6 +53,7 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             .Include(tp => tp.Specializations)
                 .ThenInclude(ts => ts.Specialization)
             .OrderByDescending(tp => tp.CreatedAt)
+            .ThenByDescending(tp => tp.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -62,7 +64,7 @@ public class TrainerProfileRepository : ITrainerProfileRepository
     public async Task<(List<TrainerProfile> Items, int TotalCount)> GetAllFilteredPagedAsync(
         int page, int pageSize,
         string? country = null, string? city = null,
-        string? gender = null, string? specialization = null)
+        string? gender = null, string? specialization = null, double? minRating = null)
     {
         var query = _context.TrainerProfiles
             .AsNoTracking()
@@ -86,10 +88,13 @@ public class TrainerProfileRepository : ITrainerProfileRepository
             query = query.Where(tp => tp.Specializations.Any(s =>
                 s.Specialization != null && EF.Functions.ILike(s.Specialization.Name, $"%{specialization}%")));
 
+        query = ApplyMinimumRatingFilter(query, minRating);
+
         var totalCount = await query.CountAsync();
 
         var items = await query
             .OrderByDescending(tp => tp.CreatedAt)
+            .ThenByDescending(tp => tp.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -120,7 +125,48 @@ public class TrainerProfileRepository : ITrainerProfileRepository
         {
             query = query.Where(tp => tp.UserId != excludeUserId.Value);
         }
-        
+
         return !await query.AnyAsync();
+    }
+
+    private IQueryable<TrainerProfile> ApplyMinimumRatingFilter(
+        IQueryable<TrainerProfile> query,
+        double? minRating)
+    {
+        if (!minRating.HasValue || minRating.Value <= 0)
+            return query;
+
+        return query.Where(tp =>
+            ((
+                ((
+                    _context.TrainingPrograms
+                        .Where(p => p.TrainerId == tp.UserId && !p.IsDeleted)
+                        .SelectMany(p => p.Reviews)
+                        .Any()
+                        ? _context.TrainingPrograms
+                            .Where(p => p.TrainerId == tp.UserId && !p.IsDeleted)
+                            .SelectMany(p => p.Reviews)
+                            .Average(r => (double)r.Rating) / 5.0
+                        : 0.0
+                ) * 0.7) +
+                ((
+                    _context.TrainingPrograms
+                        .Where(p => p.TrainerId == tp.UserId && !p.IsDeleted)
+                        .SelectMany(p => p.Purchases)
+                        .Count(pu => pu.Status == ProgramPurchaseStatus.Active || pu.Status == ProgramPurchaseStatus.Completed) > 0
+                        ? (
+                            _context.TrainingPrograms
+                                .Where(p => p.TrainerId == tp.UserId && !p.IsDeleted)
+                                .SelectMany(p => p.Purchases)
+                                .Count(pu => pu.Status == ProgramPurchaseStatus.Active || pu.Status == ProgramPurchaseStatus.Completed) >= 20
+                                ? 1.0
+                                : _context.TrainingPrograms
+                                    .Where(p => p.TrainerId == tp.UserId && !p.IsDeleted)
+                                    .SelectMany(p => p.Purchases)
+                                    .Count(pu => pu.Status == ProgramPurchaseStatus.Active || pu.Status == ProgramPurchaseStatus.Completed) / 20.0
+                        )
+                        : 0.0
+                ) * 0.3)
+            ) * 5.0) >= minRating.Value);
     }
 }

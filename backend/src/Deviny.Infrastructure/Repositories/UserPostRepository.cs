@@ -99,6 +99,7 @@ public class UserPostRepository : IUserPostRepository
         return await BasePagedQuery()
             .Where(p => p.UserId == userId && !p.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -116,6 +117,7 @@ public class UserPostRepository : IUserPostRepository
         query = ApplyTabFilter(query, tab);
         return await query
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -145,6 +147,7 @@ public class UserPostRepository : IUserPostRepository
         return await BasePagedQuery()
             .Where(p => p.UserId == userId && !p.IsDeleted && p.Visibility == PostVisibility.Public)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -162,6 +165,7 @@ public class UserPostRepository : IUserPostRepository
         query = ApplyTabFilter(query, tab);
         return await query
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
@@ -227,6 +231,7 @@ public class UserPostRepository : IUserPostRepository
         return await BasePagedQuery()
             .Where(p => !p.IsDeleted && p.Visibility == PostVisibility.Public)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

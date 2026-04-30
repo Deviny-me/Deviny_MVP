@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search,
@@ -27,6 +27,7 @@ import { getMediaUrl } from '@/lib/config'
 import { useAccentColors, getRoleRingClass, getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useAuth } from '@/features/auth/AuthContext'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
+import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 
 interface ExpertsContentProps {
   basePath: string
@@ -50,16 +51,16 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
   const [loadingMore, setLoadingMore] = useState(false)
   const [filters, setFilters] = useState<ExpertsFilterParams>({})
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const loadingMoreRef = useRef(false)
   const activeFilterCount = [filters.country, filters.city, filters.gender, filters.specialization, filters.minRating && filters.minRating > 0 ? 'r' : ''].filter(Boolean).length
   const PAGE_SIZE = 20
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = useCallback(async (showSpinner = true) => {
       try {
-        setLoading(true)
+        if (showSpinner) setLoading(true)
         setError(null)
         const [data, followingData] = await Promise.all([
-          trainersApi.getAll(1, PAGE_SIZE),
+          trainersApi.getAll(1, PAGE_SIZE, filters),
           followsApi.getMyFollowing(1, 100).catch(() => ({ items: [] as FriendDto[], totalCount: 0, page: 1, pageSize: 100 })),
         ])
         setTrainers(data.items)
@@ -70,45 +71,44 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
         console.error('Failed to fetch trainers:', err)
         setError(t('failedToLoad'))
       } finally {
-        setLoading(false)
+        if (showSpinner) setLoading(false)
       }
-    }
+    }, [filters, t])
 
-    fetchData()
-  }, [filters])
+  useEffect(() => {
+    fetchData(true)
+  }, [fetchData])
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMoreRef.current || !hasMore) return
+
     try {
+      loadingMoreRef.current = true
       setLoadingMore(true)
       const nextPage = page + 1
       const data = await trainersApi.getAll(nextPage, PAGE_SIZE, filters)
-      setTrainers(prev => [...prev, ...data.items])
-      setPage(nextPage)
-      setHasMore(trainers.length + data.items.length < data.totalCount)
+      setTrainers(prev => {
+        const existingIds = new Set(prev.map((trainer) => trainer.id))
+        const nextItems = data.items.filter((trainer) => !existingIds.has(trainer.id))
+        return [...prev, ...nextItems]
+      })
+      setPage(data.page)
+      setHasMore(data.page * data.pageSize < data.totalCount)
     } catch (err) {
       console.error('Failed to load more:', err)
     } finally {
       setLoadingMore(false)
+      loadingMoreRef.current = false
     }
-  }
+  }, [filters, hasMore, loading, page])
+
+  const infiniteScrollRef = useInfiniteScroll({
+    enabled: !loading && !error && hasMore,
+    onLoadMore: loadMore,
+  })
 
   useRealtimeScopeRefresh(['follows'], () => {
-    const fetchData = async () => {
-      try {
-        const [data, followingData] = await Promise.all([
-          trainersApi.getAll(1, PAGE_SIZE, filters),
-          followsApi.getMyFollowing(1, 100).catch(() => ({ items: [] as FriendDto[], totalCount: 0, page: 1, pageSize: 100 })),
-        ])
-        setTrainers(data.items)
-        setPage(1)
-        setHasMore(data.items.length < data.totalCount)
-        setFollowedIds(new Set(followingData.items.map((f) => f.id)))
-      } catch (err) {
-        console.error('Failed to refresh experts:', err)
-      }
-    }
-
-    fetchData()
+    fetchData(false)
   })
 
   // Re-sort trainers when currentUser becomes available (push own card first)
@@ -147,7 +147,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
     router.push(`${basePath}/messages?${params.toString()}`)
   }
 
-  const filteredTrainers = trainers.filter((trainer) => {
+  const filteredTrainers = useMemo(() => trainers.filter((trainer) => {
     const matchesSearch =
       trainer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       trainer.primaryTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -155,7 +155,7 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
     const normalizedRole = String(trainer.role ?? '').trim().toLowerCase()
     const matchesRole = roleFilter === 'all' || normalizedRole === roleFilter.toLowerCase()
     return matchesSearch && matchesRole
-  })
+  }), [roleFilter, searchQuery, trainers])
 
   if (loading) {
     return (
@@ -353,17 +353,16 @@ export function ExpertsContent({ basePath }: ExpertsContentProps) {
         </>
       )}
 
-      {/* Load More */}
-      {!loading && !error && hasMore && (
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="px-6 py-2.5 bg-surface-2 border border-border-subtle rounded-lg text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
-            {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loadingMore ? t('loading') : t('loadMore')}
-          </button>
+      {!loading && !error && (
+        <div ref={infiniteScrollRef} className="flex min-h-12 justify-center pt-4">
+          {loadingMore ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              {t('loading')}
+            </div>
+          ) : !hasMore && trainers.length > 0 ? (
+            <p className="text-sm text-faint-foreground">{tc('allItemsLoaded')}</p>
+          ) : null}
         </div>
       )}
     </div>

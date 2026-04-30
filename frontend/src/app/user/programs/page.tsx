@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { 
   Search,
   Star,
@@ -23,6 +23,7 @@ import { getAccentColorsByRole } from '@/lib/theme/useAccentColors'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
 import { ProgramsFilterModal } from '@/components/shared/ProgramsFilterModal'
 import type { ProgramsFilterParams } from '@/lib/api/programsApi'
+import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 
 type SortOption = 'newest' | 'popular' | 'rating' | 'price-low' | 'price-high'
 type FilterType = 'all' | 'Training' | 'Diet' | 'Consultation'
@@ -136,11 +137,14 @@ export default function ProgramsPage() {
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [trainingPage, setTrainingPage] = useState(1)
   const [mealPage, setMealPage] = useState(1)
+  const [trainingTotalCount, setTrainingTotalCount] = useState(0)
+  const [mealTotalCount, setMealTotalCount] = useState(0)
   const [hasMoreTraining, setHasMoreTraining] = useState(false)
   const [hasMoreMeal, setHasMoreMeal] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [filters, setFilters] = useState<ProgramsFilterParams>({})
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const loadingMoreRef = useRef(false)
   const activeFilterCount = [
     filters.minPrice != null ? 'p' : '',
     filters.maxPrice != null ? 'p' : '',
@@ -161,6 +165,8 @@ export default function ProgramsPage() {
       setMealPrograms(mealRes.items)
       setTrainingPage(1)
       setMealPage(1)
+      setTrainingTotalCount(trainingRes.totalCount)
+      setMealTotalCount(mealRes.totalCount)
       setHasMoreTraining(trainingRes.items.length < trainingRes.totalCount)
       setHasMoreMeal(mealRes.items.length < mealRes.totalCount)
     } catch (err) {
@@ -195,8 +201,11 @@ export default function ProgramsPage() {
     router.replace(`/user/programs/${programId}`)
   }, [searchParams, router])
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
+    if (isLoading || loadingMoreRef.current || (!hasMoreTraining && !hasMoreMeal)) return
+
     try {
+      loadingMoreRef.current = true
       setLoadingMore(true)
       const nextTrainingPage = hasMoreTraining ? trainingPage + 1 : trainingPage
       const nextMealPage = hasMoreMeal ? mealPage + 1 : mealPage
@@ -207,29 +216,45 @@ export default function ProgramsPage() {
       ])
 
       if (trainingRes) {
-        setTrainingPrograms(prev => [...prev, ...trainingRes.items])
-        setTrainingPage(nextTrainingPage)
-        setHasMoreTraining(trainingPrograms.length + trainingRes.items.length < trainingRes.totalCount)
+        setTrainingPrograms(prev => {
+          const existingIds = new Set(prev.map((program) => program.id))
+          const nextItems = trainingRes.items.filter((program) => !existingIds.has(program.id))
+          return [...prev, ...nextItems]
+        })
+        setTrainingPage(trainingRes.page)
+        setTrainingTotalCount(trainingRes.totalCount)
+        setHasMoreTraining(trainingRes.page * trainingRes.pageSize < trainingRes.totalCount)
       }
       if (mealRes) {
-        setMealPrograms(prev => [...prev, ...mealRes.items])
-        setMealPage(nextMealPage)
-        setHasMoreMeal(mealPrograms.length + mealRes.items.length < mealRes.totalCount)
+        setMealPrograms(prev => {
+          const existingIds = new Set(prev.map((program) => program.id))
+          const nextItems = mealRes.items.filter((program) => !existingIds.has(program.id))
+          return [...prev, ...nextItems]
+        })
+        setMealPage(mealRes.page)
+        setMealTotalCount(mealRes.totalCount)
+        setHasMoreMeal(mealRes.page * mealRes.pageSize < mealRes.totalCount)
       }
     } catch (err) {
       console.error('Failed to load more programs:', err)
     } finally {
       setLoadingMore(false)
+      loadingMoreRef.current = false
     }
-  }
+  }, [filters, hasMoreMeal, hasMoreTraining, isLoading, mealPage, trainingPage])
+
+  const infiniteScrollRef = useInfiniteScroll({
+    enabled: !isLoading && !error && (hasMoreTraining || hasMoreMeal),
+    onLoadMore: loadMore,
+  })
 
   // Build filtered + sorted list
-  const allPrograms = [
+  const allPrograms = useMemo(() => [
     ...trainingPrograms.map(fromTraining),
     ...mealPrograms.map(fromMeal),
-  ]
+  ], [mealPrograms, trainingPrograms])
 
-  const getFilteredPrograms = (): UnifiedPublicProgram[] => {
+  const filteredPrograms = useMemo((): UnifiedPublicProgram[] => {
     let result: UnifiedPublicProgram[] = filterType === 'all'
       ? allPrograms
       : allPrograms.filter(p => p.category === filterType)
@@ -264,10 +289,10 @@ export default function ProgramsPage() {
     }
 
     return result
-  }
+  }, [allPrograms, filterType, searchQuery, sortBy])
 
-  const filteredPrograms = getFilteredPrograms()
-  const totalCount = trainingPrograms.length + mealPrograms.length
+  const loadedCount = trainingPrograms.length + mealPrograms.length
+  const totalCount = trainingTotalCount + mealTotalCount
 
   const formatPrice = (price: number) => {
     if (price === 0) return tc('free')
@@ -512,17 +537,16 @@ export default function ProgramsPage() {
           </div>
         )}
 
-        {/* Load More */}
-        {!isLoading && !error && (hasMoreTraining || hasMoreMeal) && (
-          <div className="flex justify-center pt-2">
-            <button
-              onClick={loadMore}
-              disabled={loadingMore}
-              className="px-6 py-2.5 bg-surface-3 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}
-              {loadingMore ? tc('loading') : tc('loadMore')}
-            </button>
+        {!isLoading && !error && (
+          <div ref={infiniteScrollRef} className="flex min-h-12 justify-center pt-2">
+            {loadingMore ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {tc('loading')}
+              </div>
+            ) : !(hasMoreTraining || hasMoreMeal) && loadedCount > 0 ? (
+              <p className="text-sm text-faint-foreground">{tc('allItemsLoaded')}</p>
+            ) : null}
           </div>
         )}
 

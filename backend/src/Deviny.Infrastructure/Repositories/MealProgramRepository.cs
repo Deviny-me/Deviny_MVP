@@ -38,6 +38,7 @@ public class MealProgramRepository : IMealProgramRepository
                 .ThenInclude(u => u.TrainerProfile)
             .Where(p => !p.IsDeleted && p.IsPublic)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .ToListAsync(ct);
     }
 
@@ -74,6 +75,7 @@ public class MealProgramRepository : IMealProgramRepository
                 .ThenInclude(r => r.User)
             .Include(p => p.Purchases)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
