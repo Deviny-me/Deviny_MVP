@@ -65,6 +65,17 @@ export function PostCard({
   const pathname = usePathname()
   const [commentsOpen, setCommentsOpen] = useState(false)
 
+  // Lock body scroll when comments modal is open
+  // Must be called before any early return to satisfy Rules of Hooks
+  useEffect(() => {
+    if (commentsOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [commentsOpen])
+
   if (!post) return null
 
   const authorName = post.author?.fullName || `${post.author?.firstName ?? ''} ${post.author?.lastName ?? ''}`.trim() || 'User'
@@ -137,16 +148,6 @@ export function PostCard({
   const portraitCardStyle = isHomePortrait
     ? { width: 'min(100%, calc(min(72vh, 54rem) * 3 / 4))' }
     : undefined
-
-  // Lock body scroll when comments modal is open
-  useEffect(() => {
-    if (commentsOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [commentsOpen])
 
   const closeComments = () => setCommentsOpen(false)
 
