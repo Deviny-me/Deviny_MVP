@@ -69,3 +69,4 @@ coverage/
 # Cache
 .cache/
 *.cache.dotnet_home/
+.dotnet_home/
