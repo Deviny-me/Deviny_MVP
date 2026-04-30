@@ -47,7 +47,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
 
         if (request.CoverImage != null)
         {
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".heic", ".heif", ".avif", ".jfif" };
             var extension = Path.GetExtension(request.CoverImage.FileName).ToLowerInvariant();
 
             if (!imageExtensions.Contains(extension))
@@ -80,7 +80,7 @@ public class UpdateMealProgramCommandHandler : IRequestHandler<UpdateMealProgram
         // Process videos
         if (request.Videos != null && request.Videos.Any())
         {
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
+            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm", ".m4v", ".mkv", ".mpeg", ".mpg", ".3gp", ".wmv" };
 
             // Validate ALL new videos FIRST (before deleting old ones)
             foreach (var video in request.Videos)

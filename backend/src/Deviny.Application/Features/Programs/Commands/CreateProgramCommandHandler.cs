@@ -44,7 +44,7 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
             throw new ArgumentException("Необходимо загрузить обложку");
         }
 
-        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+        var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".heic", ".heif", ".avif", ".jfif" };
         var coverExtension = Path.GetExtension(request.CoverImage.FileName).ToLowerInvariant();
         
         if (!imageExtensions.Contains(coverExtension))
@@ -75,7 +75,7 @@ public class CreateProgramCommandHandler : IRequestHandler<CreateProgramCommand,
         var descriptions = request.TrainingVideoDescriptions ?? new List<string>();
         if (request.TrainingVideos != null && request.TrainingVideos.Any())
         {
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
+            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm", ".m4v", ".mkv", ".mpeg", ".mpg", ".3gp", ".wmv" };
 
             for (var i = 0; i < request.TrainingVideos.Count; i++)
             {

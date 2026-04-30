@@ -47,7 +47,7 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
         // Update cover image if provided
         if (request.CoverImage != null)
         {
-            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff", ".tif", ".heic", ".heif", ".avif", ".jfif" };
             var extension = Path.GetExtension(request.CoverImage.FileName).ToLowerInvariant();
             
             if (!imageExtensions.Contains(extension))
@@ -100,7 +100,7 @@ public class UpdateProgramCommandHandler : IRequestHandler<UpdateProgramCommand,
             var videos = new List<ProgramVideoDto>();
             var titles = request.TrainingVideoTitles ?? new List<string>();
             var descriptions = request.TrainingVideoDescriptions ?? new List<string>();
-            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm" };
+            var videoExtensions = new[] { ".mp4", ".mov", ".avi", ".webm", ".m4v", ".mkv", ".mpeg", ".mpg", ".3gp", ".wmv" };
             
             for (var i = 0; i < request.TrainingVideos.Count; i++)
             {
