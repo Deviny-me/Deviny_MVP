@@ -2,6 +2,8 @@ using Deviny.Application.Features.Messages;
 using Deviny.Application.Features.Messages.Commands;
 using Deviny.Application.Features.Messages.Queries;
 using Deviny.API.Services;
+using Deviny.Application.Common.Interfaces;
+using Deviny.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -20,12 +22,18 @@ public class ChatHub : Hub
 {
     private readonly IMediator _mediator;
     private readonly IPresenceService _presenceService;
+    private readonly INotificationService _notificationService;
     private readonly ILogger<ChatHub> _logger;
 
-    public ChatHub(IMediator mediator, IPresenceService presenceService, ILogger<ChatHub> logger)
+    public ChatHub(
+        IMediator mediator,
+        IPresenceService presenceService,
+        INotificationService notificationService,
+        ILogger<ChatHub> logger)
     {
         _mediator = mediator;
         _presenceService = presenceService;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -334,6 +342,31 @@ public class ChatHub : Hub
             return;
         }
 
+        if (!Guid.TryParse(senderId, out var senderGuid) ||
+            !Guid.TryParse(conversationId, out var conversationGuid) ||
+            !Guid.TryParse(targetUserId, out var targetGuid) ||
+            senderGuid == targetGuid)
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call participants");
+            return;
+        }
+
+        var normalizedCallType = (callType ?? string.Empty).Trim().ToLowerInvariant();
+        if (normalizedCallType is not ("audio" or "video"))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call type");
+            _logger.LogWarning("Rejected call offer with invalid type {CallType} in conversation {ConversationId}", callType, conversationId);
+            return;
+        }
+
+        var offer = DeserializeJsonOrNull(offerJson);
+        if (!IsRtcSessionDescription(offer))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call offer");
+            _logger.LogWarning("Rejected malformed call offer from {SenderId} to {TargetUserId} in conversation {ConversationId}", senderId, targetUserId, conversationId);
+            return;
+        }
+
         if (!await AreUsersInConversation(conversationId, senderId, targetUserId))
         {
             await Clients.Caller.SendAsync("Error", "Invalid call participants");
@@ -341,6 +374,25 @@ public class ChatHub : Hub
         }
 
         var senderName = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+        await CreateIncomingCallNotificationAsync(targetGuid, senderName, normalizedCallType, conversationGuid);
+
+        var targetPresence = await _presenceService.GetUserPresenceAsync(targetGuid);
+        if (!targetPresence.IsOnline)
+        {
+            await Clients.Caller.SendAsync("CallUnavailable", new
+            {
+                conversationId,
+                targetUserId,
+                reason = "offline"
+            });
+            _logger.LogInformation(
+                "Call offer from {SenderId} to offline user {TargetUserId} in conversation {ConversationId} was not relayed",
+                senderId,
+                targetUserId,
+                conversationId);
+            return;
+        }
+
         var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
 
         await Clients.Group(targetGroup).SendAsync("CallOffer", new
@@ -348,9 +400,16 @@ public class ChatHub : Hub
             conversationId,
             fromUserId = senderId,
             fromUserName = senderName,
-            callType,
-            offer = DeserializeJsonOrNull(offerJson)
+            callType = normalizedCallType,
+            offer = offer!.Value
         });
+
+        _logger.LogInformation(
+            "Relayed {CallType} call offer from {SenderId} to {TargetUserId} in conversation {ConversationId}",
+            normalizedCallType,
+            senderId,
+            targetUserId,
+            conversationId);
     }
 
     /// <summary>Relays WebRTC answer to the target participant.</summary>
@@ -369,13 +428,23 @@ public class ChatHub : Hub
             return;
         }
 
+        var answer = DeserializeJsonOrNull(answerJson);
+        if (!IsRtcSessionDescription(answer))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid call answer");
+            _logger.LogWarning("Rejected malformed call answer from {SenderId} to {TargetUserId} in conversation {ConversationId}", senderId, targetUserId, conversationId);
+            return;
+        }
+
         var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
         await Clients.Group(targetGroup).SendAsync("CallAnswer", new
         {
             conversationId,
             fromUserId = senderId,
-            answer = DeserializeJsonOrNull(answerJson)
+            answer = answer!.Value
         });
+
+        _logger.LogInformation("Relayed call answer from {SenderId} to {TargetUserId} in conversation {ConversationId}", senderId, targetUserId, conversationId);
     }
 
     /// <summary>Relays ICE candidates between peers.</summary>
@@ -394,12 +463,20 @@ public class ChatHub : Hub
             return;
         }
 
+        var candidate = DeserializeJsonOrNull(candidateJson);
+        if (!IsRtcIceCandidate(candidate))
+        {
+            await Clients.Caller.SendAsync("Error", "Invalid ICE candidate");
+            _logger.LogWarning("Rejected malformed ICE candidate from {SenderId} to {TargetUserId} in conversation {ConversationId}", senderId, targetUserId, conversationId);
+            return;
+        }
+
         var targetGroup = $"user:{targetUserId.ToLowerInvariant()}";
         await Clients.Group(targetGroup).SendAsync("CallIceCandidate", new
         {
             conversationId,
             fromUserId = senderId,
-            candidate = DeserializeJsonOrNull(candidateJson)
+            candidate = candidate!.Value
         });
     }
 
@@ -433,6 +510,13 @@ public class ChatHub : Hub
             fromUserId = senderId,
             reason
         });
+
+        _logger.LogInformation(
+            "Call ended in conversation {ConversationId} by {SenderId} for {TargetUserId} with reason {Reason}",
+            conversationId,
+            senderId,
+            targetUserId,
+            reason);
     }
 
     // ──────────── helpers ────────────
@@ -449,6 +533,55 @@ public class ChatHub : Hub
         catch
         {
             return null;
+        }
+    }
+
+    private static bool IsRtcSessionDescription(JsonElement? value)
+    {
+        if (value is null || value.Value.ValueKind != JsonValueKind.Object) return false;
+
+        var element = value.Value;
+        return element.TryGetProperty("type", out var type) &&
+               type.ValueKind == JsonValueKind.String &&
+               element.TryGetProperty("sdp", out var sdp) &&
+               sdp.ValueKind == JsonValueKind.String &&
+               !string.IsNullOrWhiteSpace(type.GetString()) &&
+               !string.IsNullOrWhiteSpace(sdp.GetString());
+    }
+
+    private static bool IsRtcIceCandidate(JsonElement? value)
+    {
+        if (value is null || value.Value.ValueKind != JsonValueKind.Object) return false;
+
+        var element = value.Value;
+        return element.TryGetProperty("candidate", out var candidate) &&
+               candidate.ValueKind == JsonValueKind.String &&
+               !string.IsNullOrWhiteSpace(candidate.GetString());
+    }
+
+    private async Task CreateIncomingCallNotificationAsync(
+        Guid targetUserId,
+        string senderName,
+        string callType,
+        Guid conversationId)
+    {
+        try
+        {
+            await _notificationService.CreateAsync(
+                targetUserId,
+                NotificationType.IncomingCall,
+                "Incoming call",
+                $"{senderName} started a {callType} call.",
+                "Conversation",
+                conversationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Failed to create incoming call notification for user {TargetUserId} in conversation {ConversationId}",
+                targetUserId,
+                conversationId);
         }
     }
 

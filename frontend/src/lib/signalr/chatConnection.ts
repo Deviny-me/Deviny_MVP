@@ -178,6 +178,7 @@ export class ChatConnection {
   onCallAnswer(cb: (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => void) { this._on('CallAnswer', cb) }
   onCallIceCandidate(cb: (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => void) { this._on('CallIceCandidate', cb) }
   onCallEnded(cb: (data: { conversationId: string; fromUserId: string; reason: string }) => void) { this._on('CallEnded', cb) }
+  onCallUnavailable(cb: (data: { conversationId: string; targetUserId: string; reason: string }) => void) { this._on('CallUnavailable', cb) }
   onEntityChanged(cb: (data: EntityChangedEvent) => void) { this._on('EntityChanged', cb) }
   onPresenceUpdated(cb: (data: { userId: string; isOnline: boolean; lastSeenAtUtc: string | null }) => void) { this._on('PresenceUpdated', cb) }
 

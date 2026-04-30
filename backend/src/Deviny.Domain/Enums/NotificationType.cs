@@ -10,5 +10,6 @@ public enum NotificationType
     System,
     FriendRequestReceived,
     FriendRequestAccepted,
-    NewFollower
+    NewFollower,
+    IncomingCall
 }

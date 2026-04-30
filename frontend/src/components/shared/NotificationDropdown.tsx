@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck, UserPlus, UserCheck, Users } from 'lucide-react'
+import { Bell, Trophy, Dumbbell, UtensilsCrossed, Check, CheckCheck, UserPlus, UserCheck, Users, Phone } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useUnreadNotifications } from '@/contexts/UnreadNotificationsContext'
 import { notificationsApi } from '@/lib/api/notificationsApi'
@@ -23,6 +23,8 @@ function getNotificationIcon(type: string) {
       return <UserCheck className="w-4 h-4 text-green-400" />
     case 'NewFollower':
       return <Users className="w-4 h-4 text-blue-400" />
+    case 'IncomingCall':
+      return <Phone className="w-4 h-4 text-emerald-400" />
     default:
       return <Bell className="w-4 h-4 text-muted-foreground" />
   }
