@@ -7,7 +7,7 @@ import {
   Loader2,
   Upload,
 } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useUser } from '@/components/user/UserProvider'
 import { postsApi } from '@/lib/api/postsApi'
 import { PostType } from '@/types/post'
@@ -17,6 +17,7 @@ import { PostCard } from '@/components/posts/PostCard'
 import { useUpsertPosts, usePostDispatch } from '@/contexts/PostStoreContext'
 import { useTranslations } from 'next-intl'
 import { useRealtimeScopeRefresh } from '@/lib/signalr/useRealtimeScopeRefresh'
+import { useInfiniteScroll } from '@/lib/hooks/useInfiniteScroll'
 
 export function UserHomeFeed() {
   const { user } = useUser()
@@ -24,6 +25,7 @@ export function UserHomeFeed() {
   const dispatch = usePostDispatch()
   const tf = useTranslations('feed')
   const tPosts = useTranslations('posts')
+  const tc = useTranslations('common')
   
   // File input refs
   const photoInputRef = useRef<HTMLInputElement>(null)
@@ -35,30 +37,59 @@ export function UserHomeFeed() {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [feedPostIds, setFeedPostIds] = useState<string[]>([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; caption?: string } | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
+  const loadingMoreRef = useRef(false)
+  const PAGE_SIZE = 20
 
-  // Load feed on mount
-  useEffect(() => {
-    loadFeed(true)
-  }, [])
-
-  const loadFeed = async (isInitial = false) => {
+  const loadFeed = useCallback(async (pageNum = 1, isInitial = false, append = false) => {
     try {
       if (isInitial) setFeedLoading(true)
-      const response = await postsApi.getFeed(1, 20)
+      const response = await postsApi.getFeed(pageNum, PAGE_SIZE)
       const ids = upsertPosts(response.posts)
-      setFeedPostIds(ids)
+      setFeedPostIds(prev => {
+        if (!append) return ids
+        const existingIds = new Set(prev)
+        return [...prev, ...ids.filter((id) => !existingIds.has(id))]
+      })
+      setPage(response.page)
+      setHasMore(response.hasMore)
     } catch (error) {
       console.error('Failed to load feed:', error)
     } finally {
       if (isInitial) setFeedLoading(false)
     }
-  }
+  }, [upsertPosts])
+
+  // Load feed on mount
+  useEffect(() => {
+    loadFeed(1, true)
+  }, [loadFeed])
+
+  const loadMore = useCallback(async () => {
+    if (feedLoading || loadingMoreRef.current || !hasMore) return
+
+    try {
+      loadingMoreRef.current = true
+      setLoadingMore(true)
+      await loadFeed(page + 1, false, true)
+    } finally {
+      setLoadingMore(false)
+      loadingMoreRef.current = false
+    }
+  }, [feedLoading, hasMore, loadFeed, page])
+
+  const infiniteScrollRef = useInfiniteScroll({
+    enabled: !feedLoading && hasMore,
+    onLoadMore: loadMore,
+  })
 
   useRealtimeScopeRefresh(['posts'], () => {
-    loadFeed()
+    loadFeed(1)
   })
 
   const handleDeletePost = async (postId: string) => {
@@ -194,13 +225,23 @@ export function UserHomeFeed() {
                   showDeleteInHeader
                   onDelete={handleDeletePost}
                   deletingPostId={deletingPostId}
-                  onRepostSuccess={() => loadFeed()}
+                  onRepostSuccess={() => loadFeed(1)}
                   playingVideoId={playingVideoId}
                   onVideoToggle={setPlayingVideoId}
                   onPhotoClick={(url, caption) => setViewingPhoto({ url, caption })}
                 />
               </div>
             ))}
+            <div ref={infiniteScrollRef} className="flex min-h-12 justify-center pt-2">
+              {loadingMore ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#0c8de6]" />
+                  {tc('loading')}
+                </div>
+              ) : !hasMore ? (
+                <p className="text-sm text-faint-foreground">{tc('allItemsLoaded')}</p>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="bg-surface-2 rounded-2xl border border-border-subtle p-8 sm:p-16 text-center">

@@ -80,6 +80,7 @@ public class ProgramRepository : IProgramRepository
             .AsNoTracking()
             .Where(p => !p.IsDeleted && p.IsPublic)
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Select(p => new ProgramWithStatsDto
             {
                 Program = p,
@@ -148,6 +149,7 @@ public class ProgramRepository : IProgramRepository
 
         var items = await query
             .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(p => new ProgramWithStatsDto

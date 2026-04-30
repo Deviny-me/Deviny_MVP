@@ -4,13 +4,50 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { Bell, CheckCheck, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useUnreadNotifications } from '@/contexts/UnreadNotificationsContext'
+import { useUnreadNotifications } from '@/contexts/UnreadNotificationsConteQxt'
 import { notificationsApi } from '@/lib/api/notificationsApi'
 import { Notification, NotificationRealtimePayload } from '@/types/notification'
 import { useAccentColors } from '@/lib/theme/useAccentColors'
 import { chatConnection } from '@/lib/signalr/chatConnection'
 import { filterArchivedNotifications, isNotificationArchived } from '@/lib/notifications/localArchive'
 import { getNotificationIcon, timeAgo } from '@/lib/notifications/presentation'
+
+function getNotificationIcon(type: string) {
+  switch (type) {
+    case 'AchievementUnlocked':
+      return <Trophy className="w-4 h-4 text-yellow-400" />
+    case 'TrainingProgramCreated':
+      return <Dumbbell className="w-4 h-4 text-blue-400" />
+    case 'MealProgramCreated':
+      return <UtensilsCrossed className="w-4 h-4 text-green-400" />
+    case 'FriendRequestReceived':
+      return <UserPlus className="w-4 h-4 text-purple-400" />
+    case 'FriendRequestAccepted':
+      return <UserCheck className="w-4 h-4 text-green-400" />
+    case 'NewFollower':
+      return <Users className="w-4 h-4 text-blue-400" />
+    case 'IncomingCall':
+      return <Phone className="w-4 h-4 text-emerald-400" />
+    default:
+      return <Bell className="w-4 h-4 text-muted-foreground" />
+  }
+}
+
+function timeAgo(dateStr: string, t: (key: string, values?: Record<string, string | number | Date>) => string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  const diffMin = Math.floor(diffSec / 60)
+  const diffHour = Math.floor(diffMin / 60)
+  const diffDay = Math.floor(diffHour / 24)
+
+  if (diffSec < 60) return t('justNow')
+  if (diffMin < 60) return t('minutesAgo', { count: diffMin })
+  if (diffHour < 24) return t('hoursAgo', { count: diffHour })
+  if (diffDay < 7) return t('daysAgo', { count: diffDay })
+  return date.toLocaleDateString()
+}
 
 export function NotificationDropdown() {
   const accent = useAccentColors()

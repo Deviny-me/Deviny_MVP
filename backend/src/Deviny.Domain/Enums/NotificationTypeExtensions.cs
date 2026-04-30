@@ -10,6 +10,7 @@ public static class NotificationTypeExtensions
             NotificationType.TrainingProgramCreated => NotificationCategory.ContentUpdates,
             NotificationType.MealProgramCreated => NotificationCategory.ContentUpdates,
             NotificationType.MessageReceived => NotificationCategory.Messaging,
+            NotificationType.IncomingCall => NotificationCategory.Messaging,
             NotificationType.WorkoutReminder => NotificationCategory.WorkoutReminders,
             NotificationType.System => NotificationCategory.System,
             NotificationType.FriendRequestReceived => NotificationCategory.System,

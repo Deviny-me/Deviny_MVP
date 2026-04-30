@@ -28,13 +28,14 @@ public class GetAllTrainersQueryHandler : IRequestHandler<GetAllTrainersQuery, P
         var hasFilters = !string.IsNullOrWhiteSpace(request.Country) ||
                          !string.IsNullOrWhiteSpace(request.City) ||
                          !string.IsNullOrWhiteSpace(request.Gender) ||
-                         !string.IsNullOrWhiteSpace(request.Specialization);
+                         !string.IsNullOrWhiteSpace(request.Specialization) ||
+                         (request.MinRating.HasValue && request.MinRating.Value > 0);
 
         var (trainers, totalCount) = hasFilters
             ? await _trainerProfileRepository.GetAllFilteredPagedAsync(
                 request.Page, request.PageSize,
-                request.Country, request.City, request.Gender, request.Specialization)
-            : await _trainerProfileRepository.GetAllWithDetailsPagedAsync(request.Page, request.PageSize);
+                request.Country, request.City, request.Gender, request.Specialization, request.MinRating)
+            : await _trainerProfileRepository.GetAllWithDetailsPagedAsync(request.Page, request.PageSize, request.MinRating);
 
         if (trainers.Count == 0)
             return new PagedResponse<PublicTrainerDto>(new List<PublicTrainerDto>(), totalCount, request.Page, request.PageSize);
@@ -74,13 +75,6 @@ public class GetAllTrainersQueryHandler : IRequestHandler<GetAllTrainersQuery, P
                 ActivityRatingValue = rating?.ActivityRatingValue ?? 0
             };
         }).ToList();
-
-        // Post-filter by minimum rating (ratings are computed in-memory)
-        if (request.MinRating.HasValue && request.MinRating.Value > 0)
-        {
-            result = result.Where(r => r.RatingValue >= request.MinRating.Value).ToList();
-            totalCount = result.Count;
-        }
 
         return new PagedResponse<PublicTrainerDto>(result, totalCount, request.Page, request.PageSize);
     }

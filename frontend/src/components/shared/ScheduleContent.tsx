@@ -307,6 +307,7 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   const [editingEvent, setEditingEvent] = useState<ScheduleEvent | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [startingCall, setStartingCall] = useState<string | null>(null)
   const [students, setStudents] = useState<StudentOption[]>([])
   const [detailEvent, setDetailEvent] = useState<ScheduleEvent | null>(null)
 
@@ -470,12 +471,20 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
   }
 
   const handleStartCall = async (eventId: string) => {
+    if (!api.startCall || startingCall) return
+
     try {
+      setStartingCall(eventId)
       const result = await api.startCall!(eventId)
-      window.open(result.callUrl, '_blank')
+      const popup = window.open(result.callUrl, '_blank', 'noopener,noreferrer')
+      if (!popup) {
+        toast.error(t('toasts.popupBlocked'))
+      }
     } catch (error) {
       console.error('Failed to start call:', error)
       toast.error(t('toasts.callError'))
+    } finally {
+      setStartingCall(null)
     }
   }
 
@@ -593,6 +602,12 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
 
   const canManageEvent = (event: ScheduleEvent) => {
     return !readOnly && (!currentUserId || event.trainerId === currentUserId)
+  }
+
+  const canStartCall = (event: ScheduleEvent) => {
+    if (readOnly || !api.startCall || event.type !== 'Online') return false
+    if (!currentUserId) return true
+    return event.trainerId === currentUserId || event.studentId === currentUserId
   }
 
   return (
@@ -981,38 +996,47 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                       {event.comment && <p className="mt-1 text-xs text-faint-foreground">{event.comment}</p>}
                     </div>
 
-                    {canManageEvent(event) && (
+                    {(canStartCall(event) || canManageEvent(event)) && (
                       <div
                         className="flex items-center gap-2 self-stretch sm:self-auto"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {event.type === 'Online' && (
+                        {canStartCall(event) && (
                           <button
                             onClick={() => handleStartCall(event.id)}
+                            disabled={startingCall === event.id}
                             className={`flex-1 rounded-lg bg-gradient-to-r p-2.5 sm:flex-none ${accent.gradient}`}
                           >
-                            <Video className="h-5 w-5 text-white" />
+                            {startingCall === event.id ? (
+                              <Loader2 className="h-5 w-5 animate-spin text-white" />
+                            ) : (
+                              <Video className="h-5 w-5 text-white" />
+                            )}
                           </button>
                         )}
 
-                        <button
-                          onClick={() => openEditModal(event)}
-                          className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-hover-overlay sm:flex-none"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
+                        {canManageEvent(event) && (
+                          <button
+                            onClick={() => openEditModal(event)}
+                            className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-hover-overlay sm:flex-none"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                        )}
 
-                        <button
-                          onClick={() => handleDelete(event.id)}
-                          disabled={deleting === event.id}
-                          className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-red-500/20 disabled:opacity-50 sm:flex-none"
-                        >
-                          {deleting === event.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </button>
+                        {canManageEvent(event) && (
+                          <button
+                            onClick={() => handleDelete(event.id)}
+                            disabled={deleting === event.id}
+                            className="flex-1 rounded-lg bg-border-subtle p-2.5 text-muted-foreground hover:bg-red-500/20 disabled:opacity-50 sm:flex-none"
+                          >
+                            {deleting === event.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1289,41 +1313,50 @@ export function ScheduleContent({ api, fetchStudents, readOnly, currentUserId }:
                 </p>
               </div>
 
-              {canManageEvent(detailEvent) && (
+              {(canStartCall(detailEvent) || canManageEvent(detailEvent)) && (
                 <div className="mt-6 flex flex-col gap-3 border-t border-border-subtle pt-4 sm:flex-row">
-                  {detailEvent.type === 'Online' && (
+                  {canStartCall(detailEvent) && (
                     <button
                       onClick={() => {
                         handleStartCall(detailEvent.id)
                         setDetailEvent(null)
                       }}
+                      disabled={startingCall === detailEvent.id}
                       className={`flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r py-2.5 font-semibold text-white ${accent.gradient}`}
                     >
-                      <Video className="h-4 w-4" />
+                      {startingCall === detailEvent.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Video className="h-4 w-4" />
+                      )}
                       {t('startCall')}
                     </button>
                   )}
 
-                  <button
-                    onClick={() => {
-                      openEditModal(detailEvent)
-                      setDetailEvent(null)
-                    }}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-border-subtle py-2.5 font-semibold text-foreground hover:bg-hover-overlay"
-                  >
-                    <Edit className="h-4 w-4" />
-                    {t('editEvent')}
-                  </button>
+                  {canManageEvent(detailEvent) && (
+                    <button
+                      onClick={() => {
+                        openEditModal(detailEvent)
+                        setDetailEvent(null)
+                      }}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-border-subtle py-2.5 font-semibold text-foreground hover:bg-hover-overlay"
+                    >
+                      <Edit className="h-4 w-4" />
+                      {t('editEvent')}
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => {
-                      handleDelete(detailEvent.id)
-                      setDetailEvent(null)
-                    }}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-red-500/10 px-4 py-2.5 font-semibold text-red-400 hover:bg-red-500/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                  {canManageEvent(detailEvent) && (
+                    <button
+                      onClick={() => {
+                        handleDelete(detailEvent.id)
+                        setDetailEvent(null)
+                      }}
+                      className="flex items-center justify-center gap-2 rounded-lg bg-red-500/10 px-4 py-2.5 font-semibold text-red-400 hover:bg-red-500/20"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               )}
             </div>

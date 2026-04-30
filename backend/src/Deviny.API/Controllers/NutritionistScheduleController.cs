@@ -17,15 +17,21 @@ public class NutritionistScheduleController : BaseApiController
     private readonly ApplicationDbContext _context;
     private readonly ILevelService _levelService;
     private readonly IRealtimeNotifier _realtimeNotifier;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<NutritionistScheduleController> _logger;
 
     public NutritionistScheduleController(
         ApplicationDbContext context,
         ILevelService levelService,
-        IRealtimeNotifier realtimeNotifier)
+        IRealtimeNotifier realtimeNotifier,
+        INotificationService notificationService,
+        ILogger<NutritionistScheduleController> logger)
     {
         _context = context;
         _levelService = levelService;
         _realtimeNotifier = realtimeNotifier;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     private async Task<Guid> GetNutritionistIdAsync()
@@ -431,15 +437,33 @@ public class NutritionistScheduleController : BaseApiController
         {
             var nutritionistId = await GetNutritionistIdAsync();
 
-            var evt = await _context.ScheduleEvents.FindAsync(id);
+            var evt = await _context.ScheduleEvents
+                .Include(e => e.Trainer)
+                .Include(e => e.Student)
+                .FirstOrDefaultAsync(e => e.Id == id);
             if (evt == null || evt.TrainerId != nutritionistId)
                 return NotFound();
 
             if (evt.Type != ScheduleEventType.Online)
                 return BadRequest(new { message = "Only online events can start calls" });
 
+            var existingSession = await _context.CallSessions
+                .Where(c => c.EventId == evt.Id && c.Status == CallSessionStatus.Active)
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (existingSession != null)
+            {
+                return Ok(new StartCallResponse
+                {
+                    CallUrl = existingSession.CallUrl,
+                    RoomId = existingSession.RoomId,
+                    SessionId = existingSession.Id
+                });
+            }
+
             var roomId = Guid.NewGuid().ToString("N").Substring(0, 12);
-            var callUrl = $"https://meet.Deviny.app/{roomId}";
+            var callUrl = $"https://meet.deviny.app/{roomId}";
 
             var session = new CallSession
             {
@@ -457,6 +481,27 @@ public class NutritionistScheduleController : BaseApiController
             _context.CallSessions.Add(session);
             await _context.SaveChangesAsync();
 
+            if (evt.StudentId.HasValue)
+            {
+                await CreateScheduledCallNotificationAsync(
+                    evt.StudentId.Value,
+                    evt.Trainer?.FullName ?? "Your nutritionist",
+                    evt.Id);
+            }
+
+            var participants = evt.StudentId.HasValue
+                ? new[] { evt.TrainerId, evt.StudentId.Value }
+                : new[] { evt.TrainerId };
+            await _realtimeNotifier.SendEntityChangedToUsersAsync(
+                participants,
+                "schedule",
+                "call-started",
+                "call-session",
+                session.Id,
+                new { eventId = evt.Id, callUrl = session.CallUrl, roomId = session.RoomId });
+
+            _logger.LogInformation("Nutritionist {NutritionistId} started scheduled call {SessionId} for event {EventId}", nutritionistId, session.Id, evt.Id);
+
             return Ok(new StartCallResponse
             {
                 CallUrl = callUrl,
@@ -470,7 +515,26 @@ public class NutritionistScheduleController : BaseApiController
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error starting nutritionist scheduled call for event {EventId}", id);
             return StatusCode(500, new { message = "Error starting call", error = ex.Message });
+        }
+    }
+
+    private async Task CreateScheduledCallNotificationAsync(Guid targetUserId, string callerName, Guid eventId)
+    {
+        try
+        {
+            await _notificationService.CreateAsync(
+                targetUserId,
+                NotificationType.IncomingCall,
+                "Scheduled call started",
+                $"{callerName} started your scheduled call.",
+                "ScheduleEvent",
+                eventId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create scheduled call notification for user {TargetUserId}", targetUserId);
         }
     }
 

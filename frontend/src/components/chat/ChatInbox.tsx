@@ -21,6 +21,8 @@ import {
   Mic,
   MicOff,
   VideoOff,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'
 import { messagesApi } from '@/lib/api/messagesApi'
 import { chatConnection } from '@/lib/signalr/chatConnection'
@@ -119,6 +121,15 @@ function sameId(a: string | null | undefined, b: string | null | undefined): boo
   return a.toLowerCase() === b.toLowerCase()
 }
 
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
 // ─── component ───
 
 type CallType = 'audio' | 'video'
@@ -131,12 +142,46 @@ interface IncomingCallState {
   offer: RTCSessionDescriptionInit
 }
 
+interface StoredIncomingCallState extends IncomingCallState {
+  receivedAt?: number
+  expiresAt?: number
+  iceCandidates?: RTCIceCandidateInit[]
+}
+
 const CALL_RING_TIMEOUT_MS = 30_000
+const PENDING_INCOMING_CALL_STORAGE_KEY = 'deviny.pendingIncomingCall'
+const TURN_CREDENTIALS_URL = process.env.NEXT_PUBLIC_TURN_CREDENTIALS_URL ?? 'https://deviny.metered.live/api/v1/turn/credentials?apiKey=5694937899d6b5a3161dd5741438e044f1c4'
 
 function formatCallDuration(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+function isCallSupported(): boolean {
+  return typeof window !== 'undefined' &&
+    typeof RTCPeerConnection !== 'undefined' &&
+    !!navigator.mediaDevices?.getUserMedia
+}
+
+function getCallFailureKey(error: unknown): string {
+  if (!isCallSupported()) return 'callUnsupported'
+  if (error instanceof DOMException) {
+    if (error.name === 'NotAllowedError' || error.name === 'SecurityError') return 'callPermissionDenied'
+    if (error.name === 'NotFoundError' || error.name === 'OverconstrainedError') return 'callDeviceNotFound'
+    if (error.name === 'NotReadableError' || error.name === 'AbortError') return 'callDeviceBusy'
+  }
+  return 'couldNotStartCall'
+}
+
+function isRtcDescription(value: unknown): value is RTCSessionDescriptionInit {
+  if (!value || typeof value !== 'object') return false
+  const description = value as RTCSessionDescriptionInit
+  return typeof description.type === 'string' && typeof description.sdp === 'string'
+}
+
+function isRtcCandidate(value: unknown): value is RTCIceCandidateInit {
+  return !!value && typeof value === 'object' && typeof (value as RTCIceCandidateInit).candidate === 'string'
 }
 
 export default function ChatInbox() {
@@ -171,6 +216,10 @@ export default function ChatInbox() {
   const [isMicMuted, setIsMicMuted] = useState(false)
   const [isCameraEnabled, setIsCameraEnabled] = useState(true)
   const [callDurationSeconds, setCallDurationSeconds] = useState(0)
+  const [isRemoteVideoAvailable, setIsRemoteVideoAvailable] = useState(false)
+  const [isRemoteCameraLikelyOff, setIsRemoteCameraLikelyOff] = useState(false)
+  const [isRemoteFullscreen, setIsRemoteFullscreen] = useState(false)
+  const [pipRect, setPipRect] = useState({ x: 0, y: 0, width: 224, height: 140 })
   const [presenceByUserId, setPresenceByUserId] = useState<Record<string, { isOnline: boolean; lastSeenAtUtc: string | null }>>({})
 
   const [loadingConvs, setLoadingConvs] = useState(true)
@@ -188,6 +237,11 @@ export default function ChatInbox() {
   const localVideoRef = useRef<HTMLVideoElement | null>(null)
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null)
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null)
+  const remoteStageRef = useRef<HTMLDivElement | null>(null)
+  const pipDragRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null)
+  const pipResizeRef = useRef<{ startX: number; startY: number; startWidth: number; startHeight: number } | null>(null)
+  const blackFrameStreakRef = useRef(0)
+  const lastRemoteVideoTimeRef = useRef(0)
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
   const localStreamRef = useRef<MediaStream | null>(null)
   const remoteStreamRef = useRef<MediaStream | null>(null)
@@ -195,6 +249,7 @@ export default function ChatInbox() {
   const callStartLoggedRef = useRef(false)
   const incomingCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const outgoingCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const connectingCallTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const connectedCallTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const connectedAtRef = useRef<number | null>(null)
   const creatingConvRef = useRef(false)
@@ -202,6 +257,7 @@ export default function ChatInbox() {
   const startCallHandledRef = useRef(false)
   const activeCallPeerIdRef = useRef<string | null>(null)
   const activeCallConversationIdRef = useRef<string | null>(null)
+  const incomingCallRef = useRef<IncomingCallState | null>(null)
   const callStatusRef = useRef<'idle' | 'calling' | 'ringing' | 'connecting' | 'connected'>('idle')
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([])
   const subscribedPresenceIdsRef = useRef<Set<string>>(new Set())
@@ -210,6 +266,7 @@ export default function ChatInbox() {
   useEffect(() => { selectedConvIdRef.current = selectedConvId }, [selectedConvId])
   useEffect(() => { activeCallPeerIdRef.current = activeCallPeerId }, [activeCallPeerId])
   useEffect(() => { activeCallConversationIdRef.current = activeCallConversationId }, [activeCallConversationId])
+  useEffect(() => { incomingCallRef.current = incomingCall }, [incomingCall])
   useEffect(() => { callStatusRef.current = callStatus }, [callStatus])
 
   const callTypeText = useCallback(
@@ -578,6 +635,10 @@ export default function ChatInbox() {
   }, [])
 
   const clearCallMedia = useCallback(() => {
+    if (connectingCallTimeoutRef.current) {
+      clearTimeout(connectingCallTimeoutRef.current)
+      connectingCallTimeoutRef.current = null
+    }
     if (incomingCallTimeoutRef.current) {
       clearTimeout(incomingCallTimeoutRef.current)
       incomingCallTimeoutRef.current = null
@@ -619,7 +680,207 @@ export default function ChatInbox() {
     setIncomingCall(null)
     setIsMicMuted(false)
     setIsCameraEnabled(true)
+    setIsRemoteVideoAvailable(false)
+    setIsRemoteCameraLikelyOff(false)
+    lastRemoteVideoTimeRef.current = 0
+    setIsRemoteFullscreen(false)
     setCallDurationSeconds(0)
+  }, [])
+
+  const clampPipRect = useCallback((next: { x: number; y: number; width: number; height: number }) => {
+    const stage = remoteStageRef.current
+    if (!stage) return next
+
+    const pad = 12
+    const maxWidth = Math.max(160, stage.clientWidth - pad * 2)
+    const maxHeight = Math.max(100, stage.clientHeight - pad * 2)
+    const width = Math.max(160, Math.min(next.width, maxWidth))
+    const height = Math.max(100, Math.min(next.height, maxHeight))
+
+    const maxX = Math.max(pad, stage.clientWidth - width - pad)
+    const maxY = Math.max(pad, stage.clientHeight - height - pad)
+
+    return {
+      x: Math.max(pad, Math.min(next.x, maxX)),
+      y: Math.max(pad, Math.min(next.y, maxY)),
+      width,
+      height,
+    }
+  }, [])
+
+  const resetPipPosition = useCallback(() => {
+    const stage = remoteStageRef.current
+    if (!stage) return
+    const width = Math.min(240, Math.max(180, Math.floor(stage.clientWidth * 0.28)))
+    const height = Math.round((width * 9) / 16)
+    const pad = 12
+    setPipRect(clampPipRect({
+      width,
+      height,
+      x: stage.clientWidth - width - pad,
+      y: stage.clientHeight - height - pad,
+    }))
+  }, [clampPipRect])
+
+  const beginPipDrag = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX
+    const clientY = 'clientY' in e ? e.clientY : e.touches[0].clientY
+    pipDragRef.current = {
+      startX: clientX,
+      startY: clientY,
+      startLeft: pipRect.x,
+      startTop: pipRect.y,
+    }
+  }
+
+  const beginPipResize = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX
+    const clientY = 'clientY' in e ? e.clientY : e.touches[0].clientY
+    pipResizeRef.current = {
+      startX: clientX,
+      startY: clientY,
+      startWidth: pipRect.width,
+      startHeight: pipRect.height,
+    }
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = e instanceof TouchEvent ? e.touches[0]?.clientX : (e as MouseEvent).clientX
+      const clientY = e instanceof TouchEvent ? e.touches[0]?.clientY : (e as MouseEvent).clientY
+      
+      if (!clientX || !clientY) return
+
+      if (pipDragRef.current) {
+        const drag = pipDragRef.current
+        const dx = clientX - drag.startX
+        const dy = clientY - drag.startY
+        setPipRect(prev => clampPipRect({ ...prev, x: drag.startLeft + dx, y: drag.startTop + dy }))
+      }
+
+      if (pipResizeRef.current) {
+        const resize = pipResizeRef.current
+        const dx = clientX - resize.startX
+        const dy = clientY - resize.startY
+        setPipRect(prev => clampPipRect({ ...prev, width: resize.startWidth + dx, height: resize.startHeight + dy }))
+      }
+    }
+
+    const onUp = () => {
+      pipDragRef.current = null
+      pipResizeRef.current = null
+    }
+
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+    }
+  }, [clampPipRect])
+
+  const toggleRemoteFullscreen = useCallback(async () => {
+    const stage = remoteStageRef.current
+    if (!stage) return
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen()
+      } else {
+        await stage.requestFullscreen()
+      }
+    } catch {
+      // ignore fullscreen API failures
+    }
+  }, [])
+
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsRemoteFullscreen(document.fullscreenElement === remoteStageRef.current)
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [])
+
+  useEffect(() => {
+    if (callStatus === 'idle' || activeCallType !== 'video') return
+    // Wait one frame for stage layout to settle.
+    const id = requestAnimationFrame(() => resetPipPosition())
+    return () => cancelAnimationFrame(id)
+  }, [activeCallType, callStatus, resetPipPosition])
+
+  useEffect(() => {
+    if (callStatus !== 'connected' || activeCallType !== 'video') {
+      blackFrameStreakRef.current = 0
+      lastRemoteVideoTimeRef.current = 0
+      setIsRemoteCameraLikelyOff(false)
+      return
+    }
+
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return
+
+    const interval = setInterval(() => {
+      const video = remoteVideoRef.current
+      if (!video || video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+        return
+      }
+
+      canvas.width = 32
+      canvas.height = 18
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+      const frame = ctx.getImageData(0, 0, canvas.width, canvas.height).data
+
+      let sumLuma = 0
+      let sumLumaSq = 0
+      for (let i = 0; i < frame.length; i += 4) {
+        const luma = frame[i] * 0.2126 + frame[i + 1] * 0.7152 + frame[i + 2] * 0.0722
+        sumLuma += luma
+        sumLumaSq += luma * luma
+      }
+
+      const totalPixels = canvas.width * canvas.height
+      const meanLuma = sumLuma / totalPixels
+      const variance = Math.max(0, sumLumaSq / totalPixels - meanLuma * meanLuma)
+      const stdDev = Math.sqrt(variance)
+      const looksBlack = meanLuma < 8 && stdDev < 2
+
+      const currentTime = video.currentTime
+      const timeAdvanced = currentTime > lastRemoteVideoTimeRef.current + 0.01
+      lastRemoteVideoTimeRef.current = currentTime
+
+      if (looksBlack && !timeAdvanced) {
+        blackFrameStreakRef.current += 1
+      } else {
+        blackFrameStreakRef.current = 0
+      }
+
+      setIsRemoteCameraLikelyOff(blackFrameStreakRef.current >= 3)
+    }, 800)
+
+    return () => {
+      clearInterval(interval)
+      blackFrameStreakRef.current = 0
+      lastRemoteVideoTimeRef.current = 0
+      setIsRemoteCameraLikelyOff(false)
+    }
+  }, [activeCallType, callStatus])
+
+  const clearPendingIncomingCallStorage = useCallback(() => {
+    if (typeof window === 'undefined') return
+    try {
+      sessionStorage.removeItem(PENDING_INCOMING_CALL_STORAGE_KEY)
+    } catch {
+      // ignore storage failures
+    }
   }, [])
 
   const sendCallLogMessage = useCallback(async (conversationId: string, text: string) => {
@@ -630,23 +891,45 @@ export default function ChatInbox() {
     }
   }, [])
 
+  const armIncomingCallTimeout = useCallback((call: IncomingCallState) => {
+    if (incomingCallTimeoutRef.current) clearTimeout(incomingCallTimeoutRef.current)
+    incomingCallTimeoutRef.current = setTimeout(async () => {
+      try {
+        await chatConnection.endCall(call.conversationId, call.fromUserId, 'missed')
+      } catch {
+        // ignore timeout signaling failure and still cleanup locally
+      }
+      await sendCallLogMessage(call.conversationId, t('callLogMissedIncoming'))
+      setCallNotice(t('missedCall'))
+      setTimeout(() => setCallNotice(null), 2500)
+      setIncomingCall(null)
+      setCallStatus('idle')
+    }, CALL_RING_TIMEOUT_MS)
+  }, [sendCallLogMessage, t])
+
   const createPeerConnection = useCallback(async (conversationId: string, targetUserId: string) => {
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close()
     }
 
-    // Fetch TURN credentials dynamically from metered.ca API
+    // Fetch TURN credentials dynamically. Calls still try STUN-only if this fails.
     let iceServers: RTCIceServer[] = [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
     ]
     try {
-      const res = await fetch('https://deviny.metered.live/api/v1/turn/credentials?apiKey=5694937899d6b5a3161dd5741438e044f1c4')
-      const turnServers = await res.json()
-      console.log('[WebRTC] Fetched TURN servers:', turnServers.length)
-      iceServers = [...iceServers, ...turnServers]
+      const res = await fetch(TURN_CREDENTIALS_URL)
+      if (res.ok) {
+        const turnServers = await res.json()
+        console.info('[WebRTC] Fetched TURN servers:', Array.isArray(turnServers) ? turnServers.length : 0)
+        if (Array.isArray(turnServers)) {
+          iceServers = [...iceServers, ...turnServers]
+        }
+      } else {
+        console.warn('[WebRTC] TURN credentials request failed:', res.status, res.statusText)
+      }
     } catch (e) {
-      console.error('[WebRTC] Failed to fetch TURN credentials, using STUN only:', e)
+      console.warn('[WebRTC] Failed to fetch TURN credentials, using STUN only:', e)
     }
 
     const pc = new RTCPeerConnection({ iceServers })
@@ -659,14 +942,37 @@ export default function ChatInbox() {
     pc.onicecandidate = async (event) => {
       if (!event.candidate) return
       try {
+        console.debug('[WebRTC] Sending ICE candidate:', event.candidate.type)
         await chatConnection.sendCallIceCandidate(conversationId, targetUserId, event.candidate.toJSON())
       } catch (error) {
         console.error('Failed to send ICE candidate', error)
       }
     }
 
+    pc.onicecandidateerror = (event) => {
+      console.warn('[WebRTC] ICE candidate error:', {
+        url: event.url,
+        errorCode: event.errorCode,
+        errorText: event.errorText,
+      })
+    }
+
+    pc.onsignalingstatechange = () => {
+      console.debug('[WebRTC] Signaling state:', pc.signalingState)
+    }
+
+    pc.onicegatheringstatechange = () => {
+      console.debug('[WebRTC] ICE gathering state:', pc.iceGatheringState)
+    }
+
     pc.ontrack = (event) => {
       console.log('[WebRTC] ontrack fired:', event.track.kind, 'readyState:', event.track.readyState, 'muted:', event.track.muted)
+      if (event.track.kind === 'video') {
+        setIsRemoteVideoAvailable(!event.track.muted && event.track.readyState === 'live')
+        event.track.onmute = () => setIsRemoteVideoAvailable(false)
+        event.track.onunmute = () => setIsRemoteVideoAvailable(true)
+        event.track.onended = () => setIsRemoteVideoAvailable(false)
+      }
       if (event.streams[0]) {
         event.streams[0].getTracks().forEach(track => {
           const exists = remoteStream.getTracks().some(t => t.id === track.id)
@@ -707,23 +1013,41 @@ export default function ChatInbox() {
         playRemoteMedia()
       }
       if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        setCallNotice(t('callConnectionFailed'))
+        setTimeout(() => setCallNotice(null), 3000)
         clearCallMedia()
       }
       if (pc.connectionState === 'disconnected') {
-        setCallNotice('Call connection lost.')
+        setCallNotice(t('callConnectionLost'))
         setTimeout(() => setCallNotice(null), 2500)
       }
     }
 
     peerConnectionRef.current = pc
     return pc
-  }, [clearCallMedia])
+  }, [clearCallMedia, t])
 
   const getLocalMedia = useCallback(async (callType: CallType) => {
+    if (!isCallSupported()) {
+      console.error('[WebRTC] Calls are not supported in this browser/context')
+      throw new Error('CALL_UNSUPPORTED')
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: callType === 'video',
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+      video: callType === 'video'
+        ? {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'user',
+          }
+        : false,
     })
+    console.info('[WebRTC] Local media acquired:', stream.getTracks().map(track => `${track.kind}:${track.readyState}`))
     localStreamRef.current = stream
     if (localVideoRef.current) localVideoRef.current.srcObject = stream
     return stream
@@ -825,10 +1149,26 @@ export default function ChatInbox() {
 
   const handleCallClick = (type: 'audio' | 'video') => {
     if (!selectedConv || !selectedConvId) return
-    if (callStatus !== 'idle') return
+    if (callStatus !== 'idle') {
+      setCallNotice(t('callAlreadyInProgress'))
+      setTimeout(() => setCallNotice(null), 2500)
+      return
+    }
 
     ;(async () => {
       try {
+        if (!isCallSupported()) {
+          setCallNotice(t('callUnsupported'))
+          setTimeout(() => setCallNotice(null), 3500)
+          return
+        }
+
+        console.info('[WebRTC] Starting call', {
+          conversationId: selectedConvId,
+          targetUserId: selectedConv.peerUser.id,
+          callType: type,
+        })
+        pendingIceCandidatesRef.current = []
         setCallStatus('calling')
         isCallInitiatorRef.current = true
         callStartLoggedRef.current = false
@@ -862,7 +1202,7 @@ export default function ChatInbox() {
       } catch (error) {
         console.error('Failed to start call', error)
         clearCallMedia()
-        setCallNotice(t('couldNotStartCall'))
+        setCallNotice(t(getCallFailureKey(error)))
         setTimeout(() => setCallNotice(null), 3500)
       }
     })()
@@ -871,8 +1211,26 @@ export default function ChatInbox() {
   const handleAcceptIncomingCall = async () => {
     if (!incomingCall) return
 
+    const call = incomingCall
+    setIncomingCall(null)
+    clearPendingIncomingCallStorage()
+
     try {
-      setSelectedConvId(incomingCall.conversationId)
+      if (!isRtcDescription(call.offer)) {
+        throw new Error('Invalid call offer')
+      }
+      if (!isCallSupported()) {
+        setCallNotice(t('callUnsupported'))
+        setTimeout(() => setCallNotice(null), 3500)
+        return
+      }
+
+      console.info('[WebRTC] Accepting incoming call', {
+        conversationId: call.conversationId,
+        fromUserId: call.fromUserId,
+        callType: call.callType,
+      })
+      setSelectedConvId(call.conversationId)
       if (incomingCallTimeoutRef.current) {
         clearTimeout(incomingCallTimeoutRef.current)
         incomingCallTimeoutRef.current = null
@@ -880,16 +1238,16 @@ export default function ChatInbox() {
       setCallStatus('connecting')
       isCallInitiatorRef.current = false
       callStartLoggedRef.current = false
-      setActiveCallType(incomingCall.callType)
-      setActiveCallPeerId(incomingCall.fromUserId)
-      setActiveCallPeerName(incomingCall.fromUserName)
-      setActiveCallConversationId(incomingCall.conversationId)
+      setActiveCallType(call.callType)
+      setActiveCallPeerId(call.fromUserId)
+      setActiveCallPeerName(call.fromUserName)
+      setActiveCallConversationId(call.conversationId)
 
-      const stream = await getLocalMedia(incomingCall.callType)
-      const pc = await createPeerConnection(incomingCall.conversationId, incomingCall.fromUserId)
+      const stream = await getLocalMedia(call.callType)
+      const pc = await createPeerConnection(call.conversationId, call.fromUserId)
       stream.getTracks().forEach(track => pc.addTrack(track, stream))
 
-      await pc.setRemoteDescription(new RTCSessionDescription(incomingCall.offer))
+      await pc.setRemoteDescription(new RTCSessionDescription(call.offer))
       // Flush any ICE candidates that arrived before remote description was set
       const pending = pendingIceCandidatesRef.current
       pendingIceCandidatesRef.current = []
@@ -902,36 +1260,45 @@ export default function ChatInbox() {
       }
       const answer = await pc.createAnswer()
       await pc.setLocalDescription(answer)
-      await chatConnection.sendCallAnswer(incomingCall.conversationId, incomingCall.fromUserId, answer)
-
-      setIncomingCall(null)
+      await chatConnection.sendCallAnswer(call.conversationId, call.fromUserId, answer)
     } catch (error) {
       console.error('Failed to accept call', error)
-      if (incomingCall) {
-        await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'failed')
+      if (call) {
+        await chatConnection.endCall(call.conversationId, call.fromUserId, 'failed')
       }
       clearCallMedia()
-      setCallNotice(t('failedToAcceptCall'))
+      setCallNotice(t(getCallFailureKey(error) === 'couldNotStartCall' ? 'failedToAcceptCall' : getCallFailureKey(error)))
       setTimeout(() => setCallNotice(null), 3500)
     }
   }
 
   const handleDeclineIncomingCall = async () => {
     if (!incomingCall) return
+    const call = incomingCall
+    setIncomingCall(null)
+    setCallStatus('idle')
+    clearPendingIncomingCallStorage()
+
     if (incomingCallTimeoutRef.current) {
       clearTimeout(incomingCallTimeoutRef.current)
       incomingCallTimeoutRef.current = null
     }
-    await sendCallLogMessage(incomingCall.conversationId, t('callLogIncomingDeclined'))
-    await chatConnection.endCall(incomingCall.conversationId, incomingCall.fromUserId, 'rejected')
-    setIncomingCall(null)
-    setCallStatus('idle')
+    try {
+      await sendCallLogMessage(call.conversationId, t('callLogIncomingDeclined'))
+      await chatConnection.endCall(call.conversationId, call.fromUserId, 'rejected')
+    } catch (error) {
+      console.error('Failed to decline incoming call', error)
+    }
   }
 
   const handleEndCall = async () => {
-    if (activeCallConversationId && activeCallPeerId) {
-      await sendCallLogMessage(activeCallConversationId, t('callLogEnded'))
-      await chatConnection.endCall(activeCallConversationId, activeCallPeerId, 'ended')
+    try {
+      if (activeCallConversationId && activeCallPeerId) {
+        await sendCallLogMessage(activeCallConversationId, t('callLogEnded'))
+        await chatConnection.endCall(activeCallConversationId, activeCallPeerId, 'ended')
+      }
+    } catch (error) {
+      console.error('Failed to end call cleanly', error)
     }
     clearCallMedia()
   }
@@ -953,36 +1320,121 @@ export default function ChatInbox() {
   }
 
   useEffect(() => {
-    const handleCallOffer = async (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: CallType; offer: RTCSessionDescriptionInit }) => {
-      if (sameId(currentUserId, data.fromUserId)) return
+    if (typeof window === 'undefined') return
+
+    const rawPendingCall = sessionStorage.getItem(PENDING_INCOMING_CALL_STORAGE_KEY)
+    if (!rawPendingCall) return
+
+    clearPendingIncomingCallStorage()
+
+    try {
+      const pendingCall = JSON.parse(rawPendingCall) as StoredIncomingCallState
+      if (
+        !pendingCall ||
+        !isRtcDescription(pendingCall.offer) ||
+        (pendingCall.callType !== 'audio' && pendingCall.callType !== 'video') ||
+        !pendingCall.conversationId ||
+        !pendingCall.fromUserId ||
+        !pendingCall.fromUserName ||
+        sameId(currentUserId, pendingCall.fromUserId) ||
+        (pendingCall.expiresAt && Date.now() > pendingCall.expiresAt)
+      ) {
+        return
+      }
 
       if (callStatusRef.current !== 'idle') {
+        chatConnection.endCall(pendingCall.conversationId, pendingCall.fromUserId, 'busy').catch((error) => {
+          console.error('Failed to reject pending incoming call while busy', error)
+        })
+        return
+      }
+
+      console.info('[WebRTC] Restoring pending incoming call from global notification', {
+        conversationId: pendingCall.conversationId,
+        fromUserId: pendingCall.fromUserId,
+        callType: pendingCall.callType,
+      })
+      pendingIceCandidatesRef.current = Array.isArray(pendingCall.iceCandidates)
+        ? pendingCall.iceCandidates.filter(isRtcCandidate)
+        : []
+      setSelectedConvId(pendingCall.conversationId)
+      setIncomingCall(pendingCall)
+      setCallStatus('ringing')
+      setCallNotice(t('incomingCallFromUser', { name: pendingCall.fromUserName }))
+      setTimeout(() => setCallNotice(null), 3000)
+      armIncomingCallTimeout(pendingCall)
+    } catch (error) {
+      console.error('Failed to restore pending incoming call', error)
+    }
+  }, [armIncomingCallTimeout, clearPendingIncomingCallStorage, currentUserId, t])
+
+  useEffect(() => {
+    if (callStatus !== 'connecting') {
+      if (connectingCallTimeoutRef.current) {
+        clearTimeout(connectingCallTimeoutRef.current)
+        connectingCallTimeoutRef.current = null
+      }
+      return
+    }
+
+    if (connectingCallTimeoutRef.current) {
+      clearTimeout(connectingCallTimeoutRef.current)
+    }
+
+    connectingCallTimeoutRef.current = setTimeout(async () => {
+      if (callStatusRef.current !== 'connecting') return
+
+      const conversationId = activeCallConversationIdRef.current
+      const targetUserId = activeCallPeerIdRef.current
+      if (conversationId && targetUserId) {
+        try {
+          await chatConnection.endCall(conversationId, targetUserId, 'failed')
+        } catch {
+          // ignore signaling failures and still recover local UI
+        }
+      }
+
+      setCallNotice(t('callConnectionFailed'))
+      setTimeout(() => setCallNotice(null), 3000)
+      clearCallMedia()
+    }, CALL_RING_TIMEOUT_MS + 5000)
+
+    return () => {
+      if (connectingCallTimeoutRef.current) {
+        clearTimeout(connectingCallTimeoutRef.current)
+        connectingCallTimeoutRef.current = null
+      }
+    }
+  }, [callStatus, clearCallMedia, t])
+
+  useEffect(() => {
+    const handleCallOffer = async (data: { conversationId: string; fromUserId: string; fromUserName: string; callType: CallType; offer: RTCSessionDescriptionInit }) => {
+      if (sameId(currentUserId, data.fromUserId)) return
+      if (!isRtcDescription(data.offer) || (data.callType !== 'audio' && data.callType !== 'video')) {
+        console.error('[WebRTC] Invalid incoming call offer payload', data)
+        return
+      }
+
+      if (callStatusRef.current !== 'idle') {
+        console.info('[WebRTC] Rejecting incoming call because current call state is', callStatusRef.current)
         await chatConnection.endCall(data.conversationId, data.fromUserId, 'busy')
         return
       }
 
+      pendingIceCandidatesRef.current = []
       setIncomingCall(data)
       setCallStatus('ringing')
       setCallNotice(t('incomingCallFromUser', { name: data.fromUserName }))
       setTimeout(() => setCallNotice(null), 3000)
-
-      if (incomingCallTimeoutRef.current) clearTimeout(incomingCallTimeoutRef.current)
-      incomingCallTimeoutRef.current = setTimeout(async () => {
-        try {
-          await chatConnection.endCall(data.conversationId, data.fromUserId, 'missed')
-        } catch {
-          // ignore timeout signaling failure and still cleanup locally
-        }
-        await sendCallLogMessage(data.conversationId, t('callLogMissedIncoming'))
-        setCallNotice(t('missedCall'))
-        setTimeout(() => setCallNotice(null), 2500)
-        setIncomingCall(null)
-        setCallStatus('idle')
-      }, CALL_RING_TIMEOUT_MS)
+      armIncomingCallTimeout(data)
     }
 
     const handleCallAnswer = async (data: { conversationId: string; fromUserId: string; answer: RTCSessionDescriptionInit }) => {
       if (!peerConnectionRef.current) return
+      if (!isRtcDescription(data.answer)) {
+        console.error('[WebRTC] Invalid call answer payload', data)
+        return
+      }
       // Use refs for latest values to avoid stale closure
       if (activeCallPeerIdRef.current && !sameId(data.fromUserId, activeCallPeerIdRef.current)) return
       if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
@@ -1005,11 +1457,28 @@ export default function ChatInbox() {
         }
       } catch (error) {
         console.error('Failed to apply call answer', error)
+        setCallNotice(t('callConnectionFailed'))
+        setTimeout(() => setCallNotice(null), 3000)
       }
     }
 
     const handleCallIce = async (data: { conversationId: string; fromUserId: string; candidate: RTCIceCandidateInit }) => {
-      if (!peerConnectionRef.current) return
+      if (!isRtcCandidate(data.candidate)) {
+        console.error('[WebRTC] Invalid ICE candidate payload', data)
+        return
+      }
+      if (!peerConnectionRef.current) {
+        const pendingIncoming = incomingCallRef.current
+        if (
+          pendingIncoming &&
+          sameId(data.conversationId, pendingIncoming.conversationId) &&
+          sameId(data.fromUserId, pendingIncoming.fromUserId)
+        ) {
+          console.debug('[WebRTC] Queuing early ICE candidate before call accept')
+          pendingIceCandidatesRef.current.push(data.candidate)
+        }
+        return
+      }
       if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
       if (activeCallPeerIdRef.current && !sameId(data.fromUserId, activeCallPeerIdRef.current)) return
       // Queue ICE candidates if remote description is not yet set
@@ -1038,18 +1507,29 @@ export default function ChatInbox() {
       clearCallMedia()
     }
 
+    const handleCallUnavailable = (data: { conversationId: string; targetUserId: string; reason: string }) => {
+      if (activeCallConversationIdRef.current && !sameId(data.conversationId, activeCallConversationIdRef.current)) return
+      console.warn('[WebRTC] Call unavailable:', data)
+      const reasonText = data.reason === 'offline' ? t('userOfflineForCall') : t('callUnavailable')
+      setCallNotice(reasonText)
+      setTimeout(() => setCallNotice(null), 3000)
+      clearCallMedia()
+    }
+
     chatConnection.onCallOffer(handleCallOffer)
     chatConnection.onCallAnswer(handleCallAnswer)
     chatConnection.onCallIceCandidate(handleCallIce)
     chatConnection.onCallEnded(handleCallEnded)
+    chatConnection.onCallUnavailable(handleCallUnavailable)
 
     return () => {
       chatConnection.off('CallOffer', handleCallOffer)
       chatConnection.off('CallAnswer', handleCallAnswer)
       chatConnection.off('CallIceCandidate', handleCallIce)
       chatConnection.off('CallEnded', handleCallEnded)
+      chatConnection.off('CallUnavailable', handleCallUnavailable)
     }
-  }, [callTypeText, clearCallMedia, currentUserId, sendCallLogMessage, t])
+  }, [armIncomingCallTimeout, clearCallMedia, currentUserId, t])
 
   useEffect(() => {
     if (callStatus === 'connected' && activeCallConversationId && !callStartLoggedRef.current) {
@@ -1102,6 +1582,15 @@ export default function ChatInbox() {
     remoteVideoRef.current = el
     if (el && remoteStreamRef.current) {
       el.srcObject = remoteStreamRef.current
+      el.onloadeddata = () => {
+        setIsRemoteVideoAvailable(true)
+        setIsRemoteCameraLikelyOff(false)
+      }
+      el.onplaying = () => {
+        setIsRemoteVideoAvailable(true)
+        setIsRemoteCameraLikelyOff(false)
+      }
+      el.onemptied = () => setIsRemoteVideoAvailable(false)
       el.play().catch(e => console.warn('[WebRTC] Remote video autoplay blocked on mount:', e))
     }
   }, [])
@@ -1153,6 +1642,9 @@ export default function ChatInbox() {
   )
 
   const selectedConv = conversations.find(c => c.id === selectedConvId) ?? null
+  const activeCallPeerAvatar = activeCallPeerId
+    ? conversations.find(c => c.peerUser.id.toLowerCase() === activeCallPeerId.toLowerCase())?.peerUser.avatarUrl ?? null
+    : null
   const selectedPresence = selectedConv
     ? presenceByUserId[selectedConv.peerUser.id.toLowerCase()] ?? {
         isOnline: !!selectedConv.peerUser.isOnline,
@@ -1623,53 +2115,143 @@ export default function ChatInbox() {
             </div>
 
             {callStatus !== 'idle' && activeCallPeerName && (
-              <div className="border-t border-border-subtle bg-background p-3 sm:px-5">
-                <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {t('callWithUser', { callType: callTypeText(activeCallType), name: activeCallPeerName })}
-                    </p>
-                    <p className="text-xs capitalize text-muted-foreground">
-                      {callStatusText(callStatus)}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={toggleMic}
-                      className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
-                      title={isMicMuted ? t('unmuteMicrophone') : t('muteMicrophone')}
-                    >
-                      {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    </button>
-                    {activeCallType === 'video' && (
+              <div className="pointer-events-auto absolute inset-0 z-30 bg-black/60 backdrop-blur-sm">
+                <div className="flex h-full flex-col p-3 sm:p-5">
+                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/15 bg-black/50 px-4 py-3">
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        {t('callWithUser', { callType: callTypeText(activeCallType), name: activeCallPeerName })}
+                      </p>
+                      <p className="text-xs capitalize text-white/70">
+                        {callStatusText(callStatus)}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={toggleCamera}
-                        className="rounded-lg border border-border-subtle p-2 text-muted-foreground transition-colors hover:bg-white/10"
-                        title={isCameraEnabled ? t('turnOffCamera') : t('turnOnCamera')}
+                        onClick={toggleMic}
+                        className="rounded-xl border border-white/25 bg-black/40 p-2.5 text-white transition-colors hover:bg-white/10"
+                        title={isMicMuted ? t('unmuteMicrophone') : t('muteMicrophone')}
                       >
-                        {isCameraEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+                        {isMicMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                       </button>
+                      {activeCallType === 'video' && (
+                        <button
+                          type="button"
+                          onClick={toggleRemoteFullscreen}
+                          className="rounded-xl border border-white/25 bg-black/40 p-2.5 text-white transition-colors hover:bg-white/10"
+                          title={isRemoteFullscreen ? t('exitFullscreen') : t('fullscreen')}
+                        >
+                          {isRemoteFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                        </button>
+                      )}
+                      {activeCallType === 'video' && (
+                        <button
+                          type="button"
+                          onClick={toggleCamera}
+                          className="rounded-xl border border-white/25 bg-black/40 p-2.5 text-white transition-colors hover:bg-white/10"
+                          title={isCameraEnabled ? t('turnOffCamera') : t('turnOnCamera')}
+                        >
+                          {isCameraEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleEndCall}
+                        className="rounded-xl bg-red-600 p-2.5 text-white transition-colors hover:bg-red-700"
+                        title={t('endCall')}
+                      >
+                        <PhoneOff className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <audio ref={remoteAudioCallbackRef} autoPlay />
+
+                  <div ref={remoteStageRef} className="relative mt-3 flex-1 overflow-hidden rounded-2xl border border-white/10 bg-black">
+                    {activeCallType === 'video' ? (
+                      <>
+                        {isRemoteVideoAvailable && !isRemoteCameraLikelyOff ? (
+                          <video
+                            ref={remoteVideoCallbackRef}
+                            autoPlay
+                            playsInline
+                            className="h-full w-full bg-black object-contain"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black text-center">
+                            {activeCallPeerAvatar ? (
+                              <img
+                                src={avatarUrl(activeCallPeerAvatar) || ''}
+                                alt={activeCallPeerName}
+                                className="mb-3 h-20 w-20 rounded-full border border-white/20 object-cover"
+                              />
+                            ) : (
+                              <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-white/15 text-2xl font-semibold text-white">
+                                {getInitials(activeCallPeerName)}
+                              </div>
+                            )}
+                            <p className="text-base font-semibold text-white">{activeCallPeerName}</p>
+                            <p className="mt-1 inline-flex items-center gap-1 text-sm text-white/70">
+                              <VideoOff className="h-4 w-4" />
+                              {t('cameraIsOff')}
+                            </p>
+                          </div>
+                        )}
+
+                        <div
+                          className="absolute overflow-hidden rounded-xl border border-white/30 bg-black shadow-lg"
+                          style={{
+                            left: `${pipRect.x}px`,
+                            top: `${pipRect.y}px`,
+                            width: `${pipRect.width}px`,
+                            height: `${pipRect.height}px`,
+                          }}
+                        >
+                          <div
+                            onMouseDown={beginPipDrag}
+                            onTouchStart={beginPipDrag}
+                            className="absolute inset-x-0 top-0 z-10 h-7 cursor-move bg-gradient-to-b from-black/55 to-transparent"
+                          />
+                          {isCameraEnabled ? (
+                            <video
+                              ref={localVideoCallbackRef}
+                              autoPlay
+                              muted
+                              playsInline
+                              className="h-full w-full bg-black object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full flex-col items-center justify-center bg-black text-center">
+                              <p className="text-xs font-medium text-white/90">{t('youLabel')}</p>
+                              <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-white/70">
+                                <VideoOff className="h-3.5 w-3.5" />
+                                {t('yourCameraOff')}
+                              </p>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onMouseDown={beginPipResize}
+                            onTouchStart={beginPipResize}
+                            className="absolute bottom-0 right-0 h-5 w-5 cursor-se-resize rounded-tl-md bg-black/55"
+                            title={t('resizePreview')}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+                        <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-white">
+                          <Phone className="h-7 w-7" />
+                        </div>
+                        <p className="text-base font-semibold text-white">{activeCallPeerName}</p>
+                        <p className="mt-1 text-sm text-white/70">
+                          {callStatusText(callStatus)}{callStatus === 'connected' ? ` · ${formatCallDuration(callDurationSeconds)}` : ''}
+                        </p>
+                      </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={handleEndCall}
-                      className="rounded-lg bg-red-600 p-2 text-foreground transition-colors hover:bg-red-700"
-                      title={t('endCall')}
-                    >
-                      <PhoneOff className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
-
-                <audio ref={remoteAudioCallbackRef} autoPlay />
-                {activeCallType === 'video' && (
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <video ref={localVideoCallbackRef} autoPlay muted playsInline className="h-32 w-full rounded-lg bg-black object-cover" />
-                    <video ref={remoteVideoCallbackRef} autoPlay playsInline className="h-32 w-full rounded-lg bg-black object-cover" />
-                  </div>
-                )}
               </div>
             )}
           </div>
